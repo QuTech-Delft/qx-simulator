@@ -1,0 +1,12 @@
+
+- core:
+   gate execution : integrate shurman algo
+   test rotations : rx, ry, rz
+   test phase / cphase
+   test toffoli
+
+- config:
+   test noise
+
+- parser:
+   process syntax errors
