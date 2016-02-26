@@ -49,7 +49,7 @@ namespace xpu
 
   #define __debug(x) std::cout << "debug : [thread " << pthread_self() << "] " << __FILE__ << " : " << __LINE__ << " : " << __func__ << "() : " << x << std::endl;
   #define __trace(x) std::cout << "trace : [thread " << pthread_self() << "] " << __FILE__ << " : " << __LINE__ << " : " << __func__ << "() : " << x << std::endl;
-  #define __error(x) std::cerr << "error : [thread " << pthread_self() << "] " << __FILE__ << " : " << __LINE__ << " : " << __func__ << "() : " << x << std::endl;
+  //#define __error(x) std::cerr << "error : [thread " << pthread_self() << "] " << __FILE__ << " : " << __LINE__ << " : " << __func__ << "() : " << x << std::endl;
   #define __errno(x) std::cerr << "error : [thread " << pthread_self() << "] " << __FILE__ << " : " << __LINE__ << " : " << __func__ << "() : " << x << ":" << strerror(errno) << std::endl;  
   #ifdef __xpu_debug__
     #define __xpu_trace__(x) __trace(x)

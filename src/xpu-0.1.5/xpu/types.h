@@ -28,7 +28,7 @@
 #ifndef __XPU_TYPES__
 #define __XPU_TYPES__
 
-#if defined(__sun) || defined(__linux) || defined(__osf__) || defined(_AIX) // this must be verified
+#if defined(__sun) || defined(__linux) || defined(__osf__) || defined(_AIX) || defined(__MACH__) // this must be verified
 #include <sys/types.h>
 #else
 

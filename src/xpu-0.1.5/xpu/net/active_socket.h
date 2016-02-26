@@ -1,8 +1,15 @@
 #ifndef __ACTIVE_SOCKET_H__
 #define __ACTIVE_SOCKET_H__
 
+
 #include "basic_socket.h"
 
+namespace xpu
+{
+
+/**
+ * active socket
+ */
 class active_socket : public basic_socket
 {
    public:
@@ -57,6 +64,7 @@ class active_socket : public basic_socket
 
 #include "active_socket.cc"
 
+} // xpu
 
 #endif // __ACTIVE_SOCKET_H__
 

@@ -9,6 +9,8 @@
 
 #include <map>
 
+#include <xpu.h>
+
 #include <core/hash_set.h>
 #include <core/linalg.h>
 #include <core/register.h>
@@ -39,6 +41,8 @@ namespace qx
    const complex_t pauli_y_c  [] = { complex_t(0, 0) , complex_t(0,-1), complex_t(0, 1) , complex_t(0, 0) };         /* Y */
    const complex_t pauli_z_c  [] = { complex_t(1, 0) , complex_t(0, 0), complex_t(0, 0) , complex_t(-1,0) };         /* Z */
    const complex_t phase_c    [] = { complex_t(1, 0) , complex_t(0, 0), complex_t(0, 0) , complex_t(0, 1) };         /* S */
+   const complex_t t_gate_c   [] = { complex_t(1, 0) , complex_t(0, 0), complex_t(0, 0) , complex_t(cos(M_PI/4),sin(M_PI/4)) };         /* T */
+   const complex_t tdag_gate_c[] = { complex_t(1, 0) , complex_t(0, 0), complex_t(0, 0) , complex_t(cos(M_PI/4),-sin(M_PI/4)) };         /* T */
    const complex_t hadamard_c [] = { R_SQRT_2,  R_SQRT_2, R_SQRT_2, -R_SQRT_2 }; /* H */
 
    /**
@@ -745,6 +749,86 @@ namespace qx
 	   }
 
    };
+
+
+   /**
+    * \brief T gate
+    */
+   class t_gate : public gate
+   {
+	 private:
+
+	   uint32_t   qubit;
+	   cmatrix_t  m;
+
+	 public:
+
+	   t_gate(uint32_t qubit) : qubit(qubit)
+	   {
+		 m = build_matrix(t_gate_c,2);
+	   }
+
+	   int32_t apply(qu_register& qreg)
+	   {
+		 sqg_apply(m,qubit,qreg);
+		 return 0;
+	   }
+
+	   void dump()
+	   {
+		 println("  [-] t_gate(qubit=" << qubit << ")");
+	   }
+	   
+	   std::vector<uint32_t>  qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 r.push_back(qubit);
+		 return r;
+	   }
+
+   };
+
+
+   /**
+    * \brief T dag gate
+    */
+   class t_dag_gate : public gate
+   {
+	 private:
+
+	   uint32_t   qubit;
+	   cmatrix_t  m;
+
+	 public:
+
+	   t_dag_gate(uint32_t qubit) : qubit(qubit)
+	   {
+		 m = build_matrix(tdag_gate_c,2);
+	   }
+
+	   int32_t apply(qu_register& qreg)
+	   {
+		 sqg_apply(m,qubit,qreg);
+		 return 0;
+	   }
+
+	   void dump()
+	   {
+		 println("  [-] t_dag_gate(qubit=" << qubit << ")");
+	   }
+	   
+	   std::vector<uint32_t>  qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 r.push_back(qubit);
+		 return r;
+	   }
+
+   };
+
+
+
+
 
 
    /**

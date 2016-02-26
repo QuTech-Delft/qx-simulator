@@ -3,6 +3,10 @@
 
 #include "active_socket.h"
 
+
+namespace xpu
+{
+
 class tcp_socket : public active_socket
 {
    public:
@@ -32,6 +36,8 @@ private:
 }; // class tcp_socket
 
 #include "tcp_socket.cc"
+
+}
 
 #endif // __TCP_SOCKET_H__
 

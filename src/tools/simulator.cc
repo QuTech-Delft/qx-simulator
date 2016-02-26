@@ -44,6 +44,7 @@ int main(int argc, char **argv)
    println("[+] loading circuit from '" << file_name << "' ...");
 
    qcp.parse();
+   //qcp.dump();
 
    xpu::init();
 

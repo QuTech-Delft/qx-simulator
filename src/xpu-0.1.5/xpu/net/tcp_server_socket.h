@@ -3,6 +3,10 @@
 
 #include "tcp_socket.h"
 
+
+namespace xpu
+{
+
 /**
  *   tcp socket class for servers
  */
@@ -46,5 +50,6 @@ private:
 
 #include "tcp_server_socket.cc" 
 
+}
 
 #endif // __TCP_SERVER_SOCKET_H__

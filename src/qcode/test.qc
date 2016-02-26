@@ -14,7 +14,7 @@ qubits 8
    rx q4,0.453
    ry q5,0.244
    rz q6,0.555
-   ph q7,1.378
+   ph q7
 
 .result
 # measurement

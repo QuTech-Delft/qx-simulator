@@ -1,9 +1,0 @@
-prefix=/usr/local
-exec_prefix=${prefix}
-libdir=${exec_prefix}/lib
-includedir=${prefix}/include
-
-Name: qx-simulator
-Description: Universal Quantum Computer Simulator
-Version: 0.1.3
-URL: 

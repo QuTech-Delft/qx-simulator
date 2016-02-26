@@ -1,12 +1,12 @@
 /**
- * @file        quantum_code_loader.h
- * @author	Nader KHAMMASSI - nader.khammassi@gmail.com 
- * @date	20-12-15
- * @brief		
+ * @file        qx_server.h
+ * @author      Nader KHAMMASSI - nader.khammassi@gmail.com 
+ * @date        25-02-16
  */
 
-#ifndef QX_QUANTUM_CODE_LOADER
-#define QX_QUANTUM_CODE_LOADER
+
+#ifndef QX_SERVER_H
+#define QX_SERVER_H
 
 #include <iostream>
 #include <sstream>
@@ -17,156 +17,63 @@
 
 #include <map>
 
-#include <stdint.h>
 
-#include <qcode/strings.h>
-#include <core/circuit.h>
-#include <core/error_model.h>
+#include <xpu/net/tcp_server_socket.h>
+#include <qcode/quantum_code_loader.h>
 
-
-// #include <quantum_code/token.h>
-// #include <quantum_code/syntax_error_exception.h>
-
-using namespace str;
-
-// #define println(x) std::cout << x << std::endl;
-#define error(x) std::cout << "[x] error : " << x << std::endl;
-
-#define MAX_QUBITS 32
 
 
 namespace qx
 {
-
-   typedef std::map<std::string,std::string> map_t;
-   typedef std::vector<qx::circuit *>        circuits_t;
-
    /**
-    * quantum_code parser
+    * \brief qx server
     */
-   class quantum_code_parser
+   class qx_server
    {
+      public:
+        
+	/**
+	 * ctor
+	 */
+	qx_server(uint32_t port=5555) : port(port), qubits_count(0), parsed_successfully(false), syntax_error(false), semantic_error(false), error_model(__unknown_error_model__), error_probability(0)
+	{
+	}
+
+	/**
+	 * start
+	 */
+	void start()
+	{
+	   char buf[512];
+	   xpu::tcp_server_socket server(port);
+	   xpu::tcp_socket * sock = server.accept();
+	   std::cout << "[+] client connected : " << sock->get_foreign_address() << ":" << sock->get_foreign_port() << std::endl;
+	   //sock->send("welcom to server !", 19);
+	   bool stop=false;
+	   while (!stop)
+	   {
+	      clear(buf,512);
+	      size_t bytes = sock->recv(buf, 512); 
+	      buf[bytes] = '\0';
+	      std::string cmd = buf;
+	      std::cout << cmd << std::endl;
+	      if (cmd == "stop")
+		 return;
+	      process_line(cmd);
+	      //sock->send("received.", 10);
+	   }
+	   return;
+	}
 
       private:
 
-      std::string   file_name;
-
-      int           line_index;
-      bool          parsed_successfully;
-      bool          syntax_error;
-      bool          semantic_error;
-
-      // definitions
-      map_t         definitions;
-
-      // circuits
-      uint32_t                   qubits_count;
-      std::vector<qx::circuit *> circuits;
-
-      // noise
-      double                     phase_noise;
-      double                     rotation_noise;
-
-      // decoherence
-      double                     decoherence; // const
-
-      // error model
-      qx::error_model_t          error_model;
-      double                     error_probability;
+        void clear(char * buf, size_t size)
+	{
+	   for (uint32_t i=0; i<size; i++)
+	      buf[0] = '\0';
+	}
 
 
-      public:
-
-      /**
-       * \brief
-       *    quantum_code_parser constructor
-       */
-      quantum_code_parser(std::string file_name) : file_name(file_name), qubits_count(0), parsed_successfully(false), syntax_error(false), semantic_error(false), error_model(__unknown_error_model__), error_probability(0)
-      {
-      }
-
-      /**
-       * \brief
-       *    parse the quantum code file
-       */
-      void parse()
-      {
-	 line_index   = 0;
-	 syntax_error = false;
-	 println("[-] loading quantum_code file '" << file_name << "'...");
-	 std::ifstream stream(file_name.c_str());
-	 if (stream)
-	 {
-	    char buf[2048];
-	    while(stream.getline(buf, 2048))
-	    {
-	       line_index++;
-	       std::string line = buf;
-	       if (line.length()>0)
-		  process_line(line);
-	       if (syntax_error)
-		  break;
-	    }
-	    stream.close();
-	    if (syntax_error || semantic_error)
-	    {
-	       exit(-1);
-	    }
-	    parsed_successfully = true;
-	    println("[+] code loaded successfully. ");
-	 }
-	 else error("cannot open file " << file_name);
-      }
-
-      /**
-       * destructor
-       */
-      virtual ~quantum_code_parser()
-      {
-	 // clean();
-      }
-
-
-      /**
-       * \brief print circuits
-       */
-      void dump()
-      {
-	 if (!parsed_successfully)
-	 {
-	    println("[!] no circuits: quantum code file not loaded yet !");
-	    return;
-	 }
-	 for (uint32_t i=0; i<circuits.size(); ++i)
-	    circuits[i]->dump();
-      }
-
-      /**
-       * \brief execute circuits
-       */
-      void execute(qx::qu_register& reg, uint32_t address=0, bool verbose=false, bool binary=false)
-      {
-	 if (!parsed_successfully)
-	 {
-	    println("[x] no circuits to execute: you must load quantum code file first !");
-	    return;
-	 }
-	 if (address > circuits.size())
-	 {
-	    println("[x] invalid circuit pointer (" << address << ") , there is only " << circuits.size() << " sub-circuits !");
-	    return;
-	 }
-	 for (uint32_t i=address; i<circuits.size(); ++i)
-	    circuits[i]->execute(reg,verbose,binary);
-      }
-      
-      /**
-       * qubits
-       */
-      uint32_t qubits()
-      {
-	 return qubits_count;
-      }
 
 #define print_syntax_error(err) \
       {\
@@ -203,6 +110,15 @@ namespace qx
       }
 
       /**
+       * \brief check if <str> is a natural bit
+       */
+      bool is_bit(std::string& str)
+      {
+	 return (str[0] == 'b');
+      }
+
+
+      /**
        * \brief retrieve qubit number <N> from a string "qN"
        */
       uint32_t qubit_id(std::string& str)
@@ -228,7 +144,7 @@ namespace qx
 	 for (int i=0; i<id.size(); ++i)
 	 {
 	    if (!is_digit(id[i]))
-	       print_syntax_error(" invalid qubit identifier !" << "(id:" << id << ")");
+	       print_syntax_error(" invalid qubit identifier !");
 	 }
 	 // println(" qubit id -> " << id);
 	 return (atoi(id.c_str()));
@@ -261,6 +177,8 @@ namespace qx
 	 circuits.push_back(new qx::circuit(qubits_count, "default"));
 	 return circuits.back();
       }
+
+
 
       /**
        * \brief 
@@ -458,7 +376,7 @@ namespace qx
 	       println("quantum controlled-z not implemented yet !");
 	       // current_sub_circuit(qubits_count)->add(new qx::cnot(ctrl,target));
 	    }
-	 } 
+	 } 	 
 	 /**
 	  * T gate
 	  */
@@ -494,6 +412,10 @@ namespace qx
 	    current_sub_circuit(qubits_count)->add(new qx::measure(q));
 	    current_sub_circuit(qubits_count)->add(new qx::bin_ctrl(q,new qx::pauli_x(q)));
 	 }
+
+
+
+
 	 /**
 	  * rotations gates
 	  */
@@ -529,15 +451,6 @@ namespace qx
 	  * phase 
 	  */
 	 else if (words[0] == "ph")   // phase shift gate
-	 {
-	    //strings params = word_list(words[1],",");
-	    uint32_t q = qubit_id(words[1]);
-	    if (q > (qubits_count-1))
-	       print_semantic_error(" target qubit out of range !");
-	    // println(" => phase gate on " << process_qubit(words[1]));
-	    current_sub_circuit(qubits_count)->add(new qx::phase_shift(q));
-	 }
-	 else if (words[0] == "s")   // phase shift gate
 	 {
 	    //strings params = word_list(words[1],",");
 	    uint32_t q = qubit_id(words[1]);
@@ -616,89 +529,35 @@ namespace qx
 	 return 0;
       }
 
-      /*
-	 uint32_t qubit_id(std::string& str)
-	 {
-	 std::string id = str.substr(1);
-	 println("id=" << id);
-	 return atoi(id.c_str());
-	 }
-       */
-
-      public:
-
-      /**
-       * \brief
-       * \return error model type
-       */
-      qx::error_model_t get_error_model()
-      {
-	 return error_model;
-      }
-
-      /**
-       * \return error_probability
-       */
-      double get_error_probability()
-      {
-	 return error_probability;
-      }
-
-      /**
-       * \brief 
-       * \return loaded circuits
-       */
-      circuits_t get_circuits()
-      {
-	 return circuits;
-      }
 
 
 
       private:
 
-      /**
-       * \brief check if <str> is a natural bit
-       */
-      bool is_bit(std::string& str)
-      {
-	 return (str[0] == 'b');
-      }
+        int           line_index;
+        bool          parsed_successfully;
+        bool          syntax_error;
+        bool          semantic_error;
 
-      std::string process_qubit(std::string& str)
-      {
-	 // check validity
-	 if ((str[0] != 'q') && (str[0] != 'b'))
-	 {
-	    println("[x] syntax error: invalid qubit/bit identifier !");
-	    return "";
-	 }
-	 for (int i=1; i<(str.size()-1); i++)
-	 {
-	    if (!is_digit(str[i]))
-	    {
-	       println("[x] syntax error: invalid qubit/bit identifier !");
-	       return "";
-	    }
-	 }
-	 // valid qubit/bit identifier, process it ...
-	 std::string r="";
-	 r+=(is_bit(str) ? "bit " : "qubit "); 
-	 r+= int_to_str(qubit_id(str));
-	 return r;
-      }
+        // definitions
+        map_t         definitions;
 
-      /**
-       * @brief dummy function : process gate            
-       */
-      void process_gate(strings &words)
-      {
-	 //std::cout << "gate name: " << words[1] << std::endl;
-      }
+        uint32_t      qubits_count;
+
+	// error model
+	qx::error_model_t          error_model;
+	double                     error_probability;
+
+        uint32_t      port;
+	circuits_t    circuits;
+	qu_register * reg;
 
    };
 }
 
 
-#endif // QX_QUANTUM_CODE_LOADER
+
+#endif // QX_SERVER_H
+
+
 

@@ -28,6 +28,9 @@ static bool initialized = false;
 
 #include "socket_exception.h"
 
+namespace xpu
+{
+
 /**
  *   base class representing basic communication endpoint
  */
@@ -109,6 +112,8 @@ class basic_socket {
 }; // class basic_socket
 
 #include "basic_socket.cc"
+
+} // namespace xpu
 
 #endif // __BASIC_SOCKET_H__
 

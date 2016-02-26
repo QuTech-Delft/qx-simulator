@@ -1,6 +1,10 @@
 #ifndef __UDP_SOCKET_H__
 #define __UDP_SOCKET_H__
 
+
+namespace xpu
+{
+
 /**
   *   udp socket class
   */
@@ -88,5 +92,6 @@ private:
 
 #include "udp_socket.cc"
 
+}
 
 #endif // __UDP_SOCKET_H__
