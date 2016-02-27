@@ -170,6 +170,45 @@ namespace qx
 	  */
 	 void flip_binary(uint32_t q); 
 
+	 /**
+	  * \brief return a string describing the quantum state
+	  */
+	 std::string quantum_state()
+	 {
+	    std::stringstream ss;
+	    ss << std::fixed;
+	    ss << "START\n";
+	    for (int i=0; i<data.size(); ++i)
+	    {
+	       if (data[i] != complex_t(0,0)) 
+	       {
+		  ss << "   " << std::fixed << data[i] << " |"; 
+		  //to_binary(i,n_qubits); 
+		  uint32_t k=0;
+		  uint32_t nq = n_qubits;
+		  uint32_t state = i;
+		  while (nq--) ss << (((state >> nq) & 1) ? "1" : "0");
+		  ss << "> +\n";
+	       }
+	    }
+	    ss << "END\n";
+	    return ss.str();
+	 }
+
+	 /**
+	  * \brief returns a string describing the binary register
+	  */
+	 std::string binary_register()
+	 {
+	    std::stringstream ss;
+	    ss << "START\n";
+	    for (int i=binary.size()-1; i>=0; --i)
+	       ss << " | " << __format_bin(binary[i]); 
+	    ss << " | \n";
+	    ss << "END\n";
+	    return ss.str();
+	 }
+
    };
 
    /**

@@ -21,9 +21,10 @@ LDFLAGS = -lm
 
 # this lists the binaries to produce, the (non-PHONY, binary) targets in
 # the previous manual Makefile
-bin_PROGRAMS = qx_simulator  ninja_star_simulator
+bin_PROGRAMS = qx_simulator  ninja_star_simulator qx_simulation_server
 qx_simulator_SOURCES = ./tools/simulator.cc
 ninja_star_simulator_SOURCES = ./tools/ninja_star_simulator.cc
+qx_simulation_server_SOURCES = ./server/qx_server.cc
 
 
 
