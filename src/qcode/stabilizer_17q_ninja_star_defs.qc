@@ -149,7 +149,7 @@ map q16,x22
    h x14
    h x22
 
-.syndrom_measurement
+.syndromes_measurement
 
    measure x44
    measure z10
@@ -163,4 +163,4 @@ map q16,x22
    display_binary
 
 
-#error_model depolarizing_channel, 0.001
+error_model depolarizing_channel, 0.001

@@ -42,11 +42,11 @@ namespace qx
    #define QX_ERROR_QUBITS_NUM_ALREADY_DEFINED     0x05
    #define QX_ERROR_TOO_MUCH_QUBITS                0x06
    #define QX_ERROR_INVALID_ERROR_MODEL            0x07
-   #define QX_ERROR_UNKNOWN_CMD                    0x08
    // semantic errors
    #define QX_ERROR_QUBITS_NOT_YET_DEFINED         0x09
    #define QX_ERROR_QUBIT_OUT_OF_RANGE             0x0A
    #define QX_ERROR_TOFFOLI_REQUIRES_3_QUBITS      0x0B
+   #define QX_ERROR_CIRCUIT_NOT_FOUND              0x0C
    
    /**
     * \brief qx server
@@ -89,9 +89,10 @@ namespace qx
 	      strings words = word_list(cmd, " ");
 	      if (words[0] == "stop")
 	      {
+		 //sock->send("[+] stopping server...\n", 23);
+		 sock->send("OK\n", 3);
 		 println("[+] stopping server...");
 		 println("[+] done.");
-		 sock->send("[+] stopping server...\n", 23);
 		 return;
 	      }
 	      else if (words[0] == "circuits")
@@ -145,8 +146,14 @@ namespace qx
 		       qx::qu_register& r = *reg;
 		       c->dump();
 		       c->execute(r);
+		       sock->send("OK\n", 3);
 		    }
-		    else println("[!] circuit not found !");
+		    else 
+		    {
+		       println("[!] circuit not found !");
+		       std::string error_code = "E"+int_to_str(QX_ERROR_CIRCUIT_NOT_FOUND)+"\n";
+		       sock->send(error_code.c_str(), error_code.length()+1);
+		    }
 		 }
 		 continue;
 	      }
@@ -627,7 +634,7 @@ namespace qx
 	    println(" => quantum error correction scheme = " << words[1]);
 	 }
 	 else
-	    print_syntax_error(" unknown gate or command !", QX_ERROR_UNKNOWN_CMD);
+	    print_syntax_error(" unknown gate or command !", QX_ERROR_UNKNOWN_COMMAND);
 
 	 return 0;
       }
