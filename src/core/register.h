@@ -16,6 +16,7 @@
 #include <cassert>
 #include <ctime>
 
+#include <random>
 
 #include <xpu/timer.h>
 #include <core/linalg.h>
@@ -31,9 +32,6 @@ using namespace qx::linalg;
 #define __format_bin(x) (x == __state_0__ ? '0' : (x == __state_1__ ? '1' : 'X')) 
 
 char bin_state_lt [] = { '0', '1', 'X' };
-
-
-
 
 namespace qx
 {
@@ -59,6 +57,9 @@ namespace qx
 	 cvector_t  data;
 	 bvector_t  binary; 
 	 uint32_t   n_qubits; 
+	 
+	 std::default_random_engine             rgenerator;
+	 std::uniform_real_distribution<double> udistribution;
 
 	 /**
 	  * \brief collapse
@@ -130,6 +131,15 @@ namespace qx
 	  *
 	  */
 	 bool check();
+
+
+         /**
+	  * uniform rndom number generator
+	  */
+	 double rand()
+	 {
+	    return udistribution(rgenerator);
+	 }
 
 	 /**
 	  * \brief measures one qubit

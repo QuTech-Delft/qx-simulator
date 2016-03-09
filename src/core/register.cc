@@ -42,7 +42,7 @@ void qx::qu_register::set_binary(uint32_t state, uint32_t nq)
 /**
  * \brief quantum register of n_qubit
  */
-qx::qu_register::qu_register(uint32_t n_qubits) : data(1 << n_qubits), binary(n_qubits), n_qubits(n_qubits)
+qx::qu_register::qu_register(uint32_t n_qubits) : data(1 << n_qubits), binary(n_qubits), n_qubits(n_qubits), rgenerator(xpu::timer().current()*10e5), udistribution(.0,1)
 {
    data[0] = complex_t(1,0);
    for (uint32_t i=1; i<(1 << n_qubits); ++i)
@@ -148,8 +148,9 @@ int32_t qx::qu_register::measure()
       return -1;
 #endif // SAFE_MODE
    
-   srand48(xpu::timer().current());
-   double r = drand48();
+   //srand48(xpu::timer().current());
+   //double r = drand48();
+   double r = this->rand();
    
    for (int i=0; i<data.size(); ++i)
    {

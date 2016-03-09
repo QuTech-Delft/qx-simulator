@@ -11,4 +11,4 @@ display
 measure q1
 display
 
-error_model depolarizing_channel,0.01
+# error_model depolarizing_channel,0.1

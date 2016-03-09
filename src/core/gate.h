@@ -1202,8 +1202,9 @@ namespace qx
 		 return 0;
 	      }
 
-	      std::srand(std::time(0));          // get it out of there
-	      double f = ((double)std::rand())/((double)RAND_MAX);
+	      //std::srand(std::time(0));          // get it out of there
+	      //double f = ((double)std::rand())/((double)RAND_MAX);
+	      double f = qreg.rand();
 	      double p=0;
 	      int32_t k, l, m;
 	      int32_t j = qubit;
@@ -1258,7 +1259,7 @@ namespace qx
 		 bc =  b.to_ulong();
 	      }
 
-	      // println("prob=" << p << ", rand=" << f);
+	      //println("prob=" << p << ", rand=" << f);
 	      if (f<p) value = 1;
 	      else value = 0;
 

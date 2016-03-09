@@ -14,6 +14,8 @@
 #include <qcode/quantum_code_loader.h>
 #include <core/error_model.h>
 
+
+
 /**
  * simulator
  */
@@ -40,6 +42,8 @@ int main(int argc, char **argv)
    std::string file_name = argv[1];
 
    qx::quantum_code_parser qcp(file_name);
+
+   srand48(xpu::timer().current());
 
    println("[+] loading circuit from '" << file_name << "' ...");
 

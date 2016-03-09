@@ -1,6 +1,7 @@
 #ifndef __UDP_SOCKET_H__
 #define __UDP_SOCKET_H__
 
+#include "active_socket.h"
 
 namespace xpu
 {
