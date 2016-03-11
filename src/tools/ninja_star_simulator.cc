@@ -31,6 +31,8 @@ using namespace str;
 // #define println(x) std::cout << x << std::endl;
 #define error(x) std::cout << "[x] error : " << x << std::endl;
 
+#define __surface_code_17q_circuit__  "surface_code_17q_ninja_star.qc" 
+
 #define MAX_QUBITS 32
 
 // inject noise
@@ -82,14 +84,7 @@ int main(int agc, char ** argv)
    file << "	   <body>\n";
    file << "";
 
-   // quantum_code_parser qcp("test.qc");
-   //quantum_code_parser qcp("qec_3q_bit_flip_code.qc");
-
-   //quantum_code_parser qcp("measure_test.qc");
-   //quantum_code_parser qcp("stabilizer_17q_ninja_star.qc");
-   qx::quantum_code_parser qcp("stabilizer_17q_ninja_star_defs.qc");
-   //quantum_code_parser qcp("qec_3q_phase_flip_code.qc");
-   //quantum_code_parser qcp("qec_3q_bit_flip_code_simple.qc");
+   qx::quantum_code_parser qcp(__surface_code_17q_circuit__);
 
    println("[+] loading circuit...");
    qcp.parse();

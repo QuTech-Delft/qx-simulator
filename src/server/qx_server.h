@@ -221,6 +221,20 @@ namespace qx
 	 return (str[0] == 'b');
       }
 
+      /**
+       * \brief translate user-defined qubit/bit name to qubit/bit identifier
+       */
+      void translate(std::string& str)
+      {
+	 // search in the qubit map first
+	 map_t::iterator it = definitions.find(str);
+	 if (it != definitions.end())
+	 {
+	    std::string id = it->second;
+	    //println(" $ translate : " << str << " -> " << id);
+	    str.replace(0,str.size(),id);
+	 }
+      }
 
       /**
        * \brief retrieve qubit number <N> from a string "qN"
@@ -356,7 +370,7 @@ namespace qx
 	      // println(" => qubits number: " << qubits_count);
 	    }
 	    else
-	       print_syntax_error(" too much qubits (" << qubits_count << ") !",QX_ERROR_TOO_MUCH_QUBITS);
+	       print_syntax_error(" too much qubits (" << qubits_count << ") !", QX_ERROR_TOO_MUCH_QUBITS);
 	 }
 	 else if (qubits_count == 0)
 	 {
@@ -365,7 +379,13 @@ namespace qx
 	 else if (words[0] == "map") // definitions
 	 {
 	    strings params = word_list(words[1],",");
-	    uint32_t q     = qubit_id(params[0]);
+	    uint32_t q     = 0;
+	    if (params[0][0] == 'q') 
+	       q = qubit_id(params[0]);
+	    else if (params[0][0] == 'b')
+	       q = bit_id(params[0]);
+	    else
+	       print_semantic_error(" invalid qubit/bit identifier !", QX_ERROR_INVALID_QUBIT_ID);
 	    std::string qubit = params[0];
 	    std::string name  = params[1];
 	    if (q > (qubits_count-1))
@@ -416,7 +436,22 @@ namespace qx
 	       print_semantic_error(" target qubit out of range !", QX_ERROR_QUBIT_OUT_OF_RANGE);
 	    // println(" => controlled phase shift gate : ctrl_qubit=" << q1 << ", target_qubit=" << q2); 
 	    current_sub_circuit(qubits_count)->add(new qx::ctrl_phase_shift(q1,q2));
-	 } 
+	 } 	 
+	 /**
+	  * cphase 
+	  */
+	 else if (words[0] == "cphase") 
+	 {
+	    strings params = word_list(words[1],",");
+	    uint32_t q1 = qubit_id(params[0]);
+	    uint32_t q2 = qubit_id(params[1]);
+	    if ((q1 > (qubits_count-1)) || (q1 > (qubits_count-1)))
+	       print_semantic_error(" target qubit out of range !", QX_ERROR_QUBIT_OUT_OF_RANGE);
+	    // println(" => controlled phase shift gate : ctrl_qubit=" << q1 << ", target_qubit=" << q2); 
+	    current_sub_circuit(qubits_count)->add(new qx::cphase(q1,q2));
+	 }
+
+
 
 	 /**
 	  * pauli gates
@@ -432,6 +467,7 @@ namespace qx
 	 else if (words[0] == "cx")   // x gate
 	 {
 	    strings params = word_list(words[1],",");
+	    translate(params[0]);
 	    bool bit = is_bit(params[0]);
 	    uint32_t ctrl   = (bit ? bit_id(params[0]) : qubit_id(params[0]));
 	    uint32_t target = qubit_id(params[1]);
@@ -470,6 +506,7 @@ namespace qx
 	 else if (words[0] == "cz")   // z gate
 	 {
 	    strings params = word_list(words[1],",");
+	    translate(params[0]);
 	    bool bit = is_bit(params[0]);
 	    uint32_t ctrl   = (bit ? bit_id(params[0]) : qubit_id(params[0]));
 	    uint32_t target = qubit_id(params[1]);
@@ -485,8 +522,8 @@ namespace qx
 	    } 
 	    else
 	    {
+	       current_sub_circuit(qubits_count)->add(new qx::cphase(ctrl,target));
 	       //println(" => controlled pauli_z gate (ctrl=" << ctrl << ", target=" << target << ")");
-	       println("quantum controlled-z not implemented yet !");
 	       // current_sub_circuit(qubits_count)->add(new qx::cnot(ctrl,target));
 	    }
 	 } 	 

@@ -1,19 +1,24 @@
-# measurement test
+qubits 17
 
-qubits 2
 
-.hadamards
-  #display
-  #x q0
-  #display
-  #z q0
-  #display
-  #measure q0
-  #display
-  x q0
-  display
-  h q0
-  cnot q0,q1
-  display
-  measure q0
-  display
+h q0
+h q1
+h q2
+h q3
+h q4
+h q5
+h q6
+h q7
+h q8
+h q9
+h q10
+h q11
+h q12
+h q13
+h q14
+h q15
+h q16
+
+measure
+
+display_binary

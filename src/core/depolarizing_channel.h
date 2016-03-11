@@ -1,6 +1,7 @@
 #ifndef QX_DEPOLARIZING_CHANNEL_H
 #define QX_DEPOLARIZING_CHANNEL_H
 
+#include <random>
 #include <core/error_injector.h>
 
 namespace qx
@@ -22,7 +23,7 @@ namespace qx
         /**
 	 * ctor
 	 */
-        depolarizing_channel(qx::circuit * c, uint64_t nq, double pe) : c(c), nq(nq),
+        depolarizing_channel(qx::circuit * c, uint64_t nq, double pe) : nrg(0,__third__), c(c), nq(nq),
 							                pe(pe), 
 	                                                                xp(__third__), 
 							                yp(__third__), 
@@ -55,7 +56,7 @@ namespace qx
 	/**
 	 * ctor
 	 */
-	depolarizing_channel(qx::circuit * c, uint64_t nq, double pe, double xp, double yp, double zp) : c(c), nq(nq), 
+	depolarizing_channel(qx::circuit * c, uint64_t nq, double pe, double xp, double yp, double zp) : nrg(0,__third__), c(c), nq(nq), 
 	                                                                                                 pe(pe), 
 											                 xp(xp), 
 											                 yp(yp), 
@@ -102,7 +103,9 @@ namespace qx
 	   {
 	      noisy_c->add(c->get(p));
 	      // error_position = p+errors;
-	      double x = drand48();
+	      // double x = drand48();
+	      double x = uniform_rand();
+	      //println("p = " << x);
 	      if (x<overall_error_probability)
 	      {
 		 uint32_t affected_qubits = 1;
@@ -188,12 +191,32 @@ namespace qx
 
       private:
 
+
+	/**
+	 * uniform random number generator
+	 */
+	double uniform_rand()
+	{
+	   return urg.next();
+	}
+
+	/**
+	 * normal random number generator
+	 */
+	double normal_rand()
+	{
+	   double r = 1-std::abs(nrg.next()); 
+	   r = (r < 0 ? 0 : (r > __limit__ ? __limit__ : r));
+	   return r; 
+	}
+
        /**
         * single qubit error 
 	*/
 	qx::gate * single_qubit_error(uint32_t q, bool verbose=false)
 	{
-	   double p = drand48();
+	   //double p = drand48();
+	   double p = uniform_rand();
 	   if (p<xp)
 	   {
 	      __verbose__ println(" (x error) ");
@@ -244,15 +267,21 @@ namespace qx
 	/**
 	 * parameters
 	 */
-	qx::circuit *        c;
-	uint64_t             nq;
-	double               pe;
-	double               xp;
-	double               yp;
-	double               zp;
-	double               overall_error_probability;
-	uint64_t             total_errors;
-	histogram_t          error_histogram;
+	 
+	 qx::normal_random_number_generator  nrg;
+	 qx::uniform_random_number_generator urg;
+	 
+	 qx::circuit *        c;
+	 uint64_t             nq;
+	 
+	 double               pe;
+	 double               xp;
+	 double               yp;
+	 double               zp;
+	 
+	 double               overall_error_probability;
+	 uint64_t             total_errors;
+	 histogram_t          error_histogram;
 
    };
 }
