@@ -92,13 +92,13 @@ namespace qx
 	 */
 	qx::circuit *  inject(bool verbose=false)
 	{
-	   println("   [e] depolarizing_channel : injecting errors...");
+	   println("    [e] depolarizing_channel : injecting errors in circuit '" << c->id() << "'...");
 	   uint64_t steps = c->size();
 	   // uint64_t errors = 0; // number of injected errors
 	   // uint64_t error_position=0;
 	   qx::circuit * noisy_c = new qx::circuit(nq,c->id() + "(noisy)");
 
-	   __verbose__ println("   [+] circuit steps : " << steps);
+	   __verbose__ println("    [+] circuit steps : " << steps);
 	   for (uint64_t p=0; p<steps; ++p)
 	   {
 	      noisy_c->add(c->get(p));
@@ -124,14 +124,14 @@ namespace qx
 		 total_errors += affected_qubits;
 		 error_histogram[affected_qubits]++;
 
-		 __verbose__ println("   [>>>] error injection step " << p << " : number of affected qubits: " << affected_qubits);
+		 __verbose__ println("    [>>>] error injection step " << p << " : number of affected qubits: " << affected_qubits);
 
 		 if (affected_qubits==1)
 		 {
 		    uint64_t q = (rand()%nq);
 		    //c->insert(error_position, new qx::pauli_x(q));
 		    //noisy_c->add(new qx::pauli_x(q));
-		    __verbose__  print("     |--> error on qubit  " << q);
+		    __verbose__  print("      |--> error on qubit  " << q);
 		    noisy_c->add(single_qubit_error(q,verbose));
 		 }
 		 else
@@ -146,7 +146,7 @@ namespace qx
 			  q = (rand()%nq);
 		       v[q] = 1;
 		       // g->add(new qx::pauli_x(q));
-		       __verbose__  print("     |--> error on qubit  " << q);
+		       __verbose__  print("      |--> error on qubit  " << q);
 		       g->add(single_qubit_error(q,verbose));
 		    }
 
@@ -155,7 +155,7 @@ namespace qx
 		 }
 	      }
 	   }
-	   println("   [+] total injected errors : " << total_errors);
+	   println("    [+] total injected errors in circuit '" <<  c->id() << "': " << total_errors);
 
 	   return noisy_c;
 	}
