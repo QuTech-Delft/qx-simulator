@@ -160,7 +160,7 @@ map q16,x22
    measure z16
    measure x22
 
-   display_binary
+   # display_binary
 
 
-error_model depolarizing_channel, 0.001
+# error_model depolarizing_channel, 0.00006

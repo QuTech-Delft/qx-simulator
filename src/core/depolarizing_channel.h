@@ -44,9 +44,7 @@ namespace qx
 	      // println("[i] simultaneous error(s) probability of " << i << " qubits out of " << nq << " : " << pp);
 	   }
 
-#if 0
-	   println("   [e] total error probability        : " << overall_error_probability);
-#endif
+	   // println("    [e] total physical error probability        : " << overall_error_probability);
 	   
 	   srand48(xpu::timer().current());
 
@@ -92,7 +90,7 @@ namespace qx
 	 */
 	qx::circuit *  inject(bool verbose=false)
 	{
-	   println("    [e] depolarizing_channel : injecting errors in circuit '" << c->id() << "'...");
+	   __verbose__ println("    [e] depolarizing_channel : injecting errors in circuit '" << c->id() << "'...");
 	   uint64_t steps = c->size();
 	   // uint64_t errors = 0; // number of injected errors
 	   // uint64_t error_position=0;
@@ -155,7 +153,7 @@ namespace qx
 		 }
 	      }
 	   }
-	   println("    [+] total injected errors in circuit '" <<  c->id() << "': " << total_errors);
+	   __verbose__ println("    [+] total injected errors in circuit '" <<  c->id() << "': " << total_errors);
 
 	   return noisy_c;
 	}
@@ -181,9 +179,10 @@ namespace qx
 	   for (uint64_t i=1; i<(nq+1); ++i)
 	   {
 	      double pp = error_probability(nq,i,pe);
-	      overall_error_probability += pp;
+	      // overall_error_probability += pp;
 	      println("   [i] simultaneous error(s) probability of " << i << " qubits out of " << nq << " : " << pp);
 	   }
+	   println("   [-] overall probability of errors: " << overall_error_probability);
 	   println("   [-] probability of (x) errors: " << xp);
 	   println("   [-] probability of (z) errors: " << yp);
 	   println("   [-] probability of (y) errors: " << zp);

@@ -3,6 +3,7 @@
 
 
 #include <iostream>
+#include <iomanip>
 #include <vector>
 #include <complex>
 
@@ -15,8 +16,6 @@ namespace qx
    namespace linalg
    {
       
-
-
          /**
 	  * \brief matrix
 	  */
@@ -33,10 +32,10 @@ namespace qx
 	    }
 
 
-	    matrix(uint32_t rows, uint32_t cols) : rows(rows), cols(cols)
+	    matrix(uint32_t rows, uint32_t cols, __T val=0) : rows(rows), cols(cols)
 	    {
 	       for (uint32_t r=0; r<rows; ++r)
-		  m.push_back(row_t(cols));
+		  m.push_back(row_t(cols,val));
 	    }
 
 	    matrix(const matrix<__T>& x) 
@@ -86,6 +85,19 @@ namespace qx
 	    uint32_t size2() const
 	    {
 	       return cols;
+	    }
+
+	    void dump()
+	    {
+	       std::cout << "[i] ---[matrix]-------------------------------------------------------------------------------------------------" << std::endl;
+	       std::cout << std::fixed;
+	       for (int32_t r=0; r<rows; ++r)
+	       {
+		  for (int32_t c=0; c<cols; ++c)
+		     std::cout << std::showpos << std::setw(5) << m[r][c] << "\t";
+		  std::cout << std::endl;
+	       }
+	       std::cout << "[i] -----------------------------------------------------------------------------------------------------------" << std::endl;
 	    }
 
 	    private:

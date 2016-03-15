@@ -89,8 +89,7 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-bin_PROGRAMS = qx_simulator$(EXEEXT) ninja_star_simulator$(EXEEXT) \
-	qx_simulation_server$(EXEEXT)
+bin_PROGRAMS = qx_simulator$(EXEEXT) qx_simulation_server$(EXEEXT)
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -107,10 +106,6 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am__dirstamp = $(am__leading_dot)dirstamp
-am_ninja_star_simulator_OBJECTS =  \
-	./tools/ninja_star_simulator.$(OBJEXT)
-ninja_star_simulator_OBJECTS = $(am_ninja_star_simulator_OBJECTS)
-ninja_star_simulator_LDADD = $(LDADD)
 am_qx_simulation_server_OBJECTS = ./server/qx_server.$(OBJEXT)
 qx_simulation_server_OBJECTS = $(am_qx_simulation_server_OBJECTS)
 qx_simulation_server_LDADD = $(LDADD)
@@ -146,10 +141,8 @@ AM_V_CXXLD = $(am__v_CXXLD_@AM_V@)
 am__v_CXXLD_ = $(am__v_CXXLD_@AM_DEFAULT_V@)
 am__v_CXXLD_0 = @echo "  CXXLD   " $@;
 am__v_CXXLD_1 = 
-SOURCES = $(ninja_star_simulator_SOURCES) \
-	$(qx_simulation_server_SOURCES) $(qx_simulator_SOURCES)
-DIST_SOURCES = $(ninja_star_simulator_SOURCES) \
-	$(qx_simulation_server_SOURCES) $(qx_simulator_SOURCES)
+SOURCES = $(qx_simulation_server_SOURCES) $(qx_simulator_SOURCES)
+DIST_SOURCES = $(qx_simulation_server_SOURCES) $(qx_simulator_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -298,7 +291,7 @@ AM_CPPFLAGS = -std=c++11 -I. -I ./xpu-0.1.5/ -Wfatal-errors -DCG_BC -DQX_SPARSE_
 XPU = -I ./xpu-0.1.5/
 FLAGS = --pedantic -std=c++11 -O3 -I. -I ./xpu-0.1.5/ -Wfatal-errors -DCG_BC -DQX_SPARSE_MV_MUL -DXPU_TIMER # $(XPU) -Wall 
 qx_simulator_SOURCES = ./tools/simulator.cc
-ninja_star_simulator_SOURCES = ./tools/ninja_star_simulator.cc
+# ninja_star_simulator_SOURCES = ./tools/ninja_star_simulator.cc
 qx_simulation_server_SOURCES = ./server/qx_server.cc
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
@@ -397,18 +390,6 @@ uninstall-binPROGRAMS:
 
 clean-binPROGRAMS:
 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
-tools/$(am__dirstamp):
-	@$(MKDIR_P) ./tools
-	@: > tools/$(am__dirstamp)
-tools/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) ./tools/$(DEPDIR)
-	@: > tools/$(DEPDIR)/$(am__dirstamp)
-./tools/ninja_star_simulator.$(OBJEXT): tools/$(am__dirstamp) \
-	tools/$(DEPDIR)/$(am__dirstamp)
-
-ninja_star_simulator$(EXEEXT): $(ninja_star_simulator_OBJECTS) $(ninja_star_simulator_DEPENDENCIES) $(EXTRA_ninja_star_simulator_DEPENDENCIES) 
-	@rm -f ninja_star_simulator$(EXEEXT)
-	$(AM_V_CXXLD)$(CXXLINK) $(ninja_star_simulator_OBJECTS) $(ninja_star_simulator_LDADD) $(LIBS)
 server/$(am__dirstamp):
 	@$(MKDIR_P) ./server
 	@: > server/$(am__dirstamp)
@@ -421,6 +402,12 @@ server/$(DEPDIR)/$(am__dirstamp):
 qx_simulation_server$(EXEEXT): $(qx_simulation_server_OBJECTS) $(qx_simulation_server_DEPENDENCIES) $(EXTRA_qx_simulation_server_DEPENDENCIES) 
 	@rm -f qx_simulation_server$(EXEEXT)
 	$(AM_V_CXXLD)$(CXXLINK) $(qx_simulation_server_OBJECTS) $(qx_simulation_server_LDADD) $(LIBS)
+tools/$(am__dirstamp):
+	@$(MKDIR_P) ./tools
+	@: > tools/$(am__dirstamp)
+tools/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) ./tools/$(DEPDIR)
+	@: > tools/$(DEPDIR)/$(am__dirstamp)
 ./tools/simulator.$(OBJEXT): tools/$(am__dirstamp) \
 	tools/$(DEPDIR)/$(am__dirstamp)
 
@@ -437,7 +424,6 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./server/$(DEPDIR)/qx_server.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./tools/$(DEPDIR)/ninja_star_simulator.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./tools/$(DEPDIR)/simulator.Po@am__quote@
 
 .cc.o:

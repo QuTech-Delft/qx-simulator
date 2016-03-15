@@ -81,7 +81,10 @@ namespace qx
        * \brief
        *    quantum_code_parser constructor
        */
-      quantum_code_parser(std::string file_name) : file_name(file_name), qubits_count(0), parsed_successfully(false), syntax_error(false), semantic_error(false), error_model(__unknown_error_model__), error_probability(0)
+      quantum_code_parser(std::string file_name) : file_name(file_name), qubits_count(0), parsed_successfully(false), 
+                                                   syntax_error(false), semantic_error(false), 
+						   phase_noise(0), rotation_noise(0), decoherence(0),
+						   error_model(__unknown_error_model__), error_probability(0)
       {
       }
 

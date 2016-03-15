@@ -227,7 +227,7 @@ namespace qx
 	   qx::measure(8).apply(reg);
 	   qx::measure(15).apply(reg);
 	   int32_t m = z_basis(reg.get_binary(1))*z_basis(reg.get_binary(8))*z_basis(reg.get_binary(15));
-	   println("[>] logical state: " << m);
+	   // println("[>] logical state: " << m);
 	   return (m==1);
 	}
 

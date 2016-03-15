@@ -13,6 +13,7 @@
 #include <core/circuit.h>
 #include <qcode/quantum_code_loader.h>
 #include <core/error_model.h>
+#include <core/density_operator.h>
 
 
 
@@ -83,6 +84,25 @@ int main(int argc, char **argv)
    // qcp.execute(reg);
    for (uint32_t i=0; i<circuits.size(); i++)
       circuits[i]->execute(reg);
+
+/*
+   // print density matrix
+   if (qcp.qubits() < 8)
+   {
+      qx::qu_register env(qcp.qubits());
+      qx::circuits_t perfect_circuits = qcp.get_circuits();
+      for (uint32_t i=0; i<perfect_circuits.size(); i++)
+	 perfect_circuits[i]->execute(env);
+      qx::density_operator dop;
+      dop.add_state(&reg,0.9f);
+      dop.add_state(&env,0.1f);
+      qx::linalg::cmatrix_t * dm = dop.density_matrix();
+      dm->dump();
+      println("[+] purity : " << dop.purity());
+      delete dm;
+   }
+*/
+
   
    return 0;
 }

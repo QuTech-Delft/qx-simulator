@@ -178,7 +178,7 @@ void qx::qu_register::dump(bool only_binary=false)
       {
 	 if (data[i] != complex_t(0,0)) 
 	 {
-	    print("   " << std::fixed << data[i] << " |"); to_binary(i,n_qubits); println("> +");
+	    print("   " << std::showpos << std::setw(7) << data[i] << " |"); to_binary(i,n_qubits); println("> +");
 	 }
       }
    }

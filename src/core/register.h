@@ -10,6 +10,7 @@
 #define QX_REGISTER_H
 
 #include <iostream>
+#include <iomanip>
 #include <complex>
 #include <vector>
 #include <cfloat>

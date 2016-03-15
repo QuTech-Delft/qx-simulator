@@ -81,22 +81,25 @@ namespace qx
 
 	   void execute(qu_register& reg, bool verbose=false, bool only_binary=false)
 	   {
-	      println("[+] executing circuit '" << name << "' ...");
+
 	      #ifdef XPU_TIMER
+	      println("[+] executing circuit '" << name << "' ...");
 	      xpu::timer tmr;
 	      tmr.start();
 	      #endif
 
-	      for (uint32_t i=0; i<gates.size(); ++i)
+	      if (!verbose) 
+		 for (uint32_t i=0; i<gates.size(); ++i)
+		    gates[i]->apply(reg);
+	      else
 	      {
-		 if (verbose) 
+		 for (uint32_t i=0; i<gates.size(); ++i)
 		 {
 		    println("[-] executing gate " << i << "...");
 		    gates[i]->dump();
-		 }
-		 gates[i]->apply(reg);
-		 if (verbose) 
+		    gates[i]->apply(reg);
 		    reg.dump(only_binary);
+		 }
 	      }
 
 	      #ifdef XPU_TIMER
