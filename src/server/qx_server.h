@@ -144,7 +144,7 @@ namespace qx
 		    if (c)
 		    {
 		       qx::qu_register& r = *reg;
-		       c->dump();
+		       // c->dump();
 		       c->execute(r);
 		       sock->send("OK\n", 3);
 		    }
@@ -157,6 +157,26 @@ namespace qx
 		 }
 		 continue;
 	      }
+	      // check if it is a batch command
+	      remove_comment(cmd);
+	      bool batch =  (cmd.find(";") < cmd.size());
+	      if (batch)
+	      {
+		 strings cmds = word_list(cmd,";");
+		 for (size_t i=0; i<cmds.size(); ++i)
+		 {
+		    int32_t res = process_line(cmds[i]);
+		    if (res)
+		    {
+		       std::string error_code = "E"+int_to_str(res)+"\n";
+		       sock->send(error_code.c_str(), error_code.length()+1);
+		    }
+		    else 
+		       sock->send("OK\n", 3);
+		 }
+	      }
+	      else
+	      {
 	      int32_t res = process_line(cmd);
 	      if (res)
 	      {
@@ -165,6 +185,7 @@ namespace qx
 	      }
 	      else 
 		 sock->send("OK\n", 3);
+	      }
 	   }
 	   return;
 	}
@@ -324,6 +345,26 @@ namespace qx
 	    }
 	    else
 	    {
+	       // check if the circuit exist and not empty
+	       std::string name  = line.substr(1);
+	       bool        exist = false;
+	       uint32_t    index = 0;
+	       for (uint32_t i=0; i<circuits.size(); ++i)
+	       {
+		  if (circuits[i]->id() == name)
+		  {
+		     exist = true;
+		     index = i;
+		     break;
+		  }
+	       }
+	       println("[!] warning : circuit '" << name << "' already exist ! Old circuit and its gates will be deleted !");
+	       if (exist)
+	       {
+		  delete circuits[index];
+		  circuits.erase(circuits.begin()+index);
+	       }
+	       println("[!] warning : circuit '" << name << "' reinitialized !");
 	       // println("label : new circuit '" << line << "' created.");
 	       circuits.push_back(new qx::circuit(qubits_count, line.substr(1)));
 	       return 0;
@@ -336,20 +377,20 @@ namespace qx
 	 {
 	    if (words[0] == "display")
 	    {
-	       current_sub_circuit(qubits_count)->add(new qx::display());
+	       // current_sub_circuit(qubits_count)->add(new qx::display());
 	       std::string qstate = reg->quantum_state();
 	       sock->send(qstate.c_str(), qstate.length());
 	    }
 	    else if (words[0] == "display_binary")
 	    {
-	       current_sub_circuit(qubits_count)->add(new qx::display(true));
+	       // current_sub_circuit(qubits_count)->add(new qx::display(true));
 	       std::string breg = reg->binary_register();
 	       sock->send(breg.c_str(), breg.length());
 	    }
 	    else if (words[0] == "measure")
 	       current_sub_circuit(qubits_count)->add(new qx::measure());
 	    else
-	       print_syntax_error("unknown commad !", QX_ERROR_UNKNOWN_COMMAND);
+	       print_syntax_error("unknown command !", QX_ERROR_UNKNOWN_COMMAND);
 	    return 0;
 	 }
 
@@ -606,6 +647,16 @@ namespace qx
 	    // println(" => phase gate on " << process_qubit(words[1]));
 	    current_sub_circuit(qubits_count)->add(new qx::phase_shift(q));
 	 }
+	 else if (words[0] == "s")   // phase shift gate
+	 {
+	    //strings params = word_list(words[1],",");
+	    uint32_t q = qubit_id(words[1]);
+	    if (q > (qubits_count-1))
+	       print_semantic_error(" target qubit out of range !", QX_ERROR_QUBIT_OUT_OF_RANGE);
+	    // println(" => phase gate on " << process_qubit(words[1]));
+	    current_sub_circuit(qubits_count)->add(new qx::phase_shift(q));
+	 }
+
 
 	 /**
 	  * measurement 

@@ -32,13 +32,14 @@ namespace qx
                    uint32_t            n_qubit;
                    std::vector<gate *> gates;
 		   std::string         name;
+		   uint32_t            iteration;
 
            public:
 
                    /**
 	    * \brief circuit constructor
             */
-	   circuit(uint32_t n_qubit, std::string name = "") : n_qubit(n_qubit), name(name)
+	   circuit(uint32_t n_qubit, std::string name = "", uint32_t iteration=1) : n_qubit(n_qubit), name(name), iteration(iteration)
 	   {
 	   }
 
@@ -69,6 +70,14 @@ namespace qx
 	      return gates[i];
 	   }
 
+	   /**
+	    * \brief set iterations number
+	    */
+	    void set_iterations(uint32_t n)
+	    {
+	       iteration = n;
+	    }
+
            /**
 	    * \brief return gate <i>
 	    */
@@ -81,32 +90,36 @@ namespace qx
 
 	   void execute(qu_register& reg, bool verbose=false, bool only_binary=false)
 	   {
+	      uint32_t it = iteration;
 
 	      #ifdef XPU_TIMER
-	      println("[+] executing circuit '" << name << "' ...");
+	      println("[+] executing circuit '" << name << "' (" << it << " iterations)...");
 	      xpu::timer tmr;
 	      tmr.start();
 	      #endif
 
-	      if (!verbose) 
-		 for (uint32_t i=0; i<gates.size(); ++i)
-		    gates[i]->apply(reg);
-	      else
+	      while (it--)
 	      {
-		 for (uint32_t i=0; i<gates.size(); ++i)
+
+
+		 if (!verbose) 
+		    for (uint32_t i=0; i<gates.size(); ++i)
+		       gates[i]->apply(reg);
+		 else
 		 {
-		    println("[-] executing gate " << i << "...");
-		    gates[i]->dump();
-		    gates[i]->apply(reg);
-		    reg.dump(only_binary);
+		    for (uint32_t i=0; i<gates.size(); ++i)
+		    {
+		       println("[-] executing gate " << i << "...");
+		       gates[i]->dump();
+		       gates[i]->apply(reg);
+		       reg.dump(only_binary);
+		    }
 		 }
+		 #ifdef XPU_TIMER
+		 tmr.stop();
+		 println("[+] circuit execution time: " << tmr.elapsed() << " sec.");
+		 #endif // XPU_TIMER
 	      }
-
-	      #ifdef XPU_TIMER
-	      tmr.stop();
-	      println("[+] circuit execution time: " << tmr.elapsed() << " sec.");
-	      #endif // XPU_TIMER
-
 	   }
 
 	   /**

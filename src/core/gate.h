@@ -653,6 +653,7 @@ namespace qx
 	   int32_t apply(qu_register& qreg)
 	   {
 		 sqg_apply(m,qubit,qreg);
+		 qreg.flip_binary(qubit);
 		 return 0;
 	   }
 
