@@ -287,17 +287,18 @@ namespace qx
       uint32_t iterations(std::string label)
       {
 	 std::string& original_line = label;
-	 uint32_t i1 = label.find('('); 
-	 uint32_t i2 = label.find(')'); 
-	 if (i1 == label.size())
+	 int32_t i1 = label.find('('); 
+	 int32_t i2 = label.find(')'); 
+	 // println("i1=" << i1 << ", i2=" << i2);
+	 if (i1 == -1)
 	    return 1;
-	 if (i2 == label.size())
+	 if (i2 == -1) 
 	    print_semantic_error(" invalid sub-circuit definition !");
 	 if (!(i2 > (i1+1)))
 	    print_semantic_error(" invalid sub-circuit's iteration count !");
 	 // find iteration count
 	 std::string it = label.substr(i1+1,i2-i1-1);
-	 println("it = " << it);
+	 // println("it = " << it);
 	 for (uint32_t i=0; i<it.length(); ++i)
 	 {
 	    if (!is_digit(it[i]))

@@ -93,7 +93,7 @@ namespace qx
 	      uint32_t it = iteration;
 
 	      #ifdef XPU_TIMER
-	      println("[+] executing circuit '" << name << "' (" << it << " iterations)...");
+	      println("[+] executing circuit '" << name << "' (" << it << " iter) ...");
 	      xpu::timer tmr;
 	      tmr.start();
 	      #endif
