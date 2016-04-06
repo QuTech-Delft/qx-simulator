@@ -1,10 +1,11 @@
-# quantum full adder
-# quantum carry-save addition
+# file   : full_adder.qc
+# author : Nader Khammassi
+# brief  : quantum full adder (carry-save addition)
 
 # define 4 qubits
 qubits 4
 
-# name qubits
+# rename qubits
 map q0,A 
 map q1,B
 map q2,C
@@ -38,8 +39,4 @@ map q3,D
 
   display_binary # display result
 
-
-
-  
-
-
+error_model depolarizing_channel, 0.1

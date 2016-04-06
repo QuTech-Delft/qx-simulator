@@ -100,8 +100,6 @@ namespace qx
 
 	      while (it--)
 	      {
-
-
 		 if (!verbose) 
 		    for (uint32_t i=0; i<gates.size(); ++i)
 		       gates[i]->apply(reg);
@@ -114,12 +112,12 @@ namespace qx
 		       gates[i]->apply(reg);
 		       reg.dump(only_binary);
 		    }
-		 }
-		 #ifdef XPU_TIMER
-		 tmr.stop();
-		 println("[+] circuit execution time: " << tmr.elapsed() << " sec.");
-		 #endif // XPU_TIMER
+		 } 
 	      }
+	      #ifdef XPU_TIMER
+	      tmr.stop();
+	      println("[+] circuit execution time: " << tmr.elapsed() << " sec.");
+	      #endif // XPU_TIMER
 	   }
 
 	   /**

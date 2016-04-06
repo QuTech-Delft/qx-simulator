@@ -1,5 +1,5 @@
 
-# toffoli test
+# simple toffoli gate test
 
 qubits 3
 

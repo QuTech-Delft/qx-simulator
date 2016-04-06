@@ -55,6 +55,8 @@ namespace qx
 	   
 	   virtual int32_t                apply(qu_register& qureg) = 0;
 	   virtual std::vector<uint32_t>  qubits() = 0;
+	   virtual std::vector<uint32_t>  control_qubits() = 0;
+	   virtual std::vector<uint32_t>  target_qubits()  = 0;
 	   virtual void                   dump() = 0;
 	   virtual                        ~gate() { };                
 
@@ -336,6 +338,19 @@ namespace qx
 		 r.push_back(qubit);
 		 return r;
 	   }
+	   
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 r.push_back(qubit);
+		 return r;
+	   }
 
 	   void dump()
 	   {
@@ -492,6 +507,21 @@ namespace qx
 		 r.push_back(target_qubit);
 		 return r;
 	   }
+ 
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 r.push_back(control_qubit);
+		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 r.push_back(target_qubit);
+		 return r;
+	   }
+
 	   
 	   void dump()
 	   {
@@ -578,6 +608,22 @@ namespace qx
 		 r.push_back(target_qubit);
 		 return r;
 	   }
+ 
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 r.push_back(control_qubit_1);
+		 r.push_back(control_qubit_2);
+		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 r.push_back(target_qubit);
+		 return r;
+	   }
+
 	   
 	   void dump()
 	   {
@@ -627,6 +673,20 @@ namespace qx
 		 r.push_back(qubit);
 		 return r;
 	   }
+ 
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 r.push_back(qubit);
+		 return r;
+	   }
+
 
    };
 
@@ -668,6 +728,21 @@ namespace qx
 		 r.push_back(qubit);
 		 return r;
 	   }
+ 
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 r.push_back(qubit);
+		 return r;
+	   }
+
+
 
    };
 
@@ -708,7 +783,19 @@ namespace qx
 		 r.push_back(qubit);
 		 return r;
 	   }
-
+ 
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 r.push_back(qubit);
+		 return r;
+	   }
    };
 
    /**
@@ -748,7 +835,19 @@ namespace qx
 		 r.push_back(qubit);
 		 return r;
 	   }
-
+ 
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 r.push_back(qubit);
+		 return r;
+	   }
    };
 
 
@@ -781,6 +880,19 @@ namespace qx
 	   }
 	   
 	   std::vector<uint32_t>  qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 r.push_back(qubit);
+		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
 	   {
 		 std::vector<uint32_t> r;
 		 r.push_back(qubit);
@@ -819,6 +931,19 @@ namespace qx
 	   }
 	   
 	   std::vector<uint32_t>  qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 r.push_back(qubit);
+		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
 	   {
 		 std::vector<uint32_t> r;
 		 r.push_back(qubit);
@@ -870,6 +995,19 @@ namespace qx
 		 r.push_back(qubit);
 		 return r;
 	   }
+ 
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 r.push_back(qubit);
+		 return r;
+	   }
 
    };
 
@@ -912,7 +1050,19 @@ namespace qx
 		 r.push_back(qubit);
 		 return r;
 	   }
-
+ 
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 r.push_back(qubit);
+		 return r;
+	   }
    };
 
 
@@ -954,7 +1104,19 @@ namespace qx
 		 r.push_back(qubit);
 		 return r;
 	   }
-
+ 
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 r.push_back(qubit);
+		 return r;
+	   }
    };
 
 
@@ -1017,7 +1179,20 @@ namespace qx
 		 r.push_back(target_qubit);
 		 return r;
 	   }
-
+ 
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 r.push_back(ctrl_qubit);
+		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 r.push_back(target_qubit);
+		 return r;
+	   }
    };
 
 
@@ -1067,6 +1242,20 @@ namespace qx
 		 r.push_back(qubit2);
 		 return r;
 	   }
+ 
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 r.push_back(qubit1);
+		 r.push_back(qubit2);
+		 return r;
+	   }
 
    };
    
@@ -1104,6 +1293,20 @@ namespace qx
 	   {
 		 std::vector<uint32_t> r;
 		 r.push_back(ctrl_qubit);
+		 r.push_back(target_qubit);
+		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 r.push_back(ctrl_qubit);
+		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 std::vector<uint32_t> r;
 		 r.push_back(target_qubit);
 		 return r;
 	   }
@@ -1309,9 +1512,27 @@ namespace qx
 	   std::vector<uint32_t>  qubits()
 	   {
 		 std::vector<uint32_t> r;
-		 r.push_back(qubit);
+		 if (!measure_all)
+		    r.push_back(qubit);
+		 else   // this is a dirty hack, itshould be fixed later (unknown qubit number !)
+		 {
+		    for (int32_t i=0; i<MAX_QB_N; ++i)
+		       r.push_back(i);
+		 }
 		 return r;
 	   }
+
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 return qubits();
+	   }
+
 
    };
 
@@ -1348,6 +1569,16 @@ namespace qx
 	   std::vector<uint32_t>  qubits()
 	   {
 		 return g->qubits();
+	   }
+
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 return g->control_qubits();
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 return g->target_qubits();
 	   }
 
    };
@@ -1426,6 +1657,41 @@ namespace qx
 	{
 	   std::vector<uint32_t> r;
 	   // to do
+	   std::map<uint32_t,gate *>::iterator  ig;
+	   for (ig=gates.begin(); ig!=gates.end(); ++ig)
+	   {
+	      std::vector<uint32_t> ri = ig->second->qubits();
+	      r.insert(r.begin(), ri.begin(), ri.end());
+	   }
+	   return r;
+	}
+
+
+	std::vector<uint32_t>  control_qubits()
+	{
+	   std::vector<uint32_t> r;
+	   // to do
+	   std::map<uint32_t,gate *>::iterator  ig;
+	   for (ig=gates.begin(); ig!=gates.end(); ++ig)
+	   {
+	      std::vector<uint32_t> ri = ig->second->control_qubits();
+	      if (ri.size())
+		 r.insert(r.begin(), ri.begin(), ri.end());
+	   }
+	   return r;
+	}
+
+	std::vector<uint32_t>  target_qubits()
+	{
+	   std::vector<uint32_t> r;
+	   // to do
+	   std::map<uint32_t,gate *>::iterator  ig;
+	   for (ig=gates.begin(); ig!=gates.end(); ++ig)
+	   {
+	      std::vector<uint32_t> ri = ig->second->target_qubits();
+	      if (ri.size())
+		 r.insert(r.begin(), ri.begin(), ri.end());
+	   }
 	   return r;
 	}
 
@@ -1473,6 +1739,20 @@ namespace qx
 		 std::vector<uint32_t> r;
 		 return r;
 	   }
+
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 return r;
+	   }
+
+
    };
 
 
@@ -1511,6 +1791,30 @@ namespace qx
 		 }
 		 return r;
 	   }
+	   
+	   
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 for (uint32_t i=0; i<gates.size(); i++)
+		 {
+		    std::vector<uint32_t> q = gates[i]->control_qubits();
+		    r.insert(r.end(),q.begin(),q.end());	
+		 }
+		 return r;
+	   }
+	   
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 for (uint32_t i=0; i<gates.size(); i++)
+		 {
+		    std::vector<uint32_t> q = gates[i]->target_qubits();
+		    r.insert(r.end(),q.begin(),q.end());	
+		 }
+		 return r;
+	   }
+
 
 	   void dump()
 	   {

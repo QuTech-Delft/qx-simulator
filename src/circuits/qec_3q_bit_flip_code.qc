@@ -1,8 +1,10 @@
 
-# quantum error correction test
-# 3 qubit bit flip correction code
+# file   : qec_3q_bit_flip_code.qc
+# author : Nader Khammassi
+# brief  : quantum error correction test
+#          circuit for a basic 3 qubits bitflip code
 
-# qubit definition
+# define 5 qubits : 3 data qubits and 2 ancillas (syndrome qubits)
 qubits 5 
 
 # init logical gate
@@ -18,7 +20,7 @@ qubits 5
 
 # error injection
 .error_injection
-   x q0
+   x q1
    display_binary
 
 
@@ -30,18 +32,13 @@ qubits 5
    cnot q2,q4
    measure q3
    measure q4
-   # display
    display_binary
 
-# error correction
-.error_correction
-   toffoli q3,q4,q0   # correct for |11> syndrome
-   cx b3,q4           
-   toffoli q3,q4,q1   # correct for |10> syndrome
-   cx b3,q4           # restore ancillas
-   cx b4,q3
-   toffoli q3,q4,q2   # correct for |01> syndrome
-   display_binary
+
+# error correction circuit can be described here 
+#.error_correction
+# ...
+
 
 # decoding
 .decoding
