@@ -30,6 +30,10 @@
 
 namespace qx
 {
+
+   typedef uint64_t                          basis_state_t;
+   typedef std::map<basis_state_t,complex_t> quantum_state_t;
+
    /**
     * gates coeffecients
     */
@@ -1416,38 +1420,7 @@ namespace qx
 	      double  fvalue;
 	      cvector_t& data = qreg.get_data();
 	      uint32_t size = qreg.size(); // data.size();
-	      
-	      /*
-	      for (k = 0; k < (1 << size); k += (1 << j)) 
-	      {
-		 for (l = 0; l < (1 << (j-1)); l++) 
-		 {
-		    m = k + l;
-		    p += std::norm(data[m]);
-		    println(m);
-		 }
-	      }
-	      println("f="<<f);
-	      println("p="<<p);
-
-	      if ( f < p ) {
-		 value = 0;         
-	      } else {
-		 value = 1;
-	      }
-
-	      for (k = 0; k < (1 << size); k += (1 << j)) 
-	      {
-		 for (l = 0; l < (1 << (j-1)); l++) 
-		 {
-		    m = k + l + (1 ^ value) * (1 << (j-1));
-		    data[m] = 0;
-		    m = k + l + (1 & value) * (1 << (j-1));
-		    if (std::fabs(std::norm(data[m])) > QUBIT_ERROR_THRESHOLD)
-		       data[m] = 1;
-		 }
-	      }
-	      */
+	     
 	      uint32_t n = (1 << size);
 	      std::bitset<MAX_QB_N> b;
 	      b.reset();
@@ -1829,6 +1802,66 @@ namespace qx
 	   std::vector<gate *> gates; // list of the parallel gates
 
    };
+
+
+   /**
+    * prepare the qubits into an arbitrary quantum state
+    */
+   class prepare : public gate
+   {
+	 private:
+
+	   quantum_state_t * state;
+
+	 public:
+
+	   prepare(quantum_state_t * state) : state(state)
+	   {
+	   }
+	  
+
+	   int32_t apply(qu_register& qreg)
+	   {
+	      cvector_t&  q = qreg.get_data();
+	      for (quantum_state_t::iterator i=state->begin(); i != state->end(); ++i)
+	      {
+		 basis_state_t bs = (*i).first;
+		 complex_t     c  = (*i).second;
+		 // println("bs=" << bs << ", a=" << c);
+		 q[bs] = c;
+	      }
+	      return 0;
+	   }
+
+	   void dump()
+	   {
+		 println("  [-] prepare (quantum_state=" << state << ")");
+	   }
+	   
+	   std::vector<uint32_t>  qubits()
+	   {
+	      std::vector<uint32_t> r;
+	      // this is a dirty hack, itshould be fixed later (unknown qubit number !)
+	      for (int32_t i=0; i<MAX_QB_N; ++i)
+		 r.push_back(i);
+	      return r;
+	   }
+
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 return qubits();
+	   }
+
+
+   };
+
+
 
 }
 

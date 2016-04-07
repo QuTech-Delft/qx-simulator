@@ -20,6 +20,7 @@
 #include <stdint.h>
 
 #include <qcode/strings.h>
+#include <qcode/quantum_state_loader.h>
 #include <core/circuit.h>
 #include <core/error_model.h>
 
@@ -38,8 +39,9 @@ using namespace str;
 namespace qx
 {
 
-   typedef std::map<std::string,std::string> map_t;
-   typedef std::vector<qx::circuit *>        circuits_t;
+   typedef std::map<std::string,std::string>   map_t;
+   typedef std::vector<qx::circuit *>          circuits_t;
+   typedef std::vector<qx::quantum_state_t *>  quantum_states_t;
 
    /**
     * quantum_code parser
@@ -50,6 +52,7 @@ namespace qx
       private:
 
       std::string   file_name;
+      std::string   path;
 
       int           line_index;
       bool          parsed_successfully;
@@ -63,6 +66,9 @@ namespace qx
       uint32_t                   qubits_count;
       std::vector<qx::circuit *> circuits;
 
+      quantum_states_t           quantum_states;
+      str::strings               quantum_state_files;
+
       // noise
       double                     phase_noise;
       double                     rotation_noise;
@@ -73,6 +79,7 @@ namespace qx
       // error model
       qx::error_model_t          error_model;
       double                     error_probability;
+
 
 
       public:
@@ -86,7 +93,15 @@ namespace qx
 						   phase_noise(0), rotation_noise(0), decoherence(0),
 						   error_model(__unknown_error_model__), error_probability(0)
       {
+	 size_t last = file_name.find_last_of('/');
+	 if (last != std::string::npos)
+	 {
+	    path = file_name.substr(0,last+1);
+	 }
+	 else 
+	    path = "";
       }
+      
 
       /**
        * \brief
@@ -399,6 +414,17 @@ namespace qx
 	       print_semantic_error(" qubit out of range !");
 	    definitions[name] = qubit;
 	    // println(" => map qubit " << name << " to " << qubit);
+	 }
+	 else if (words[0] == "load_state")
+	 {
+	    std::string file = path+words[1];
+	    replace_all(file,"\"","");
+	    // println("[+] loading quantum state from '" << file << "' ...");
+	    qx::quantum_state_loader qsl(file,qubits_count);
+	    qsl.load();
+	    quantum_state_files.push_back(file);
+	    quantum_states.push_back(qsl.get_quantum_state());
+	    current_sub_circuit(qubits_count)->add(new qx::prepare(qsl.get_quantum_state()));
 	 }
 	 else if (words[0] == "h")    // hadamard gate
 	 {
