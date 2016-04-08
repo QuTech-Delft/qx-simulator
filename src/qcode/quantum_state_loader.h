@@ -114,22 +114,24 @@ namespace qx
 	   format_line(line);
 	   if (is_empty(line))
 	      return 0;
+	   if (line[0] == '#') // skip comments
+	      return 0;
 
-	 strings words = word_list(line, " ");
-	 if (words.size() != 3)
-	 {
-	    println("[x] error : malformed quantum state file !");
-	    syntax_error = true;
-	    return 1;
-	 }
-	 double        real   = parse_double(words[0]);
-	 double        img    = parse_double(words[1]);
-	 basis_state_t st     = parse_basis_state(words[2]);
-	 complex_t     c(real,img);
-	 // println("[#] [ " << c << " -> " << st << " ]");
- 	 quantum_state_t& rstate = *state; 
-	 rstate[st] = c;
-	 return 0;
+	   strings words = word_list(line, " ");
+	   if (words.size() != 3)
+	   {
+	      println("[x] error : malformed quantum state file !");
+	      syntax_error = true;
+	      return 1;
+	   }
+	   double        real   = parse_double(words[0]);
+	   double        img    = parse_double(words[1]);
+	   basis_state_t st     = parse_basis_state(words[2]);
+	   complex_t     c(real,img);
+	   // println("[#] [ " << c << " -> " << st << " ]");
+	   quantum_state_t& rstate = *state; 
+	   rstate[st] = c;
+	   return 0;
 	}
 
       private:

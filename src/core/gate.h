@@ -319,7 +319,7 @@ namespace qx
    {
 	 private:
 
-	   uint32_t                  qubit;
+	   uint32_t   qubit;
 	   cmatrix_t  m;
 
 	 public:
@@ -1822,14 +1822,29 @@ namespace qx
 
 	   int32_t apply(qu_register& qreg)
 	   {
+	      qreg.reset();
 	      cvector_t&  q = qreg.get_data();
+	      double      norm = 0;
+
 	      for (quantum_state_t::iterator i=state->begin(); i != state->end(); ++i)
 	      {
 		 basis_state_t bs = (*i).first;
 		 complex_t     c  = (*i).second;
 		 // println("bs=" << bs << ", a=" << c);
 		 q[bs] = c;
+		 norm += std::norm(c);
 	      }
+	      
+	      if (std::fabs(norm-1) > QUBIT_ERROR_THRESHOLD)
+	      {
+		 println("[!] warning : the loaded quantum state is not normalized (norm = " << norm << ") !");
+		 println("[!] renormalizing the quantum state...");
+		 qreg.normalize();
+		 println("[!] quantum state renormalized successfully.");
+	      }
+
+	      for (size_t qi=0; qi<qreg.size(); ++qi)
+		 qreg.set_binary(qi,__state_unknown__);
 	      return 0;
 	   }
 

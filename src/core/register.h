@@ -207,6 +207,19 @@ namespace qx
 	 }
 
 	 /**
+	  * \brief renormalize the quantum state
+	  */
+	 void normalize()
+	 {
+	      double length = 0;
+	      for (size_t k = 0; k < data.size(); k++) 
+		 length += std::norm(data[k]);
+	      length = std::sqrt(length);
+	      for (size_t k = 0; k < data.size(); k++) 
+		 data[k] /= length;
+	 }
+
+	 /**
 	  * \brief returns a string describing the binary register
 	  */
 	 std::string binary_register()
