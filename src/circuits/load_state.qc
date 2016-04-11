@@ -1,17 +1,24 @@
+# 
+# date   : 07/04/2016
+# author : nader khammassi
+#
+# example: loading an arbitrary quantum state from a file
+#
 
-# load state test
+
 qubits 3
 
+# display the default initial state : |000>
 .default_state
   display
 
-.default_state
-  h q0
-  h q2
-  display
+# load a new quantum state
+.load_a_new_arbitrary_state
+  load_state "initial_quantum_state.qs"
+  display # display the loaded state
 
-.load_an_arbitrary_state
-  load_state "initial.state"
-  display
-
-
+# apply some gates to the new state
+.algorithm
+  x q0
+  cnot q0,q1
+  display # display the fina result

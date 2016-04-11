@@ -32,22 +32,14 @@ namespace qx
 									total_errors(0),
 									error_histogram(nq+1,0)
 	{
-#if 0
-	   println("   [e] error injector initialization... ");
-	   println("   [e] single qubit error probability : " << pe);
-#endif
 
 	   for (uint64_t i=1; i<(nq+1); ++i)
 	   {
 	      double pp = error_probability(nq,i,pe);
 	      overall_error_probability += pp;
-	      // println("[i] simultaneous error(s) probability of " << i << " qubits out of " << nq << " : " << pp);
 	   }
 
-	   // println("    [e] total physical error probability        : " << overall_error_probability);
-	   
 	   srand48(xpu::timer().current());
-
 	}
         
 
@@ -63,23 +55,38 @@ namespace qx
 									                                 total_errors(0),
 													 error_histogram(nq+1,0)
 	{
-#if 0
-	   println("   [e] error injector initialization... ");
-	   println("   [e] single qubit error probability : " << pe);
-#endif
-
 	   for (uint64_t i=1; i<(nq+1); ++i)
 	   {
 	      double pp = error_probability(nq,i,pe);
 	      overall_error_probability += pp;
-	      // println("[i] simultaneous error(s) probability of " << i << " qubits out of " << nq << " : " << pp);
 	   }
 
-#if 0
-	   println("   [e] total error probability        : " << overall_error_probability);
-#endif
-
 	   srand48(xpu::timer().current());
+	}
+
+	/**
+	 * check whether a qubit is idle
+	 */
+	bool is_idle(uint32_t q, std::vector<uint32_t> used)
+	{
+	   for (int i=0; i<used.size(); ++i)
+	      if (q == used[i])
+		 return false;
+	   return true;
+	}
+
+	/**
+	 * return idle qubits
+	 */
+	std::vector<uint32_t> idle_qubits(size_t n, std::vector<uint32_t> & used)
+	{
+	   std::vector<uint32_t> r;
+	   for (uint32_t i=0; i<n; i++)
+	   {
+	      if (is_idle(i,used))
+		 r.push_back(i);
+	   }
+	   return r;
 	}
 
 	#define __verbose__ if (verbose)
@@ -92,33 +99,30 @@ namespace qx
 	{
 	   __verbose__ println("    [e] depolarizing_channel : injecting errors in circuit '" << c->id() << "'...");
 	   uint64_t steps = c->size();
-	   // uint64_t errors = 0; // number of injected errors
-	   // uint64_t error_position=0;
 	   qx::circuit * noisy_c = new qx::circuit(nq,c->id() + "(noisy)");
 
 	   __verbose__ println("    [+] circuit steps : " << steps);
 	   for (uint64_t p=0; p<steps; ++p)
 	   {
 	      noisy_c->add(c->get(p));
-	      // error_position = p+errors;
-	      // double x = drand48();
+
+	      std::vector<uint32_t> used = c->get(p)->qubits();
+	      std::vector<uint32_t> idle = idle_qubits(nq,used);
+	      uint32_t idle_nq=idle.size();
+	      
 	      double x = uniform_rand();
-	      //println("p = " << x);
+	      
 	      if (x<overall_error_probability)
 	      {
 		 uint32_t affected_qubits = 1;
-
-		 //__verbose__ println("--------------------------");
-		 //__verbose__ println("[+] rand : " << x);
-
-		 // x *= overall_error_probability;
+		 
 		 for (uint32_t i=2; i<(nq+1); ++i)
 		 {
 		    if (x>error_probability(nq,i,pe))
 		       break;
 		    affected_qubits++;
 		 }
-		 // errors++; 
+		 affected_qubits = (affected_qubits > idle_nq ? idle_nq : affected_qubits);
 		 total_errors += affected_qubits;
 		 error_histogram[affected_qubits]++;
 
@@ -126,10 +130,10 @@ namespace qx
 
 		 if (affected_qubits==1)
 		 {
-		    uint64_t q = (rand()%nq);
-		    //c->insert(error_position, new qx::pauli_x(q));
-		    //noisy_c->add(new qx::pauli_x(q));
+		    uint64_t q = idle[(rand()%idle_nq)];
+		    
 		    __verbose__  print("      |--> error on qubit  " << q);
+		    
 		    noisy_c->add(single_qubit_error(q,verbose));
 		 }
 		 else
@@ -139,16 +143,15 @@ namespace qx
 		    std::vector<bool> v(nq,0);
 		    for (uint64_t i=0; i<affected_qubits; ++i)
 		    { 
-		       uint64_t q = (rand()%nq);
+		       uint64_t q = idle[(rand()%idle_nq)];
 		       while (v[q])
-			  q = (rand()%nq);
+			  q = idle[(rand()%idle_nq)];
+		       
 		       v[q] = 1;
-		       // g->add(new qx::pauli_x(q));
 		       __verbose__  print("      |--> error on qubit  " << q);
 		       g->add(single_qubit_error(q,verbose));
 		    }
 
-		    //c->insert(error_position, g);
 		    noisy_c->add(g);
 		 }
 	      }
@@ -179,7 +182,6 @@ namespace qx
 	   for (uint64_t i=1; i<(nq+1); ++i)
 	   {
 	      double pp = error_probability(nq,i,pe);
-	      // overall_error_probability += pp;
 	      println("   [i] simultaneous error(s) probability of " << i << " qubits out of " << nq << " : " << pp);
 	   }
 	   println("   [-] overall probability of errors: " << overall_error_probability);
@@ -214,7 +216,6 @@ namespace qx
 	*/
 	qx::gate * single_qubit_error(uint32_t q, bool verbose=false)
 	{
-	   //double p = drand48();
 	   double p = uniform_rand();
 	   if (p<xp)
 	   {
