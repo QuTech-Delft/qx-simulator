@@ -106,9 +106,9 @@ namespace qx
 	   {
 	      noisy_c->add(c->get(p));
 
-	      std::vector<uint32_t> used = c->get(p)->qubits();
-	      std::vector<uint32_t> idle = idle_qubits(nq,used);
-	      uint32_t idle_nq=idle.size();
+	      // std::vector<uint32_t> used = c->get(p)->qubits();
+	      // std::vector<uint32_t> idle = idle_qubits(nq,used);
+	      // uint32_t idle_nq=idle.size();
 	      
 	      double x = uniform_rand();
 	      
@@ -122,7 +122,7 @@ namespace qx
 		       break;
 		    affected_qubits++;
 		 }
-		 affected_qubits = (affected_qubits > idle_nq ? idle_nq : affected_qubits);
+		 // affected_qubits = (affected_qubits > idle_nq ? idle_nq : affected_qubits);
 		 total_errors += affected_qubits;
 		 error_histogram[affected_qubits]++;
 
@@ -130,7 +130,8 @@ namespace qx
 
 		 if (affected_qubits==1)
 		 {
-		    uint64_t q = idle[(rand()%idle_nq)];
+		    // uint64_t q = idle[(rand()%idle_nq)];
+		    uint64_t q = rand()%nq;
 		    
 		    __verbose__  print("      |--> error on qubit  " << q);
 		    
@@ -143,10 +144,11 @@ namespace qx
 		    std::vector<bool> v(nq,0);
 		    for (uint64_t i=0; i<affected_qubits; ++i)
 		    { 
-		       uint64_t q = idle[(rand()%idle_nq)];
+		       // uint64_t q = idle[(rand()%idle_nq)];
+		       uint64_t q = rand()%nq;
 		       while (v[q])
-			  q = idle[(rand()%idle_nq)];
-		       
+			  q = rand()%nq;
+			  // q = idle[(rand()%idle_nq)];
 		       v[q] = 1;
 		       __verbose__  print("      |--> error on qubit  " << q);
 		       g->add(single_qubit_error(q,verbose));
