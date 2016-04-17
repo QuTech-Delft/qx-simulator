@@ -47,6 +47,7 @@ namespace qx
    #define QX_ERROR_QUBIT_OUT_OF_RANGE             0x0A
    #define QX_ERROR_TOFFOLI_REQUIRES_3_QUBITS      0x0B
    #define QX_ERROR_CIRCUIT_NOT_FOUND              0x0C
+   #define QX_ERROR_UNKNOWN_ERROR_MODEL            0x0D
    
    /**
     * \brief qx server
@@ -147,6 +148,54 @@ namespace qx
 		       // c->dump();
 		       c->execute(r);
 		       sock->send("OK\n", 3);
+		    }
+		    else 
+		    {
+		       println("[!] circuit not found !");
+		       std::string error_code = "E"+int_to_str(QX_ERROR_CIRCUIT_NOT_FOUND)+"\n";
+		       sock->send(error_code.c_str(), error_code.length()+1);
+		    }
+		 }
+		 continue;
+	      }  
+	      else if (words[0] == "run_noisy")   // noisy circuit execution
+	      {
+		 if (qubits_count == 0)
+		 {
+		    std::string error_code = "E"+int_to_str(QX_ERROR_QUBITS_NOT_YET_DEFINED)+"\n";
+		    sock->send(error_code.c_str(), error_code.length()+1);
+		 }
+		 else if (words.size() != 4)
+		 {
+		    std::string error_code = "E"+int_to_str(QX_ERROR_MALFORMED_CMD)+"\n";
+		    sock->send(error_code.c_str(), error_code.length()+1);
+		 }
+		 else
+		 {
+		    qx::circuit * c = 0;
+		    println("[+] trying to execute '" << words[1] << "'");
+		    for (int i=0; i<circuits.size(); ++i)
+		    {
+		       if (words[1] == circuits[i]->id())
+			  c = circuits[i];
+		    }
+		    if (c)
+		    {
+		       if (words[2] != "depolarizing_channel" )
+		       {
+			  std::string error_code = "E"+int_to_str(QX_ERROR_UNKNOWN_ERROR_MODEL)+"\n";
+			  sock->send(error_code.c_str(), error_code.length()+1);
+		       }
+		       else
+		       {
+		          println("[+] execution of '" << words[1] << "' under depolarizing noise...");
+			  qx::qu_register& r = *reg;
+			  double error_probability = atof(words[3].c_str());
+			  qx::depolarizing_channel dch(c, r.size(), error_probability);
+			  qx::circuit * nc = dch.inject(false);
+			  nc->execute(r);
+			  sock->send("OK\n", 3);
+		       }
 		    }
 		    else 
 		    {
