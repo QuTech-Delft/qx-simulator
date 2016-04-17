@@ -53,6 +53,16 @@ namespace qx
 	   }
 
 	   /**
+            * \brief destructor
+            */
+           void clear()
+	   {
+	     for (std::vector<gate*>::iterator it= gates.begin(); it != gates.end(); it++)
+	       delete (*it);
+	     gates.clear();
+	   }
+
+	   /**
 	    * \brief add gate <g> at the end of the circuit
 	    */
 	   void add(gate * g)

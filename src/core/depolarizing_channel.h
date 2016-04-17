@@ -89,6 +89,33 @@ namespace qx
 	   return r;
 	}
 
+	bool is_measurement(qx::gate * g, uint32_t q)
+	{
+	   // println("is_measurement on " << q);
+	   if (g->type() == __measure_reg_gate__)
+	   {
+	      //println(" => register measurement !");
+	      return true;
+	   }
+	   if (g->type() == __measure_gate__)
+	   {
+	      // println(" => qubit measurement on " << g->qubits()[0]);
+	      if (g->qubits()[0] == q)
+		 return true;
+	   }
+	   if (g->type() == __parallel_gate__)
+	   {
+	      // println(" => parallel gates ...");
+	      std::vector<qx::gate *> gates = ((qx::parallel_gates*)g)->get_gates();
+	      for (uint32_t i=0; i<gates.size(); ++i)
+	      {
+		 if (is_measurement(gates[i],q))
+		    return true;
+	      }
+	   }
+	   return false;
+	}
+
 	#define __verbose__ if (verbose)
 
 	/**
@@ -104,8 +131,9 @@ namespace qx
 	   __verbose__ println("    [+] circuit steps : " << steps);
 	   for (uint64_t p=0; p<steps; ++p)
 	   {
-	      noisy_c->add(c->get(p));
-
+	      qx::gate_type_t gt = c->get(p)->type();
+	      if ((gt==qx::__display__) || (gt==qx::__display_binary__))
+		 continue;
 	      // std::vector<uint32_t> used = c->get(p)->qubits();
 	      // std::vector<uint32_t> idle = idle_qubits(nq,used);
 	      // uint32_t idle_nq=idle.size();
@@ -133,13 +161,25 @@ namespace qx
 		    // uint64_t q = idle[(rand()%idle_nq)];
 		    uint64_t q = rand()%nq;
 		    
-		    __verbose__  print("      |--> error on qubit  " << q);
+		    if (is_measurement(c->get(p),q))
+		    {
+		       __verbose__  print("      |--> error on qubit " << q << " (potential measurement error) ");
+		       noisy_c->add(single_qubit_error(q,verbose));
+		       noisy_c->add(c->get(p));
+		    }
+		    else
+		    {
+		       __verbose__  print("      |--> error on qubit  " << q);
+		       noisy_c->add(c->get(p));
+		       noisy_c->add(single_qubit_error(q,verbose));
+		    }
 		    
-		    noisy_c->add(single_qubit_error(q,verbose));
+
 		 }
 		 else
 		 {
 		    qx::parallel_gates * g = new qx::parallel_gates();
+		    bool measurement = false;
 
 		    std::vector<bool> v(nq,0);
 		    for (uint64_t i=0; i<affected_qubits; ++i)
@@ -150,11 +190,25 @@ namespace qx
 			  q = rand()%nq;
 			  // q = idle[(rand()%idle_nq)];
 		       v[q] = 1;
-		       __verbose__  print("      |--> error on qubit  " << q);
+
+		       if (is_measurement(c->get(p),q))
+			  measurement = true;
+		       __verbose__  print("      |--> error on qubit  " << q << (measurement ? "(potential measurement error)" : ""));
 		       g->add(single_qubit_error(q,verbose));
 		    }
+		    
+		    if (measurement)
+		    {
+		       //__verbose__  println("      |--> (!) potential measurement error.");
+		       noisy_c->add(g);
+		       noisy_c->add(c->get(p));
+		    }
+		    else
+		    {
+		       noisy_c->add(c->get(p));
+		       noisy_c->add(g);
+		    }
 
-		    noisy_c->add(g);
 		 }
 	      }
 	   }
@@ -172,6 +226,14 @@ namespace qx
 	 {
 	    return total_errors;
 	 }
+
+	 /**
+	  * overall probability of error
+	  */
+	  double get_overall_error_probability()
+	  {
+	     return overall_error_probability;
+	  }
 
 
 	/**

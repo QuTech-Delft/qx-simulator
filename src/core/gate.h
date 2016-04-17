@@ -30,9 +30,39 @@
 
 namespace qx
 {
-
+   /**
+    * types definition
+    */
    typedef uint64_t                          basis_state_t;
    typedef std::map<basis_state_t,complex_t> quantum_state_t;
+   typedef enum __gate_type_t
+   {
+      __identity_gate__,
+      __hadamard_gate__,
+      __pauli_x_gate__ ,
+      __pauli_y_gate__ ,
+      __pauli_z_gate__ ,
+      __cnot_gate__    ,
+      __toffoli_gate__ ,
+      __swap_gate__    ,
+      __phase_gate__   ,
+      __rx_gate__      ,
+      __ry_gate__      ,
+      __rz_gate__      ,
+      __cphase_gate__  ,
+      __t_gate__       ,
+      __tdag_gate__    ,
+      __custom_gate__  ,
+      __measure_gate__ ,
+      __measure_reg_gate__,
+      __ctrl_phase_shift_gate__,
+      __parallel_gate__,
+      __display__,
+      __display_binary__,
+      __bin_ctrl_gate__,
+      __lookup_table__,
+      __prepare_gate__
+   } gate_type_t;
 
    /**
     * gates coeffecients
@@ -61,11 +91,12 @@ namespace qx
 	   virtual std::vector<uint32_t>  qubits() = 0;
 	   virtual std::vector<uint32_t>  control_qubits() = 0;
 	   virtual std::vector<uint32_t>  target_qubits()  = 0;
+	   virtual gate_type_t            type() = 0;
 	   virtual void                   dump() = 0;
 	   virtual                        ~gate() { };                
 
 	   virtual void                   set_duration(uint64_t d) { duration = d; }
-	   virtual uint64_t               set_duration() { return duration; }
+	   virtual uint64_t               get_duration() { return duration; }
 	 
 	 protected:
 
@@ -356,6 +387,11 @@ namespace qx
 		 return r;
 	   }
 
+	   gate_type_t type()
+	   {
+	      return __hadamard_gate__; 
+	   }
+
 	   void dump()
 	   {
 		 println("  [-] hadamard(q=" << qubit << ")");
@@ -526,6 +562,11 @@ namespace qx
 		 return r;
 	   }
 
+
+	   gate_type_t type()
+	   {
+	      return __cnot_gate__; 
+	   }
 	   
 	   void dump()
 	   {
@@ -628,6 +669,12 @@ namespace qx
 		 return r;
 	   }
 
+
+	   gate_type_t type()
+	   {
+	      return __toffoli_gate__;
+	   }
+
 	   
 	   void dump()
 	   {
@@ -691,6 +738,11 @@ namespace qx
 		 return r;
 	   }
 
+	   gate_type_t type()
+	   {
+	      return __pauli_x_gate__; 
+	   }
+
 
    };
 
@@ -744,6 +796,11 @@ namespace qx
 		 std::vector<uint32_t> r;
 		 r.push_back(qubit);
 		 return r;
+	   }
+
+	   gate_type_t type()
+	   {
+	      return __pauli_y_gate__; 
 	   }
 
 
@@ -800,6 +857,11 @@ namespace qx
 		 r.push_back(qubit);
 		 return r;
 	   }
+
+	   gate_type_t type()
+	   {
+	      return __pauli_z_gate__; 
+	   }
    };
 
    /**
@@ -852,6 +914,11 @@ namespace qx
 		 r.push_back(qubit);
 		 return r;
 	   }
+
+	   gate_type_t type()
+	   {
+	      return __phase_gate__; 
+	   }
    };
 
 
@@ -903,6 +970,12 @@ namespace qx
 		 return r;
 	   }
 
+
+	   gate_type_t type()
+	   {
+	      return __t_gate__; 
+	   }
+
    };
 
 
@@ -952,6 +1025,11 @@ namespace qx
 		 std::vector<uint32_t> r;
 		 r.push_back(qubit);
 		 return r;
+	   }
+
+	   gate_type_t type()
+	   {
+	      return __tdag_gate__;
 	   }
 
    };
@@ -1013,6 +1091,11 @@ namespace qx
 		 return r;
 	   }
 
+	   gate_type_t type()
+	   {
+	      return __rx_gate__; 
+	   }
+
    };
 
 
@@ -1067,6 +1150,12 @@ namespace qx
 		 r.push_back(qubit);
 		 return r;
 	   }
+
+
+	   gate_type_t type()
+	   {
+	      return __ry_gate__;
+	   }
    };
 
 
@@ -1120,6 +1209,11 @@ namespace qx
 		 std::vector<uint32_t> r;
 		 r.push_back(qubit);
 		 return r;
+	   }
+
+	   gate_type_t type()
+	   {
+	      return __rz_gate__; 
 	   }
    };
 
@@ -1197,6 +1291,11 @@ namespace qx
 		 r.push_back(target_qubit);
 		 return r;
 	   }
+
+	   gate_type_t type()
+	   {
+	      return __ctrl_phase_shift_gate__; 
+	   }
    };
 
 
@@ -1261,6 +1360,11 @@ namespace qx
 		 return r;
 	   }
 
+	   gate_type_t type()
+	   {
+	      return __swap_gate__; 
+	   }
+
    };
    
    
@@ -1313,6 +1417,11 @@ namespace qx
 		 std::vector<uint32_t> r;
 		 r.push_back(target_qubit);
 		 return r;
+	   }
+
+	   gate_type_t type()
+	   {
+	      return __cphase_gate__; 
 	   }
 
    };
@@ -1377,6 +1486,11 @@ namespace qx
 	   {
 		 println("  [-] custom matrix. ");
 		 // println("  [-] custom(qubits=" << qubits << ", matrix=" << m << ")");
+	   }
+
+	   gate_type_t type()
+	   {
+	      return __custom_gate__; 
 	   }
 
    };
@@ -1479,6 +1593,9 @@ namespace qx
 
 	   void dump()
 	   {
+	      if (measure_all)
+		 println("  [-] measure(register)");
+	      else
 		 println("  [-] measure(qubit=" << qubit << ")");
 	   }
 	   
@@ -1504,6 +1621,14 @@ namespace qx
 	   std::vector<uint32_t>  target_qubits()
 	   {
 		 return qubits();
+	   }
+
+	   gate_type_t type()
+	   {
+	      if (measure_all)
+		 return __measure_reg_gate__;
+	      else
+	         return __measure_gate__; 
 	   }
 
 
@@ -1533,6 +1658,11 @@ namespace qx
 	      return 0;
 	   }
 
+	   gate * get_gate()
+	   {
+	      return g;
+	   }
+
 	   void dump()
 	   {
 		 print("  [-] bin_ctrl: \n bit=" << bit << " -> ");
@@ -1553,6 +1683,12 @@ namespace qx
 	   {
 		 return g->target_qubits();
 	   }
+
+	   gate_type_t type()
+	   {
+	      return __bin_ctrl_gate__;
+	   }
+
 
    };
 
@@ -1674,8 +1810,10 @@ namespace qx
 	   println("  [-] lookup gate table : ");
 	}
 
-        
-
+	gate_type_t type()
+	{
+	   return __lookup_table__;  
+	}
    
    };
 
@@ -1725,6 +1863,14 @@ namespace qx
 		 return r;
 	   }
 
+	   gate_type_t type()
+	   {
+	      if (only_binary)
+		 return __display_binary__;
+	      else
+		 return __display__; 
+	   }
+
 
    };
 
@@ -1752,6 +1898,11 @@ namespace qx
 	   {
 		 gates.push_back(g);
 		 return gates.size();
+	   }
+
+	   std::vector<gate *> get_gates()
+	   {
+	      return gates;
 	   }
 	   
 	   std::vector<uint32_t>  qubits()
@@ -1794,6 +1945,12 @@ namespace qx
 		 println("  [-] parallel_gates (" << gates.size() << " gates) : ");
 		 for (uint32_t i=0; i<gates.size(); i++)
 		    gates[i]->dump();
+	   }
+
+
+	   gate_type_t type()
+	   {
+	      return __parallel_gate__; 
 	   }
 	
 
@@ -1873,10 +2030,11 @@ namespace qx
 		 return qubits();
 	   }
 
-
+	   gate_type_t type()
+	   {
+	      return __prepare_gate__; 
+	   }
    };
-
-
 
 }
 
