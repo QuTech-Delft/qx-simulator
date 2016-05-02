@@ -236,13 +236,31 @@ namespace qx
       }
 
       /**
+       * match qubit id
+       */
+      bool is_qubit_id(std::string& str)
+      {
+	 if (str[0] != 'q')
+	    return false;
+	 uint32_t l = str.length();
+	 if (l>=1)
+	 {
+	    for (size_t i=1; i<l; ++i)
+	       if (!is_digit(str[i]))
+		  return false;
+	 }
+	 return true;
+      }
+
+      /**
        * \brief retrieve qubit number <N> from a string "qN"
        */
       uint32_t qubit_id(std::string& str)
       {
 	 std::string& original_line = str;
 	 std::string  qubit;
-	 if (str[0] != 'q')
+	 // if (str[0] != 'q')
+	 if (!is_qubit_id(str))
 	 {
 	    // search in the qubit map first
 	    map_t::iterator it = definitions.find(str);

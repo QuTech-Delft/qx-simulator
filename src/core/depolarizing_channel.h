@@ -133,7 +133,10 @@ namespace qx
 	   {
 	      qx::gate_type_t gt = c->get(p)->type();
 	      if ((gt==qx::__display__) || (gt==qx::__display_binary__))
+	      {
+		 noisy_c->add(c->get(p));
 		 continue;
+	      }
 	      // std::vector<uint32_t> used = c->get(p)->qubits();
 	      // std::vector<uint32_t> idle = idle_qubits(nq,used);
 	      // uint32_t idle_nq=idle.size();
@@ -164,7 +167,7 @@ namespace qx
 		    if (is_measurement(c->get(p),q))
 		    {
 		       __verbose__  print("      |--> error on qubit " << q << " (potential measurement error) ");
-		       noisy_c->add(single_qubit_error(q,verbose));
+		       noisy_c->add(measurement_error(q,verbose));
 		       noisy_c->add(c->get(p));
 		    }
 		    else
@@ -297,6 +300,16 @@ namespace qx
 	      return new qx::pauli_y(q);
 	   }
 	}
+       
+       /**
+        * measurement error 
+	*/
+	qx::gate * measurement_error(uint32_t q, bool verbose=false)
+	{
+	   __verbose__ println(" (measurement error) ");
+	   return new qx::pauli_x(q);
+	}
+
 
 	/**
 	 * factorial
