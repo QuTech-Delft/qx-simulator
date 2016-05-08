@@ -363,7 +363,8 @@ namespace qx
 	   int32_t apply(qu_register& qureg)
 	   {
 		 sqg_apply(m,qubit,qureg);
-		 qureg.set_binary(qubit,__state_unknown__);
+		 // qureg.set_binary(qubit,__state_unknown__);
+		 qureg.set_measurement_prediction(qubit,__state_unknown__);
 		 return 0;
 	   }
 
@@ -531,10 +532,13 @@ namespace qx
 		 
 		 #endif // CG_HASH_SET
 
-		 if (qreg.get_binary(control_qubit) == __state_1__)
+		 // if (qreg.get_binary(control_qubit) == __state_1__)
+		 if (qreg.get_measurement_prediction(control_qubit) == __state_1__)
 		    qreg.flip_binary(target_qubit);
-		 else if (qreg.get_binary(control_qubit) == __state_unknown__)
-		    qreg.set_binary(target_qubit,__state_unknown__);
+		 //else if (qreg.get_binary(control_qubit) == __state_unknown__)
+		 else if (qreg.get_measurement_prediction(control_qubit) == __state_unknown__)
+		    qreg.set_measurement_prediction(target_qubit,__state_unknown__);
+		    // qreg.set_binary(target_qubit,__state_unknown__);
 		 
 		 return 0;
 	   }
@@ -630,15 +634,16 @@ namespace qx
 		    }
 		 }
 
-		 if ((qreg.get_binary(control_qubit_1) == __state_1__) && 
-		     (qreg.get_binary(control_qubit_2) == __state_1__) )
+		 if ((qreg.get_measurement_prediction(control_qubit_1) == __state_1__) && 
+		     (qreg.get_measurement_prediction(control_qubit_2) == __state_1__) )
 		 {
 		    qreg.flip_binary(target_qubit);
 		 }
-		 else if ((qreg.get_binary(control_qubit_1) == __state_unknown__) ||
-		          (qreg.get_binary(control_qubit_2) == __state_unknown__)  )
+		 else if ((qreg.get_measurement_prediction(control_qubit_1) == __state_unknown__) ||
+		          (qreg.get_measurement_prediction(control_qubit_2) == __state_unknown__)  )
 		 {
-		    qreg.set_binary(target_qubit,__state_unknown__);
+		    qreg.set_measurement_prediction(target_qubit,__state_unknown__);
+		    // qreg.set_binary(target_qubit,__state_unknown__);
 		 }
 		 
 		 return 0;
@@ -1062,7 +1067,8 @@ namespace qx
 	   int32_t apply(qu_register& qreg)
 	   {
 		 sqg_apply(m,qubit,qreg);
-		 qreg.set_binary(qubit,__state_unknown__);
+		 qreg.set_measurement_prediction(qubit,__state_unknown__);
+		 // qreg.set_binary(qubit,__state_unknown__);
 		 return 0;
 	   }
 
@@ -1122,7 +1128,8 @@ namespace qx
 	   int32_t apply(qu_register& qreg)
 	   {
 		 sqg_apply(m,qubit,qreg);
-		 qreg.set_binary(qubit,__state_unknown__);
+		 qreg.set_measurement_prediction(qubit,__state_unknown__);
+		 //qreg.set_binary(qubit,__state_unknown__);
 		 return 0;
 	   }
 
@@ -1182,7 +1189,8 @@ namespace qx
 	   int32_t apply(qu_register& qreg)
 	   {
 		 sqg_apply(m,qubit,qreg);
-		 qreg.set_binary(qubit,__state_unknown__);
+		 qreg.set_measurement_prediction(qubit,__state_unknown__);
+		 //qreg.set_binary(qubit,__state_unknown__);
 		 return 0;
 	   }
 
@@ -1586,7 +1594,9 @@ namespace qx
 
 	      // println("  [>] measured value : " << value);
 
-	      qreg.set_binary(qubit,(value == 1 ? __state_1__ : __state_0__));
+	      qreg.set_measurement_prediction(qubit,(value == 1 ? __state_1__ : __state_0__));
+	      qreg.set_measurement(qubit,(value == 1 ? true : false));
+	      //qreg.set_binary(qubit,(value == 1 ? __state_1__ : __state_0__));
 
 	      return value;
 	   }
@@ -2001,7 +2011,10 @@ namespace qx
 	      }
 
 	      for (size_t qi=0; qi<qreg.size(); ++qi)
-		 qreg.set_binary(qi,__state_unknown__);
+	      {
+		 qreg.set_measurement_prediction(qi,__state_unknown__);
+		 //qreg.set_binary(qi,__state_unknown__);
+	      }
 	      return 0;
 	   }
 

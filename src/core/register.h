@@ -46,7 +46,8 @@ namespace qx
       __state_unknown__
    } state_t;
 
-   typedef std::vector<state_t> bvector_t;
+   typedef std::vector<state_t> measurement_prediction_t;
+   typedef std::vector<bool>    measurement_register_t;
 
    /**
     * \brief quantum register implementation.
@@ -56,7 +57,8 @@ namespace qx
       private:
 
 	 cvector_t  data;
-	 bvector_t  binary; 
+	 measurement_prediction_t  measurement_prediction; 
+	 measurement_register_t    measurement_register;
 	 uint32_t   n_qubits; 
 	 
 	 std::default_random_engine             rgenerator;
@@ -78,7 +80,8 @@ namespace qx
 	 /**
 	  * \brief set from binary
 	  */
-	 void set_binary(uint32_t state, uint32_t nq);
+	 //void set_binary(uint32_t state, uint32_t nq);
+	 void set_measurement_prediction(uint32_t state, uint32_t nq);
 
 
 
@@ -143,7 +146,7 @@ namespace qx
 	 }
 
 	 /**
-	  * \brief measures one qubit
+	  * \brief measure the entire quantum register
 	  */
 	 int32_t measure();
 
@@ -152,22 +155,43 @@ namespace qx
 	  */
 	 void dump(bool only_binary);
 
-
-	 void set_binary(uint32_t state);
-
+	 /**
+	  * \brief set the regiter to <state>
+	  */
+	 void set_measurement_prediction(uint32_t state);
 
 	 /**
 	  * \brief setter
 	  * set bit <q>  to the state <s>
 	  */
-	 void set_binary(uint32_t q, state_t s);
+	 // void set_binary(uint32_t q, state_t s);
+	 void set_measurement_prediction(uint32_t q, state_t s);
+
+	 /**
+	  * \brief set measurement outcome
+	  */
+	 void set_measurement(uint32_t state, uint32_t nq);
+
+	 /**
+	  * \brief set measurement outcome
+	  */
+	 void set_measurement(uint32_t q, bool m);
+
+
+
 
 
 	 /**
 	  * \brief getter
-	  * \return the state of bit <q> 
+	  * \return the measurement prediction of qubit <q> 
 	  */
-	 state_t get_binary(uint32_t q);
+	 state_t get_measurement_prediction(uint32_t q);
+
+	 /**
+	  * \brief getter
+	  * \return the measurement outcome of qubit <q> 
+	  */
+	 bool get_measurement(uint32_t q);
 
 
 	 /**
@@ -226,8 +250,10 @@ namespace qx
 	 {
 	    std::stringstream ss;
 	    ss << "START\n";
-	    for (int i=binary.size()-1; i>=0; --i)
-	       ss << " | " << __format_bin(binary[i]); 
+	    //for (int i=binary.size()-1; i>=0; --i)
+	       //ss << " | " << __format_bin(binary[i]); 
+	    for (int i=measurement_prediction.size()-1; i>=0; --i)
+	       ss << " | " << __format_bin(measurement_prediction[i]); 
 	    ss << " | \n";
 	    ss << "END\n";
 	    return ss.str();

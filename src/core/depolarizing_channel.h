@@ -211,9 +211,10 @@ namespace qx
 		       noisy_c->add(c->get(p));
 		       noisy_c->add(g);
 		    }
-
 		 }
 	      }
+	      else
+		 noisy_c->add(c->get(p));
 	   }
 	   __verbose__ println("    [+] total injected errors in circuit '" <<  c->id() << "': " << total_errors);
 
