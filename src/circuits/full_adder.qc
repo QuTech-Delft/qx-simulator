@@ -17,7 +17,7 @@ map q3,D
   x A
   x C
 
-  display_binary  # display initial input value
+  display_binary  #  initial input value
 
 
 # perform addition
@@ -28,7 +28,7 @@ map q3,D
   toffoli A,C,D
   cnot    A,C
 
-  display_binary # display result
+  display_binary #  result
 
 .reverse_add
 
@@ -37,6 +37,6 @@ map q3,D
   cnot    B,C
   toffoli B,C,D
 
-  display_binary # display result
+  display_binary #  result
 
-error_model depolarizing_channel, 0.1
+# error_model depolarizing_channel, 0.1

@@ -69,10 +69,10 @@ map q16,x22
    measure x14
    cz b11,d25
 
-   # display_binary
+   display
 
-#.error_injection
-#  z d1
+.error_injection
+#  x d1
 
 # init ancillas
 # .init_x_z
@@ -160,7 +160,7 @@ map q16,x22
    measure z16
    measure x22
 
-   # display_binary
+   display_binary
 
 
 # error_model depolarizing_channel, 0.00006

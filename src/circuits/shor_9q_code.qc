@@ -1,5 +1,8 @@
-# 11/02/2016
-# Shor's 9 qubits code
+# file   : qec_shor9_code.qc
+# author : Nader Khammassi
+# brief  : quantum error correction (shor's 9 qubits code)
+# date   : 11/02/2016
+# 
 
 qubits 9
 
@@ -16,7 +19,7 @@ map q8,x21
 
 .init
   x p0
-  display_binary
+  display
 
 .phase_flip_encoding
   cnot p0,p1

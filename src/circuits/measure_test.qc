@@ -10,14 +10,6 @@ h q5
 h q6
 h q7
 h q8
-h q9
-h q10
-h q11
-h q12
-h q13
-h q14
-h q15
-h q16
 
 measure
 

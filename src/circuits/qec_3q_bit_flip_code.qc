@@ -7,10 +7,10 @@
 # define 5 qubits : 3 data qubits and 2 ancillas (syndrome qubits)
 qubits 5 
 
-# init logical gate
+# initialize logical qubit
 .init
    x q0
-   display_binary
+   display
 
 # encoding
 .encoding
@@ -20,8 +20,8 @@ qubits 5
 
 # error injection
 .error_injection
-   x q1
-   display_binary
+   # x q1 
+   display
 
 
 # parity check
@@ -47,3 +47,4 @@ qubits 5
    # display
    display_binary
 
+error_model depolarizing_channel,0.1

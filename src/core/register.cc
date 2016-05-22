@@ -55,6 +55,21 @@ void qx::qu_register::to_binary(uint32_t state, uint32_t nq)
       std::cout << (((state >> nq) & 1) ? "1" : "0");
 }
 
+/**
+ * to binary string
+ */
+std::string  qx::qu_register::to_binary_string(uint32_t state, uint32_t nq)
+{
+   std::string s(nq,'0');
+   uint32_t k=0;
+   while (nq--)
+   {
+      s[k] = (((state >> nq) & 1) ? '1' : '0');
+      k++;
+   }
+   return s;
+}
+
 
 /**
  * \brief quantum register of n_qubit
@@ -221,6 +236,27 @@ void qx::qu_register::dump(bool only_binary=false)
       print(" | " << (measurement_register[i] ? '1' : '0'));  
    println(" |");
    println("------------------------------------------- ");
+}
+
+/**
+ * \brief return the quantum state as string
+ */
+std::string qx::qu_register::get_state(bool only_binary=false)
+{
+   std::stringstream ss;
+   if (!only_binary)
+   {
+      std::cout << std::fixed;
+      for (int i=0; i<data.size(); ++i)
+      {
+	 if (data[i] != complex_t(0,0)) 
+	 {
+	    ss << "   " << std::showpos << std::setw(7) << data[i] << " |"; ss << to_binary_string(i,n_qubits); ss << "> +";
+	    ss << "\n";
+	 }
+      }
+   }
+   return ss.str();
 }
 
 

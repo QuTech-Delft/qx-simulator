@@ -156,6 +156,14 @@ namespace qx
 	 void dump(bool only_binary);
 
 	 /**
+	  * \brief return the quantum state as a string
+	  */
+	 std::string get_state(bool only_binary);
+
+         
+	 std::string  to_binary_string(uint32_t state, uint32_t nq);
+
+	 /**
 	  * \brief set the regiter to <state>
 	  */
 	 void set_measurement_prediction(uint32_t state);

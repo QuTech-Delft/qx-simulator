@@ -1673,6 +1673,11 @@ namespace qx
 	      return g;
 	   }
 
+	   uint32_t get_bit()
+	   {
+	      return bit;
+	   }
+
 	   void dump()
 	   {
 		 print("  [-] bin_ctrl: \n bit=" << bit << " -> ");
