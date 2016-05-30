@@ -22,6 +22,9 @@
 #include <vector>
 #include <bitset>
 
+
+#include <xpu/aligned_memory_allocator.h>
+
 #define println(x) std::cout << x << std::endl
 #define print(x) std::cout << x 
 
@@ -41,7 +44,7 @@ namespace qx
 	 typedef ublas::matrix<complex_t>  cmatrix_t;
 	 typedef ublas::identity_matrix<complex_t> cidentity_t;
 #else
-	 typedef std::vector<complex_t>  cvector_t;
+	 typedef std::vector<complex_t,xpu::aligned_memory_allocator<complex_t,16> >  cvector_t;
 	 typedef qx::linalg::matrix<complex_t>  cmatrix_t;
 	 typedef qx::linalg::identity_matrix<complex_t> cidentity_t;
 #endif // __BUILTIN_LINALG__

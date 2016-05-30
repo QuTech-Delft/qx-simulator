@@ -649,8 +649,7 @@ namespace qx
 	    if (q > (qubits_count-1))
 	       print_semantic_error(" target qubit out of range !", QX_ERROR_QUBIT_OUT_OF_RANGE);
 	    // println(" => t gate on: " << q);
-	    current_sub_circuit(qubits_count)->add(new qx::measure(q));
-	    current_sub_circuit(qubits_count)->add(new qx::bin_ctrl(q,new qx::pauli_x(q)));
+	    current_sub_circuit(qubits_count)->add(new qx::prepz(q));
 	 }
 
 	 /**

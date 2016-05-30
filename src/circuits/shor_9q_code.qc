@@ -78,4 +78,5 @@ map q8,x21
   display_binary
   
 
+error_model depolarizing_channel, 0.03
   

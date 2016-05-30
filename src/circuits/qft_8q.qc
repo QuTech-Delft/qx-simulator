@@ -60,7 +60,7 @@ qubits 8
    swap q2,q5
    swap q3,q4
 
-   display
+#   display
 
 
 # to activate error injection, uncomment the next line

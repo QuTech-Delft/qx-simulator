@@ -705,13 +705,13 @@ namespace qx
 	    // println(" => t gate on: " << q);
 	    if (pg) 
 	    {
-	       pg->add(new qx::measure(q));
-	       pg->add(new qx::bin_ctrl(q,new qx::pauli_x(q)));
+	       // pg->add(new qx::measure(q));
+	       // pg->add(new qx::bin_ctrl(q,new qx::pauli_x(q)));
+	       pg->add(new qx::prepz(q));
 	    }
 	    else
 	    {
-	    current_sub_circuit(qubits_count)->add(new qx::measure(q));
-	    current_sub_circuit(qubits_count)->add(new qx::bin_ctrl(q,new qx::pauli_x(q)));
+	       current_sub_circuit(qubits_count)->add(new qx::prepz(q));
 	    }
 	 }
 	 /**

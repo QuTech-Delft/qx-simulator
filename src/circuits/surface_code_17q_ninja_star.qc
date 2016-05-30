@@ -30,7 +30,8 @@ map q16,x22
 # initialization circuit
 .initialization
 
-   cx b0,x44   # init x44 to zero
+   # cx b0,x44   # init x44 to zero
+   prepz x44
    h x44
    cnot x44,d5 
    cnot x44,d3
@@ -39,7 +40,8 @@ map q16,x22
    cz b0,d5
 
 
-   cx b16,x22 # init x22 to zero
+   # cx b16,x22 # init x22 to zero
+   prepz x22
    h x22
    cnot x22,d23
    cnot x22,d21
@@ -48,7 +50,8 @@ map q16,x22
    cz b16,d21
 
 
-   cx b5,x2   # init X2  to zero
+   # cx b5,x2   # init X2  to zero
+   prepz x2
    h x2
    cnot x2,d3
    cnot x2,d1
@@ -59,7 +62,8 @@ map q16,x22
    cz b5,d1
 
 
-   cx b11,x14 # init X14 to zero
+   # cx b11,x14 # init X14 to zero
+   prepz x14
    h x14
    cnot x14,d15
    cnot x14,d13
@@ -72,19 +76,28 @@ map q16,x22
    display
 
 .error_injection
-#  x d1
+    # x d13
 
 # init ancillas
 # .init_x_z
 .surface_code_cycle
-   cx b0,x44   # init X44 to zero
-   cx b4,z10   # init Z10 to zero
-   cx b5,x2   # init X2  to zero
-   cx b6,z4   # init Z4  to zero
-   cx b10,z12 # init Z12 to zero
-   cx b11,x14 # init X14 to zero
-   cx b12,z16 # init Z16 to zero
-   cx b16,x22 # init X22 to zero
+   # cx b0,x44   # init X44 to zero
+   # cx b4,z10   # init Z10 to zero
+   # cx b5,x2   # init X2  to zero
+   # cx b6,z4   # init Z4  to zero
+   # cx b10,z12 # init Z12 to zero
+   # cx b11,x14 # init X14 to zero
+   # cx b12,z16 # init Z16 to zero
+   # cx b16,x22 # init X22 to zero
+
+   prepz  x44 
+   prepz  z10 
+   prepz  x2  
+   prepz  z4  
+   prepz  z12
+   prepz  x14
+   prepz  z16
+   prepz  x22
 
    # debug : display intermediate state
    # display_binary
