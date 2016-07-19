@@ -51,3 +51,5 @@ qubits 7
    display
    measure 
    display
+
+# error_model depolarizing_channel, 0.001

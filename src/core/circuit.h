@@ -18,6 +18,10 @@
 
 #include <core/gate.h>
 
+#ifndef XPU_TIMER
+#define XPU_TIMER
+#endif // XPU_TIMER
+
 #ifdef XPU_TIMER
 #include <xpu/timer.h>
 #endif // XPU_TIMER
@@ -33,6 +37,7 @@ namespace qx
                    std::vector<gate *> gates;
 		   std::string         name;
 		   uint32_t            iteration;
+		   double              time;
 
            public:
 
@@ -96,7 +101,6 @@ namespace qx
 	      assert(i < gates.size());
 	      return gates[i];
 	   }
-
 
 	   void execute(qu_register& reg, bool verbose=false, bool only_binary=false)
 	   {

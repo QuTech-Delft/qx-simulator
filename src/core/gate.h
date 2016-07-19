@@ -4,6 +4,9 @@
  * @date		02-10-15
  * @brief		
  */
+
+#pragma once
+
 #ifndef QX_GATE_H
 #define QX_GATE_H
 
@@ -21,17 +24,17 @@
 #include <core/binary_counter.h>
 #include <core/kronecker.h>
 
-#ifndef __BUILTIN_LINALG__
-#include <boost/numeric/ublas/matrix.hpp>
-#endif
+// #ifndef __BUILTIN_LINALG__
+// #include <boost/numeric/ublas/matrix.hpp>
+// #endif
 
 #define SQRT_2   (1.4142135623730950488016887242096980785696718753769480731766797379f)
 #define R_SQRT_2 (0.7071067811865475244008443621048490392848359376884740365883398690f)
 
-
 #define __bit_test(x,pos) ((x) & (1<<(pos)))
 #define __bit_set(x,pos) ((x) | (1<<(pos)))
 #define __bit_flip(x,pos) ((x) ^ (1<<(pos)))
+#define __bit_reset(x,pos) ((x) & ~(1<<(pos)))
 
 //#define SQRT_2   (1.41421356237309504880f)
 //#define R_SQRT_2 (0.70710678118654752440f)
@@ -70,6 +73,7 @@ namespace qx
       __display_binary__,
       __bin_ctrl_gate__,
       __lookup_table__,
+      __qft_gate__,
       __prepare_gate__
    } gate_type_t;
 
@@ -408,6 +412,42 @@ namespace qx
 	   }
 
    };
+   
+   void __swap(cvector_t& amp, size_t size, size_t bit, size_t trg, size_t ctrl, size_t offset=0)
+   {
+      // println("bit=" << bit);
+      // println("ctrl=" << ctrl);
+      for (size_t i=__bit_set(0,bit); i<(1<<size); i += (1 << (bit+1)))
+	 for (size_t j=0; j<(1<<bit); j++)
+	 {
+	    size_t v = i+j+offset; 
+	    std::swap(amp[v], amp[__bit_reset(v,trg)]);
+	    // println(" swap(" << std::bitset<16>(v) << "," << std::bitset<16>(__bit_reset(v,trg)) << ")");
+	 }
+   }
+
+
+   int cx_worker(int cs, int ce, int s, cvector_t * p_amp, size_t bit1, size_t bit2, size_t trg, size_t ctrl)
+   {
+      cvector_t &amp = * p_amp;
+      // xpu::parallel_for fswp(__bit_set(0,b1), (1 << qn), (1 << (b1+1)), &t);
+      size_t step=(1 << (bit1+1));
+      size_t b   = cs;
+      size_t e   = ce;
+/*
+      println("step=" << step);
+      println("b=" << b);
+      println("e=" << e);
+*/
+
+      size_t offset = __bit_set(0,bit1);
+
+      //for (size_t i=__bit_set(0,bit1); i<(1<<size); i += (1 << (bit1+1)))
+	 //__swap(amp,bit1,bit2,trg,ctrl,i);
+      for (size_t i=b; i<e; i++)
+	 __swap(amp,bit1,bit2,trg,ctrl,offset+(i*step));
+      return 0;
+   }
 
    /**
     * \brief controlled-not gate:
@@ -476,30 +516,28 @@ namespace qx
 
 		 cvector_t& amp = qreg.get_data();
 
-		 //perm_t p = perms(qn,cq,tq);
-		 perms(qn,cq,tq,amp);
-/*
-		 // std::vector<uint32_t> done(sn, 0);
+		 // perms(qn,cq,tq,amp);
+// #if 0
+		 size_t b1 = std::max(cq,tq);
+		 size_t b2 = std::min(cq,tq);
 
-		 
-		 uint32_t p1,p2;
 
-		 for (perm_t::iterator it = p.begin(); it != p.end(); it++)
+		 size_t steps = ((1 << qn)-(__bit_set(0,b1)))/(1 << (b1+1))+1;
+		 /*
+		 println("from=" << (__bit_set(0,b1)));
+		 println("to=" << (1 << qn));
+		 println("s=" << (1 << (b1+1)));
+		 println("steps=" << steps);
+		 */
+		 if (qn<17) 
+		    fast_cx(amp, qn, b1, b2, tq, cq);
+		 else
 		 {
-		    p1 = it->first;
-		    p2 = it->second;
-		    // if (!(done[p1] || done[p2]))
-		    // {
-			  std::swap(amp[p1],amp[p2]);
-			  //done[p1] = 1;
-			  //done[p2] = 1;
-		    //}
+		    xpu::task t(cx_worker,0,0,0,&amp,b1,b2,(size_t)tq,(size_t)cq);
+		    xpu::parallel_for fswp(0, steps, 1, &t);
+		    fswp.run();
 		 }
-*/
-
-
-		 // for (uint32_t i=0; i<sn; i++)
-
+// #endif
 
 		 #elif defined(CG_HASH_SET)
 		  
@@ -584,6 +622,34 @@ namespace qx
 	   void dump()
 	   {
 		 println("  [-] cnot(ctrl_qubit=" << control_qubit << ", target_qubit=" << target_qubit << ")");
+	   }
+
+	   private:
+#if 0
+	   void __swap(cvector_t& amp, size_t size, size_t bit, size_t trg, size_t ctrl, size_t offset=0)
+	   {
+	      // println("bit=" << bit);
+	      // println("ctrl=" << ctrl);
+	      for (size_t i=__bit_set(0,bit); i<(1<<size); i += (1 << (bit+1)))
+		 for (size_t j=0; j<(1<<bit); j++)
+		 {
+		    size_t v = i+j+offset; 
+		    std::swap(amp[v], amp[__bit_reset(v,trg)]);
+		    // println(" swap(" << std::bitset<16>(v) << "," << std::bitset<16>(__bit_reset(v,trg)) << ")");
+		 }
+	   }
+#endif
+
+
+	   void fast_cx(cvector_t& amp, size_t size, size_t bit1, size_t bit2, size_t trg, size_t ctrl)
+	   {
+	      /*
+		 println("from=" << (__bit_set(0,bit1)));
+		 println("to=" << (1 << size));
+		 println("s=" << (1 << (bit1+1)));
+	      */
+	      for (size_t i=__bit_set(0,bit1); i<(1<<size); i += (1 << (bit1+1)))
+		 __swap(amp,bit1,bit2,trg,ctrl,i);
 	   }
 
    };
@@ -1289,6 +1355,113 @@ namespace qx
 	   }
    };
 
+   void __shift(cvector_t& amp, size_t size, size_t bit, complex_t p, size_t offset=0)
+   {
+      // println("bit=" << bit);
+      // println("ctrl=" << ctrl);
+      for (size_t i=__bit_set(0,bit); i<(1<<size); i += (1 << (bit+1)))
+	 for (size_t j=0; j<(1<<bit); j++)
+	 {
+	    size_t v = i+j+offset; 
+	    amp[v] *= p;
+	    // println(" swap(" << std::bitset<16>(v) << "," << std::bitset<16>(__bit_reset(v,trg)) << ")");
+	 }
+   }
+
+
+   int shift_worker(int cs, int ce, int s, cvector_t * p_amp, size_t bit1, size_t bit2, complex_t p)
+   {
+      cvector_t &amp = * p_amp;
+      // xpu::parallel_for fswp(__bit_set(0,b1), (1 << qn), (1 << (b1+1)), &t);
+      size_t step=(1 << (bit1+1));
+      size_t b   = cs;
+      size_t e   = ce;
+/*
+      println("step=" << step);
+      println("b=" << b);
+      println("e=" << e);
+*/
+
+      size_t offset = __bit_set(0,bit1);
+
+      //for (size_t i=__bit_set(0,bit1); i<(1<<size); i += (1 << (bit1+1)))
+	 //__swap(amp,bit1,bit2,trg,ctrl,i);
+      for (size_t i=b; i<e; i++)
+	 __shift(amp,bit1,bit2,p,offset+(i*step));
+      return 0;
+   }
+
+
+   /**
+    * \brief qft 
+    */ 
+    /*
+   class qft : public gate
+   {
+	 private:
+
+	   std::vector<uint32_t>     qubit;
+	   std::vector<complex_t>    z;
+
+	   void cr(uint32_t ctrl_qubit, uint32_t target_qubit, qu_register& qreg)
+	   {
+	      size_t b1 = std::max(ctrl_qubit,target_qubit);
+	      size_t b2 = std::min(ctrl_qubit,target_qubit);
+	      size_t qn = qreg.size();
+	      size_t steps = ((1 << qn)-(__bit_set(0,b1)))/(1 << (b1+1))+1;
+              complex_t  z(cos(M_PI/(1 << (ctrl_qubit - target_qubit))), sin(M_PI/(1 << (ctrl_qubit - target_qubit))));
+
+	      cvector_t& amp = qreg.get_data();
+	      xpu::task t(shift_worker,0,0,0,&amp,b1,b2,z);
+	      xpu::parallel_for p_shifter(0, steps, 1, &t);
+	      p_shifter.run();
+
+	      return 0;
+	   }
+
+	 public:
+
+	   qft(std::vector<uint32_t> qubit) : qubit(qubit)
+	   {
+	   }
+
+	   int32_t apply(qu_register& qreg)
+	   {
+
+	   }
+
+	   void dump()
+	   {
+		 print("  [-] qft(");
+		 for (size_t i=0; i<(qubit.size()-1); ++i)
+		    print("q" << qubit[i] << ","); 
+		 println("q" << qubit[qubit.size()-1] << ")");
+	   }
+	   
+	   std::vector<uint32_t>  qubits()
+	   {
+		 return qubit;
+	   }
+ 
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 return qubit;
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 return qubit;
+	   }
+
+	   gate_type_t type()
+	   {
+	      return __qft_gate__; 
+	   }
+   };
+   */
+
+
+
 
    /**
     * \brief  controlled phase shift by (pi/(2^(ctrl-target)))
@@ -1313,6 +1486,7 @@ namespace qx
 
 	   int32_t apply(qu_register& qreg)
 	   {
+#if 0
 	      uint32_t nn = (1 << qreg.size());
 	      uint32_t p = 0;
 	      std::bitset<MAX_QB_N> b;
@@ -1333,6 +1507,16 @@ namespace qx
 		 b = inc(b);
 		 bc = b.to_ulong();
 	      }
+#endif
+	      size_t b1 = std::max(ctrl_qubit,target_qubit);
+	      size_t b2 = std::min(ctrl_qubit,target_qubit);
+	      size_t qn = qreg.size();
+	      size_t steps = ((1 << qn)-(__bit_set(0,b1)))/(1 << (b1+1))+1;
+
+	      cvector_t& amp = qreg.get_data();
+	      xpu::task t(shift_worker,0,0,0,&amp,b1,b2,z);
+	      xpu::parallel_for p_shifter(0, steps, 1, &t);
+	      p_shifter.run();
 
 	      return 0;
 	   }
@@ -1509,42 +1693,42 @@ namespace qx
    {
 	 private:
 
-#ifdef __BUILTIN_LINALG__
+// #ifdef __BUILTIN_LINALG__
            std::vector<uint32_t> qubits;
-#else
-	   ublas::vector<uint32_t>  qubits;
-#endif 
+// #else
+// 	   ublas::vector<uint32_t>  qubits;
+// #endif 
 	   cmatrix_t m;
 
 	 public:
 
-#ifdef __BUILTIN_LINALG__
+// #ifdef __BUILTIN_LINALG__
 	   custom(std::vector<uint32_t>  qubits, cmatrix_t m) : qubits(qubits), m(m)
-#else
-	   custom(ublas::vector<uint32_t>  qubits, cmatrix_t m) : qubits(qubits), m(m)
-#endif 
+// #else
+// 	   custom(ublas::vector<uint32_t>  qubits, cmatrix_t m) : qubits(qubits), m(m)
+// #endif 
 	   {
 		 uint32_t size = 1 << qubits.size();
 		 if (size != m.size1() || size != m.size2())
 		    println("[x] error: cutom gate : the matrix size do not match the number of qubits !");
 		 // verify also that the matrix is unitary
-#ifdef __BUILTIN_LINALG__
+// #ifdef __BUILTIN_LINALG__
 		 cmatrix_t ctr(m.size2(),m.size1());
 		 for (uint32_t i=0; i<m.size2(); ++i)
 		    for (uint32_t j=0; j<m.size1(); ++j)
 		       ctr(i,j) = std::conj(m(j,i));
 		 cmatrix_t mxctr = mxm(m,ctr);
 		 qx::linalg::identity_matrix<complex_t> id(m.size1());
-#else
-		 cmatrix_t mxctr = mxm(m,ublas::trans(conj(m)));
-		 ublas::identity_matrix<complex_t> id(m.size1());
-#endif
+// #else
+// 		 cmatrix_t mxctr = mxm(m,ublas::trans(conj(m)));
+// 		 ublas::identity_matrix<complex_t> id(m.size1());
+// #endif
 
-#ifdef __BUILTIN_LINALG__
+// #ifdef __BUILTIN_LINALG__
 		 if (qx::linalg::equals(mxctr,id))
-#else
-		 if (equals(mxctr,id))
-#endif
+// #else
+// 		 if (equals(mxctr,id))
+// #endif
 		    println("[x] error: custom gate : the specified matrix is not unitary !");
 	   }
 

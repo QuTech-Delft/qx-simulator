@@ -107,7 +107,7 @@ namespace qx
        * \brief
        *    parse the quantum code file
        */
-      void parse()
+      int parse(bool exit_on_error=true)
       {
 	 line_index   = 0;
 	 syntax_error = false;
@@ -128,12 +128,27 @@ namespace qx
 	    stream.close();
 	    if (syntax_error || semantic_error)
 	    {
-	       exit(-1);
+	       if (exit_on_error)
+	          exit(-1);
+	       else
+	       {
+		  println("[+] failed to load the code : code contains errors. ");
+		  return -1;
+	       }
+
 	    }
 	    parsed_successfully = true;
 	    println("[+] code loaded successfully. ");
+	    return 0;
 	 }
-	 else error("cannot open file " << file_name);
+	 else 
+	 {
+	    error("cannot open file " << file_name);
+	    if (exit_on_error)
+	       exit(-1);
+	    else
+	       return -1;
+	 }
       }
 
       /**
@@ -188,8 +203,8 @@ namespace qx
 
 #define print_syntax_error(err) \
       {\
-	 std::cerr << "[x] syntax error at line " << line_index << " : " << err << std::endl; \
-	 std::cerr << "   +--> code: \"" << original_line << "\"" << std::endl; \
+	 std::cout << "[x] syntax error at line " << line_index << " : " << err << std::endl; \
+	 std::cout << "   +--> code: \"" << original_line << "\"" << std::endl; \
 	 syntax_error = true;\
 	 return 1;\
       }
@@ -197,8 +212,8 @@ namespace qx
 
 #define print_semantic_error(err) \
       {\
-	 std::cerr << "[x] semantic error at line " << line_index << " : " << err << std::endl; \
-	 std::cerr << "   +--> code: \"" << original_line << "\"" << std::endl; \
+	 std::cout << "[x] semantic error at line " << line_index << " : " << err << std::endl; \
+	 std::cout << "   +--> code: \"" << original_line << "\"" << std::endl; \
 	 semantic_error = true;\
 	 return 1;\
       }
@@ -459,7 +474,7 @@ namespace qx
 	    {
 	       error_model = __depolarizing_channel__;
 	       error_probability = atof(params[1].c_str());
-	       println(" => error model:  (name=" << params[0].c_str() << ", error_probability=" << error_probability << ")");
+	       println("[!] noise simulation enabled : error model =" << params[0].c_str() << ", error probability =" << error_probability << ")");
 	    }
 	    else
 	       print_semantic_error(" unknown error model !");

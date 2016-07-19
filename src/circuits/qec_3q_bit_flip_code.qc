@@ -20,7 +20,7 @@ qubits 5
 
 # error injection
 .error_injection
-   # x q1 
+   x q0 
    display
 
 
@@ -36,8 +36,9 @@ qubits 5
 
 
 # error correction circuit can be described here 
-#.error_correction
-# ...
+.error_correction
+  toffoli q3,q4,q0
+  display
 
 
 # decoding
