@@ -176,4 +176,4 @@ map q16,x22
    display_binary
 
 
-# error_model depolarizing_channel, 0.0001
+# error_model depolarizing_channel, 0.001

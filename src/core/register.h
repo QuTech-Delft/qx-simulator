@@ -57,6 +57,7 @@ namespace qx
       private:
 
 	 cvector_t  data;
+	 cvector_t  aux;
 	 measurement_prediction_t  measurement_prediction; 
 	 measurement_register_t    measurement_register;
 	 uint32_t   n_qubits; 
@@ -103,6 +104,8 @@ namespace qx
 	  * \brief data getter
 	  */
 	 cvector_t& get_data();
+	 
+	 cvector_t& get_aux();
 
 	 /**
 	  * \brief data setter
@@ -212,6 +215,11 @@ namespace qx
 	  * \brief flip binary
 	  */
 	 void flip_binary(uint32_t q); 
+	 
+	 /**
+	  * \brief flip measurement
+	  */
+	 void flip_measurement(uint32_t q);
 
 	 /**
 	  * \brief return a string describing the quantum state
@@ -245,7 +253,7 @@ namespace qx
 	 {
 	      double length = 0;
 	      for (size_t k = 0; k < data.size(); k++) 
-		 length += std::norm(data[k]);
+		 length += data[k].norm(); // std::norm(data[k]);
 	      length = std::sqrt(length);
 	      for (size_t k = 0; k < data.size(); k++) 
 		 data[k] /= length;

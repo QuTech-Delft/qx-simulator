@@ -1,9 +1,9 @@
 # benchmark
 # hadamard
 
-qubits 24
+qubits 26
 
-.h_q0_bench(10)
+.h_q0_bench
    h q0
    h q0
    h q0
@@ -14,22 +14,35 @@ qubits 24
    h q0
    h q0
    h q0
-
-
-.h_q15_bench(10)
-   h q15
-   h q15
-   h q15
-   h q15
-   h q15
-   h q15
-   h q15
-   h q15
-   h q15
-   h q15
 
 
-.hn_bench(10)
+.h_q15_bench
+   h q15
+   h q15
+   h q15
+   h q15
+   h q15
+   h q15
+   h q15
+   h q15
+   h q15
+   h q15
+
+
+.h_q25_bench
+   h q25
+   h q25
+   h q25
+   h q25
+   h q25
+   h q25
+   h q25
+   h q25
+   h q25
+   h q25
+
+
+.hn_bench
    h q0
    h q1
    h q2

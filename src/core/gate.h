@@ -36,6 +36,9 @@
 #define __bit_flip(x,pos) ((x) ^ (1<<(pos)))
 #define __bit_reset(x,pos) ((x) & ~(1<<(pos)))
 
+#define __AVX__NO
+#define __OP_PREFETCH__
+
 //#define SQRT_2   (1.41421356237309504880f)
 //#define R_SQRT_2 (0.70710678118654752440f)
 
@@ -71,26 +74,31 @@ namespace qx
       __parallel_gate__,
       __display__,
       __display_binary__,
+      __print_str__, 
       __bin_ctrl_gate__,
       __lookup_table__,
+      __classical_not_gate__,
       __qft_gate__,
       __prepare_gate__
    } gate_type_t;
 
+
    /**
     * gates coeffecients
     */
-   const complex_t cnot_c     [] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0 }; /* CNOT */
-   const complex_t swap_c     [] = { 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1 }; /* SWAP */
+   const complex_t cnot_c     [] __attribute__((aligned(64))) = { complex_t(1.0), complex_t(0.0), complex_t(0.0), complex_t(0.0), complex_t(0.0), complex_t(1.0), complex_t(0.0), complex_t(0.0), complex_t(0.0), complex_t(0.0), complex_t(0.0), complex_t(1.0), complex_t(0.0), complex_t(0.0), complex_t(1.0), complex_t(0.0) };  /* CNOT */
+   const complex_t swap_c     [] __attribute__((aligned(64))) = { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 };  /* SWAP */
+   const complex_t identity_c [] __attribute__((aligned(64))) = { complex_t(1.0), complex_t(0.0), complex_t(0.0), complex_t(1.0) };                                /* I */
+   const complex_t pauli_x_c  [] __attribute__((aligned(64))) = { complex_t(0.0, 0.0) , complex_t(1.0, 0.0), complex_t(1.0, 0.0) , complex_t(0.0, 0.0) };          /* X */
+   const complex_t pauli_y_c  [] __attribute__((aligned(64))) = { complex_t(0.0, 0.0) , complex_t(0.0,-1.0), complex_t(0.0, 1.0) , complex_t(0.0, 0.0) };          /* Y */
+   const complex_t pauli_z_c  [] __attribute__((aligned(64))) = { complex_t(1.0, 0.0) , complex_t(0.0, 0.0), complex_t(0.0, 0.0) , complex_t(-1.0,0.0) };          /* Z */
+   const complex_t phase_c    [] __attribute__((aligned(64))) = { complex_t(1.0, 0.0) , complex_t(0.0, 0.0), complex_t(0.0, 0.0) , complex_t(0.0, 1.0) };          /* S */
+   const complex_t t_gate_c   [] __attribute__((aligned(64))) = { complex_t(1.0, 0.0) , complex_t(0.0, 0.0), complex_t(0.0, 0.0) , complex_t(cos(M_PI/4),sin(M_PI/4)) };         /* T */
+   const complex_t tdag_gate_c[] __attribute__((aligned(64))) = { complex_t(1.0, 0.0) , complex_t(0.0, 0.0), complex_t(0.0, 0.0) , complex_t(cos(M_PI/4),-sin(M_PI/4)) };        /* T_dag */
+   const complex_t hadamard_c [] __attribute__((aligned(64)))  = { R_SQRT_2,  R_SQRT_2, R_SQRT_2, -R_SQRT_2 };  /* H */
 
-   const complex_t identity_c [] = { 1, 0, 0, 1 };                               /* I */
-   const complex_t pauli_x_c  [] = { complex_t(0, 0) , complex_t(1, 0), complex_t(1, 0) , complex_t(0, 0) };         /* X */
-   const complex_t pauli_y_c  [] = { complex_t(0, 0) , complex_t(0,-1), complex_t(0, 1) , complex_t(0, 0) };         /* Y */
-   const complex_t pauli_z_c  [] = { complex_t(1, 0) , complex_t(0, 0), complex_t(0, 0) , complex_t(-1,0) };         /* Z */
-   const complex_t phase_c    [] = { complex_t(1, 0) , complex_t(0, 0), complex_t(0, 0) , complex_t(0, 1) };         /* S */
-   const complex_t t_gate_c   [] = { complex_t(1, 0) , complex_t(0, 0), complex_t(0, 0) , complex_t(cos(M_PI/4),sin(M_PI/4)) };         /* T */
-   const complex_t tdag_gate_c[] = { complex_t(1, 0) , complex_t(0, 0), complex_t(0, 0) , complex_t(cos(M_PI/4),-sin(M_PI/4)) };         /* T */
-   const complex_t hadamard_c [] = { R_SQRT_2,  R_SQRT_2, R_SQRT_2, -R_SQRT_2 }; /* H */
+   #define __rc(r,c,s) (r*s+c)
+
 
    /**
     * \brief common abstract gate interface for
@@ -125,7 +133,7 @@ namespace qx
     */
    inline cmatrix_t rotation(double theta)
    {
-	 cmatrix_t r(2,2);
+	 cmatrix_t r; // (2,2);
 	 r(0,0) = complex_t(cos(theta),0); r(0,1) = complex_t(-sin(theta),0);
 	 r(1,0) = complex_t(sin(theta),0); r(1,1) = complex_t(cos(theta),0);
 	 return r;
@@ -136,7 +144,7 @@ namespace qx
     */
    inline cmatrix_t phase(double phi)
    {
-	 cmatrix_t p(2,2);
+	 cmatrix_t p; // (2,2);
 	 p(0,0) = complex_t(1,0); p(0,1) = complex_t(0,0);
 	 p(1,0) = complex_t(0,0); p(1,1) = complex_t(cos(phi),sin(phi));
 	 return p;
@@ -162,7 +170,9 @@ namespace qx
     */
    cmatrix_t build_matrix(const complex_t * c, uint32_t n)
    {
-	 cmatrix_t m(n,n);
+         // assert(n==2); 
+	 // TO DO : remove the n parameter
+	 cmatrix_t m; // (n,n);
 	 for (int i=0; i<n; i++)
 	    for (int j=0; j<n; j++) 
 		  m(i,j) = c[i*n+j];
@@ -224,30 +234,28 @@ namespace qx
    // #elif QX_SPARSE_MV_MUL
    #else // QX_SPARSE_MV_MUL
    
-   uint32_t rw_process(int is, int ie, int s, uint32_t n, uint32_t qubit, kronecker * m, cvector_t * v, cvector_t * res)
+   uint32_t rw_process(int is, int ie, int s, uint32_t n, uint32_t qubit, const kronecker * m, cvector_t * v, cvector_t * res)
    {
       uint32_t k = n-qubit;
       // println("run : " << is << " .. " << ie);
+      complex_t * pv = v->data();
+      complex_t * pr = res->data();
+      size_t nk = n-k;
 
       for (uint32_t r=is; r<ie; ++r)
       {
-	 binary_counter bc(n);
-	 complex_t s = 0;
-	 bc = r;
-	 bc.unset(n-k);
-	 uint32_t c1 = bc.value();
-	 bc.set(n-k);
-	 uint32_t c2 = bc.value();
-	 s += v->at(c1)*(m->get(r,c1));
-	 s += v->at(c2)*(m->get(r,c2));
-	 res->at(r) = s;
+	 size_t bc = r;
+	 size_t c1 = __bit_reset(bc,nk);
+	 size_t c2 = __bit_set(bc,nk);
+	 // complex_t s; // = 0;
+	 pr[r] = pv[c1]*(m->get(r,c1)) + pv[c2]*(m->get(r,c2));
       }
 
       return 0;
    }
       
 
-   void sparse_mulmv(uint32_t n, uint32_t qubit, kronecker& m, cvector_t& v, cvector_t& res)
+   void sparse_mulmv(uint32_t n, uint32_t qubit, const kronecker& m, cvector_t& v, cvector_t& res)
    {
       uint32_t k = n-qubit;
       uint32_t rows = (1 << n);
@@ -280,44 +288,404 @@ namespace qx
  */
    }
 
+   void __apply_m(std::size_t start, std::size_t end, const std::size_t qubit, complex_t * state, const std::size_t stride0, const std::size_t stride1, const complex_t * matrix)
+   {
+
+#if 0
+      __m128d m00 = matrix[0].xmm;
+      __m128d m01 = matrix[1].xmm;
+      __m128d m10 = matrix[2].xmm;
+      __m128d m11 = matrix[3].xmm;
+#endif
+
+      complex_t m00 = matrix[0];
+      complex_t m01 = matrix[1];
+      complex_t m10 = matrix[2];
+      complex_t m11 = matrix[3];
+
+
+#ifdef USE_OPENMP
+#pragma omp parallel for // shared(m00,m01,m10,m11)
+#endif
+      for(size_t offset = start; offset < end; offset += (1L << (qubit + 1L)))
+	 for(size_t i = offset; i < offset + (1L << qubit); i++)
+	 {
+	    size_t i0 = i + stride0;
+	    size_t i1 = i + stride1;
+
+	    complex_t in0 = state[i0];
+	    complex_t in1 = state[i1];
+	    state[i0] = m00*in0+m01*in1;
+	    state[i1] = m10*in0+m11*in1;
+#if 0
+	    __m128d in0 = state[i0].xmm;
+	    __m128d in1 = state[i1].xmm;
+	    state[i0].xmm = _mm_add_pd(xpu::_mm_mulc_pd(m00, in0), xpu::_mm_mulc_pd(m10, in1));
+	    state[i1].xmm = _mm_add_pd(xpu::_mm_mulc_pd(m10, in1), xpu::_mm_mulc_pd(m11, in1));
+#endif
+	 }
+   }
+
+#ifdef __SSE__
+#ifdef __FMA__
+   void __apply_x(std::size_t start, std::size_t end, const std::size_t qubit, complex_t * state, const std::size_t stride0, const std::size_t stride1, const complex_t * matrix)
+   {
+#ifdef USE_OPENMP
+#pragma omp parallel for // private(m00,r00,neg)    // BUG : ERRORS WHEN ACTIVATING PARALLELISM
+#endif
+      for(size_t offset = start; offset < end; offset += (1L << (qubit + 1L)))
+	 for(size_t i = offset; i < offset + (1L << qubit); i++)
+	 {
+	    size_t i0 = i + stride0;
+	    size_t i1 = i + stride1;
+
+	    __m128d xin0 = state[i0].xmm; // _mm_load_pd((double*)&(state[i0].xmm));
+	    // __m128d xin1 = state[i1].xmm; // _mm_load_pd((double*)&(state[i1].xmm));
+	    
+	    state[i0].xmm = state[i1].xmm;
+	    state[i1].xmm = xin0;
+	 }
+   }
+#else
+#error "FMA not available !"
+#endif // FMA
+#else
+#error "SSE not available !"
+#endif // SSE
+
+
+
+#ifdef __SSE__
+#ifdef __FMA__
+   void __apply_h(std::size_t start, std::size_t end, const std::size_t qubit, complex_t * state, const std::size_t stride0, const std::size_t stride1, const complex_t * matrix)
+   {
+      __m128d   m00 = matrix[0].xmm;
+      __m128d   r00 = _mm_shuffle_pd(m00,m00,3);         // 1 cyc
+      __m128d   neg = _mm_set1_pd(-0.0f);
+
+#ifdef USE_OPENMP
+#pragma omp parallel for // private(m00,r00,neg)    // BUG : ERRORS WHEN ACTIVATING PARALLELISM
+#endif
+      for(size_t offset = start; offset < end; offset += (1L << (qubit + 1L)))
+	 for(size_t i = offset; i < offset + (1L << qubit); i++)
+	 {
+	    size_t i0 = i + stride0;
+	    size_t i1 = i + stride1;
+
+	    __m128d xin0 = state[i0].xmm; // _mm_load_pd((double*)&(state[i0].xmm));
+	    __m128d xin1 = state[i1].xmm; // _mm_load_pd((double*)&(state[i1].xmm));
+
+	    __m128d t2; // = _mm_shuffle_pd(m01,m01,3);     // 1 cyc
+	    __m128d t1 = _mm_mul_pd(xin0,r00);               // 5 cyc
+	    __m128d xi0 = _mm_fmadd_pd (xin1,r00, t1);       // x2*t2+t1    // 5 cyc
+	    // t2 = _mm_shuffle_pd(m11,m11,3);              // 1 cyc
+	    t2 = _mm_xor_pd(r00,neg);   // 1 cyc  (m11=-m00)
+	    __m128d xi1 = _mm_fmadd_pd (xin1, t2, t1);      // x2*t2+t1    // 5 cyc
+
+	    state[i0].xmm = xi0; // _mm_store_pd((double*)(&state[i0].xmm),xi0);
+	    state[i1].xmm = xi1; // _mm_store_pd((double*)(&state[i1].xmm),xi1);
+	 }
+   }
+#else
+#error "FMA not available !"
+#endif // FMA
+#else
+#error "SSE not available !"
+#endif // SSE
+
+   uint32_t rw_process_ui(int is, int ie, int s, uint32_t n, uint32_t qubit, kronecker_ui m, cvector_t * v, cvector_t * res)
+   {
+      uint32_t k = n-qubit;
+      // println("run : " << is << " .. " << ie);
+      complex_t * pv = v->data();
+      complex_t * pr = res->data();
+      size_t bc, c1, c2;
+      size_t nk = n-k;
+
+      for (uint32_t r=is; r<ie; ++r)
+      {
+	 bc = r;
+	 c1 = __bit_reset(bc,nk);
+	 c2 = __bit_set(bc,nk);
+	 bc++;
+#ifdef __OP_PREFETCH__
+	 _mm_prefetch((void*)&pv[__bit_reset(bc,nk)],_MM_HINT_T0);
+	 _mm_prefetch((void*)&pv[__bit_set(bc,nk)],_MM_HINT_T0);
+#endif // __OP_PREFETCH__
+#ifdef __AVX__ 
+	 // cxc
+	 xpu::_mm_cmul_add_pd(pv[c1], pv[c2], m.get(r,c1), m.get(r,c2),pr[r]);
+	 // cxr
+	 // pr[r].xmm = complex_t::_mm256_cr_mul_add_pd(pv[c1].xmm, m.get(r,c1).xmm, pv[c2].xmm, m.get(r,c2).xmm);
+#elif __SSE__
+	 // complex_t s; // = 0;
+	 //pr[r] = pv[c1]*(m->get(r,c1)) + pv[c2]*(m->get(r,c2));
+	 // --- cc mul add --- 
+	 pr[r].xmm = _mm_add_pd((pv[c1]*(m.get(r,c1))).xmm, (pv[c2]*(m.get(r,c2))).xmm);
+	 // --- cr mul add --- pr[r].xmm = _mm_add_pd(complex_t::mul_cr(pv[c1].xmm,m.get(r,c1).xmm), complex_t::mul_cr(pv[c2].xmm,m.get(r,c2).xmm));
+	 // --- f. mul add ---
+	 // pr[r].xmm = complex_t::_mm_cr_mul_add_pd(pv[c1].xmm, m.get(r,c1).xmm, pv[c2].xmm, m.get(r,c2).xmm);
+#else
+	 pr[r] = (pv[c1]*(m.get(r,c1))) + (pv[c2]*(m.get(r,c2)));
+#endif
+      }
+
+      return 0;
+   }
+ 
+
+   void sparse_mulmv(uint32_t n, uint32_t qubit, kronecker_ui m, cvector_t& v, cvector_t& res)
+   {
+      uint32_t k = n-qubit;
+      uint32_t rows = (1 << n);
+      uint32_t z = 0;
+
+#ifdef SEQUENTIAL
+      rw_process_ui(z,rows,1,n,qubit,m,&v,&res);
+#else
+      xpu::task rw_t(rw_process_ui,0,0,0,n,qubit,m,&v,&res);
+      xpu::parallel_for process(z,rows,1,&rw_t);
+      process.run();
+#endif
+   }
+
+   uint32_t rw_process_iu(int is, int ie, int s, uint32_t n, uint32_t qubit, kronecker_iu m, cvector_t * v, cvector_t * res)
+   {
+      uint32_t k = n-qubit;
+      // println("run : " << is << " .. " << ie);
+      complex_t * pv = v->data();
+      complex_t * pr = res->data();
+      size_t bc, c1, c2;
+      size_t nk = n-k;
+
+      for (uint32_t r=is; r<ie; ++r)
+      {
+	 bc = r;
+	 c1 = __bit_reset(bc,nk);
+	 c2 = __bit_set(bc,nk);
+	 bc++;
+#ifdef __OP_PREFETCH__
+	 _mm_prefetch((void*)&pv[__bit_reset(bc,nk)],_MM_HINT_T0);
+	 _mm_prefetch((void*)&pv[__bit_set(bc,nk)],_MM_HINT_T0);
+#endif // __OP_PREFETCH__
+#ifdef __AVX__ 
+	 // cxc
+	 xpu::_mm_cmul_add_pd(pv[c1], pv[c2], m.get(r,c1), m.get(r,c2),pr[r]);
+	 // cxr
+	 // pr[r].xmm = complex_t::_mm256_cr_mul_add_pd(pv[c1].xmm, m.get(r,c1).xmm, pv[c2].xmm, m.get(r,c2).xmm);
+#elif __SSE__
+	 // complex_t s; // = 0;
+	 // pr[r] = pv[c1]*(m->get(r,c1)) + pv[c2]*(m->get(r,c2));
+	 // --- cc mul add --- 
+	 pr[r].xmm = _mm_add_pd((pv[c1]*(m.get(r,c1))).xmm, (pv[c2]*(m.get(r,c2))).xmm);
+	 // --- cr mul add --- pr[r].xmm = _mm_add_pd(complex_t::mul_cr(pv[c1].xmm,m.get(r,c1).xmm), complex_t::mul_cr(pv[c2].xmm,m.get(r,c2).xmm));
+	 // --- f. mul add ---
+	 // pr[r].xmm = complex_t::_mm_cr_mul_add_pd(pv[c1].xmm, m.get(r,c1).xmm, pv[c2].xmm, m.get(r,c2).xmm);
+#else
+	 pr[r] = (pv[c1]*(m.get(r,c1))) + (pv[c2]*(m.get(r,c2)));
+#endif
+      }
+
+      return 0;
+   }
+ 
+
+   void sparse_mulmv(uint32_t n, uint32_t qubit, kronecker_iu m, cvector_t& v, cvector_t& res)
+   {
+      uint32_t k = n-qubit;
+      uint32_t rows = (1 << n);
+      uint32_t z = 0;
+
+#ifdef SEQUENTIAL
+      rw_process_iu(z,rows,1,n,qubit,m,&v,&res);
+#else
+      xpu::task rw_t(rw_process_iu,0,0,0,n,qubit,m,&v,&res);
+      xpu::parallel_for process(z,rows,1,&rw_t);
+      process.run();
+#endif
+   }
+   
+   // static xpu::core::os::mutex mtx;
+
+   uint32_t rw_process_iui(int is, int ie, int s, uint32_t n, uint32_t qubit, kronecker_iui m, cvector_t * v, cvector_t * res)
+   {
+      uint32_t k = n-qubit;
+      // println("run : " << is << " .. " << ie);
+      complex_t * pv = v->data();
+      complex_t * pr = res->data();
+      size_t bc, c1, c2;
+      size_t nk = n-k;
+
+      for (uint32_t r=is; r<ie; r++) //+=2)
+      {
+	 // 1st
+	 bc = r;
+	 c1 = __bit_reset(bc,nk);
+	 c2 = __bit_set(bc,nk);
+	 bc++;
+#ifdef __OP_PREFETCH__
+	 _mm_prefetch((void*)&pv[__bit_reset(bc,nk)],_MM_HINT_T0);
+	 _mm_prefetch((void*)&pv[__bit_set(bc,nk)],_MM_HINT_T0);
+#endif // __OP_PREFETCH__
+#ifdef __AVX__ 
+	 // mtx.lock();
+	 // cxc : 
+	 xpu::_mm_cmul_add_pd(pv[c1], pv[c2], m.get(r,c1), m.get(r,c2),pr[r]);
+	 // cxr
+	 // pr[r].xmm = complex_t::_mm256_cr_mul_add_pd(pv[c1].xmm, m.get(r,c1).xmm, pv[c2].xmm, m.get(r,c2).xmm);
+
+	 /*
+	 __m256d a; //_mm256_loadu2_m128d((double*)&pv[c1], (double*)&pv[c2]);
+	 a  = _mm256_insertf128_pd(a,_mm_permute_pd(pv[c1].xmm,1), 0);
+	 a  = _mm256_insertf128_pd(a,_mm_permute_pd(pv[c2].xmm,1), 1);
+	 print("(r="<<r<<") : pr12: "); xpu::dump_m256d(a);
+	 // __m256d b  = _mm256_set_m128d((m.get(r,c1)).xmm, (m.get(r,c2)).xmm);
+	 __m256d b;
+	 b  = _mm256_insertf128_pd(b,_mm_permute_pd(m.get(r,c1).xmm, 1), 1);
+	 print("(r="<<r<<") : c1 : "); xpu::dump_m256d(b);
+	 b  = _mm256_insertf128_pd(b,_mm_permute_pd(m.get(r,c2).xmm, 1), 0);
+	 print("(r="<<r<<") : c2 : "); xpu::dump_m256d(b);
+	 __m256d ab  = xpu::_mm256_cmul_pd(a,b);
+	 print("(r="<<r<<") : mul: "); xpu::dump_m256d(ab);
+	 __m256d abr = _mm256_permute2f128_pd(ab, ab, 1);
+	 print("(r="<<r<<") : prm: "); xpu::dump_m256d(abr);
+	 ab = _mm256_add_pd(ab,abr);
+	 print("(r="<<r<<") : add: "); xpu::dump_m256d(ab);
+	 pr[r].xmm = _mm256_extractf128_pd(ab,0);
+	 print("(r="<<r<<") : res:"); xpu::dump_m128d(pr[r].xmm);
+	 mtx.unlock();
+	 */
+#elif  __SSE__
+	 /*
+	 mtx.lock();
+	 print("(r="<<r<<") : pr1: "); xpu::dump_m128d(pv[c1].xmm);
+	 print("(r="<<r<<") : pr2: "); xpu::dump_m128d(pv[c2].xmm);
+	 print("(r="<<r<<") : c1 : "); xpu::dump_m128d((m.get(r,c1)).xmm);
+	 print("(r="<<r<<") : c2 : "); xpu::dump_m128d((m.get(r,c2)).xmm);
+	 */
+	 // --- cxc mul --- 
+	 pr[r].xmm = _mm_add_pd((pv[c1]*(m.get(r,c1))).xmm, (pv[c2]*(m.get(r,c2))).xmm);
+	 // --- cxr mul --- pr[r].xmm = _mm_add_pd(complex_t::mul_cr(pv[c1].xmm,m.get(r,c1).xmm), complex_t::mul_cr(pv[c2].xmm,m.get(r,c2).xmm));
+	 // --- fus ma  ---
+	 // pr[r].xmm = complex_t::_mm_cr_mul_add_pd(pv[c1].xmm, m.get(r,c1).xmm, pv[c2].xmm, m.get(r,c2).xmm);
+
+         // pr[r].xmm = xpu::_mm128_mul_add_pc(pv[c1].xmm, pv[c2].xmm, m.get(r,c1).xmm, m.get(r,c2).xmm);
+	 /*
+	 print("(r="<<r<<") : res: "); xpu::dump_m128d(pr[r].xmm);
+	 mtx.unlock();
+	 */
+#else
+	 pr[r] = (pv[c1]*(m.get(r,c1))) + (pv[c2]*(m.get(r,c2)));
+#endif
+	 /*
+	 // 2nd
+	 c1 = __bit_reset(bc,n-k);
+	 c2 = __bit_set(bc,n-k);
+#ifdef __AVX__NO 
+	 a  = _mm256_loadu2_m128d((double*)&pv[c1], (double*)&pv[c2]);
+	 // __m256d b  = _mm256_set_m128d((m.get(r,c1)).xmm, (m.get(r,c2)).xmm);
+	 b  = _mm256_insertf128_pd(b,(m.get(bc,c1)).xmm, 1);
+	 b  = _mm256_insertf128_pd(b,(m.get(bc,c2)).xmm, 0);
+	 ab  = xpu::_mm256_cmul_pd(a,b);
+	 abr = _mm256_permute2f128_pd(ab, ab, 1);
+	 ab = _mm256_add_pd(ab,abr);
+	 pr[bc].xmm = _mm256_extractf128_pd(ab,0);
+#elif  __SSE__
+	 pr[bc].xmm = _mm_add_pd((pv[c1]*(m.get(bc,c1))).xmm, (pv[c2]*(m.get(bc,c2))).xmm);
+#else
+	 pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
+#endif
+	 */
+      }
+
+      return 0;
+   }
+ 
+
+   void sparse_mulmv(uint32_t n, uint32_t qubit, kronecker_iui m, cvector_t& v, cvector_t& res)
+   {
+      uint32_t k = n-qubit;
+      uint32_t rows = (1 << n);
+      uint32_t z = 0;
+
+#ifdef SEQUENTIAL
+      rw_process_iui(z,rows,1,n,qubit,m,&v,&res);
+#else
+      xpu::task rw_t(rw_process_iui,0,0,0,n,qubit,m,&v,&res);
+      xpu::parallel_for process(z,rows,1,&rw_t);
+      process.run();
+#endif
+   }
+
 
 
    inline void sqg_apply(cmatrix_t & cm, uint32_t qubit, qu_register& qureg)
    {
-	 uint32_t n  = qureg.size();
+	 uint32_t     n  = qureg.size();
+	 complex_t *  s  = qureg.get_data().data();
+	 // cm.dump();
+	 __apply_m(0, (1 << n), qubit, s, 0, (1 << qubit), cm.m);
+	 return;
 
-	 matrix_t m(2,row_t(2,0));
-	 m[0][0] = cm(0,0); m[0][1] = cm(0,1);
-	 m[1][0] = cm(1,0); m[1][1] = cm(1,1);
-
+#if 0
 	 if (qubit == 0)
 	 {
+	    /*
 	    identity       id(1 << (n-1));
 	    unitary_matrix um(cm.size1(),m);
 	    kronecker      k(&id, &um);
-	    cvector_t      r(qureg.get_data());
+	    // cvector_t      r(qureg.get_data());
+	    cvector_t&     r = qureg.get_aux(); //r(qureg.get_data());
 	    sparse_mulmv(n,qubit,k,qureg.get_data(),r);
-	    qureg = r;
+	    //qureg = r;
+	    qureg.get_data().swap(r);
+	    */
+	    // kronecker_ui k(cm,2,(1 << (n-1)));
+	    // kronecker_ui k(hadamard_c,2,(1 << (n-1)));
+	    kronecker_ui k(cm.m,2,(1 << (n-1)));
+	    cvector_t&     r = qureg.get_aux(); 
+	    sparse_mulmv(n,qubit,k,qureg.get_data(),r);
+	    qureg.get_data().swap(r);
 	 }
 	 else if (qubit == n-1)
 	 {
+	    /*
 	    identity       id(1 << (n-1));
 	    unitary_matrix um(cm.size1(),m);
 	    kronecker      k(&um, &id);
-	    cvector_t      r(qureg.get_data());
+	    cvector_t&     r = qureg.get_aux(); //r(qureg.get_data());
 	    sparse_mulmv(n,qubit,k,qureg.get_data(),r);
-	    qureg = r;
+	    //qureg = r;
+	    qureg.get_data().swap(r);
+	    */
+	    // kronecker_iu k(cm,2,(1 << (n-1)));
+	    // kronecker_iu k(hadamard_c,2,(1 << (n-1)));
+	    kronecker_iu k(cm.m,2,(1 << (n-1)));
+	    cvector_t&     r = qureg.get_aux(); 
+	    sparse_mulmv(n,qubit,k,qureg.get_data(),r);
+	    qureg.get_data().swap(r);
 	 }
 	 else
 	 {
+	    /*
 	    identity       id1(1 << (qubit));
 	    identity       id2(1 << (n-qubit-1));
 	    unitary_matrix um(cm.size1(),m);
 	    kronecker      k(&id2, &um, &id1);
-	    cvector_t      r(qureg.get_data());
+	    //cvector_t      r(qureg.get_data());
+	    cvector_t&     r = qureg.get_aux(); //r(qureg.get_data());
 	    sparse_mulmv(n,qubit,k,qureg.get_data(),r);
-	    qureg = r;
+	    //qureg = r;
+	    qureg.get_data().swap(r);
+	    */
+	    // kronecker_iui k(cm, 2, (1 << (n-qubit-1)), (1 << (qubit)));
+	    // kronecker_iui k(hadamard_c, 2, (1 << (n-qubit-1)), (1 << (qubit)));
+	    kronecker_iui k(cm.m, 2, (1 << (n-qubit-1)), (1 << (qubit)));
+	    cvector_t&     r = qureg.get_aux(); 
+	    sparse_mulmv(n,qubit,k,qureg.get_data(),r);
+	    qureg.get_data().swap(r);
 	 }
+#endif
    }
 
 #endif // remove naive tensor computation
@@ -368,14 +736,20 @@ namespace qx
 
 	 public:
 	   
-	   hadamard(uint32_t qubit) : qubit(qubit)
+	   hadamard(uint32_t qubit) : qubit(qubit) //,m((complex_t*)hadamard_c)
 	   {
 		 m = build_matrix(hadamard_c,2);
 	   }
 
 	   int32_t apply(qu_register& qureg)
 	   {
-		 sqg_apply(m,qubit,qureg);
+	         size_t qs = qureg.states();
+		 complex_t * data = qureg.get_data().data();
+		 // sqg_apply(m,qubit,qureg);
+                 __apply_h(0, qs, qubit, data, 0, (1 << qubit), hadamard_c);
+                 // __apply_m(0, qs, qubit, data, 0, (1 << qubit), hadamard_c);
+                 //__apply_h_old(0, qs, qubit, data, 0, (1 << qubit), hadamard_c);
+
 		 // qureg.set_binary(qubit,__state_unknown__);
 		 qureg.set_measurement_prediction(qubit,__state_unknown__);
 		 return 0;
@@ -417,12 +791,22 @@ namespace qx
    {
       // println("bit=" << bit);
       // println("ctrl=" << ctrl);
+      complex_t * p = amp.data();
       for (size_t i=__bit_set(0,bit); i<(1<<size); i += (1 << (bit+1)))
 	 for (size_t j=0; j<(1<<bit); j++)
 	 {
 	    size_t v = i+j+offset; 
+	    /*
+	    #ifdef __SSE__
+	    __m128d x = _mm_load_pd((const double *)&p[v]);
+	    __m128d y = _mm_load_pd((const double *)&p[__bit_reset(v,trg)]);
+	    _mm_store_pd((double *)&p[__bit_reset(v,trg)],x);
+	    _mm_store_pd((double *)&p[v],y);
+	    #else
+	    */
 	    std::swap(amp[v], amp[__bit_reset(v,trg)]);
-	    // println(" swap(" << std::bitset<16>(v) << "," << std::bitset<16>(__bit_reset(v,trg)) << ")");
+	    // println("swap("<<v<<","<<__bit_reset(v,trg)<<")");
+	    // #endif
 	 }
    }
 
@@ -434,12 +818,6 @@ namespace qx
       size_t step=(1 << (bit1+1));
       size_t b   = cs;
       size_t e   = ce;
-/*
-      println("step=" << step);
-      println("b=" << b);
-      println("e=" << e);
-*/
-
       size_t offset = __bit_set(0,bit1);
 
       //for (size_t i=__bit_set(0,bit1); i<(1<<size); i += (1 << (bit1+1)))
@@ -484,6 +862,7 @@ namespace qx
 
 	   int32_t apply(qu_register& qreg)
 	   {
+	         // println("cnot " << control_qubit << "," << target_qubit);
 		 #ifdef CG_MATRIX
 		 uint32_t sn = qreg.states();
 		 uint32_t qn = qreg.size();
@@ -533,9 +912,15 @@ namespace qx
 		    fast_cx(amp, qn, b1, b2, tq, cq);
 		 else
 		 {
+#ifdef USE_OPENMP
+		    #pragma omp parallel for
+		    for (size_t i=0; i<steps; ++i)
+		       cx_worker(i,i+1,1,&amp,b1,b2,(size_t)tq,(size_t)cq);
+#else
 		    xpu::task t(cx_worker,0,0,0,&amp,b1,b2,(size_t)tq,(size_t)cq);
 		    xpu::parallel_for fswp(0, steps, 1, &t);
 		    fswp.run();
+#endif
 		 }
 // #endif
 
@@ -655,6 +1040,25 @@ namespace qx
    };
 
 
+   template<typename T>
+      void swap_if_greater(T& a, T& b)
+      {
+	 if (a > b)
+	 {
+	    T tmp(a);
+	    a = b;
+	    b = tmp;
+	 }
+      }
+
+   template<typename T>
+      void sort(T& a, T& b, T& c)
+      {
+	 swap_if_greater(a, b);
+	 swap_if_greater(a, c);
+	 swap_if_greater(b, c);
+      }
+
    /**
     * \brief toffoli gate:
     *
@@ -690,6 +1094,27 @@ namespace qx
 
 		 cvector_t& amp = qreg.get_data();
 
+		 //println("\ntoffoli " << cq1 << "," << cq2 << "," << tq);
+#if 1
+		 size_t c1=cq1;
+		 size_t c2=cq2;
+		 size_t c3=tq;
+		 size_t t=tq;
+		 size_t size=qn;
+
+		 sort(c1,c2,c3);
+#ifdef USE_OPENMP
+#pragma omp parallel for
+#endif
+		 for (size_t i=__bit_set(__bit_set(__bit_set(0,c1),c2),c3); i<(1<<size); i += (1 << (c3+1)))
+		    for (size_t j=i; j<(i+(1<<c3)); j += (1 << (c2+1)))
+		       for (size_t k=j; k<(j+(1<<c2)); k+=(1 << (c1+1)))
+		           for (size_t l=k; l<(k+(1<<(c1))); l++)
+		       {
+			  std::swap(amp[__bit_set(l,t)],amp[__bit_reset(l,t)]);
+			  // println("swap : " << __bit_set(l,t) << "," << __bit_reset(l,t));
+		       }
+#else
 		 std::vector<uint32_t> done(sn, 0);
 		 perm_t p = perms(qn,cq1,cq2,tq);
 		 
@@ -704,10 +1129,12 @@ namespace qx
 		    {
 			  // std::swap(amp(p1),amp(p2)); // ublas
 			  std::swap(amp[p1],amp[p2]);
+			  //println("swap : " << p1 << "," << p2);
 			  done[p1] = 1;
 			  done[p2] = 1;
 		    }
 		 }
+#endif
 
 		 if ((qreg.get_measurement_prediction(control_qubit_1) == __state_1__) && 
 		     (qreg.get_measurement_prediction(control_qubit_2) == __state_1__) )
@@ -775,6 +1202,20 @@ namespace qx
       return 0;
    }
 
+   #define __swap_xmm(x,y) { x = _mm_xor_pd(x,y); y = _mm_xor_pd(y,x); x = _mm_xor_pd(x,y); }
+
+   void fast_flip(uint32_t q, uint32_t n, cvector_t& amp)
+   {
+      complex_t * x = amp.data();
+#ifdef USE_OPENMP
+#pragma omp parallel for 
+#endif 
+      for (size_t i=0; i<(1 << n); i+=(1 << (q+1)))
+	 for (size_t j=i; j<(i+(1 << q)); j++) 
+	    //__swap_xmm(x[j].xmm,x[__bit_flip(j,q)].xmm);
+	    std::swap(x[j].xmm,x[__bit_flip(j,q)].xmm);
+   }
+
 
    void flip(uint32_t q, uint32_t n, cvector_t& amp)
    {
@@ -828,20 +1269,25 @@ namespace qx
 
 	   int32_t apply(qu_register& qreg)
 	   {
-#define FAST_FLIP
+// #define FAST_FLIP
 #ifdef FAST_FLIP
 
 	      uint32_t qn = qreg.size();
 	      cvector_t& amp = qreg.get_data();
 	      
-	      flip(qubit,qn,amp);
+	      // flip(qubit,qn,amp);
+	      fast_flip(qubit,qn,amp);
 	      /* 
 	       xpu::task flip_t(fliper,0,0,0,qubit,&amp);
 	       xpu::parallel_for parallel_flip(0,(1 << qn),1,&flip_t);
 	       parallel_flip.run();
 	      */
 #else
-		 sqg_apply(m,qubit,qreg);
+	      uint32_t     n  = qreg.size();
+	      complex_t *  s  = qreg.get_data().data();
+	      // cm.dump();
+	      __apply_m(0, (1 << n), qubit, s, 0, (1 << qubit), m.m);
+	      // sqg_apply(m,qubit,qreg);
 #endif // FAST_FLIP
 
 		 qreg.flip_binary(qubit);
@@ -1189,7 +1635,7 @@ namespace qx
 
 	   rx(uint32_t qubit, double angle) : qubit(qubit), angle(angle)
 	   {
-		 m.resize(2,2);
+		 // m.resize(2,2);
 		 m(0,0) = cos(angle/2);      m(0,1) = complex_t(0,-sin(angle/2));
 		 m(1,0) = complex_t(0,-sin(angle/2)); m(1,1) = cos(angle/2);
 	   }
@@ -1250,7 +1696,7 @@ namespace qx
 
 	   ry(uint32_t qubit, double angle) : qubit(qubit), angle(angle)
 	   {
-		 m.resize(2,2);
+		 // m.resize(2,2);
 		 m(0,0) = cos(angle/2); m(0,1) = -sin(angle/2);
 		 m(1,0) = sin(angle/2); m(1,1) = cos(angle/2);
 	   }
@@ -1311,7 +1757,7 @@ namespace qx
 
 	   rz(uint32_t qubit, double angle) : qubit(qubit), angle(angle)
 	   {
-		 m.resize(2,2);
+		 // m.resize(2,2);
 		 m(0,0) = complex_t(cos(-angle/2), sin(-angle/2));   m(0,1) = 0;
 		 m(1,0) = 0;  m(1,1) =  complex_t(cos(angle/2), sin(angle/2));
 	   }
@@ -1359,14 +1805,32 @@ namespace qx
    {
       // println("bit=" << bit);
       // println("ctrl=" << ctrl);
+      complex_t * x = amp.data();
       for (size_t i=__bit_set(0,bit); i<(1<<size); i += (1 << (bit+1)))
 	 for (size_t j=0; j<(1<<bit); j++)
 	 {
 	    size_t v = i+j+offset; 
-	    amp[v] *= p;
+	    // amp[v] *= p;
+	    x[v] *= p;
 	    // println(" swap(" << std::bitset<16>(v) << "," << std::bitset<16>(__bit_reset(v,trg)) << ")");
 	 }
    }
+
+   void __shift(complex_t * x, size_t size, size_t bit, complex_t p, size_t offset=0)
+   {
+      // println("bit=" << bit);
+      // println("ctrl=" << ctrl);
+      for (size_t i=__bit_set(0,bit); i<(1<<size); i += (1 << (bit+1)))
+	 for (size_t j=0; j<(1<<bit); j++)
+	 {
+	    size_t v = i+j+offset; 
+	    // amp[v] *= p;
+	    x[v] *= p;
+	    // println(" swap(" << std::bitset<16>(v) << "," << std::bitset<16>(__bit_reset(v,trg)) << ")");
+	 }
+   }
+
+
 
 
    int shift_worker(int cs, int ce, int s, cvector_t * p_amp, size_t bit1, size_t bit2, complex_t p)
@@ -1376,11 +1840,6 @@ namespace qx
       size_t step=(1 << (bit1+1));
       size_t b   = cs;
       size_t e   = ce;
-/*
-      println("step=" << step);
-      println("b=" << b);
-      println("e=" << e);
-*/
 
       size_t offset = __bit_set(0,bit1);
 
@@ -1392,42 +1851,226 @@ namespace qx
    }
 
 
+   uint32_t qft_1st_fold_worker(int is, int ie, int s, uint32_t n, uint32_t qubit, kronecker_ui m, cvector_t * v, cvector_t * res)
+   {
+      uint32_t k = n-qubit;
+      // println("run : " << is << " .. " << ie);
+      complex_t * pv = v->data();
+      complex_t * pr = res->data();
+      size_t bc, c1, c2;
+
+      for (uint32_t r=is; r<ie; ++r)
+      {
+	 bc = r;
+	 c1 = __bit_reset(bc,n-k);
+	 c2 = __bit_set(bc,n-k);
+#ifdef __OP_PREFETCH__
+	 _mm_prefetch((void*)&pv[__bit_reset((bc+1),n-k)],_MM_HINT_T0);
+	 _mm_prefetch((void*)&pv[__bit_set((bc+1),n-k)],_MM_HINT_T0);
+#endif // __OP_PREFETCH__
+#ifdef __AVX__ //NO 
+	 xpu::_mm_cmul_add_pd(pv[c1], pv[c2], m.get(r,c1), m.get(r,c2),pr[r]);
+#else
+	 // complex_t s; // = 0;
+	 //pr[r] = pv[c1]*(m->get(r,c1)) + pv[c2]*(m->get(r,c2));
+	 pr[r].xmm = _mm_add_pd((pv[c1]*(m.get(r,c1))).xmm, (pv[c2]*(m.get(r,c2))).xmm);
+#endif
+      }
+      size_t bit2 = qubit;
+      for (size_t j=qubit+1; j<n; ++j)
+      {
+         complex_t  p(cos(M_PI/(1 << (j-qubit))), sin(M_PI/(1 << (j- qubit))));
+	 size_t bit1 = j;
+	 size_t step=(1 << (bit1+1));
+	 size_t offset = __bit_set(0,bit1);
+	 for (size_t i=is; i<ie; i++)
+	 {
+	    // println("i=" << i*step);
+	    __shift(pr,bit1,bit2,p,offset+(i*step));
+	 }
+      }
+
+      return 0;
+   }
+ 
+
+   void qft_1st_fold(uint32_t n, uint32_t qubit, kronecker_ui m, cvector_t& v, cvector_t& res)
+   {
+      uint32_t k = n-qubit;
+      uint32_t rows = (1 << n);
+      uint32_t z = 0;
+
+      //xpu::task qf_t(qft_fold_worker,0,0,0,n,qubit,m,&v,&res);
+      //xpu::parallel_for process(z,rows,1,&qf_t);
+      //process.run();
+
+      qft_1st_fold_worker(0,rows,1,n,qubit,m,&v,&res);
+
+   }
+
+
+   uint32_t qft_nth_fold_worker(int is, int ie, int s, uint32_t n, uint32_t qubit, kronecker_iui m, cvector_t * v, cvector_t * res)
+   {
+      uint32_t k = n-qubit;
+      // println("run : " << is << " .. " << ie);
+      complex_t * pv = v->data();
+      complex_t * pr = res->data();
+      size_t bc, c1, c2;
+
+      for (uint32_t r=is; r<ie; ++r)
+      {
+	 bc = r;
+	 c1 = __bit_reset(bc,n-k);
+	 c2 = __bit_set(bc,n-k);
+#ifdef __OP_PREFETCH__
+	 _mm_prefetch((void*)&pv[__bit_reset((bc+1),n-k)],_MM_HINT_T0);
+	 _mm_prefetch((void*)&pv[__bit_set((bc+1),n-k)],_MM_HINT_T0);
+#endif // __OP_PREFETCH__
+#ifdef __AVX__ //NO 
+	 xpu::_mm_cmul_add_pd(pv[c1], pv[c2], m.get(r,c1), m.get(r,c2),pr[r]);
+#else
+	 // complex_t s; // = 0;
+	 //pr[r] = pv[c1]*(m->get(r,c1)) + pv[c2]*(m->get(r,c2));
+	 pr[r].xmm = _mm_add_pd((pv[c1]*(m.get(r,c1))).xmm, (pv[c2]*(m.get(r,c2))).xmm);
+#endif
+      }
+      size_t bit2 = qubit;
+      for (size_t j=qubit+1; j<n; ++j)
+      {
+         complex_t  p(cos(M_PI/(1 << (j-qubit))), sin(M_PI/(1 << (j-qubit))));
+	 size_t bit1 = j;
+	 size_t step=(1 << (bit1+1));
+	 size_t offset = __bit_set(0,bit1);
+	 for (size_t i=is; i<ie; i++)
+	 {
+	    __shift(pr,bit1,bit2,p,offset+(i*step));
+	 }
+      }
+
+      return 0;
+   }
+
+   void qft_nth_fold(uint32_t n, uint32_t qubit, kronecker_iui m, cvector_t& v, cvector_t& res)
+   {
+      uint32_t k = n-qubit;
+      uint32_t rows = (1 << n);
+      uint32_t z = 0;
+
+      //xpu::task qf_t(qft_fold_worker,0,0,0,n,qubit,m,&v,&res);
+      //xpu::parallel_for process(z,rows,1,&qf_t);
+      //process.run();
+
+      qft_nth_fold_worker(0,rows,1,n,qubit,m,&v,&res);
+
+   }
+
+
+   int qft_worker(int cs, int ce, int s, size_t n, cvector_t& p_in, cvector_t& p_out, kronecker_ui kr, size_t qubit)
+   {
+      complex_t * in  = p_in.data();
+      complex_t * out = p_out.data();
+      cvector_t & amp = p_out;
+      // xpu::parallel_for fswp(__bit_set(0,b1), (1 << qn), (1 << (b1+1)), &t);
+      size_t b   = cs;
+      size_t e   = ce;
+      
+      rw_process_ui(cs, ce, s, n, qubit, kr, &p_in, &p_out); // H 
+
+      size_t bit2 = qubit;
+      for (size_t j=qubit+1; j<n; ++j)
+      {
+         complex_t  p(cos(M_PI/(1 << (j-qubit))), sin(M_PI/(1 << (j- qubit))));
+	 size_t bit1 = j;
+	 size_t step=(1 << (bit1+1));
+	 size_t offset = __bit_set(0,bit1);
+	 for (size_t i=b; i<e; i++)
+	 {
+	    println("i=" << i*step);
+	    __shift(amp,bit1,bit2,p,offset+(i*step));
+	 }
+      }
+      return 0;
+   }
+
+
+   int qft_worker(int cs, int ce, int s, size_t n, cvector_t& p_in, cvector_t& p_out, kronecker_iui kr, size_t qubit)
+   {
+      complex_t * in  = p_in.data();
+      complex_t * out = p_out.data();
+      cvector_t & amp = p_out;
+      // xpu::parallel_for fswp(__bit_set(0,b1), (1 << qn), (1 << (b1+1)), &t);
+      size_t b   = cs;
+      size_t e   = ce;
+      rw_process_iui(cs, ce, s, n, qubit, kr, &p_in, &p_out); // H 
+      return 0;
+      size_t bit2 = qubit;
+      for (size_t j=qubit+1; j<n; ++j)
+      {
+         complex_t  p(cos(M_PI/(1 << (j-qubit))), sin(M_PI/(1 << (j- qubit))));
+	 size_t bit1 = j;
+	 size_t step=(1 << (bit1+1));
+	 size_t offset = __bit_set(0,bit1);
+	 for (size_t i=b; i<e; i++)
+	 {
+	    __shift(p_out,bit1,bit2,p,offset+(i*step));
+	 }
+      }
+      return 0;
+   }
+
    /**
     * \brief qft 
     */ 
-    /*
    class qft : public gate
    {
 	 private:
 
 	   std::vector<uint32_t>     qubit;
-	   std::vector<complex_t>    z;
-
-	   void cr(uint32_t ctrl_qubit, uint32_t target_qubit, qu_register& qreg)
-	   {
-	      size_t b1 = std::max(ctrl_qubit,target_qubit);
-	      size_t b2 = std::min(ctrl_qubit,target_qubit);
-	      size_t qn = qreg.size();
-	      size_t steps = ((1 << qn)-(__bit_set(0,b1)))/(1 << (b1+1))+1;
-              complex_t  z(cos(M_PI/(1 << (ctrl_qubit - target_qubit))), sin(M_PI/(1 << (ctrl_qubit - target_qubit))));
-
-	      cvector_t& amp = qreg.get_data();
-	      xpu::task t(shift_worker,0,0,0,&amp,b1,b2,z);
-	      xpu::parallel_for p_shifter(0, steps, 1, &t);
-	      p_shifter.run();
-
-	      return 0;
-	   }
+	   cmatrix_t                 hm;
 
 	 public:
 
 	   qft(std::vector<uint32_t> qubit) : qubit(qubit)
 	   {
+		 hm = build_matrix(hadamard_c,2);
 	   }
 
 	   int32_t apply(qu_register& qreg)
-	   {
-
+	   { 
+	      size_t n  = qreg.size();
+	      size_t s = qreg.states();
+	      cvector_t& in  = qreg.get_data();
+	      cvector_t& out = qreg.get_aux(); 
+	      
+	      // kronecker_ui kui(hm,2,(1 << (n-1)));
+	      kronecker_ui kui(hadamard_c,2,(1 << (n-1)));
+	      qft_1st_fold(n, 0, kui, in, out);
+	      for (size_t i=1; i<n-1; ++i)
+	      {
+		 size_t q = qubit[i];
+	         // kronecker_iui kiui(hm, 2, (1 << (n-q-1)), (1 << (q)));
+	         kronecker_iui kiui(hadamard_c, 2, (1 << (n-q-1)), (1 << (q)));
+	         qft_nth_fold(n, 0, kiui, in, out);
+	      }
+	      in.swap(out);
+	      return 0;
+#if 0
+	      // 1st fold
+	      qft_worker(0, s, 1, n, in, out, kronecker_ui(m,2,s-2), 0);
+	      return 0;
+	      // ith fold
+	      for (size_t i=1; i<qubit.size(); ++i)
+	      {
+		 size_t q = qubit[i];
+	         kronecker_iui k(m, 2, (1 << (n-q-1)), (1 << (q)));
+		 qft_worker(0, qreg.states(), 1, qreg.size(), (qreg.get_data()), (qreg.get_aux()), k, q);
+	      }
+	      // last fold
+	      kronecker_iu k(m,2,(1 << (n-1)));
+	      sparse_mulmv(n,qubit[n-1],k,qreg.get_data(),qreg.get_aux());
+	      in.swap(out);
+	      return 0;
+#endif
 	   }
 
 	   void dump()
@@ -1458,9 +2101,6 @@ namespace qx
 	      return __qft_gate__; 
 	   }
    };
-   */
-
-
 
 
    /**
@@ -1512,11 +2152,22 @@ namespace qx
 	      size_t b2 = std::min(ctrl_qubit,target_qubit);
 	      size_t qn = qreg.size();
 	      size_t steps = ((1 << qn)-(__bit_set(0,b1)))/(1 << (b1+1))+1;
-
 	      cvector_t& amp = qreg.get_data();
+
+#ifdef USE_OPENMP
+              #pragma omp parallel for
+	      for (size_t i=0; i<steps; ++i)
+	      {
+		 // shift_worker(i,i+1,1,&amp,b1,b2,z);
+		 size_t stride=(1 << (b1+1));
+		 size_t offset = __bit_set(0,b1);
+		 __shift(amp,b1,b2,z,offset+(i*stride));
+	      }
+#else
 	      xpu::task t(shift_worker,0,0,0,&amp,b1,b2,z);
 	      xpu::parallel_for p_shifter(0, steps, 1, &t);
 	      p_shifter.run();
+#endif
 
 	      return 0;
 	   }
@@ -1571,13 +2222,13 @@ namespace qx
 	   uint32_t qubit1;
 	   uint32_t qubit2;
 	   
-	   cmatrix_t m;
+	   // cmatrix_t m;
 
 	 public:
 
 	   swap(uint32_t qubit1, uint32_t qubit2) : qubit1(qubit1), qubit2(qubit2)
 	   {
-		 m =  build_matrix(swap_c,4);
+		 // m =  build_matrix(swap_c,4);
 	   }
 
 	   int32_t apply(qu_register& qreg)
@@ -1682,9 +2333,6 @@ namespace qx
 
    };
 
-
-
-
    /**
     * \brief  custom matrix gate
     *     
@@ -1698,12 +2346,13 @@ namespace qx
 // #else
 // 	   ublas::vector<uint32_t>  qubits;
 // #endif 
-	   cmatrix_t m;
+	   // cmatrix_t m;
+	   qx::linalg::matrix<complex_t> m;
 
 	 public:
 
 // #ifdef __BUILTIN_LINALG__
-	   custom(std::vector<uint32_t>  qubits, cmatrix_t m) : qubits(qubits), m(m)
+	   custom(std::vector<uint32_t>  qubits, qx::linalg::matrix<complex_t> m) : qubits(qubits), m(m)
 // #else
 // 	   custom(ublas::vector<uint32_t>  qubits, cmatrix_t m) : qubits(qubits), m(m)
 // #endif 
@@ -1713,11 +2362,13 @@ namespace qx
 		    println("[x] error: cutom gate : the matrix size do not match the number of qubits !");
 		 // verify also that the matrix is unitary
 // #ifdef __BUILTIN_LINALG__
-		 cmatrix_t ctr(m.size2(),m.size1());
+		 // cmatrix_t ctr(m.size2(),m.size1());
+		 qx::linalg::matrix<complex_t> ctr(m.size2(),m.size1());
 		 for (uint32_t i=0; i<m.size2(); ++i)
 		    for (uint32_t j=0; j<m.size1(); ++j)
-		       ctr(i,j) = std::conj(m(j,i));
-		 cmatrix_t mxctr = mxm(m,ctr);
+		       ctr(i,j) = m(j,i).conj();
+		 // cmatrix_t mxctr = mxm(m,ctr);
+		 qx::linalg::matrix<complex_t> mxctr = mxm(m,ctr);
 		 qx::linalg::identity_matrix<complex_t> id(m.size1());
 // #else
 // 		 cmatrix_t mxctr = mxm(m,ublas::trans(conj(m)));
@@ -1749,7 +2400,7 @@ namespace qx
 	      return __custom_gate__; 
 	   }
    };
-   
+  
    
 
    int p1_worker(int cs, int ce, int s, double * p1, uint32_t qubit, xpu::lockable * l, cvector_t * p_data)
@@ -1760,7 +2411,7 @@ namespace qx
       {
 	 i = __bit_set(i,qubit);
 	 if (i<ce)
-	    local_p1 += std::norm(data[i]);
+	    local_p1 += data[i].norm(); //std::norm(data[i]);
 	 // if (__bit_test(i,qubit))
 	    // local_p1 += std::norm(data[i]);
       }
@@ -1784,7 +2435,7 @@ namespace qx
 	 {
 	    if (!__bit_test(i,qubit))
 	       data[i] = 0;
-	    local_length += std::norm(data[i]);
+	    local_length += data[i].norm(); //std::norm(data[i]);
 	 }
       }
       else
@@ -1793,7 +2444,7 @@ namespace qx
 	 {
 	    if (__bit_test(i,qubit))
 	       data[i] = 0;
-	    local_length += std::norm(data[i]);
+	    local_length += data[i].norm(); //std::norm(data[i]);
 	 }
       }
       l->lock();
@@ -1912,7 +2563,8 @@ namespace qx
 		 while (bc < n)
 		 {
 		    bc =  b.to_ulong();
-		    p += std::norm(data[bc]);
+		    // p += std::norm(data[bc]);
+		    p += data[bc].norm();
 		    b = inc(b);
 		    b.set(qubit);  
 		    bc =  b.to_ulong();
@@ -1939,7 +2591,7 @@ namespace qx
 		 }
 
 		 for (uint32_t k = 0; k < (1 << size); k++) 
-		    length += std::norm(data[k]);
+		    length += data[k].norm(); //std::norm(data[k]);
 
 		 length = std::sqrt(length);
 
@@ -2065,6 +2717,66 @@ namespace qx
    #define bin_ctrl_pauli_x(b,q) bin_ctrl(b,new pauli_x(q))
    #define bin_ctrl_pauli_y(b,q) bin_ctrl(b,new pauli_y(q))
    #define bin_ctrl_pauli_z(b,q) bin_ctrl(b,new pauli_z(q))
+
+
+
+   /**
+    * \brief classical binary not gate 
+    */
+   class classical_not : public gate
+   {
+	 private:
+
+	   uint32_t bit;
+
+	 public:
+
+	   classical_not(uint32_t bit) : bit(bit)
+	   {
+	   }
+
+	   int32_t apply(qu_register& qreg)
+	   {
+	      qreg.flip_measurement(bit);
+	      return 0;
+	   }
+
+	   uint32_t get_bit()
+	   {
+	      return bit;
+	   }
+
+	   void dump()
+	   {
+		 // println("  [-] classical not gate: \n bit=" << bit);
+		 println(" not " << bit);
+	   }
+	   
+	   std::vector<uint32_t>  qubits()
+	   {
+	      return std::vector<uint32_t>();
+	   }
+
+	   std::vector<uint32_t>  control_qubits()
+	   {
+	      return std::vector<uint32_t>();
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
+	   {
+	      return std::vector<uint32_t>();
+	   }
+
+	   gate_type_t type()
+	   {
+	      return __classical_not_gate__;
+	   }
+   };
+
+
+
+
+
 
    /**
     * prepz  
@@ -2416,7 +3128,7 @@ namespace qx
 		 complex_t     c  = (*i).second;
 		 // println("bs=" << bs << ", a=" << c);
 		 q[bs] = c;
-		 norm += std::norm(c);
+		 norm += c.norm(); //std::norm(c);
 	      }
 	      
 	      if (std::fabs(norm-1) > QUBIT_ERROR_THRESHOLD)
@@ -2465,6 +3177,62 @@ namespace qx
 	      return __prepare_gate__; 
 	   }
    };
+
+   /**
+    * \brief print  : debug utility
+    *     print arbitrary string
+    */
+   class print_str : public gate
+   {
+	 private:
+	 
+	   std::string str; 
+
+	 public:
+
+	   print_str(std::string& s) : str(s)
+	   {
+	   }
+
+	   int32_t apply(qu_register& qreg)
+	   {
+		 println(str);
+		 return 0;
+	   }
+
+	   void dump()
+	   {
+		 println(" print " << str << "\"");
+	   }
+	   
+	   std::vector<uint32_t>  qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 return r;
+	   }
+
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 return r;
+	   }
+
+	   gate_type_t type()
+	   {
+	      return __print_str__;   
+	   }
+
+   };
+
+
+
+
 
 }
 

@@ -75,7 +75,8 @@ std::string  qx::qu_register::to_binary_string(uint32_t state, uint32_t nq)
  * \brief quantum register of n_qubit
  */
 // qx::qu_register::qu_register(uint32_t n_qubits) : data(1 << n_qubits), binary(n_qubits), n_qubits(n_qubits), rgenerator(xpu::timer().current()*10e5), udistribution(.0,1)
-qx::qu_register::qu_register(uint32_t n_qubits) : data(1 << n_qubits), measurement_prediction(n_qubits), measurement_register(n_qubits), n_qubits(n_qubits), rgenerator(xpu::timer().current()*10e5), udistribution(.0,1)
+//qx::qu_register::qu_register(uint32_t n_qubits) : data(1 << n_qubits), measurement_prediction(n_qubits), measurement_register(n_qubits), n_qubits(n_qubits), rgenerator(xpu::timer().current()*10e5), udistribution(.0,1)
+qx::qu_register::qu_register(uint32_t n_qubits) : data(1 << n_qubits), aux(1 << n_qubits), measurement_prediction(n_qubits), measurement_register(n_qubits), n_qubits(n_qubits), rgenerator(xpu::timer().current()*10e5), udistribution(.0,1)
 {
    data[0] = complex_t(1,0);
    for (uint32_t i=1; i<(1 << n_qubits); ++i)
@@ -114,6 +115,10 @@ cvector_t& qx::qu_register::get_data()
    return data;
 }
 
+cvector_t& qx::qu_register::get_aux()
+{
+   return aux;
+}
 
 /**
  * \brief data setter
@@ -173,7 +178,8 @@ bool qx::qu_register::check()
 {
    double sum=0;
    for (int i=0; i<data.size(); ++i)
-      sum += std::norm(data[i]);
+      sum += data[i].norm();
+      // sum += std::norm(data[i]);
    println("[+] register validity check : " << sum) ;
    return (std::fabs(sum-1) < QUBIT_ERROR_THRESHOLD);
 }
@@ -195,7 +201,8 @@ int32_t qx::qu_register::measure()
    
    for (int i=0; i<data.size(); ++i)
    {
-      r -= std::norm(data[i]);
+      // r -= std::norm(data[i]);
+      r -= data[i].norm();
       if (r <= 0)
       {
 	 collapse(i);
@@ -342,6 +349,17 @@ void qx::qu_register::flip_binary(uint32_t q)
    // binary[q] = (s != __state_unknown__ ? (s == __state_1__ ? __state_0__ : __state_1__) : s);  
 }
 
+/**
+ * \brief
+ */
+void qx::qu_register::flip_measurement(uint32_t q)
+{
+   assert(q<n_qubits);
+   measurement_register[q] = !measurement_register[q];
+}
+
+
+
 
 /**
  * fidelity
@@ -356,7 +374,8 @@ double fidelity(qu_register& s1, qu_register& s2)
 
    double f = 0;  
    for (int i=0; i<s1.states(); ++i)
-      f += sqrt(std::norm(s1[i])*std::norm(s2[i]));
+      // f += sqrt(std::norm(s1[i])*std::norm(s2[i]));
+      f += sqrt(s1[i].norm()*s2[i].norm());
    
    return f;
 }

@@ -39,4 +39,4 @@ map q3,D
 
   display_binary #  result
 
-# error_model depolarizing_channel, 0.1
+error_model depolarizing_channel, 0.1

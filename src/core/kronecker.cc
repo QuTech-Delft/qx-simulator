@@ -14,28 +14,44 @@ using namespace qx::linalg;
 
 int main(int argc, char **argv)
 {
-   matrix_t m(2,row_t(2,0));
-   m[0][0] = 0; m[0][1] = 1;
-   m[1][0] = 1; m[1][1] = 0;
+   matrix_t m(2,row_t(2,0.0));
+   m[0][0] = 0.1; m[0][1] = 0.4;
+   m[1][0] = 0.5; m[1][1] = 0.7;
+
+   cmatrix_t cm(2,2);
+   cm(0,0) = 0.1; cm(0,1) = 0.4;
+   cm(1,0) = 0.5; cm(1,1) = 0.7;
+   cm.dump();
 
    identity       id1(4);
    unitary_matrix gate(2,m);
    identity       id2(2);
 
    //kronecker k(&id1, &gate, &id2);
-   kronecker k(&gate, &id1, &id2);
+   kronecker k(&gate, &id1); //, &id2);
 
-   size_t ks = 2*4*2;
+   size_t ks = 2*4; //*2;
    for (int i=0; i<ks; i++)
    {
       print("[ ");
       for (int j=0; j<ks; j++)
-	 print(k.get(j,i).real() << ", ");
+	 print(k.get(j,i).re << ", ");
       println("]");
    }
 
-   cvector_t v(ks,0);
-   cvector_t r(ks,0);
+   println("-----------------");
+
+   kronecker_ui kui(cm,2,4);
+   for (int i=0; i<ks; i++)
+   {
+      print("[ ");
+      for (int j=0; j<ks; j++)
+	 print(kui.get(j,i).re << ", ");
+      println("]");
+   }
+
+   cvector_t v(ks,0.0);
+   cvector_t r(ks,0.0);
 
    v[0] = 1;
 
