@@ -73,7 +73,7 @@ map q16,x22
    measure x14
    cz b11,d25
 
-   display
+   # display
 
 .error_injection
     # x d13

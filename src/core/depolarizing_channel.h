@@ -12,6 +12,9 @@ namespace qx
 
    #define __third__ (0.33333333333333333333333333333f)
 
+   typedef enum { __x_error__, __z_error__, __y_error__ } error_type_t;
+   typedef std::pair<error_type_t, size_t>                error_t;
+
    
    /**
     * \brief depolarizing channel implementation
@@ -30,7 +33,8 @@ namespace qx
 							                zp(__third__),
 									overall_error_probability(0),
 									total_errors(0),
-									error_histogram(nq+1,0)
+									error_histogram(nq+1,0),
+									error_recording(false)
 	{
 
 	   for (uint64_t i=1; i<(nq+1); ++i)
@@ -53,7 +57,8 @@ namespace qx
 											                 zp(zp),
 													 overall_error_probability(0),
 									                                 total_errors(0),
-													 error_histogram(nq+1,0)
+													 error_histogram(nq+1,0),
+													 error_recording(false)
 	{
 	   for (uint64_t i=1; i<(nq+1); ++i)
 	   {
@@ -116,6 +121,39 @@ namespace qx
 	   return false;
 	}
 
+	/**
+	 * \brief enable error recording
+	 */
+	void enable_error_recording()
+	{
+	   error_recording = true;
+	}
+
+
+	/**
+	 * \brief disable error recording
+	 */
+	void disable_error_recording()
+	{
+	   error_recording = false;
+	}
+
+	const char error_type[3] = { 'x', 'z', 'y' };
+
+	/**
+	 * \brief report injected errors 
+	 */
+	void report_errors()
+	{
+	   if (errors.empty())
+	      return;
+	   println("[x] injected errors report : ");
+	   for (size_t i=0; i<errors.size(); ++i)
+	   {
+	      println("     " << error_location[i] << " : "<< error_type[errors[i].first] << " on qubit " << errors[i].second);
+	   }
+	}
+
 	#define __verbose__ if (verbose)
 
 	/**
@@ -127,6 +165,9 @@ namespace qx
 	   __verbose__ println("    [e] depolarizing_channel : injecting errors in circuit '" << c->id() << "'...");
 	   uint64_t steps = c->size();
 	   qx::circuit * noisy_c = new qx::circuit(nq,c->id() + "(noisy)");
+	   
+	   errors.clear();
+	   error_location.clear();
 
 	   __verbose__ println("    [+] circuit steps : " << steps);
 	   for (uint64_t p=0; p<steps; ++p)
@@ -158,6 +199,11 @@ namespace qx
 		 error_histogram[affected_qubits]++;
 
 		 __verbose__ println("    [>>>] error injection step " << p << " : number of affected qubits: " << affected_qubits);
+		 if (error_recording)
+		 {
+		    for (size_t e=0; e<affected_qubits; ++e)
+		       error_location.push_back(p);
+		 }
 
 		 if (affected_qubits==1)
 		 {
@@ -214,7 +260,9 @@ namespace qx
 		 }
 	      }
 	      else
+	      {
 		 noisy_c->add(c->get(p));
+	      }
 	   }
 	   __verbose__ println("    [+] total injected errors in circuit '" <<  c->id() << "': " << total_errors);
 
@@ -288,16 +336,22 @@ namespace qx
 	   if (p<xp)
 	   {
 	      __verbose__ println(" (x error) ");
+	      if (error_recording)
+		 errors.push_back(error_t(__x_error__,q));
 	      return new qx::pauli_x(q);
 	   }
 	   else if (p<(zp+xp))
 	   {
 	      __verbose__ println(" (z error) ");
+	      if (error_recording)
+		 errors.push_back(error_t(__z_error__,q));
 	      return new qx::pauli_z(q);
 	   }
 	   else
 	   {
 	      __verbose__ println(" (y error) ");
+	      if (error_recording)
+		 errors.push_back(error_t(__y_error__,q));
 	      return new qx::pauli_y(q);
 	   }
 	}
@@ -308,6 +362,8 @@ namespace qx
 	qx::gate * measurement_error(uint32_t q, bool verbose=false)
 	{
 	   __verbose__ println(" (measurement error) ");
+	   if (error_recording)
+	      errors.push_back(error_t(__x_error__,q));
 	   return new qx::pauli_x(q);
 	}
 
@@ -360,6 +416,10 @@ namespace qx
 	 double               overall_error_probability;
 	 uint64_t             total_errors;
 	 histogram_t          error_histogram;
+
+	 bool                 error_recording;
+	 std::vector<error_t> errors;
+	 std::vector<size_t>  error_location;
 
    };
 }

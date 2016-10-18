@@ -77,9 +77,25 @@ int main(int argc, char **argv)
       for (uint32_t i=0; i<perfect_circuits.size(); i++)
       {
          println("[>] processing circuit '" << perfect_circuits[i]->id() << "'...");
-	 qx::depolarizing_channel dep_ch(perfect_circuits[i], qcp.qubits(), error_probability);
-	 circuits.push_back(dep_ch.inject(true));
-	 total_errors += dep_ch.get_total_errors();
+	 uint32_t iterations = perfect_circuits[i]->get_iterations();
+	 if (iterations > 1)
+	 {
+	    for (uint32_t it=0; it<iterations; ++it)
+	    {
+	       qx::depolarizing_channel dep_ch(perfect_circuits[i], qcp.qubits(), error_probability);
+	       qx::circuit * noisy_c = dep_ch.inject(true);
+	       println("[+] noisy circuit : " << std::hex << noisy_c);
+	       circuits.push_back(noisy_c);
+	       total_errors += dep_ch.get_total_errors();
+	    }
+	 }
+	 else
+	 {
+	    qx::depolarizing_channel dep_ch(perfect_circuits[i], qcp.qubits(), error_probability);
+	    qx::circuit * noisy_c = dep_ch.inject(true);
+	    circuits.push_back(noisy_c);
+	    total_errors += dep_ch.get_total_errors();
+	 }
       }
       println("[+] total errors injected in all circuits : " << total_errors);
 

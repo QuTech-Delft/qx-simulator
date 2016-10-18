@@ -113,6 +113,7 @@ namespace qx
 	   virtual std::vector<uint32_t>  control_qubits() = 0;
 	   virtual std::vector<uint32_t>  target_qubits()  = 0;
 	   virtual gate_type_t            type() = 0;
+	   virtual std::string            micro_code() { return "# unsupported operation : qubit out of range"; }
 	   virtual void                   dump() = 0;
 	   virtual                        ~gate() { };                
 
@@ -720,6 +721,23 @@ namespace qx
 
 */
 
+   typedef enum    
+   {
+      __x180__, 
+      __x90__ , 
+      __y180__, 
+      __y90__ , 
+      __ym90__ 
+   } elementary_operation_t;
+
+   static const char * pulse_lt[][5] = 
+   {
+    { "  pulse 9,0,0", "  pulse 10,0,0", "  pulse 11,0,0", "  pulse 12,0,0", "  pulse 14,0,0" },
+    { "  pulse 0,9,0", "  pulse 0,10,0", "  pulse 0,11,0", "  pulse 0,12,0", "  pulse 0,14,0" },
+    { "  pulse 0,0,9", "  pulse 0,0,10", "  pulse 0,0,11", "  pulse 0,0,12", "  pulse 0,0,14" },
+   };
+
+
    /**
     * \brief hadamard gate:
     *
@@ -753,6 +771,23 @@ namespace qx
 		 // qureg.set_binary(qubit,__state_unknown__);
 		 qureg.set_measurement_prediction(qubit,__state_unknown__);
 		 return 0;
+	   }
+
+	   std::string  micro_code()
+	   {
+	      /**
+	        | wait 5
+		| y90 q0  --> { pulse 12,0,0 }
+	    	| wait 5
+		| x180 q0 --> { pulse 9,0,0 }
+		*/
+	      if (qubit > 2) return "# unsupported operation : qubit out of range";
+	      std::stringstream uc;
+	      uc << pulse_lt[qubit][__y90__] << "\n";
+	      uc << "  wait 4 \n";
+	      uc << pulse_lt[qubit][__x180__] << "\n";
+	      uc << "  wait 4 \n";
+	      return uc.str();
 	   }
 
 	   std::vector<uint32_t>  qubits()
@@ -1293,6 +1328,20 @@ namespace qx
 		 qreg.flip_binary(qubit);
 		 return 0;
 	   }
+	   
+	   std::string  micro_code()
+	   {
+	      /**
+	    	| wait 5
+		| x180 q0 --> { pulse 9,0,0 }
+		*/
+	      if (qubit > 2) return "# unsupported operation : qubit out of range";
+	      std::stringstream uc;
+	      uc << pulse_lt[qubit][__x180__] << "\n";
+	      uc << "  wait 4 \n";
+	      return uc.str();
+	   }
+
 
 	   void dump()
 	   {
@@ -1353,6 +1402,21 @@ namespace qx
 		 qreg.flip_binary(qubit);
 		 return 0;
 	   }
+	   
+	   std::string  micro_code()
+	   {
+	      /**
+	    	| wait 5
+		| x180 q0 --> { pulse 9,0,0 }
+		*/
+	      if (qubit > 2) return "# unsupported operation : qubit out of range";
+	      std::stringstream uc;
+	      uc << pulse_lt[qubit][__y180__] << "\n";
+	      uc << "  wait 4 \n";
+	      return uc.str();
+	   }
+
+
 
 	   void dump()
 	   {
@@ -1413,6 +1477,23 @@ namespace qx
 		 sqg_apply(m,qubit,qreg);
 		 return 0;
 	   }
+	   
+	   std::string  micro_code()
+	   {
+	      /**
+	    	| wait 5
+		| x180 q0 --> { pulse 9,0,0 }
+		*/
+	      if (qubit > 2) return "# unsupported operation : qubit out of range";
+	      std::stringstream uc;
+	      uc << pulse_lt[qubit][__y180__] << "\n";
+	      uc << "  wait 4 \n";
+	      uc << pulse_lt[qubit][__x180__] << "\n";
+	      uc << "  wait 4 \n";
+	      return uc.str();
+	   }
+
+
 
 	   void dump()
 	   {
@@ -1469,6 +1550,19 @@ namespace qx
 	   {
 		 sqg_apply(m,qubit,qreg);
 		 return 0;
+	   }
+	   
+	   std::string  micro_code()
+	   {
+	      if (qubit > 2) return "# unsupported operation : qubit out of range";
+	      std::stringstream uc;
+	      uc << pulse_lt[qubit][__y90__] << "\n";
+	      uc << "  wait 4 \n";
+	      uc << pulse_lt[qubit][__x90__] << "\n";
+	      uc << "  wait 4 \n";
+	      uc << pulse_lt[qubit][__ym90__] << "\n";
+	      uc << "  wait 4 \n";
+	      return uc.str();
 	   }
 
 	   void dump()

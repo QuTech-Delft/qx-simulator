@@ -15,6 +15,10 @@
 
 qubits 22
 
+# init qubits to |0...01> (set your own input state here)
+.init
+   x q0
+
 # main circuit
 .qft
    h q0
@@ -271,4 +275,24 @@ qubits 22
    cr q21,q20
    h q21
 
+# reverse qubit order
+# .reverse
+   swap q0,q21
+   swap q1,q20
+   swap q2,q19
+   swap q3,q18
+   swap q4,q17
+   swap q5,q16
+   swap q6,q15
+   swap q7,q14
+   swap q8,q13
+   swap q9,q12
+   swap q10,q11
+
+
+# statistics: 
+#  total number of gates: 286
+#    |- number of H    gates: 22
+#    |- number of Rk   gates: 231
+#    |- number of swap gates: 11(33 cnot gates)
 

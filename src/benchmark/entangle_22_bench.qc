@@ -24,4 +24,4 @@ cnot q0,q18
 cnot q0,q19
 cnot q0,q20
 cnot q0,q21
-# measure
+measure

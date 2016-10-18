@@ -934,9 +934,9 @@ namespace qx
 	    size_t ie = param.find_last_of('"');
 	    if ((ie-is) == 0)
 	       print_semantic_error(" malformed string argument : string should start and end with '\"' !");
-	    param = param.substr(is+1,ie-is);
+	    param = param.substr(is+1,ie-is-1);
 	    // format_line(param);
-	    println("param : " << param);
+	    // println("param : " << param);
 	    if (pg) 
 	       pg->add(new qx::print_str(param));
 	    else
