@@ -894,7 +894,7 @@ namespace qx
 	   cnot(uint32_t ctrl_q, uint32_t target_q) : control_qubit(ctrl_q), 
 	                                              target_qubit(target_q)
 	   {
-		 m = build_matrix(cnot_c,4);
+		 // m = build_matrix(cnot_c,4); // stack smaching
 	   }
 	   
 	   // #define CG_HASH_SET
