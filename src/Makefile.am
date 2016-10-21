@@ -17,8 +17,8 @@ CXX=g++
 AM_CPPFLAGS=-std=c++11 -I. -I ./xpu-0.1.5/ -Wfatal-errors -DCG_BC -DQX_SPARSE_MV_MUL -DXPU_TIMER -D__BUILTIN_LINALG__ -msse4.2 -mavx2 -mfma -DUSE_OPENMP -O3 -fopenmp -g
 
 XPU=-I ./xpu-0.1.5/
-FLAGS = --pedantic -std=c++11 -O3 -I. -I ./xpu-0.1.5/ -Wfatal-errors -DCG_BC -DQX_SPARSE_MV_MUL -DXPU_TIMER # $(XPU) -Wall 
-LDFLAGS = -lm 
+FLAGS = --pedantic -std=c++11 -O3 -I. -I ./xpu-0.1.5/ -Wfatal-errors -DCG_BC -DQX_SPARSE_MV_MUL -DXPU_TIMER -fopenmp # $(XPU) -Wall 
+LDFLAGS = -lm -fopenmp
 
 # this lists the binaries to produce, the (non-PHONY, binary) targets in
 # the previous manual Makefile
