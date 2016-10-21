@@ -328,7 +328,7 @@ namespace qx
    }
 
 #ifdef __SSE__
-#ifdef __FMA__
+// #ifdef __FMA__
    void __apply_x(std::size_t start, std::size_t end, const std::size_t qubit, complex_t * state, const std::size_t stride0, const std::size_t stride1, const complex_t * matrix)
    {
 #ifdef USE_OPENMP
@@ -347,9 +347,9 @@ namespace qx
 	    state[i1].xmm = xin0;
 	 }
    }
-#else
-#error "FMA not available !"
-#endif // FMA
+// #else
+// #error "FMA not available !"
+// #endif // FMA
 #else
 #error "SSE not available !"
 #endif // SSE
@@ -357,7 +357,7 @@ namespace qx
 
 
 #ifdef __SSE__
-#ifdef __FMA__
+// #ifdef __FMA__
    void __apply_h(std::size_t start, std::size_t end, const std::size_t qubit, complex_t * state, const std::size_t stride0, const std::size_t stride1, const complex_t * matrix)
    {
       __m128d   m00 = matrix[0].xmm;
@@ -378,18 +378,28 @@ namespace qx
 
 	    __m128d t2; // = _mm_shuffle_pd(m01,m01,3);     // 1 cyc
 	    __m128d t1 = _mm_mul_pd(xin0,r00);               // 5 cyc
+#ifdef __FMA__
 	    __m128d xi0 = _mm_fmadd_pd (xin1,r00, t1);       // x2*t2+t1    // 5 cyc
+#else 
+	    __m128d xi0 = _mm_mul_pd(xin1,r00);
+	    xi0         = _mm_add_pd(xi0,t1);       // x2*t2+t1    // 5 cyc
+#endif // __FMA__
 	    // t2 = _mm_shuffle_pd(m11,m11,3);              // 1 cyc
 	    t2 = _mm_xor_pd(r00,neg);   // 1 cyc  (m11=-m00)
+#ifdef __FMA__
 	    __m128d xi1 = _mm_fmadd_pd (xin1, t2, t1);      // x2*t2+t1    // 5 cyc
+#else
+	    __m128d xi1 = _mm_mul_pd(xin1,t2);
+	    xi1         = _mm_add_pd(xi1,t1);      // x2*t2+t1    // 5 cyc
+#endif
 
 	    state[i0].xmm = xi0; // _mm_store_pd((double*)(&state[i0].xmm),xi0);
 	    state[i1].xmm = xi1; // _mm_store_pd((double*)(&state[i1].xmm),xi1);
 	 }
    }
-#else
-#error "FMA not available !"
-#endif // FMA
+// #else
+// #error "FMA not available !"
+// #endif // FMA
 #else
 #error "SSE not available !"
 #endif // SSE

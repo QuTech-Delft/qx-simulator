@@ -7,10 +7,10 @@ qubits 5
 
 # init qubits to |0...01> (set your own input state here)
 .init
-   x q0
-   x q2
-   x q3
-   display_binary  # display the input binary state 
+#   x q0
+#   x q2
+#   x q3
+#   display_binary  # display the input binary state 
 
 # main circuit
 .qft
@@ -32,8 +32,8 @@ qubits 5
 
 # reverse qubit order
 .reverse
-   swap q0,q4
-   swap q1,q3
+#   swap q0,q4
+#   swap q1,q3
    display  # display the output quantum state
 
 
