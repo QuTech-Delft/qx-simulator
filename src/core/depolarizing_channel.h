@@ -43,6 +43,10 @@ namespace qx
 	      overall_error_probability += pp;
 	   }
 
+	   x_errors = 0;
+	   z_errors = 0;
+	   y_errors = 0;
+
 	   srand48(xpu::timer().current());
 	}
         
@@ -65,6 +69,10 @@ namespace qx
 	      double pp = error_probability(nq,i,pe);
 	      overall_error_probability += pp;
 	   }
+
+	   x_errors = 0;
+	   z_errors = 0;
+	   y_errors = 0;
 
 	   srand48(xpu::timer().current());
 	}
@@ -152,6 +160,7 @@ namespace qx
 	   {
 	      println("     " << error_location[i] << " : "<< error_type[errors[i].first] << " on qubit " << errors[i].second);
 	   }
+	   println("[+] stats : " << x_errors << " x | " << z_errors << " z | " << y_errors << " y ");
 	}
 
 	#define __verbose__ if (verbose)
@@ -162,6 +171,10 @@ namespace qx
 	 */
 	qx::circuit *  inject(bool verbose=false)
 	{
+	   x_errors = 0;
+	   z_errors = 0;
+	   y_errors = 0;
+
 	   __verbose__ println("    [e] depolarizing_channel : injecting errors in circuit '" << c->id() << "'...");
 	   uint64_t steps = c->size();
 	   qx::circuit * noisy_c = new qx::circuit(nq,c->id() + "(noisy)");
@@ -338,6 +351,7 @@ namespace qx
 	      __verbose__ println(" (x error) ");
 	      if (error_recording)
 		 errors.push_back(error_t(__x_error__,q));
+	      x_errors++;
 	      return new qx::pauli_x(q);
 	   }
 	   else if (p<(zp+xp))
@@ -345,6 +359,7 @@ namespace qx
 	      __verbose__ println(" (z error) ");
 	      if (error_recording)
 		 errors.push_back(error_t(__z_error__,q));
+	      z_errors++;
 	      return new qx::pauli_z(q);
 	   }
 	   else
@@ -352,6 +367,7 @@ namespace qx
 	      __verbose__ println(" (y error) ");
 	      if (error_recording)
 		 errors.push_back(error_t(__y_error__,q));
+	      y_errors++;
 	      return new qx::pauli_y(q);
 	   }
 	}
@@ -420,6 +436,9 @@ namespace qx
 	 bool                 error_recording;
 	 std::vector<error_t> errors;
 	 std::vector<size_t>  error_location;
+	 size_t               x_errors;
+	 size_t               z_errors;
+	 size_t               y_errors;
 
    };
 }

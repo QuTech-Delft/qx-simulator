@@ -76,7 +76,7 @@ std::string  qx::qu_register::to_binary_string(uint32_t state, uint32_t nq)
  */
 // qx::qu_register::qu_register(uint32_t n_qubits) : data(1 << n_qubits), binary(n_qubits), n_qubits(n_qubits), rgenerator(xpu::timer().current()*10e5), udistribution(.0,1)
 //qx::qu_register::qu_register(uint32_t n_qubits) : data(1 << n_qubits), measurement_prediction(n_qubits), measurement_register(n_qubits), n_qubits(n_qubits), rgenerator(xpu::timer().current()*10e5), udistribution(.0,1)
-qx::qu_register::qu_register(uint32_t n_qubits) : data(1 << n_qubits), aux(1 << n_qubits), measurement_prediction(n_qubits), measurement_register(n_qubits), n_qubits(n_qubits), rgenerator(xpu::timer().current()*10e5), udistribution(.0,1)
+qx::qu_register::qu_register(uint32_t n_qubits) : data(1 << n_qubits), aux(1 << n_qubits), measurement_prediction(n_qubits), measurement_register(n_qubits), n_qubits(n_qubits), rgenerator(xpu::timer().current()*10e5), udistribution(.0,1), measurement_averaging_enabled(true), measurement_averaging(n_qubits)
 {
    data[0] = complex_t(1,0);
    for (uint32_t i=1; i<(1 << n_qubits); ++i)
@@ -87,6 +87,11 @@ qx::qu_register::qu_register(uint32_t n_qubits) : data(1 << n_qubits), aux(1 << 
       measurement_register[i]   = 0;
    }
       //binary[i] = __state_0__;
+   for (size_t i=0; i<measurement_averaging.size(); ++i)
+   {
+      measurement_averaging[i].ground_states = 0;
+      measurement_averaging[i].ground_states = 0;
+   }
 }
 
 
@@ -229,6 +234,21 @@ void qx::qu_register::dump(bool only_binary=false)
 	    print("   " << std::showpos << std::setw(7) << data[i] << " |"); to_binary(i,n_qubits); println("> +");
 	 }
       }
+   }
+   if (measurement_averaging_enabled)
+   {
+      println("------------------------------------------- ");
+      print("[>>] measurement averaging (ground state) :");
+      print(" ");
+      for (int i=measurement_averaging.size()-1; i>=0; --i)
+      {
+	 double gs = measurement_averaging[i].ground_states;
+	 double es = measurement_averaging[i].exited_states;
+	 // println("(" << gs << "," << es << ")");
+	 double av = ((es+gs) != 0. ? (gs/(es+gs)) : 0.);
+	 print(" | " << av);  
+      }
+      println(" |");
    }
    println("------------------------------------------- ");
    print("[>>] measurement prediction:");

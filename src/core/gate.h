@@ -2602,10 +2602,11 @@ namespace qx
 
 	   uint32_t  qubit;
 	   bool      measure_all;
+	   bool      disable_averaging;
 
 	 public:
 
-	   measure(uint32_t qubit) : qubit(qubit), measure_all(false)
+	   measure(uint32_t qubit, bool disable_averaging=false) : qubit(qubit), measure_all(false), disable_averaging(disable_averaging)
 	   {
 	   }
 	   
@@ -2710,6 +2711,23 @@ namespace qx
 	      qreg.set_measurement_prediction(qubit,(value == 1 ? __state_1__ : __state_0__));
 	      qreg.set_measurement(qubit,(value == 1 ? true : false));
 	      //qreg.set_binary(qubit,(value == 1 ? __state_1__ : __state_0__));
+
+	      if (!disable_averaging)
+	      {
+		 if (qreg.measurement_averaging_enabled)
+		 {
+		    if (value == 1)
+		    {
+		       // println("> exited_states++");
+		       qreg.measurement_averaging[qubit].exited_states++;
+		    }
+		    else
+		    {
+		       // println("> ground_states++");
+		       qreg.measurement_averaging[qubit].ground_states++;
+		    }
+		 }
+	      }
 
 	      return value;
 	   }
@@ -2899,7 +2917,7 @@ namespace qx
 	   
 	   int32_t apply(qu_register& qreg)
 	   {
-	      measure(qubit).apply(qreg);
+	      measure(qubit,true).apply(qreg);
 	      bin_ctrl_pauli_x(qubit,qubit).apply(qreg);
 	      // bin_ctrl_pauli_z(qubit,qubit).apply(qreg);
 	      qreg.set_measurement(qubit,false);

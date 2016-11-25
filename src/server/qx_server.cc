@@ -25,7 +25,12 @@ int main(int argc, char **argv)
 
    xpu::init();
 
-   qx::qx_server server(5555);
+   size_t port = 5555;
+
+   if (argc == 2)
+      port = atoi(argv[1]);
+
+   qx::qx_server server(port);
    server.start();
 
    return 0;

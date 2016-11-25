@@ -40,7 +40,7 @@ namespace qx
    #define QX_ERROR_UNKNOWN_COMMAND                0x03
    #define QX_ERROR_MALFORMED_CMD                  0x04
    #define QX_ERROR_QUBITS_NUM_ALREADY_DEFINED     0x05
-   #define QX_ERROR_TOO_MUCH_QUBITS                0x06
+   #define QX_ERROR_TOO_MANY_QUBITS                0x06
    #define QX_ERROR_INVALID_ERROR_MODEL            0x07
    // semantic errors
    #define QX_ERROR_QUBITS_NOT_YET_DEFINED         0x09
@@ -67,12 +67,15 @@ namespace qx
 	{
 	}
 
+        // #define __buf_size 8192
+        #define __buf_size 4096
+
 	/**
 	 * start
 	 */
 	void start()
 	{
-	   char buf[512];
+	   char buf[__buf_size];
 	   xpu::tcp_server_socket server(port);
 	   println("[+] server listening on port " << port << "...");
 	   sock = server.accept();
@@ -81,11 +84,11 @@ namespace qx
 	   bool stop=false;
 	   while (!stop)
 	   {
-	      clear(buf,512);
-	      size_t bytes = sock->recv(buf, 512); 
+	      clear(buf,__buf_size);
+	      size_t bytes = sock->recv(buf, __buf_size); 
 	      buf[bytes] = '\0';
 	      std::string cmd = buf;
-	      std::cout << "[+] received command: " << cmd << std::endl;
+	      // std::cout << "[+] received command: " << cmd << std::endl;
 	      format_line(cmd);
 	      strings words = word_list(cmd, " ");
 	      if (words[0] == "stop")
@@ -121,6 +124,55 @@ namespace qx
 		 sock->send("OK\n", 3);
 		 continue;
 	      }
+	      else if (words[0] == "reset_measurement_averaging")
+	      {
+		 if (qubits_count == 0)
+		 {
+		    std::string error_code = "E"+int_to_str(QX_ERROR_QUBITS_NOT_YET_DEFINED)+"\n";
+		    sock->send(error_code.c_str(), error_code.length()+1);
+		 }
+		 else if (words.size() != 1)
+		 {
+		    std::string error_code = "E"+int_to_str(QX_ERROR_MALFORMED_CMD)+"\n";
+		    sock->send(error_code.c_str(), error_code.length()+1);
+		 }
+		 else
+		 {
+		       qx::qu_register& r = *reg;
+		       r.reset_measurement_averaging();
+		       sock->send("OK\n", 3);
+		 }
+		 continue;
+	      } 
+	      else if (words[0] == "measurement_average")
+	      {
+		 if (qubits_count == 0)
+		 {
+		    std::string error_code = "E"+int_to_str(QX_ERROR_QUBITS_NOT_YET_DEFINED)+"\n";
+		    sock->send(error_code.c_str(), error_code.length()+1);
+		 }
+		 else if (words.size() != 2)
+		 {
+		    std::string error_code = "E"+int_to_str(QX_ERROR_MALFORMED_CMD)+"\n";
+		    sock->send(error_code.c_str(), error_code.length()+1);
+		 }
+		 else
+		 {
+		    size_t q = atoi(words[1].c_str()); 
+		    qx::qu_register& r = *reg;
+		    double gs = r.measurement_averaging[q].ground_states;
+		    double es = r.measurement_averaging[q].exited_states;
+		    double avg = ((es+gs) != 0. ? (gs/(es+gs)) : 0.);
+		    println("[+] measurement averaging of qubit " << q << " : " << avg);
+		    std::stringstream ss;
+		    ss << std::fixed << std::setw(7) << avg;
+		    ss << '\n';
+		    std::string s = ss.str();
+		    sock->send(s.c_str(),s.length());
+		    sock->send("OK\n", 3);
+		 }
+		 continue;
+	      } 
 	      else if (words[0] == "run")
 	      {
 		 if (qubits_count == 0)
@@ -165,15 +217,19 @@ namespace qx
 		    std::string error_code = "E"+int_to_str(QX_ERROR_QUBITS_NOT_YET_DEFINED)+"\n";
 		    sock->send(error_code.c_str(), error_code.length()+1);
 		 }
-		 else if (words.size() != 4)
+		 else if ((words.size() != 4) && (words.size() != 5))
 		 {
 		    std::string error_code = "E"+int_to_str(QX_ERROR_MALFORMED_CMD)+"\n";
 		    sock->send(error_code.c_str(), error_code.length()+1);
 		 }
-		 else
+		 // else if (words.size() == 4)
+		 else 
 		 {
 		    qx::circuit * c = 0;
-		    println("[+] trying to execute '" << words[1] << "'");
+		    bool multi_run    = false;
+		    size_t iterations = 1;
+		    if (words.size() == 5) 
+		       iterations = atoi(words[4].c_str());
 		    for (int i=0; i<circuits.size(); ++i)
 		    {
 		       if (words[1] == circuits[i]->id())
@@ -188,12 +244,17 @@ namespace qx
 		       }
 		       else
 		       {
-		          println("[+] execution of '" << words[1] << "' under depolarizing noise...");
-			  qx::qu_register& r = *reg;
 			  double error_probability = atof(words[3].c_str());
-			  qx::depolarizing_channel dch(c, r.size(), error_probability);
-			  qx::circuit * nc = dch.inject(false);
-			  nc->execute(r);
+			  println("[+] executing '" << words[1] << "' (" << iterations << " iterations) under depolarizing noise...");
+			  while (iterations--)
+			  {
+			     // println("[+] execution of '" << words[1] << "' under depolarizing noise...");
+			     qx::qu_register& r = *reg;
+			     qx::depolarizing_channel dch(c, r.size(), error_probability);
+			     qx::circuit * nc = dch.inject(false);
+			     nc->execute(r);
+			  }
+			  println("[+] done.");
 			  sock->send("OK\n", 3);
 		       }
 		    }
@@ -209,6 +270,7 @@ namespace qx
 	      // check if it is a batch command
 	      remove_comment(cmd);
 	      bool batch =  (cmd.find(";") < cmd.size());
+	      bool cmd_error = false;
 	      if (batch)
 	      {
 		 strings cmds = word_list(cmd,";");
@@ -219,10 +281,13 @@ namespace qx
 		    {
 		       std::string error_code = "E"+int_to_str(res)+"\n";
 		       sock->send(error_code.c_str(), error_code.length()+1);
+		       cmd_error = true;
 		    }
-		    else 
-		       sock->send("OK\n", 3);
+		    // else 
+		       // sock->send("OK\n", 3);
 		 }
+		 if (!cmd_error)
+		    sock->send("OK\n", 3);
 	      }
 	      else
 	      {
@@ -244,7 +309,7 @@ namespace qx
         void clear(char * buf, size_t size)
 	{
 	   for (uint32_t i=0; i<size; i++)
-	      buf[0] = '\0';
+	      buf[i] = '\0';
 	}
 
 
@@ -436,6 +501,16 @@ namespace qx
 	       std::string breg = reg->binary_register();
 	       sock->send(breg.c_str(), breg.length());
 	    }
+	    else if (words[0] == "get_quantum_state")   // equivalent to display (redundant !)
+	    {
+	       std::string qstate = reg->quantum_state();
+	       sock->send(qstate.c_str(), qstate.length());
+	    }
+	    else if (words[0] == "get_measurements")   // equivalent to display_binary
+	    {
+	       std::string breg = reg->binary_register();
+	       sock->send(breg.c_str(), breg.length());
+	    }
 	    else if (words[0] == "measure")
 	       current_sub_circuit(qubits_count)->add(new qx::measure());
 	    else
@@ -460,7 +535,7 @@ namespace qx
 	      // println(" => qubits number: " << qubits_count);
 	    }
 	    else
-	       print_syntax_error(" too much qubits (" << qubits_count << ") !", QX_ERROR_TOO_MUCH_QUBITS);
+	       print_syntax_error(" too many qubits (" << qubits_count << ") !", QX_ERROR_TOO_MANY_QUBITS);
 	 }
 	 else if (qubits_count == 0)
 	 {

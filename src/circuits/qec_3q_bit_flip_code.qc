@@ -53,4 +53,4 @@ qubits 5
    # display
    display_binary
 
-error_model depolarizing_channel,0.1
+# error_model depolarizing_channel,0.1
