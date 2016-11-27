@@ -566,6 +566,54 @@ namespace qx
 	    // println(" => hadamard gate on: " << q);
 	    current_sub_circuit(qubits_count)->add(new qx::hadamard(q));
 	 } 
+	 else if (words[0] == "rx90")    // rx90 
+	 {
+	    uint32_t q = qubit_id(words[1]); // atoi(words[1].c_str());
+	    if (q > (qubits_count-1))
+	       print_semantic_error(" target qubit out of range !", QX_ERROR_QUBIT_OUT_OF_RANGE);
+	    // println(" => hadamard gate on: " << q);
+	    current_sub_circuit(qubits_count)->add(new qx::rx(q,M_PI/2));
+	 }
+	 else if (words[0] == "mrx90")    // mrx90 
+	 {
+	    uint32_t q = qubit_id(words[1]); // atoi(words[1].c_str());
+	    if (q > (qubits_count-1))
+	       print_semantic_error(" target qubit out of range !", QX_ERROR_QUBIT_OUT_OF_RANGE);
+	    // println(" => hadamard gate on: " << q);
+	    current_sub_circuit(qubits_count)->add(new qx::rx(q,-M_PI/2));
+	 }
+	 else if (words[0] == "rx180")    // rx90 
+	 {
+	    uint32_t q = qubit_id(words[1]); // atoi(words[1].c_str());
+	    if (q > (qubits_count-1))
+	       print_semantic_error(" target qubit out of range !", QX_ERROR_QUBIT_OUT_OF_RANGE);
+	    // println(" => hadamard gate on: " << q);
+	    current_sub_circuit(qubits_count)->add(new qx::rx(q,M_PI));
+	 }
+	 else if (words[0] == "ry90")    // rx90 
+	 {
+	    uint32_t q = qubit_id(words[1]); // atoi(words[1].c_str());
+	    if (q > (qubits_count-1))
+	       print_semantic_error(" target qubit out of range !", QX_ERROR_QUBIT_OUT_OF_RANGE);
+	    // println(" => hadamard gate on: " << q);
+	    current_sub_circuit(qubits_count)->add(new qx::ry(q,M_PI/2));
+	 }
+	 else if (words[0] == "mry90")    // rx90 
+	 {
+	    uint32_t q = qubit_id(words[1]); // atoi(words[1].c_str());
+	    if (q > (qubits_count-1))
+	       print_semantic_error(" target qubit out of range !", QX_ERROR_QUBIT_OUT_OF_RANGE);
+	    // println(" => hadamard gate on: " << q);
+	    current_sub_circuit(qubits_count)->add(new qx::ry(q,-M_PI/2));
+	 }
+	 else if (words[0] == "ry180")    // rx90 
+	 {
+	    uint32_t q = qubit_id(words[1]); // atoi(words[1].c_str());
+	    if (q > (qubits_count-1))
+	       print_semantic_error(" target qubit out of range !", QX_ERROR_QUBIT_OUT_OF_RANGE);
+	    // println(" => hadamard gate on: " << q);
+	    current_sub_circuit(qubits_count)->add(new qx::ry(q,M_PI));
+	 }
 	 else if (words[0] == "cnot") // cnot gate
 	 {
 	    strings params = word_list(words[1],",");
