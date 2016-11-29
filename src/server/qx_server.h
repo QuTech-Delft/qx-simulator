@@ -246,11 +246,11 @@ namespace qx
 		       {
 			  double error_probability = atof(words[3].c_str());
 			  println("[+] executing '" << words[1] << "' (" << iterations << " iterations) under depolarizing noise...");
+			  qx::qu_register& r = *reg;
+			  qx::depolarizing_channel dch(c, r.size(), error_probability);
 			  while (iterations--)
 			  {
 			     // println("[+] execution of '" << words[1] << "' under depolarizing noise...");
-			     qx::qu_register& r = *reg;
-			     qx::depolarizing_channel dch(c, r.size(), error_probability);
 			     qx::circuit * nc = dch.inject(false);
 			     nc->execute(r);
 			  }
@@ -268,7 +268,7 @@ namespace qx
 		 continue;
 	      }
 	      // check if it is a batch command
-	      remove_comment(cmd);
+	      // remove_comment(cmd);  
 	      bool batch =  (cmd.find(";") < cmd.size());
 	      bool cmd_error = false;
 	      if (batch)
@@ -472,7 +472,7 @@ namespace qx
 		     break;
 		  }
 	       }
-	       println("[!] warning : circuit '" << name << "' already exist ! Old circuit and its gates will be deleted !");
+	       // println("[!] warning : circuit '" << name << "' already exist ! Old circuit and its gates will be deleted !");
 	       if (exist)
 	       {
 		  delete circuits[index];

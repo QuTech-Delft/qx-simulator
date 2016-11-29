@@ -48,6 +48,7 @@ namespace qx
 	   y_errors = 0;
 
 	   srand48(xpu::timer().current());
+	   qx::circuit * noisy_c = new qx::circuit(nq,c->id() + "(noisy)");
 	}
         
 
@@ -75,6 +76,7 @@ namespace qx
 	   y_errors = 0;
 
 	   srand48(xpu::timer().current());
+	   qx::circuit * noisy_c = new qx::circuit(nq,c->id() + "(noisy)");
 	}
 
 	/**
@@ -165,6 +167,7 @@ namespace qx
 
 	#define __verbose__ if (verbose)
 
+
 	/**
 	 * \brief inject errors
 	 * \return noisy circuit 
@@ -174,6 +177,7 @@ namespace qx
 	   x_errors = 0;
 	   z_errors = 0;
 	   y_errors = 0;
+	  
 
 	   __verbose__ println("    [e] depolarizing_channel : injecting errors in circuit '" << c->id() << "'...");
 	   uint64_t steps = c->size();
@@ -181,6 +185,7 @@ namespace qx
 	   
 	   errors.clear();
 	   error_location.clear();
+	   total_errors = 0;
 
 	   __verbose__ println("    [+] circuit steps : " << steps);
 	   for (uint64_t p=0; p<steps; ++p)
@@ -422,6 +427,7 @@ namespace qx
 	 qx::uniform_random_number_generator urg;
 	 
 	 qx::circuit *        c;
+	 qx::circuit *        noisy_c;
 	 uint64_t             nq;
 	 
 	 double               pe;
