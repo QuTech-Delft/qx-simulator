@@ -427,8 +427,8 @@ namespace qx
 	    {
 	      // println(" => qubits number: " << qubits_count);
 	    }
-	    else
-	       print_syntax_error(" too much qubits (" << qubits_count << ") !");
+	    // else
+	       // print_syntax_error(" too much qubits (" << qubits_count << ") !");
 	 }
 	 else if (qubits_count == 0)
 	 {

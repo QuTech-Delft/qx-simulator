@@ -73,7 +73,7 @@ map q16,x22
    measure x14
    cz b11,d25
 
-   # display
+   display
 
 .error_injection
     # x d13
@@ -173,7 +173,7 @@ map q16,x22
    measure z16
    measure x22
 
-   display_binary
+   display
 
 
 # error_model depolarizing_channel, 0.001

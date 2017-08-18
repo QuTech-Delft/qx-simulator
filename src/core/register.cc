@@ -217,6 +217,7 @@ int32_t qx::qu_register::measure()
    return -1;
 }
 
+#define __amp_epsilon__ (0.0000001f)
 
 /**
  * \brief dump
@@ -229,9 +230,10 @@ void qx::qu_register::dump(bool only_binary=false)
       std::cout << std::fixed;
       for (int i=0; i<data.size(); ++i)
       {
-	 if (data[i] != complex_t(0,0)) 
+         if ((std::abs(data[i].re) > __amp_epsilon__) ||
+             (std::abs(data[i].im) > __amp_epsilon__))
 	 {
-	    print("   " << std::showpos << std::setw(7) << data[i] << " |"); to_binary(i,n_qubits); println("> +");
+	    print("   " << std::showpos << std::setw(14) << data[i] << " |"); to_binary(i,n_qubits); println("> +");
 	 }
       }
    }
