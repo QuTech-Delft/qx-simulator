@@ -13,14 +13,14 @@ AUTOMAKE_OPTIONS = foreign subdir-objects
 ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS} 
 
 # CXX=clang-omp++
-CXX=clang++
+CXX=g++
 # AM_CPPFLAGS=-std=c++11 -I. -I ./xpu-0.1.5/ -Wfatal-errors -DCG_BC -DQX_SPARSE_MV_MUL -DXPU_TIMER -D__BUILTIN_LINALG__ -mavx -msse4.2 -mavx2 -mfma -O3 # -ggdb -fno-inline-functions # -O3 
 # AM_CPPFLAGS=-std=c++11 -I. -I ./xpu-0.1.5/ -Wfatal-errors -DCG_BC -DQX_SPARSE_MV_MUL -DXPU_TIMER -D__BUILTIN_LINALG__ -msse4.2 -mavx2 -mfma -DUSE_OPENMP -O3 -fopenmp -g
 AM_CPPFLAGS=-std=c++11 -I. -I ./xpu-0.1.5/ -Wfatal-errors -DCG_BC -DQX_SPARSE_MV_MUL -DXPU_TIMER -D__BUILTIN_LINALG__ -msse4.2 -O3 -DUSE_OPENMP -fopenmp -g
 
 XPU=-I ./xpu-0.1.5/
 FLAGS = --pedantic -std=c++11 -O3 -I. -I ./xpu-0.1.5/ -Wfatal-errors -DCG_BC -DQX_SPARSE_MV_MUL -fopenmp # -DXPU_TIMER #-fopenmp # $(XPU) -Wall 
-LDFLAGS = #-lm -fopenmp
+LDFLAGS = -fopenmp
 
 # this lists the binaries to produce, the (non-PHONY, binary) targets in
 # the previous manual Makefile
