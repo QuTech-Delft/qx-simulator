@@ -1910,12 +1910,15 @@ namespace qx
       // println("bit=" << bit);
       // println("ctrl=" << ctrl);
       complex_t * x = amp.data();
+      // println(">>>> " << p);
       for (size_t i=__bit_set(0,bit); i<(1<<size); i += (1 << (bit+1)))
 	 for (size_t j=0; j<(1<<bit); j++)
 	 {
 	    size_t v = i+j+offset; 
 	    // amp[v] *= p;
+      // println(" before mul : " << x[v]);
 	    x[v] *= p;
+      // println(" after mul : " << x[v]);
 	    // println(" swap(" << std::bitset<16>(v) << "," << std::bitset<16>(__bit_reset(v,trg)) << ")");
 	 }
    }
@@ -2208,7 +2211,7 @@ namespace qx
 
 
    /**
-    * \brief  controlled phase shift by (pi/(2^(ctrl-target)))
+    * \brief  controlled phase shift by (2*pi/(2^(ctrl-target)))
     *     
     */ 
    class ctrl_phase_shift : public gate
@@ -2223,8 +2226,8 @@ namespace qx
 
 	   ctrl_phase_shift(uint32_t ctrl_qubit, uint32_t target_qubit) : ctrl_qubit(ctrl_qubit), 
 	                                                                  target_qubit(target_qubit), 
-		      						          z(cos(M_PI/(1 << (ctrl_qubit - target_qubit))), 
-								            sin(M_PI/(1 << (ctrl_qubit - target_qubit))))
+		      						          z(cos(2*M_PI/(1 << (ctrl_qubit - target_qubit))), 
+								                  sin(2*M_PI/(1 << (ctrl_qubit - target_qubit))))
 	   {
 	   }
 

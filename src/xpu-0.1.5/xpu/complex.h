@@ -279,7 +279,7 @@ namespace xpu
 
 	 void operator*= (const complex_d &v)
 	 { 
-	    #ifdef __SSE__
+	    #ifdef __SSE__DISABLE
 	    /*
 	    __m128d mx, my; 
 	    __m128d xr_xi, yr_yr, xi_yi, yi_xr;
@@ -314,8 +314,9 @@ namespace xpu
 	    // dump_m128d(a);
 	    // xmm = a; // _mm_shuffle_pd(a, a, 1); 
 	    #else
+       double rt = re;  
 	    re = (re*v.re-im*v.im); 
-	    im = (im*v.re+v.im*re);
+	    im = (im*v.re+v.im*rt);
 	    #endif
 	 }
 

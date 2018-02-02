@@ -5,7 +5,7 @@ qubits 1
 
 # prepz q0
 
-.rb(1000)
+.rb(100)
  prepz q0
  x q0
  h q0

@@ -12,8 +12,8 @@ AUTOMAKE_OPTIONS = foreign subdir-objects
 ## to provide a way for the user to supply additional arguments.
 ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS} 
 
-# CXX=clang-omp++
-CXX=g++
+CXX=clang-omp++
+# CXX=g++
 # AM_CPPFLAGS=-std=c++11 -I. -I ./xpu-0.1.5/ -Wfatal-errors -DCG_BC -DQX_SPARSE_MV_MUL -DXPU_TIMER -D__BUILTIN_LINALG__ -mavx -msse4.2 -mavx2 -mfma -O3 # -ggdb -fno-inline-functions # -O3 
 # AM_CPPFLAGS=-std=c++11 -I. -I ./xpu-0.1.5/ -Wfatal-errors -DCG_BC -DQX_SPARSE_MV_MUL -DXPU_TIMER -D__BUILTIN_LINALG__ -msse4.2 -mavx2 -mfma -DUSE_OPENMP -O3 -fopenmp -g
 AM_CPPFLAGS=-std=c++11 -I. -I ./xpu-0.1.5/ -Wfatal-errors -DCG_BC -DQX_SPARSE_MV_MUL -DXPU_TIMER -D__BUILTIN_LINALG__ -msse4.2 -O3 -DUSE_OPENMP -fopenmp -g
