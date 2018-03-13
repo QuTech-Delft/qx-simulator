@@ -2,6 +2,16 @@
 
 This package provides the necessary interface to use QX as an accelerator.
 
+## API
+
+`qxelerator` mainly provides the following 3 API calls:
+
+	
+	qx.set('basic.qasm')					# set the required qasm to be executed on qx
+	qx.execute()							# execute
+	res = qx.get_measurement_outcome(0)	    # get measurement results from qubit 0
+	
+
 ## Required packages
 At the moment only tested on Linux. Requirements are same as qx plus:
 - cmake
