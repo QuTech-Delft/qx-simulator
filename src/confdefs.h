@@ -18,8 +18,8 @@
 #define HAVE_LIBPTHREAD 1
 #define HAVE_LIBPTHREAD 1
 #define HAVE_LIBPTHREAD 1
-#define HAVE_POW 1
-#define HAVE_SQRT 1
+#define HAVE_LIBPTHREAD 1
+#define HAVE_LIBPTHREAD 1
 #define STDC_HEADERS 1
 #define HAVE_SYS_TYPES_H 1
 #define HAVE_SYS_STAT_H 1
@@ -31,7 +31,6 @@
 #define HAVE_STDINT_H 1
 #define HAVE_UNISTD_H 1
 #define HAVE_FCNTL_H 1
-#define HAVE_MACH_MACH_H 1
 #define HAVE_STDINT_H 1
 #define HAVE_STRINGS_H 1
 #define HAVE_UNISTD_H 1
