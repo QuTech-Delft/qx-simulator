@@ -66,6 +66,7 @@ namespace qx
       __cphase_gate__  ,
       __t_gate__       ,
       __tdag_gate__    ,
+      __sdag_gate__    ,
       __custom_gate__  ,
       __prepz_gate__   ,
       __measure_gate__ ,
@@ -93,6 +94,7 @@ namespace qx
    const complex_t pauli_y_c  [] __attribute__((aligned(64))) = { complex_t(0.0, 0.0) , complex_t(0.0,-1.0), complex_t(0.0, 1.0) , complex_t(0.0, 0.0) };          /* Y */
    const complex_t pauli_z_c  [] __attribute__((aligned(64))) = { complex_t(1.0, 0.0) , complex_t(0.0, 0.0), complex_t(0.0, 0.0) , complex_t(-1.0,0.0) };          /* Z */
    const complex_t phase_c    [] __attribute__((aligned(64))) = { complex_t(1.0, 0.0) , complex_t(0.0, 0.0), complex_t(0.0, 0.0) , complex_t(0.0, 1.0) };          /* S */
+   const complex_t sdag_gate_c[] __attribute__((aligned(64))) = { complex_t(1.0, 0.0) , complex_t(0.0, 0.0), complex_t(0.0, 0.0) , complex_t(0.0, -1.0) };        /* S_dag */   
    const complex_t t_gate_c   [] __attribute__((aligned(64))) = { complex_t(1.0, 0.0) , complex_t(0.0, 0.0), complex_t(0.0, 0.0) , complex_t(cos(M_PI/4),sin(M_PI/4)) };         /* T */
    const complex_t tdag_gate_c[] __attribute__((aligned(64))) = { complex_t(1.0, 0.0) , complex_t(0.0, 0.0), complex_t(0.0, 0.0) , complex_t(cos(M_PI/4),-sin(M_PI/4)) };        /* T_dag */
    const complex_t hadamard_c [] __attribute__((aligned(64)))  = { R_SQRT_2,  R_SQRT_2, R_SQRT_2, -R_SQRT_2 };  /* H */
@@ -1604,6 +1606,62 @@ namespace qx
 	   {
 	      return __phase_gate__; 
 	   }
+   };
+
+
+   /**
+    * \brief S dag gate
+    */
+   class s_dag_gate : public gate
+   {
+   private:
+
+     uint32_t   qubit;
+     cmatrix_t  m;
+
+   public:
+
+     s_dag_gate(uint32_t qubit) : qubit(qubit)
+     {
+     m = build_matrix(sdag_gate_c,2);
+     }
+
+     int32_t apply(qu_register& qreg)
+     {
+     sqg_apply(m,qubit,qreg);
+     return 0;
+     }
+
+     void dump()
+     {
+     println("  [-] s_dag_gate(qubit=" << qubit << ")");
+     }
+     
+     std::vector<uint32_t>  qubits()
+     {
+     std::vector<uint32_t> r;
+     r.push_back(qubit);
+     return r;
+     }
+ 
+     std::vector<uint32_t>  control_qubits()
+     {
+     std::vector<uint32_t> r;
+     return r;
+     }
+ 
+     std::vector<uint32_t>  target_qubits()
+     {
+     std::vector<uint32_t> r;
+     r.push_back(qubit);
+     return r;
+     }
+
+     gate_type_t type()
+     {
+        return __sdag_gate__;
+     }
+
    };
 
 

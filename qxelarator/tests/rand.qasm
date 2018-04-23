@@ -1,6 +1,5 @@
-
 qubits 1
 
 .test
-  h q0
-  measure q0
+    h q0
+    measure q0

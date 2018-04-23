@@ -1,11 +1,16 @@
+qubits 3
 
-qubits 2
+.init
+	prepz q1
+	prepz q2
+	x q1
 
+.kernel1
+	s q1
 
-.bell
-  h q0
-  cnot q0,q1
+# .kernel2
+# 	cz q2, q1
 
 .measurement
-  measure q0
-  measure q1
+	measure q1
+	measure q2

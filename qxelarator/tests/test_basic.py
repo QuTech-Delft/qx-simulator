@@ -4,10 +4,7 @@ qx = qxelarator.QX()
 
 qx.set('basic.qasm')
 qx.execute()
-res = qx.get_measurement_outcome(0)
 
-if(res):
-    print("True")
-else:
-    print("False")
-
+c1 = qx.get_measurement_outcome(1)
+c2 = qx.get_measurement_outcome(2)
+print('{} {}'.format(c1,c2) )

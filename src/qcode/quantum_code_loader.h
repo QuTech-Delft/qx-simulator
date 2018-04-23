@@ -941,6 +941,17 @@ namespace qx
 	    else
 	    current_sub_circuit(qubits_count)->add(new qx::phase_shift(q));
 	 }
+	 else if (words[0] == "sdag")   // Sdag gate
+	 {
+	    uint32_t q = qubit_id(words[1]);
+	    if (q > (qubits_count-1))
+	       print_semantic_error(" target qubit out of range !");
+	    // println(" => sdag gate on: " << q);
+	    if (pg) 
+	       pg->add(new qx::s_dag_gate(q));
+	    else
+            current_sub_circuit(qubits_count)->add(new qx::s_dag_gate(q));
+	 }
 	 else if (words[0] == "not")   // classical not gate
 	 {
 	    translate(words[1]);
