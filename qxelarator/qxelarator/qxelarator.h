@@ -34,6 +34,11 @@ public:
     {
         return qx_sim->move(q);
     }
+    std::string get_state()
+    {
+        return qx_sim->get_state();
+    }
+
 };
 
 #endif

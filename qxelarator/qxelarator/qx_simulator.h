@@ -125,6 +125,11 @@ public:
     {
       return reg->get_measurement(q);
     }
+
+    std::string get_state()
+    {
+        return reg->get_state();
+    }
 };
 }
 
