@@ -14,17 +14,10 @@ pipeline {
         }
         stage('Test') {
             steps {
-                sh 'cd build/bin/qx-simulator/ && ./qx_simulator'
+               sh 'for file in src/circuits/*.qc; do build/bin/qx-simulator/qx-simulator "$file"; done'
 
             }
         }
 
-    }
-}
-
-@NonCPS
-def echo_all(list) {
-    list.each { item ->
-        sh "echo Hello ${item}"
     }
 }
