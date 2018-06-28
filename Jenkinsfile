@@ -14,7 +14,7 @@ pipeline {
         }
         stage('Test') {
             steps {
-                sh for file in src/circuits/*.qc; do src/qx_simulator "$file"; done'
+                sh 'for file in src/circuits/*.qc; do src/qx_simulator "$file"; done'
 
             }
         }
