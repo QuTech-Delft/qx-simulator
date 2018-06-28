@@ -13,7 +13,7 @@ AUTOMAKE_OPTIONS = foreign subdir-objects
 ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS} 
 
 CXX=g++
-AM_CPPFLAGS=-std=c++11 -I. -I ./xpu-0.1.5/ -Wfatal-errors -DCG_BC -DQX_SPARSE_MV_MUL -DXPU_TIMER -D__BUILTIN_LINALG__ -O3 
+AM_CPPFLAGS=-std=c++11 -I. -I ./xpu-0.1.5/ -Wfatal-errors -DCG_BC -DQX_SPARSE_MV_MUL -DXPU_TIMER -D__BUILTIN_LINALG__ -O3 -mavx -msse4.2 
 
 XPU=-I ./xpu-0.1.5/
 FLAGS = --pedantic -std=c++11 -O3 -I. -I ./xpu-0.1.5/ -Wfatal-errors -DCG_BC -DQX_SPARSE_MV_MUL -DXPU_TIMER # $(XPU) -Wall 
@@ -21,9 +21,10 @@ LDFLAGS = -lm
 
 # this lists the binaries to produce, the (non-PHONY, binary) targets in
 # the previous manual Makefile
-bin_PROGRAMS = qx_simulator  ninja_star_simulator
+bin_PROGRAMS = qx_simulator  qx_simulation_server # ninja_star_simulator 
 qx_simulator_SOURCES = ./tools/simulator.cc
-ninja_star_simulator_SOURCES = ./tools/ninja_star_simulator.cc
+# ninja_star_simulator_SOURCES = ./tools/ninja_star_simulator.cc
+qx_simulation_server_SOURCES = ./server/qx_server.cc
 
 
 

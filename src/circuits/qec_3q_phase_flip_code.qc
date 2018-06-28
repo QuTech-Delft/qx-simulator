@@ -33,9 +33,8 @@ qubits 3
    cnot q0,q1
    cnot q0,q2
    toffoli q1,q2,q0
-   # display
    display
 
-#.error_correction
+# error_model depolarizing_channel,0.1
 
 

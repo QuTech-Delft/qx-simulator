@@ -20,6 +20,7 @@
 #include <stdint.h>
 
 #include <qcode/strings.h>
+#include <qcode/quantum_state_loader.h>
 #include <core/circuit.h>
 #include <core/error_model.h>
 
@@ -38,8 +39,9 @@ using namespace str;
 namespace qx
 {
 
-   typedef std::map<std::string,std::string> map_t;
-   typedef std::vector<qx::circuit *>        circuits_t;
+   typedef std::map<std::string,std::string>   map_t;
+   typedef std::vector<qx::circuit *>          circuits_t;
+   typedef std::vector<qx::quantum_state_t *>  quantum_states_t;
 
    /**
     * quantum_code parser
@@ -50,6 +52,7 @@ namespace qx
       private:
 
       std::string   file_name;
+      std::string   path;
 
       int           line_index;
       bool          parsed_successfully;
@@ -63,6 +66,9 @@ namespace qx
       uint32_t                   qubits_count;
       std::vector<qx::circuit *> circuits;
 
+      quantum_states_t           quantum_states;
+      str::strings               quantum_state_files;
+
       // noise
       double                     phase_noise;
       double                     rotation_noise;
@@ -75,21 +81,33 @@ namespace qx
       double                     error_probability;
 
 
+
       public:
 
       /**
        * \brief
        *    quantum_code_parser constructor
        */
-      quantum_code_parser(std::string file_name) : file_name(file_name), qubits_count(0), parsed_successfully(false), syntax_error(false), semantic_error(false), error_model(__unknown_error_model__), error_probability(0)
+      quantum_code_parser(std::string file_name) : file_name(file_name), qubits_count(0), parsed_successfully(false), 
+                                                   syntax_error(false), semantic_error(false), 
+						   phase_noise(0), rotation_noise(0), decoherence(0),
+						   error_model(__unknown_error_model__), error_probability(0)
       {
+	 size_t last = file_name.find_last_of('/');
+	 if (last != std::string::npos)
+	 {
+	    path = file_name.substr(0,last+1);
+	 }
+	 else 
+	    path = "";
       }
+      
 
       /**
        * \brief
        *    parse the quantum code file
        */
-      void parse()
+      int parse(bool exit_on_error=true)
       {
 	 line_index   = 0;
 	 syntax_error = false;
@@ -110,12 +128,27 @@ namespace qx
 	    stream.close();
 	    if (syntax_error || semantic_error)
 	    {
-	       exit(-1);
+	       if (exit_on_error)
+	          exit(-1);
+	       else
+	       {
+		  println("[+] failed to load the code : code contains errors. ");
+		  return -1;
+	       }
+
 	    }
 	    parsed_successfully = true;
 	    println("[+] code loaded successfully. ");
+	    return 0;
 	 }
-	 else error("cannot open file " << file_name);
+	 else 
+	 {
+	    error("cannot open file " << file_name);
+	    if (exit_on_error)
+	       exit(-1);
+	    else
+	       return -1;
+	 }
       }
 
       /**
@@ -170,8 +203,8 @@ namespace qx
 
 #define print_syntax_error(err) \
       {\
-	 std::cerr << "[x] syntax error at line " << line_index << " : " << err << std::endl; \
-	 std::cerr << "   +--> code: \"" << original_line << "\"" << std::endl; \
+	 std::cout << "[x] syntax error at line " << line_index << " : " << err << std::endl; \
+	 std::cout << "   +--> code: \"" << original_line << "\"" << std::endl; \
 	 syntax_error = true;\
 	 return 1;\
       }
@@ -179,8 +212,8 @@ namespace qx
 
 #define print_semantic_error(err) \
       {\
-	 std::cerr << "[x] semantic error at line " << line_index << " : " << err << std::endl; \
-	 std::cerr << "   +--> code: \"" << original_line << "\"" << std::endl; \
+	 std::cout << "[x] semantic error at line " << line_index << " : " << err << std::endl; \
+	 std::cout << "   +--> code: \"" << original_line << "\"" << std::endl; \
 	 semantic_error = true;\
 	 return 1;\
       }
@@ -196,8 +229,40 @@ namespace qx
 	    return false;
 	 for (uint32_t i=1; i<str.size(); ++i)
 	 {
-	    if ((!is_letter(str[i])) && (!is_digit(str[i])))
+	    if ((!is_letter(str[i])) && (!is_digit(str[i])) && (str[i]!='(') && (str[i]!=')'))
 	       return false;
+	 }
+	 return true;
+      }
+
+      /**
+       * \brief translate user-defined qubit/bit name to qubit/bit identifier
+       */
+      void translate(std::string& str)
+      {
+	 // search in the qubit map first
+	 map_t::iterator it = definitions.find(str);
+	 if (it != definitions.end())
+	 {
+	    std::string id = it->second;
+	    //println(" $ translate : " << str << " -> " << id);
+	    str.replace(0,str.size(),id);
+	 }
+      }
+
+      /**
+       * match qubit id
+       */
+      bool is_qubit_id(std::string& str)
+      {
+	 if (str[0] != 'q')
+	    return false;
+	 uint32_t l = str.length();
+	 if (l>=1)
+	 {
+	    for (size_t i=1; i<l; ++i)
+	       if (!is_digit(str[i]))
+		  return false;
 	 }
 	 return true;
       }
@@ -209,7 +274,8 @@ namespace qx
       {
 	 std::string& original_line = str;
 	 std::string  qubit;
-	 if (str[0] != 'q')
+	 // if (str[0] != 'q')
+	 if (!is_qubit_id(str))
 	 {
 	    // search in the qubit map first
 	    map_t::iterator it = definitions.find(str);
@@ -234,6 +300,9 @@ namespace qx
 	 return (atoi(id.c_str()));
       }
 
+      /**
+       * \brief retrieve bit number <N> from an identifer <bN>
+       */
       uint32_t bit_id(std::string& str)
       {
 	 std::string& original_line = str;
@@ -262,11 +331,41 @@ namespace qx
 	 return circuits.back();
       }
 
+
+      uint32_t iterations(std::string label)
+      {
+	 std::string& original_line = label;
+	 int32_t i1 = label.find('('); 
+	 int32_t i2 = label.find(')'); 
+	 // println("i1=" << i1 << ", i2=" << i2);
+	 if (i1 == -1)
+	    return 1;
+	 if (i2 == -1) 
+	    print_semantic_error(" invalid sub-circuit definition !");
+	 if (!(i2 > (i1+1)))
+	    print_semantic_error(" invalid sub-circuit's iteration count !");
+	 // find iteration count
+	 std::string it = label.substr(i1+1,i2-i1-1);
+	 // println("it = " << it);
+	 for (uint32_t i=0; i<it.length(); ++i)
+	 {
+	    if (!is_digit(it[i]))
+	       print_semantic_error(" invalid sub-circuit's iteration count !");
+	 }
+	  return atoi(it.c_str());
+      }
+
+      std::string circuit_name(std::string& label)
+      {
+	 std::string name = label.substr(1,label.find('(')-1);
+	 return name;
+      }
+
       /**
        * \brief 
        *   process line
        */
-      int32_t process_line(std::string& line)
+      int32_t process_line(std::string& line, qx::parallel_gates * pg=0)
       {
 	 // println("processing line " << line_index << " ...");
 	 format_line(line);
@@ -289,7 +388,8 @@ namespace qx
 	    else
 	    {
 	       // println("label : new circuit '" << line << "' created.");
-	       circuits.push_back(new qx::circuit(qubits_count, line.substr(1)));
+	       // circuits.push_back(new qx::circuit(qubits_count, line.substr(1)));
+	       circuits.push_back(new qx::circuit(qubits_count, circuit_name(line), iterations(line)));
 	       return 0;
 	    }
 	 }
@@ -309,8 +409,11 @@ namespace qx
 	    return 0;
 	 }
 
+	 // this do not handle correctly malformed code (ex : parallel gate 
+	 // definition when qubits number is not yet defined) 
 	 if (words.size() != 2) 
-	    print_syntax_error("malformed code !");
+	    if (pg != 0)
+	       print_syntax_error("malformed code !");
 
 
 	 if (words[0] == "qubits")    // qubit definition
@@ -334,7 +437,13 @@ namespace qx
 	 else if (words[0] == "map") // definitions
 	 {
 	    strings params = word_list(words[1],",");
-	    uint32_t q     = qubit_id(params[0]);
+	    uint32_t q     = 0;
+	    if (params[0][0] == 'q') 
+	       q = qubit_id(params[0]);
+	    else if (params[0][0] == 'b')
+	       q = bit_id(params[0]);
+	    else
+	       print_semantic_error(" invalid qubit/bit identifier !");
 	    std::string qubit = params[0];
 	    std::string name  = params[1];
 	    if (q > (qubits_count-1))
@@ -342,13 +451,80 @@ namespace qx
 	    definitions[name] = qubit;
 	    // println(" => map qubit " << name << " to " << qubit);
 	 }
+	 else if (words[0] == "load_state")
+	 {
+	    std::string file = path+words[1];
+	    replace_all(file,"\"","");
+	    // println("[+] loading quantum state from '" << file << "' ...");
+	    qx::quantum_state_loader qsl(file,qubits_count);
+	    qsl.load();
+	    quantum_state_files.push_back(file);
+	    quantum_states.push_back(qsl.get_quantum_state());
+	    current_sub_circuit(qubits_count)->add(new qx::prepare(qsl.get_quantum_state()));
+	 }
+	 /**
+	  * error model
+	  */
+	 else if (words[0] == "error_model")   // operational errors
+	 {
+	    strings params = word_list(words[1],",");
+	    if (params.size() != 2)
+	       print_syntax_error(" error mode should be specified according to the following syntax: 'error_model depolarizing_channel,0.01' ");
+	    if (params[0] == "depolarizing_channel")
+	    {
+	       error_model = __depolarizing_channel__;
+	       error_probability = atof(params[1].c_str());
+	       println("[!] noise simulation enabled : error model =" << params[0].c_str() << ", error probability =" << error_probability << ")");
+	    }
+	    else
+	       print_semantic_error(" unknown error model !");
+	 }
+	 /**
+	  * noise 
+	  */
+	 else if (words[0] == "noise")   // operational errors
+	 {
+	    strings params = word_list(words[1],",");
+	    println(" => noise (theta=" << params[0].c_str() << ", phi=" << params[1].c_str() << ")");
+	 } 
+	 else if (words[0] == "decoherence")   // decoherence
+	 {
+	    println(" => decoherence (dt=" << words[1] << ")");
+	 }
+	 else if (words[0] == "qec")   // decoherence
+	 {
+	    println(" => quantum error correction scheme = " << words[1]);
+	 }
+	 /**
+	  * parallel gates
+	  */
+	 else if ((words[0] == "{") && (words[words.size()-1] == "}"))
+	 {
+	    std::string pg_line = line;
+	    replace_all(pg_line,"{","");
+	    replace_all(pg_line,"}","");
+	    strings gates = word_list(pg_line,"|");
+	    qx::parallel_gates * _pgs = new qx::parallel_gates();
+	    for (size_t i=0; i<gates.size(); ++i)
+	    {
+	       // println(gates[i]);
+	       process_line(gates[i],_pgs);
+	    }
+	    current_sub_circuit(qubits_count)->add(_pgs);
+	 }
+	 /**
+	  * sequential gates
+	  */
 	 else if (words[0] == "h")    // hadamard gate
 	 {
 	    uint32_t q = qubit_id(words[1]); // atoi(words[1].c_str());
 	    if (q > (qubits_count-1))
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => hadamard gate on: " << q);
-	    current_sub_circuit(qubits_count)->add(new qx::hadamard(q));
+	    if (pg) 
+	       pg->add(new qx::hadamard(q));
+	    else
+	       current_sub_circuit(qubits_count)->add(new qx::hadamard(q));
 	 } 
 	 else if (words[0] == "cnot") // cnot gate
 	 {
@@ -360,6 +536,9 @@ namespace qx
 	    if (tq > (qubits_count-1))
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => cnot gate : ctrl_qubit=" << cq << ", target_qubit=" << tq);
+	    if (pg) 
+	       pg->add(new qx::cnot(cq,tq));
+	    else
 	    current_sub_circuit(qubits_count)->add(new qx::cnot(cq,tq));
 	 } 
 	 else if (words[0] == "swap") // cnot gate
@@ -370,6 +549,9 @@ namespace qx
 	    if ((q1 > (qubits_count-1)) || (q1 > (qubits_count-1)))
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => swap gate : qubit_1=" << q1 << ", qubit_2=" << q2); 
+	    if (pg) 
+	       pg->add(new qx::swap(q1,q2));
+	    else
 	    current_sub_circuit(qubits_count)->add(new qx::swap(q1,q2));
 	 } 
 
@@ -384,8 +566,27 @@ namespace qx
 	    if ((q1 > (qubits_count-1)) || (q1 > (qubits_count-1)))
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => controlled phase shift gate : ctrl_qubit=" << q1 << ", target_qubit=" << q2); 
+	    if (pg) 
+	       pg->add(new qx::ctrl_phase_shift(q1,q2));
+	    else
 	    current_sub_circuit(qubits_count)->add(new qx::ctrl_phase_shift(q1,q2));
 	 } 
+	 /**
+	  * cphase 
+	  */
+	 else if (words[0] == "cphase") 
+	 {
+	    strings params = word_list(words[1],",");
+	    uint32_t q1 = qubit_id(params[0]);
+	    uint32_t q2 = qubit_id(params[1]);
+	    if ((q1 > (qubits_count-1)) || (q1 > (qubits_count-1)))
+	       print_semantic_error(" target qubit out of range !");
+	    // println(" => controlled phase shift gate : ctrl_qubit=" << q1 << ", target_qubit=" << q2); 
+	    if (pg) 
+	       pg->add(new qx::cphase(q1,q2));
+	    else
+	    current_sub_circuit(qubits_count)->add(new qx::cphase(q1,q2));
+	 }
 
 	 /**
 	  * pauli gates
@@ -396,11 +597,15 @@ namespace qx
 	    if (q > (qubits_count-1))
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => pauli x gate on: " << q);
+	    if (pg) 
+	       pg->add(new qx::pauli_x(q));
+	    else
 	    current_sub_circuit(qubits_count)->add(new qx::pauli_x(q));
 	 } 
 	 else if (words[0] == "cx")   // x gate
 	 {
 	    strings params = word_list(words[1],",");
+	    translate(params[0]);
 	    bool bit = is_bit(params[0]);
 	    uint32_t ctrl   = (bit ? bit_id(params[0]) : qubit_id(params[0]));
 	    uint32_t target = qubit_id(params[1]);
@@ -412,11 +617,17 @@ namespace qx
 	    if (bit)
 	    {
 	       // println(" => binary controlled pauli_x gate (ctrl=" << ctrl << ", target=" << target << ")");
+	    if (pg) 
+	       pg->add(new qx::bin_ctrl(ctrl,new qx::pauli_x(target)));
+	    else
 	       current_sub_circuit(qubits_count)->add(new qx::bin_ctrl(ctrl,new qx::pauli_x(target)));
 	    } 
 	    else
 	    {
 	       // println(" => controlled pauli_x gate (ctrl=" << ctrl << ", target=" << target << ")");
+	    if (pg) 
+	       pg->add(new qx::cnot(ctrl,target));
+	    else
 	       current_sub_circuit(qubits_count)->add(new qx::cnot(ctrl,target));
 	    }
 	 } 
@@ -434,11 +645,15 @@ namespace qx
 	    if (q > (qubits_count-1))
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => pauli z gate on: " << atoi(words[1].c_str()));
+	    if (pg) 
+	       pg->add(new qx::pauli_z(q));
+	    else
 	    current_sub_circuit(qubits_count)->add(new qx::pauli_z(q));
 	 }	
 	 else if (words[0] == "cz")   // z gate
 	 {
 	    strings params = word_list(words[1],",");
+	    translate(params[0]);
 	    bool bit = is_bit(params[0]);
 	    uint32_t ctrl   = (bit ? bit_id(params[0]) : qubit_id(params[0]));
 	    uint32_t target = qubit_id(params[1]);
@@ -450,13 +665,19 @@ namespace qx
 	    if (bit)
 	    {
 	       // println(" => binary controlled pauli_z gate (ctrl=" << ctrl << ", target=" << target << ")");
+	    if (pg) 
+	       pg->add(new qx::bin_ctrl(ctrl,new qx::pauli_z(target)));
+	    else
 	       current_sub_circuit(qubits_count)->add(new qx::bin_ctrl(ctrl,new qx::pauli_z(target)));
 	    } 
 	    else
 	    {
+	    if (pg) 
+	       pg->add(new qx::cphase(ctrl,target));
+	    else
+	       current_sub_circuit(qubits_count)->add(new qx::cphase(ctrl,target));
 	       //println(" => controlled pauli_z gate (ctrl=" << ctrl << ", target=" << target << ")");
-	       println("quantum controlled-z not implemented yet !");
-	       // current_sub_circuit(qubits_count)->add(new qx::cnot(ctrl,target));
+	       //println("quantum controlled-z not implemented yet !");
 	    }
 	 } 
 	 /**
@@ -468,6 +689,9 @@ namespace qx
 	    if (q > (qubits_count-1))
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => t gate on: " << q);
+	    if (pg) 
+	       pg->add(new qx::t_gate(q));
+	    else
 	    current_sub_circuit(qubits_count)->add(new qx::t_gate(q));
 	 }
 	 /**
@@ -479,20 +703,31 @@ namespace qx
 	    if (q > (qubits_count-1))
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => t gate on: " << q);
+	    if (pg) 
+	       pg->add(new qx::t_dag_gate(q));
+	    else
 	    current_sub_circuit(qubits_count)->add(new qx::t_dag_gate(q));
 	 }
 
 	 /**
 	  * prepz
 	  */
-	 else if (words[0] == "prepz")   // x gate
+	 else if (words[0] == "prepz")   // prepz gate
 	 {
 	    uint32_t q = qubit_id(words[1]);
 	    if (q > (qubits_count-1))
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => t gate on: " << q);
-	    current_sub_circuit(qubits_count)->add(new qx::measure(q));
-	    current_sub_circuit(qubits_count)->add(new qx::bin_ctrl(q,new qx::pauli_x(q)));
+	    if (pg) 
+	    {
+	       // pg->add(new qx::measure(q));
+	       // pg->add(new qx::bin_ctrl(q,new qx::pauli_x(q)));
+	       pg->add(new qx::prepz(q));
+	    }
+	    else
+	    {
+	       current_sub_circuit(qubits_count)->add(new qx::prepz(q));
+	    }
 	 }
 	 /**
 	  * rotations gates
@@ -504,6 +739,9 @@ namespace qx
 	    if (q > (qubits_count-1))
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => rx gate on " << process_qubit(params[0]) << " (angle=" << params[1] << ")");
+	    if (pg) 
+	       pg->add(new qx::rx(q,atof(params[1].c_str())));
+	    else
 	    current_sub_circuit(qubits_count)->add(new qx::rx(q,atof(params[1].c_str())));
 	 }
 	 else if (words[0] == "ry")   // ry gate
@@ -513,6 +751,9 @@ namespace qx
 	    if (q > (qubits_count-1))
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => ry gate on " << process_qubit(params[0]) << " (angle=" << params[1] << ")");
+	    if (pg) 
+	       pg->add(new qx::ry(q,atof(params[1].c_str())));
+	    else
 	    current_sub_circuit(qubits_count)->add(new qx::ry(q,atof(params[1].c_str())));
 	 }
 	 else if (words[0] == "rz")   // rz gate
@@ -522,6 +763,9 @@ namespace qx
 	    if (q > (qubits_count-1))
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => rz gate on " << process_qubit(params[0]) << " (angle=" << params[1] << ")");
+	    if (pg) 
+	       pg->add(new qx::rz(q,atof(params[1].c_str())));
+	    else
 	    current_sub_circuit(qubits_count)->add(new qx::rz(q,atof(params[1].c_str())));
 	 }
 
@@ -535,6 +779,9 @@ namespace qx
 	    if (q > (qubits_count-1))
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => phase gate on " << process_qubit(words[1]));
+	    if (pg) 
+	       pg->add(new qx::phase_shift(q));
+	    else
 	    current_sub_circuit(qubits_count)->add(new qx::phase_shift(q));
 	 }
 	 else if (words[0] == "s")   // phase shift gate
@@ -544,6 +791,9 @@ namespace qx
 	    if (q > (qubits_count-1))
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => phase gate on " << process_qubit(words[1]));
+	    if (pg) 
+	       pg->add(new qx::phase_shift(q));
+	    else
 	    current_sub_circuit(qubits_count)->add(new qx::phase_shift(q));
 	 }
 
@@ -557,6 +807,9 @@ namespace qx
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => measure qubit " << atoi(words[1].c_str()));
 	    // println(" => measure qubit " << q);
+	    if (pg) 
+	       pg->add(new qx::measure(q));
+	    else
 	    current_sub_circuit(qubits_count)->add(new qx::measure(q));
 	 } 
 	 /**
@@ -574,42 +827,12 @@ namespace qx
 	    if (q1 > (qubits_count-1)) print_semantic_error(" scond control qubit out of range !");
 	    if (q2 > (qubits_count-1)) print_semantic_error(" target qubit out of range !");
 	    // println(" => toffoli gate on " << process_qubit(params[2]) << " (ctrl_q1=" << params[0] << ", ctrl_q2=" << params[1] << ")");
+	    if (pg) 
+	       pg->add(new qx::toffoli(q0,q1,q2));
+	    else
 	    current_sub_circuit(qubits_count)->add(new qx::toffoli(q0,q1,q2));
 	 }
-	 /**
-	  * error model
-	  */
-	 else if (words[0] == "error_model")   // operational errors
-	 {
-	    strings params = word_list(words[1],",");
-	    if (params.size() != 2)
-	       print_syntax_error(" error mode should be specified according to the following syntax: 'error_model depolarizing_channel,0.01' ");
-	    if (params[0] == "depolarizing_channel")
-	    {
-	       error_model = __depolarizing_channel__;
-	       error_probability = atof(params[1].c_str());
-	       println(" => error model:  (name=" << params[0].c_str() << ", error_probability=" << error_probability << ")");
-	    }
-	    else
-	       print_semantic_error(" unknown error model !");
-	 }
 
-	 /**
-	  * noise 
-	  */
-	 else if (words[0] == "noise")   // operational errors
-	 {
-	    strings params = word_list(words[1],",");
-	    println(" => noise (theta=" << params[0].c_str() << ", phi=" << params[1].c_str() << ")");
-	 } 
-	 else if (words[0] == "decoherence")   // decoherence
-	 {
-	    println(" => decoherence (dt=" << words[1] << ")");
-	 }
-	 else if (words[0] == "qec")   // decoherence
-	 {
-	    println(" => quantum error correction scheme = " << words[1]);
-	 }
 	 else
 	    print_syntax_error(" unknown gate or command !");
 

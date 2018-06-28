@@ -4,12 +4,18 @@
  * @date		02-10-15
  * @brief		
  */
+
+#pragma once
+
 #ifndef QX_GATE_H
 #define QX_GATE_H
 
 #include <map>
 
 #include <xpu.h>
+
+#include <immintrin.h> // avx
+#include <emmintrin.h> // sse
 
 #include <core/hash_set.h>
 #include <core/linalg.h>
@@ -18,18 +24,59 @@
 #include <core/binary_counter.h>
 #include <core/kronecker.h>
 
-#ifndef __BUILTIN_LINALG__
-#include <boost/numeric/ublas/matrix.hpp>
-#endif
+// #ifndef __BUILTIN_LINALG__
+// #include <boost/numeric/ublas/matrix.hpp>
+// #endif
 
 #define SQRT_2   (1.4142135623730950488016887242096980785696718753769480731766797379f)
 #define R_SQRT_2 (0.7071067811865475244008443621048490392848359376884740365883398690f)
+
+#define __bit_test(x,pos) ((x) & (1<<(pos)))
+#define __bit_set(x,pos) ((x) | (1<<(pos)))
+#define __bit_flip(x,pos) ((x) ^ (1<<(pos)))
+#define __bit_reset(x,pos) ((x) & ~(1<<(pos)))
 
 //#define SQRT_2   (1.41421356237309504880f)
 //#define R_SQRT_2 (0.70710678118654752440f)
 
 namespace qx
 {
+   /**
+    * types definition
+    */
+   typedef uint64_t                          basis_state_t;
+   typedef std::map<basis_state_t,complex_t> quantum_state_t;
+   typedef enum __gate_type_t
+   {
+      __identity_gate__,
+      __hadamard_gate__,
+      __pauli_x_gate__ ,
+      __pauli_y_gate__ ,
+      __pauli_z_gate__ ,
+      __cnot_gate__    ,
+      __toffoli_gate__ ,
+      __swap_gate__    ,
+      __phase_gate__   ,
+      __rx_gate__      ,
+      __ry_gate__      ,
+      __rz_gate__      ,
+      __cphase_gate__  ,
+      __t_gate__       ,
+      __tdag_gate__    ,
+      __custom_gate__  ,
+      __prepz_gate__   ,
+      __measure_gate__ ,
+      __measure_reg_gate__,
+      __ctrl_phase_shift_gate__,
+      __parallel_gate__,
+      __display__,
+      __display_binary__,
+      __bin_ctrl_gate__,
+      __lookup_table__,
+      __qft_gate__,
+      __prepare_gate__
+   } gate_type_t;
+
    /**
     * gates coeffecients
     */
@@ -55,11 +102,14 @@ namespace qx
 	   
 	   virtual int32_t                apply(qu_register& qureg) = 0;
 	   virtual std::vector<uint32_t>  qubits() = 0;
+	   virtual std::vector<uint32_t>  control_qubits() = 0;
+	   virtual std::vector<uint32_t>  target_qubits()  = 0;
+	   virtual gate_type_t            type() = 0;
 	   virtual void                   dump() = 0;
 	   virtual                        ~gate() { };                
 
 	   virtual void                   set_duration(uint64_t d) { duration = d; }
-	   virtual uint64_t               set_duration() { return duration; }
+	   virtual uint64_t               get_duration() { return duration; }
 	 
 	 protected:
 
@@ -313,7 +363,7 @@ namespace qx
    {
 	 private:
 
-	   uint32_t                  qubit;
+	   uint32_t   qubit;
 	   cmatrix_t  m;
 
 	 public:
@@ -326,7 +376,8 @@ namespace qx
 	   int32_t apply(qu_register& qureg)
 	   {
 		 sqg_apply(m,qubit,qureg);
-		 qureg.set_binary(qubit,__state_unknown__);
+		 // qureg.set_binary(qubit,__state_unknown__);
+		 qureg.set_measurement_prediction(qubit,__state_unknown__);
 		 return 0;
 	   }
 
@@ -336,6 +387,24 @@ namespace qx
 		 r.push_back(qubit);
 		 return r;
 	   }
+	   
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 r.push_back(qubit);
+		 return r;
+	   }
+
+	   gate_type_t type()
+	   {
+	      return __hadamard_gate__; 
+	   }
 
 	   void dump()
 	   {
@@ -343,6 +412,42 @@ namespace qx
 	   }
 
    };
+   
+   void __swap(cvector_t& amp, size_t size, size_t bit, size_t trg, size_t ctrl, size_t offset=0)
+   {
+      // println("bit=" << bit);
+      // println("ctrl=" << ctrl);
+      for (size_t i=__bit_set(0,bit); i<(1<<size); i += (1 << (bit+1)))
+	 for (size_t j=0; j<(1<<bit); j++)
+	 {
+	    size_t v = i+j+offset; 
+	    std::swap(amp[v], amp[__bit_reset(v,trg)]);
+	    // println(" swap(" << std::bitset<16>(v) << "," << std::bitset<16>(__bit_reset(v,trg)) << ")");
+	 }
+   }
+
+
+   int cx_worker(int cs, int ce, int s, cvector_t * p_amp, size_t bit1, size_t bit2, size_t trg, size_t ctrl)
+   {
+      cvector_t &amp = * p_amp;
+      // xpu::parallel_for fswp(__bit_set(0,b1), (1 << qn), (1 << (b1+1)), &t);
+      size_t step=(1 << (bit1+1));
+      size_t b   = cs;
+      size_t e   = ce;
+/*
+      println("step=" << step);
+      println("b=" << b);
+      println("e=" << e);
+*/
+
+      size_t offset = __bit_set(0,bit1);
+
+      //for (size_t i=__bit_set(0,bit1); i<(1<<size); i += (1 << (bit1+1)))
+	 //__swap(amp,bit1,bit2,trg,ctrl,i);
+      for (size_t i=b; i<e; i++)
+	 __swap(amp,bit1,bit2,trg,ctrl,offset+(i*step));
+      return 0;
+   }
 
    /**
     * \brief controlled-not gate:
@@ -411,30 +516,28 @@ namespace qx
 
 		 cvector_t& amp = qreg.get_data();
 
-		 //perm_t p = perms(qn,cq,tq);
-		 perms(qn,cq,tq,amp);
-/*
-		 // std::vector<uint32_t> done(sn, 0);
+		 // perms(qn,cq,tq,amp);
+// #if 0
+		 size_t b1 = std::max(cq,tq);
+		 size_t b2 = std::min(cq,tq);
 
-		 
-		 uint32_t p1,p2;
 
-		 for (perm_t::iterator it = p.begin(); it != p.end(); it++)
+		 size_t steps = ((1 << qn)-(__bit_set(0,b1)))/(1 << (b1+1))+1;
+		 /*
+		 println("from=" << (__bit_set(0,b1)));
+		 println("to=" << (1 << qn));
+		 println("s=" << (1 << (b1+1)));
+		 println("steps=" << steps);
+		 */
+		 if (qn<17) 
+		    fast_cx(amp, qn, b1, b2, tq, cq);
+		 else
 		 {
-		    p1 = it->first;
-		    p2 = it->second;
-		    // if (!(done[p1] || done[p2]))
-		    // {
-			  std::swap(amp[p1],amp[p2]);
-			  //done[p1] = 1;
-			  //done[p2] = 1;
-		    //}
+		    xpu::task t(cx_worker,0,0,0,&amp,b1,b2,(size_t)tq,(size_t)cq);
+		    xpu::parallel_for fswp(0, steps, 1, &t);
+		    fswp.run();
 		 }
-*/
-
-
-		 // for (uint32_t i=0; i<sn; i++)
-
+// #endif
 
 		 #elif defined(CG_HASH_SET)
 		  
@@ -476,10 +579,13 @@ namespace qx
 		 
 		 #endif // CG_HASH_SET
 
-		 if (qreg.get_binary(control_qubit) == __state_1__)
+		 // if (qreg.get_binary(control_qubit) == __state_1__)
+		 if (qreg.get_measurement_prediction(control_qubit) == __state_1__)
 		    qreg.flip_binary(target_qubit);
-		 else if (qreg.get_binary(control_qubit) == __state_unknown__)
-		    qreg.set_binary(target_qubit,__state_unknown__);
+		 //else if (qreg.get_binary(control_qubit) == __state_unknown__)
+		 else if (qreg.get_measurement_prediction(control_qubit) == __state_unknown__)
+		    qreg.set_measurement_prediction(target_qubit,__state_unknown__);
+		    // qreg.set_binary(target_qubit,__state_unknown__);
 		 
 		 return 0;
 	   }
@@ -492,10 +598,58 @@ namespace qx
 		 r.push_back(target_qubit);
 		 return r;
 	   }
+ 
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 r.push_back(control_qubit);
+		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 r.push_back(target_qubit);
+		 return r;
+	   }
+
+
+	   gate_type_t type()
+	   {
+	      return __cnot_gate__; 
+	   }
 	   
 	   void dump()
 	   {
 		 println("  [-] cnot(ctrl_qubit=" << control_qubit << ", target_qubit=" << target_qubit << ")");
+	   }
+
+	   private:
+#if 0
+	   void __swap(cvector_t& amp, size_t size, size_t bit, size_t trg, size_t ctrl, size_t offset=0)
+	   {
+	      // println("bit=" << bit);
+	      // println("ctrl=" << ctrl);
+	      for (size_t i=__bit_set(0,bit); i<(1<<size); i += (1 << (bit+1)))
+		 for (size_t j=0; j<(1<<bit); j++)
+		 {
+		    size_t v = i+j+offset; 
+		    std::swap(amp[v], amp[__bit_reset(v,trg)]);
+		    // println(" swap(" << std::bitset<16>(v) << "," << std::bitset<16>(__bit_reset(v,trg)) << ")");
+		 }
+	   }
+#endif
+
+
+	   void fast_cx(cvector_t& amp, size_t size, size_t bit1, size_t bit2, size_t trg, size_t ctrl)
+	   {
+	      /*
+		 println("from=" << (__bit_set(0,bit1)));
+		 println("to=" << (1 << size));
+		 println("s=" << (1 << (bit1+1)));
+	      */
+	      for (size_t i=__bit_set(0,bit1); i<(1<<size); i += (1 << (bit1+1)))
+		 __swap(amp,bit1,bit2,trg,ctrl,i);
 	   }
 
    };
@@ -555,15 +709,16 @@ namespace qx
 		    }
 		 }
 
-		 if ((qreg.get_binary(control_qubit_1) == __state_1__) && 
-		     (qreg.get_binary(control_qubit_2) == __state_1__) )
+		 if ((qreg.get_measurement_prediction(control_qubit_1) == __state_1__) && 
+		     (qreg.get_measurement_prediction(control_qubit_2) == __state_1__) )
 		 {
 		    qreg.flip_binary(target_qubit);
 		 }
-		 else if ((qreg.get_binary(control_qubit_1) == __state_unknown__) ||
-		          (qreg.get_binary(control_qubit_2) == __state_unknown__)  )
+		 else if ((qreg.get_measurement_prediction(control_qubit_1) == __state_unknown__) ||
+		          (qreg.get_measurement_prediction(control_qubit_2) == __state_unknown__)  )
 		 {
-		    qreg.set_binary(target_qubit,__state_unknown__);
+		    qreg.set_measurement_prediction(target_qubit,__state_unknown__);
+		    // qreg.set_binary(target_qubit,__state_unknown__);
 		 }
 		 
 		 return 0;
@@ -578,6 +733,28 @@ namespace qx
 		 r.push_back(target_qubit);
 		 return r;
 	   }
+ 
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 r.push_back(control_qubit_1);
+		 r.push_back(control_qubit_2);
+		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 r.push_back(target_qubit);
+		 return r;
+	   }
+
+
+	   gate_type_t type()
+	   {
+	      return __toffoli_gate__;
+	   }
+
 	   
 	   void dump()
 	   {
@@ -585,6 +762,46 @@ namespace qx
 	   }
 
    };
+
+
+   int fliper(int cs, int ce, int s, uint32_t q, cvector_t * p_amp)
+   {
+      cvector_t &amp = * p_amp;
+      for (int i=cs; i<ce; ++i)
+      {
+	    if (__bit_test(i,q))
+	       std::swap(amp[i],amp[__bit_flip(i,q)]);
+      }
+      return 0;
+   }
+
+
+   void flip(uint32_t q, uint32_t n, cvector_t& amp)
+   {
+      uint32_t nn = (1 << n);
+      uint32_t p1, p2;
+      std::bitset<MAX_QB_N> b;
+      // perm_t res;
+
+      b.reset();
+      b.set(q);  
+
+      uint32_t bc = b.to_ulong();
+
+      while (bc < nn)
+      {
+	 b.set(q);  p1 = b.to_ulong();
+	 b.flip(q); p2 = b.to_ulong();
+	 if (p2<p1)
+	    std::swap(amp[p1],amp[p2]);
+	 b.flip(q);
+	 b = inc(b);
+	 b.set(q);
+	 bc =  b.to_ulong();
+      }
+      //return res;
+   }
+
 
 
    
@@ -611,7 +828,22 @@ namespace qx
 
 	   int32_t apply(qu_register& qreg)
 	   {
+#define FAST_FLIP
+#ifdef FAST_FLIP
+
+	      uint32_t qn = qreg.size();
+	      cvector_t& amp = qreg.get_data();
+	      
+	      flip(qubit,qn,amp);
+	      /* 
+	       xpu::task flip_t(fliper,0,0,0,qubit,&amp);
+	       xpu::parallel_for parallel_flip(0,(1 << qn),1,&flip_t);
+	       parallel_flip.run();
+	      */
+#else
 		 sqg_apply(m,qubit,qreg);
+#endif // FAST_FLIP
+
 		 qreg.flip_binary(qubit);
 		 return 0;
 	   }
@@ -627,6 +859,25 @@ namespace qx
 		 r.push_back(qubit);
 		 return r;
 	   }
+ 
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 r.push_back(qubit);
+		 return r;
+	   }
+
+	   gate_type_t type()
+	   {
+	      return __pauli_x_gate__; 
+	   }
+
 
    };
 
@@ -653,6 +904,7 @@ namespace qx
 	   int32_t apply(qu_register& qreg)
 	   {
 		 sqg_apply(m,qubit,qreg);
+		 qreg.flip_binary(qubit);
 		 return 0;
 	   }
 
@@ -667,6 +919,26 @@ namespace qx
 		 r.push_back(qubit);
 		 return r;
 	   }
+ 
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 r.push_back(qubit);
+		 return r;
+	   }
+
+	   gate_type_t type()
+	   {
+	      return __pauli_y_gate__; 
+	   }
+
+
 
    };
 
@@ -707,7 +979,24 @@ namespace qx
 		 r.push_back(qubit);
 		 return r;
 	   }
+ 
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 r.push_back(qubit);
+		 return r;
+	   }
 
+	   gate_type_t type()
+	   {
+	      return __pauli_z_gate__; 
+	   }
    };
 
    /**
@@ -747,7 +1036,24 @@ namespace qx
 		 r.push_back(qubit);
 		 return r;
 	   }
+ 
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 r.push_back(qubit);
+		 return r;
+	   }
 
+	   gate_type_t type()
+	   {
+	      return __phase_gate__; 
+	   }
    };
 
 
@@ -784,6 +1090,25 @@ namespace qx
 		 std::vector<uint32_t> r;
 		 r.push_back(qubit);
 		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 r.push_back(qubit);
+		 return r;
+	   }
+
+
+	   gate_type_t type()
+	   {
+	      return __t_gate__; 
 	   }
 
    };
@@ -823,6 +1148,24 @@ namespace qx
 		 r.push_back(qubit);
 		 return r;
 	   }
+ 
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 r.push_back(qubit);
+		 return r;
+	   }
+
+	   gate_type_t type()
+	   {
+	      return __tdag_gate__;
+	   }
 
    };
 
@@ -854,7 +1197,8 @@ namespace qx
 	   int32_t apply(qu_register& qreg)
 	   {
 		 sqg_apply(m,qubit,qreg);
-		 qreg.set_binary(qubit,__state_unknown__);
+		 qreg.set_measurement_prediction(qubit,__state_unknown__);
+		 // qreg.set_binary(qubit,__state_unknown__);
 		 return 0;
 	   }
 
@@ -868,6 +1212,24 @@ namespace qx
 		 std::vector<uint32_t> r;
 		 r.push_back(qubit);
 		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 r.push_back(qubit);
+		 return r;
+	   }
+
+	   gate_type_t type()
+	   {
+	      return __rx_gate__; 
 	   }
 
    };
@@ -896,7 +1258,8 @@ namespace qx
 	   int32_t apply(qu_register& qreg)
 	   {
 		 sqg_apply(m,qubit,qreg);
-		 qreg.set_binary(qubit,__state_unknown__);
+		 qreg.set_measurement_prediction(qubit,__state_unknown__);
+		 //qreg.set_binary(qubit,__state_unknown__);
 		 return 0;
 	   }
 
@@ -911,7 +1274,25 @@ namespace qx
 		 r.push_back(qubit);
 		 return r;
 	   }
+ 
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 r.push_back(qubit);
+		 return r;
+	   }
 
+
+	   gate_type_t type()
+	   {
+	      return __ry_gate__;
+	   }
    };
 
 
@@ -938,7 +1319,8 @@ namespace qx
 	   int32_t apply(qu_register& qreg)
 	   {
 		 sqg_apply(m,qubit,qreg);
-		 qreg.set_binary(qubit,__state_unknown__);
+		 qreg.set_measurement_prediction(qubit,__state_unknown__);
+		 //qreg.set_binary(qubit,__state_unknown__);
 		 return 0;
 	   }
 
@@ -953,8 +1335,132 @@ namespace qx
 		 r.push_back(qubit);
 		 return r;
 	   }
+ 
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 r.push_back(qubit);
+		 return r;
+	   }
 
+	   gate_type_t type()
+	   {
+	      return __rz_gate__; 
+	   }
    };
+
+   void __shift(cvector_t& amp, size_t size, size_t bit, complex_t p, size_t offset=0)
+   {
+      // println("bit=" << bit);
+      // println("ctrl=" << ctrl);
+      for (size_t i=__bit_set(0,bit); i<(1<<size); i += (1 << (bit+1)))
+	 for (size_t j=0; j<(1<<bit); j++)
+	 {
+	    size_t v = i+j+offset; 
+	    amp[v] *= p;
+	    // println(" swap(" << std::bitset<16>(v) << "," << std::bitset<16>(__bit_reset(v,trg)) << ")");
+	 }
+   }
+
+
+   int shift_worker(int cs, int ce, int s, cvector_t * p_amp, size_t bit1, size_t bit2, complex_t p)
+   {
+      cvector_t &amp = * p_amp;
+      // xpu::parallel_for fswp(__bit_set(0,b1), (1 << qn), (1 << (b1+1)), &t);
+      size_t step=(1 << (bit1+1));
+      size_t b   = cs;
+      size_t e   = ce;
+/*
+      println("step=" << step);
+      println("b=" << b);
+      println("e=" << e);
+*/
+
+      size_t offset = __bit_set(0,bit1);
+
+      //for (size_t i=__bit_set(0,bit1); i<(1<<size); i += (1 << (bit1+1)))
+	 //__swap(amp,bit1,bit2,trg,ctrl,i);
+      for (size_t i=b; i<e; i++)
+	 __shift(amp,bit1,bit2,p,offset+(i*step));
+      return 0;
+   }
+
+
+   /**
+    * \brief qft 
+    */ 
+    /*
+   class qft : public gate
+   {
+	 private:
+
+	   std::vector<uint32_t>     qubit;
+	   std::vector<complex_t>    z;
+
+	   void cr(uint32_t ctrl_qubit, uint32_t target_qubit, qu_register& qreg)
+	   {
+	      size_t b1 = std::max(ctrl_qubit,target_qubit);
+	      size_t b2 = std::min(ctrl_qubit,target_qubit);
+	      size_t qn = qreg.size();
+	      size_t steps = ((1 << qn)-(__bit_set(0,b1)))/(1 << (b1+1))+1;
+              complex_t  z(cos(M_PI/(1 << (ctrl_qubit - target_qubit))), sin(M_PI/(1 << (ctrl_qubit - target_qubit))));
+
+	      cvector_t& amp = qreg.get_data();
+	      xpu::task t(shift_worker,0,0,0,&amp,b1,b2,z);
+	      xpu::parallel_for p_shifter(0, steps, 1, &t);
+	      p_shifter.run();
+
+	      return 0;
+	   }
+
+	 public:
+
+	   qft(std::vector<uint32_t> qubit) : qubit(qubit)
+	   {
+	   }
+
+	   int32_t apply(qu_register& qreg)
+	   {
+
+	   }
+
+	   void dump()
+	   {
+		 print("  [-] qft(");
+		 for (size_t i=0; i<(qubit.size()-1); ++i)
+		    print("q" << qubit[i] << ","); 
+		 println("q" << qubit[qubit.size()-1] << ")");
+	   }
+	   
+	   std::vector<uint32_t>  qubits()
+	   {
+		 return qubit;
+	   }
+ 
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 return qubit;
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 return qubit;
+	   }
+
+	   gate_type_t type()
+	   {
+	      return __qft_gate__; 
+	   }
+   };
+   */
+
+
 
 
    /**
@@ -980,6 +1486,7 @@ namespace qx
 
 	   int32_t apply(qu_register& qreg)
 	   {
+#if 0
 	      uint32_t nn = (1 << qreg.size());
 	      uint32_t p = 0;
 	      std::bitset<MAX_QB_N> b;
@@ -1000,6 +1507,16 @@ namespace qx
 		 b = inc(b);
 		 bc = b.to_ulong();
 	      }
+#endif
+	      size_t b1 = std::max(ctrl_qubit,target_qubit);
+	      size_t b2 = std::min(ctrl_qubit,target_qubit);
+	      size_t qn = qreg.size();
+	      size_t steps = ((1 << qn)-(__bit_set(0,b1)))/(1 << (b1+1))+1;
+
+	      cvector_t& amp = qreg.get_data();
+	      xpu::task t(shift_worker,0,0,0,&amp,b1,b2,z);
+	      xpu::parallel_for p_shifter(0, steps, 1, &t);
+	      p_shifter.run();
 
 	      return 0;
 	   }
@@ -1016,7 +1533,25 @@ namespace qx
 		 r.push_back(target_qubit);
 		 return r;
 	   }
+ 
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 r.push_back(ctrl_qubit);
+		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 r.push_back(target_qubit);
+		 return r;
+	   }
 
+	   gate_type_t type()
+	   {
+	      return __ctrl_phase_shift_gate__; 
+	   }
    };
 
 
@@ -1066,6 +1601,25 @@ namespace qx
 		 r.push_back(qubit2);
 		 return r;
 	   }
+ 
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 r.push_back(qubit1);
+		 r.push_back(qubit2);
+		 return r;
+	   }
+
+	   gate_type_t type()
+	   {
+	      return __swap_gate__; 
+	   }
 
    };
    
@@ -1106,6 +1660,25 @@ namespace qx
 		 r.push_back(target_qubit);
 		 return r;
 	   }
+ 
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 r.push_back(ctrl_qubit);
+		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 r.push_back(target_qubit);
+		 return r;
+	   }
+
+	   gate_type_t type()
+	   {
+	      return __cphase_gate__; 
+	   }
 
    };
 
@@ -1120,42 +1693,42 @@ namespace qx
    {
 	 private:
 
-#ifdef __BUILTIN_LINALG__
+// #ifdef __BUILTIN_LINALG__
            std::vector<uint32_t> qubits;
-#else
-	   ublas::vector<uint32_t>  qubits;
-#endif 
+// #else
+// 	   ublas::vector<uint32_t>  qubits;
+// #endif 
 	   cmatrix_t m;
 
 	 public:
 
-#ifdef __BUILTIN_LINALG__
+// #ifdef __BUILTIN_LINALG__
 	   custom(std::vector<uint32_t>  qubits, cmatrix_t m) : qubits(qubits), m(m)
-#else
-	   custom(ublas::vector<uint32_t>  qubits, cmatrix_t m) : qubits(qubits), m(m)
-#endif 
+// #else
+// 	   custom(ublas::vector<uint32_t>  qubits, cmatrix_t m) : qubits(qubits), m(m)
+// #endif 
 	   {
 		 uint32_t size = 1 << qubits.size();
 		 if (size != m.size1() || size != m.size2())
 		    println("[x] error: cutom gate : the matrix size do not match the number of qubits !");
 		 // verify also that the matrix is unitary
-#ifdef __BUILTIN_LINALG__
+// #ifdef __BUILTIN_LINALG__
 		 cmatrix_t ctr(m.size2(),m.size1());
 		 for (uint32_t i=0; i<m.size2(); ++i)
 		    for (uint32_t j=0; j<m.size1(); ++j)
 		       ctr(i,j) = std::conj(m(j,i));
 		 cmatrix_t mxctr = mxm(m,ctr);
 		 qx::linalg::identity_matrix<complex_t> id(m.size1());
-#else
-		 cmatrix_t mxctr = mxm(m,ublas::trans(conj(m)));
-		 ublas::identity_matrix<complex_t> id(m.size1());
-#endif
+// #else
+// 		 cmatrix_t mxctr = mxm(m,ublas::trans(conj(m)));
+// 		 ublas::identity_matrix<complex_t> id(m.size1());
+// #endif
 
-#ifdef __BUILTIN_LINALG__
+// #ifdef __BUILTIN_LINALG__
 		 if (qx::linalg::equals(mxctr,id))
-#else
-		 if (equals(mxctr,id))
-#endif
+// #else
+// 		 if (equals(mxctr,id))
+// #endif
 		    println("[x] error: custom gate : the specified matrix is not unitary !");
 	   }
 
@@ -1171,7 +1744,98 @@ namespace qx
 		 // println("  [-] custom(qubits=" << qubits << ", matrix=" << m << ")");
 	   }
 
+	   gate_type_t type()
+	   {
+	      return __custom_gate__; 
+	   }
    };
+   
+   
+
+   int p1_worker(int cs, int ce, int s, double * p1, uint32_t qubit, xpu::lockable * l, cvector_t * p_data)
+   {
+      cvector_t &data = * p_data;
+      double local_p1 = 0;
+      for (uint32_t i=cs; i<ce; ++i)
+      {
+	 i = __bit_set(i,qubit);
+	 if (i<ce)
+	    local_p1 += std::norm(data[i]);
+	 // if (__bit_test(i,qubit))
+	    // local_p1 += std::norm(data[i]);
+      }
+
+      l->lock();
+      // println("l_p1 [" << cs << ".." << ce << "]: " << local_p1);
+      *p1 += local_p1;
+      l->unlock();
+      return 0;
+   }
+
+
+   int zero_worker(int cs, int ce, int s, int m, double * length, uint32_t qubit, xpu::lockable * l, cvector_t * p_data)
+   {
+      cvector_t &data = * p_data;
+      double local_length = 0;
+      uint32_t       size = data.size(); 
+      if (m)
+      {
+	 for (uint32_t i=cs; i<ce; ++i)
+	 {
+	    if (!__bit_test(i,qubit))
+	       data[i] = 0;
+	    local_length += std::norm(data[i]);
+	 }
+      }
+      else
+      {
+	 for (uint32_t i=cs; i<ce; ++i)
+	 {
+	    if (__bit_test(i,qubit))
+	       data[i] = 0;
+	    local_length += std::norm(data[i]);
+	 }
+      }
+      l->lock();
+      *length += local_length;
+      l->unlock();
+      return 0;
+   }
+
+   int renorm_worker(int cs, int ce, int s, double * length, cvector_t * p_data)
+   {
+      cvector_t &data = * p_data;
+      double l = *length;
+#ifdef __AVX__
+      // println("avx");
+      complex_t * vd = p_data->data();
+      __m256d vl = _mm256_set1_pd(l);
+      for (uint32_t i=cs; i<ce; i+=2)
+      {
+	 double * pvd = (double*)&vd[i];
+	 __m256d va = _mm256_load_pd(pvd); 
+	 __m256d vr = _mm256_div_pd(va, vl);
+	 _mm256_store_pd(pvd,vr);
+      }
+#elif defined(__SSE__)
+      // println("sse");
+      complex_t * vd = p_data->data();
+      __m128d vl = _mm_set1_pd(l);
+      for (uint32_t i=cs; i<ce; ++i)
+      {
+	 double * pvd = (double*)&vd[i];
+	 __m128d va = _mm_load_pd(pvd); 
+	 __m128d vr = _mm_div_pd(va, vl);
+	 _mm_store_pd(pvd,vr);
+      }
+#else
+      for (uint32_t i=cs; i<ce; ++i)
+	 data[i] /= l;
+#endif // __SSE__
+      return 0;
+   }
+
+
 
    
    /**
@@ -1202,115 +1866,137 @@ namespace qx
 		 return 0;
 	      }
 
-	      std::srand(std::time(0));          // get it out of there
-	      double f = ((double)std::rand())/((double)RAND_MAX);
-	      double p=0;
-	      int32_t k, l, m;
-	      int32_t j = qubit;
+	      double f = qreg.rand();
+	      double p = 0;
 	      int32_t value;
-	      double  fvalue;
+	      int size = qreg.size(); 
+	      int n = (1 << size);
 	      cvector_t& data = qreg.get_data();
-	      uint32_t size = qreg.size(); // data.size();
-	      
-	      /*
-	      for (k = 0; k < (1 << size); k += (1 << j)) 
-	      {
-		 for (l = 0; l < (1 << (j-1)); l++) 
-		 {
-		    m = k + l;
-		    p += std::norm(data[m]);
-		    println(m);
-		 }
-	      }
-	      println("f="<<f);
-	      println("p="<<p);
-
-	      if ( f < p ) {
-		 value = 0;         
-	      } else {
-		 value = 1;
-	      }
-
-	      for (k = 0; k < (1 << size); k += (1 << j)) 
-	      {
-		 for (l = 0; l < (1 << (j-1)); l++) 
-		 {
-		    m = k + l + (1 ^ value) * (1 << (j-1));
-		    data[m] = 0;
-		    m = k + l + (1 & value) * (1 << (j-1));
-		    if (std::fabs(std::norm(data[m])) > QUBIT_ERROR_THRESHOLD)
-		       data[m] = 1;
-		 }
-	      }
-	      */
-	      uint32_t n = (1 << size);
-	      std::bitset<MAX_QB_N> b;
-	      b.reset();
-	      b.set(qubit);
-	      uint32_t bc = b.to_ulong();
-
-	      while (bc < n)
-	      {
-		 bc =  b.to_ulong();
-		 p += std::norm(data[bc]);
-		 b = inc(b);
-		 b.set(qubit);  
-		 bc =  b.to_ulong();
-	      }
-
-	      // println("prob=" << p << ", rand=" << f);
-	      if (f<p) value = 1;
-	      else value = 0;
-
-	      //fvalue = (double)value;
-	      
-	      #define __bit_test(x,pos) ((x) & (1<<(pos)))
-
-	      if (value)   // 1
-	      {  // reset all states where the qubit is 0
-		 for (uint32_t i=0; i<(1 << size); ++i)
-		 {
-		    if (!__bit_test(i,qubit))
-		       data[i] = 0;
-		 }
-	      }
-	      else
-	      {
-		 for (uint32_t i=0; i<(1 << size); ++i)
-		 {
-		    if (__bit_test(i,qubit))
-		       data[i] = 0;
-		 }
-	      }
-	    
-	      // renormalize
 	      double length = 0;
-	      for (k = 0; k < (1 << size); k++) 
-		 length += std::norm(data[k]);
-	      length = std::sqrt(length);
+	      if (size > 12)
+	      {
+		 // #define PARALLEL_MEASUREMENT
+		 // #ifdef PARALLEL_MEASUREMENT
 
-	      for (k = 0; k < (1 << size); k++) 
-		 data[k] /= length;
+		 xpu::lockable * l = new xpu::core::os::mutex();
+		 xpu::task p1_worker_t(p1_worker, 0, n, 1, &p, qubit, l, &data); 
+		 xpu::parallel_for parallel_p1( 0, n, 1, &p1_worker_t);
+		 parallel_p1.run();
+
+		 if (f<p) value = 1;
+		 else value = 0;
+
+		 xpu::task zero_worker_t(zero_worker, 0, n, 1, value, &length, qubit, l, &data); 
+		 xpu::parallel_for parallel_zero( 0, n, 1, &zero_worker_t);
+		 parallel_zero.run();
+
+		 length = std::sqrt(length);
+
+		 xpu::task renorm_worker_t(renorm_worker, 0, n, 1, &length, &data); 
+		 xpu::parallel_for parallel_renorm( 0, n, 1, &renorm_worker_t);
+		 parallel_renorm.run();
+	      }
+	      else 
+	      {
+		 //#else
+		 
+		 int32_t k, l, m;
+		 int32_t j = qubit;
+		 double  fvalue;
+
+		 std::bitset<MAX_QB_N> b;
+		 b.reset();
+		 b.set(qubit);
+		 uint32_t bc = b.to_ulong();
+
+		 while (bc < n)
+		 {
+		    bc =  b.to_ulong();
+		    p += std::norm(data[bc]);
+		    b = inc(b);
+		    b.set(qubit);  
+		    bc =  b.to_ulong();
+		 }
+
+		 if (f<p) value = 1;
+		 else value = 0;
+
+		 if (value)   // 1
+		 {  // reset all states where the qubit is 0
+		    for (uint32_t i=0; i<(1 << size); ++i)
+		    {
+		       if (!__bit_test(i,qubit))
+			  data[i] = 0;
+		    }
+		 }
+		 else
+		 {
+		    for (uint32_t i=0; i<(1 << size); ++i)
+		    {
+		       if (__bit_test(i,qubit))
+			  data[i] = 0;
+		    }
+		 }
+
+		 for (uint32_t k = 0; k < (1 << size); k++) 
+		    length += std::norm(data[k]);
+
+		 length = std::sqrt(length);
+
+		 for (uint32_t k = 0; k < (1 << size); k++) 
+		    data[k] /= length;
+
+		 // #endif // PARALLEL_MEASUREMENT
+	      }
 
 	      // println("  [>] measured value : " << value);
 
-	      qreg.set_binary(qubit,(value == 1 ? __state_1__ : __state_0__));
+	      qreg.set_measurement_prediction(qubit,(value == 1 ? __state_1__ : __state_0__));
+	      qreg.set_measurement(qubit,(value == 1 ? true : false));
+	      //qreg.set_binary(qubit,(value == 1 ? __state_1__ : __state_0__));
 
 	      return value;
 	   }
 
 	   void dump()
 	   {
+	      if (measure_all)
+		 println("  [-] measure(register)");
+	      else
 		 println("  [-] measure(qubit=" << qubit << ")");
 	   }
 	   
 	   std::vector<uint32_t>  qubits()
 	   {
 		 std::vector<uint32_t> r;
-		 r.push_back(qubit);
+		 if (!measure_all)
+		    r.push_back(qubit);
+		 else   // this is a dirty hack, itshould be fixed later (unknown qubit number !)
+		 {
+		    for (int32_t i=0; i<MAX_QB_N; ++i)
+		       r.push_back(i);
+		 }
 		 return r;
 	   }
 
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 return qubits();
+	   }
+
+	   gate_type_t type()
+	   {
+	      if (measure_all)
+		 return __measure_reg_gate__;
+	      else
+	         return __measure_gate__; 
+	   }
    };
 
 
@@ -1337,6 +2023,16 @@ namespace qx
 	      return 0;
 	   }
 
+	   gate * get_gate()
+	   {
+	      return g;
+	   }
+
+	   uint32_t get_bit()
+	   {
+	      return bit;
+	   }
+
 	   void dump()
 	   {
 		 print("  [-] bin_ctrl: \n bit=" << bit << " -> ");
@@ -1348,11 +2044,84 @@ namespace qx
 		 return g->qubits();
 	   }
 
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 return g->control_qubits();
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 return g->target_qubits();
+	   }
+
+	   gate_type_t type()
+	   {
+	      return __bin_ctrl_gate__;
+	   }
+
+
    };
 
    #define bin_ctrl_pauli_x(b,q) bin_ctrl(b,new pauli_x(q))
    #define bin_ctrl_pauli_y(b,q) bin_ctrl(b,new pauli_y(q))
    #define bin_ctrl_pauli_z(b,q) bin_ctrl(b,new pauli_z(q))
+
+   /**
+    * prepz  
+    */
+   class prepz : public gate
+   {
+	 private:
+
+	   uint32_t  qubit;
+
+	 public:
+
+	   prepz(uint32_t qubit) : qubit(qubit)
+	   {
+	   }
+	   
+	   int32_t apply(qu_register& qreg)
+	   {
+	      measure(qubit).apply(qreg);
+	      bin_ctrl_pauli_x(qubit,qubit).apply(qreg);
+	      // bin_ctrl_pauli_z(qubit,qubit).apply(qreg);
+	      qreg.set_measurement(qubit,false);
+	      return 0; 
+	   }
+
+	   void dump()
+	   {
+	       println("  [-] prepz(qubit=" << qubit << ")");
+	   }
+	   
+	   std::vector<uint32_t>  qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 r.push_back(qubit);
+		 return r;
+	   }
+
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 return qubits();
+	   }
+
+	   gate_type_t type()
+	   {
+	      return __prepz_gate__;      
+	   }
+
+   };
+
+
+
 
 
    class lookup_gate_table : public gate 
@@ -1424,6 +2193,41 @@ namespace qx
 	{
 	   std::vector<uint32_t> r;
 	   // to do
+	   std::map<uint32_t,gate *>::iterator  ig;
+	   for (ig=gates.begin(); ig!=gates.end(); ++ig)
+	   {
+	      std::vector<uint32_t> ri = ig->second->qubits();
+	      r.insert(r.begin(), ri.begin(), ri.end());
+	   }
+	   return r;
+	}
+
+
+	std::vector<uint32_t>  control_qubits()
+	{
+	   std::vector<uint32_t> r;
+	   // to do
+	   std::map<uint32_t,gate *>::iterator  ig;
+	   for (ig=gates.begin(); ig!=gates.end(); ++ig)
+	   {
+	      std::vector<uint32_t> ri = ig->second->control_qubits();
+	      if (ri.size())
+		 r.insert(r.begin(), ri.begin(), ri.end());
+	   }
+	   return r;
+	}
+
+	std::vector<uint32_t>  target_qubits()
+	{
+	   std::vector<uint32_t> r;
+	   // to do
+	   std::map<uint32_t,gate *>::iterator  ig;
+	   for (ig=gates.begin(); ig!=gates.end(); ++ig)
+	   {
+	      std::vector<uint32_t> ri = ig->second->target_qubits();
+	      if (ri.size())
+		 r.insert(r.begin(), ri.begin(), ri.end());
+	   }
 	   return r;
 	}
 
@@ -1433,8 +2237,10 @@ namespace qx
 	   println("  [-] lookup gate table : ");
 	}
 
-        
-
+	gate_type_t type()
+	{
+	   return __lookup_table__;  
+	}
    
    };
 
@@ -1471,6 +2277,28 @@ namespace qx
 		 std::vector<uint32_t> r;
 		 return r;
 	   }
+
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 return r;
+	   }
+
+	   gate_type_t type()
+	   {
+	      if (only_binary)
+		 return __display_binary__;
+	      else
+		 return __display__; 
+	   }
+
+
    };
 
 
@@ -1498,6 +2326,11 @@ namespace qx
 		 gates.push_back(g);
 		 return gates.size();
 	   }
+
+	   std::vector<gate *> get_gates()
+	   {
+	      return gates;
+	   }
 	   
 	   std::vector<uint32_t>  qubits()
 	   {
@@ -1509,6 +2342,30 @@ namespace qx
 		 }
 		 return r;
 	   }
+	   
+	   
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 for (uint32_t i=0; i<gates.size(); i++)
+		 {
+		    std::vector<uint32_t> q = gates[i]->control_qubits();
+		    r.insert(r.end(),q.begin(),q.end());	
+		 }
+		 return r;
+	   }
+	   
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 for (uint32_t i=0; i<gates.size(); i++)
+		 {
+		    std::vector<uint32_t> q = gates[i]->target_qubits();
+		    r.insert(r.end(),q.begin(),q.end());	
+		 }
+		 return r;
+	   }
+
 
 	   void dump()
 	   {
@@ -1516,12 +2373,97 @@ namespace qx
 		 for (uint32_t i=0; i<gates.size(); i++)
 		    gates[i]->dump();
 	   }
+
+
+	   gate_type_t type()
+	   {
+	      return __parallel_gate__; 
+	   }
 	
 
 	 private:
 
 	   std::vector<gate *> gates; // list of the parallel gates
 
+   };
+
+
+   /**
+    * prepare the qubits into an arbitrary quantum state
+    */
+   class prepare : public gate
+   {
+	 private:
+
+	   quantum_state_t * state;
+
+	 public:
+
+	   prepare(quantum_state_t * state) : state(state)
+	   {
+	   }
+	  
+
+	   int32_t apply(qu_register& qreg)
+	   {
+	      qreg.reset();
+	      cvector_t&  q = qreg.get_data();
+	      double      norm = 0;
+
+	      for (quantum_state_t::iterator i=state->begin(); i != state->end(); ++i)
+	      {
+		 basis_state_t bs = (*i).first;
+		 complex_t     c  = (*i).second;
+		 // println("bs=" << bs << ", a=" << c);
+		 q[bs] = c;
+		 norm += std::norm(c);
+	      }
+	      
+	      if (std::fabs(norm-1) > QUBIT_ERROR_THRESHOLD)
+	      {
+		 println("[!] warning : the loaded quantum state is not normalized (norm = " << norm << ") !");
+		 println("[!] renormalizing the quantum state...");
+		 qreg.normalize();
+		 println("[!] quantum state renormalized successfully.");
+	      }
+
+	      for (size_t qi=0; qi<qreg.size(); ++qi)
+	      {
+		 qreg.set_measurement_prediction(qi,__state_unknown__);
+		 //qreg.set_binary(qi,__state_unknown__);
+	      }
+	      return 0;
+	   }
+
+	   void dump()
+	   {
+		 println("  [-] prepare (quantum_state=" << state << ")");
+	   }
+	   
+	   std::vector<uint32_t>  qubits()
+	   {
+	      std::vector<uint32_t> r;
+	      // this is a dirty hack, itshould be fixed later (unknown qubit number !)
+	      for (int32_t i=0; i<MAX_QB_N; ++i)
+		 r.push_back(i);
+	      return r;
+	   }
+
+	   std::vector<uint32_t>  control_qubits()
+	   {
+		 std::vector<uint32_t> r;
+		 return r;
+	   }
+ 
+	   std::vector<uint32_t>  target_qubits()
+	   {
+		 return qubits();
+	   }
+
+	   gate_type_t type()
+	   {
+	      return __prepare_gate__; 
+	   }
    };
 
 }

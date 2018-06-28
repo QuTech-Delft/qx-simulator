@@ -35,6 +35,9 @@ map q2,a1
    cnot d,a0
    cnot d,a1
    toffoli a0,a1,d
-   # display
-   display_binary
+   display
+   # display_binary
+ 
+
+error_model depolarizing_channel, 0.01
 

@@ -16,6 +16,49 @@
 #include <core/density_operator.h>
 
 
+#define __hadamard_8q_bench__  "hadamard_8q_bench.qc"   // hadamard on 8  qubits
+#define __hadamard_16q_bench__ "hadamard_16q_bench.qc"  // hadamard on 16 qubits
+#define __hadamard_32q_bench__ "hadamard_24q_bench.qc"  // hadamard on 32 qubits
+
+#define __pauli_x_8q_bench__  "pauli_x_8q_bench.qc"   // pauli_x on 8  qubits
+#define __pauli_x_16q_bench__ "pauli_x_16q_bench.qc"  // pauli_x on 16 qubits
+#define __pauli_x_32q_bench__ "pauli_x_24q_bench.qc"  // pauli_x on 32 qubits
+
+#define __pauli_x_8q_bench__  "pauli_x_8q_bench.qc"   // pauli_x on 8  qubits
+#define __pauli_y_16q_bench__ "pauli_y_16q_bench.qc"  // pauli_y on 16 qubits
+#define __pauli_y_32q_bench__ "pauli_y_24q_bench.qc"  // pauli_y on 32 qubits
+
+#define __pauli_z_8q_bench__  "pauli_z_8q_bench.qc"   // pauli_z on 8  qubits
+#define __pauli_z_16q_bench__ "pauli_z_16q_bench.qc"  // pauli_z on 16 qubits
+#define __pauli_z_32q_bench__ "pauli_z_24q_bench.qc"  // pauli_z on 32 qubits
+
+#define __rx_8q_bench__  "rx_8q_bench.qc"   // rx on 8  qubits
+#define __rx_16q_bench__ "rx_16q_bench.qc"  // rx on 16 qubits
+#define __rx_32q_bench__ "rx_24q_bench.qc"  // rx on 32 qubits
+
+#define __prep_z_8q_bench__  "prep_z_8q_bench.qc"   // prep_z on 8  qubits
+#define __prep_z_16q_bench__ "prep_z_16q_bench.qc"  // prep_z on 16 qubits
+#define __prep_z_32q_bench__ "prep_z_24q_bench.qc"  // prep_z on 32 qubits
+
+#define __toffoli_8q_bench__  "toffoli_8q_bench.qc"   // toffoli on 8  qubits
+#define __toffoli_16q_bench__ "toffoli_16q_bench.qc"  // toffoli on 16 qubits
+#define __toffoli_32q_bench__ "toffoli_24q_bench.qc"  // toffoli on 32 qubits
+
+#define __cnot_8q_bench__  "cnot_8q_bench.qc"   // cnot on 8  qubits
+#define __cnot_16q_bench__ "cnot_16q_bench.qc"  // cnot on 16 qubits
+#define __cnot_32q_bench__ "cnot_24q_bench.qc"  // cnot on 32 qubits
+
+#define __measure_8q_bench__  "measure_8q_bench.qc"   // measure on 8  qubits
+#define __measure_16q_bench__ "measure_16q_bench.qc"  // measure on 16 qubits
+#define __measure_32q_bench__ "measure_24q_bench.qc"  // measure on 32 qubits
+
+#define __measure_reg_8q_bench__  "measure_reg_8q_bench.qc"   // measure_reg on 8  qubits
+#define __measure_reg_16q_bench__ "measure_reg_16q_bench.qc"  // measure_reg on 16 qubits
+#define __measure_reg_32q_bench__ "measure_reg_24q_bench.qc"  // measure_reg on 32 qubits
+
+#define __qft_8q_bench__  "qft_8q_bench.qc"   // qft on 8  qubits
+#define __qft_16q_bench__ "qft_16q_bench.qc"  // qft on 16 qubits
+#define __qft_32q_bench__ "qft_24q_bench.qc"  // qft on 32 qubits
 
 /**
  * simulator

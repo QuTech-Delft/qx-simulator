@@ -5,15 +5,18 @@
  * @brief		linear algebra utils
  */
 
+
+
 #ifndef QX_LINALG_H
 #define QX_LINALG_H
 
+// #define __BUILTIN_LINALG_
 
-#ifndef __BUILTIN_LINALG__
-#include <boost/numeric/ublas/vector.hpp>
-#include <boost/numeric/ublas/matrix.hpp>
-#include <boost/numeric/ublas/io.hpp>
-#endif 
+// #ifndef __BUILTIN_LINALG__
+// #include <boost/numeric/ublas/vector.hpp>
+// #include <boost/numeric/ublas/matrix.hpp>
+// #include <boost/numeric/ublas/io.hpp>
+// #endif 
 
 #include <core/matrix.h>
 
@@ -22,29 +25,32 @@
 #include <vector>
 #include <bitset>
 
+
+#include <xpu/aligned_memory_allocator.h>
+
 #define println(x) std::cout << x << std::endl
 #define print(x) std::cout << x 
 
 #define MAX_QB_N 64
 
-#ifndef __BUILTIN_LINALG__ 
-using namespace boost::numeric;
-#endif
+// #ifndef __BUILTIN_LINALG__ 
+// using namespace boost::numeric;
+// #endif
 
 namespace qx
 {
    namespace linalg
    { 
 	 typedef std::complex<double>      complex_t;
-#ifndef __BUILTIN_LINALG__
-	 typedef ublas::vector<complex_t>  cvector_t;
-	 typedef ublas::matrix<complex_t>  cmatrix_t;
-	 typedef ublas::identity_matrix<complex_t> cidentity_t;
-#else
-	 typedef std::vector<complex_t>  cvector_t;
+// #ifndef __BUILTIN_LINALG__
+// 	 typedef ublas::vector<complex_t>  cvector_t;
+// 	 typedef ublas::matrix<complex_t>  cmatrix_t;
+// 	 typedef ublas::identity_matrix<complex_t> cidentity_t;
+// #else
+	 typedef std::vector<complex_t,xpu::aligned_memory_allocator<complex_t,16> >  cvector_t;
 	 typedef qx::linalg::matrix<complex_t>  cmatrix_t;
 	 typedef qx::linalg::identity_matrix<complex_t> cidentity_t;
-#endif // __BUILTIN_LINALG__
+// #endif // __BUILTIN_LINALG__
 
 	 typedef std::vector<std::pair<uint32_t,uint32_t> > perm_t;
 
@@ -128,7 +134,7 @@ namespace qx
 	  */
 	 cvector_t mxv(cmatrix_t m, cvector_t v)
 	 {
-#ifdef __BUILTIN_LINALG__
+// #ifdef __BUILTIN_LINALG__
 	    uint32_t n = v.size();
 	    cvector_t r(n);
 	    for (uint32_t i=0; i<n; ++i)
@@ -139,9 +145,9 @@ namespace qx
 	       r[i] = c;
 	    }
 	    return r;
-#else
-	    return ublas::prec_prod(m,v);
-#endif // __BUILTIN_LINALG__
+// #else
+// 	    return ublas::prec_prod(m,v);
+// #endif // __BUILTIN_LINALG__
 	 }
 
 	 /**
@@ -149,13 +155,13 @@ namespace qx
 	  */
 	 cmatrix_t mxm(cmatrix_t m1, cmatrix_t m2)
 	 {
-#ifdef __BUILTIN_LINALG__
+// #ifdef __BUILTIN_LINALG__
 	    cmatrix_t r(m1.size1(), m2.size2());
 	    qx::linalg::mul(m1,m2,r);
 	    return r;
-#else
-	    return ublas::prec_prod(m1,m2);
-#endif
+// #else
+// 	    return ublas::prec_prod(m1,m2);
+// #endif
 	 }
 
 	 /**
@@ -255,7 +261,10 @@ namespace qx
 		  b.set(c);  p1 = b.to_ulong();
 		  b.flip(t); p2 = b.to_ulong();
 		  if (p2>bc)
+		  {
 		     std::swap(amp[p1],amp[p2]);
+		     // println("__swap(" << std::bitset<16>(p1) << ", " << std::bitset<16>(p2) << ")");
+		  }
 		  b.flip(t);
 		  b = inc(b);
 		  b.set(c);
