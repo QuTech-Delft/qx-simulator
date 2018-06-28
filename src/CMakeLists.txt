@@ -1,0 +1,7 @@
+INCLUDE_DIRECTORIES(
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  xpu-0.1.5
+)
+
+ADD_SUBDIRECTORY(server qx-server)
+ADD_SUBDIRECTORY(tools qx-simulator)

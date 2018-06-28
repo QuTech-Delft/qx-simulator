@@ -44,6 +44,7 @@ qubits 7
    h q0
    h q1
    h q2
+   display
 
 .measure
    h q3
@@ -52,4 +53,4 @@ qubits 7
    measure 
    display
 
-# error_model depolarizing_channel, 0.001
+# error_model depolarizing_channel, 0.01

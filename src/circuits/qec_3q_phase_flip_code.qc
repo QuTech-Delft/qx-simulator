@@ -35,6 +35,6 @@ qubits 3
    toffoli q1,q2,q0
    display
 
-# error_model depolarizing_channel,0.1
+#error_model depolarizing_channel,0.1
 
 

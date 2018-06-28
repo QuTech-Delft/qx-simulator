@@ -5,6 +5,8 @@
 # define 2 qubits
 qubits 2
 
+display 
+
 .init
   prepz q0
   prepz q1

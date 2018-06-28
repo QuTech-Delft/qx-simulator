@@ -1,4 +1,4 @@
-qubits 22
+qubits 24
 
 h q0
 cnot q0,q1
@@ -23,5 +23,7 @@ cnot q0,q18
 cnot q0,q19
 cnot q0,q20
 cnot q0,q21
+cnot q0,q22
+cnot q0,q23
 measure 
 

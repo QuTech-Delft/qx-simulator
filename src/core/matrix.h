@@ -11,6 +11,8 @@
 
 #include <stdint.h>
 
+#include <xpu/aligned_memory_allocator.h>
+
 namespace qx
 {
    namespace linalg
@@ -24,6 +26,7 @@ namespace qx
 	 {
 
 	    typedef std::vector<__T> row_t;
+	    // typedef std::vector<__T,xpu::aligned_memory_allocator<__T,16> > row_t;
 
 	    public:
 
@@ -32,11 +35,18 @@ namespace qx
 	    }
 
 
-	    matrix(uint32_t rows, uint32_t cols, __T val=0) : rows(rows), cols(cols)
+	    matrix(uint32_t rows, uint32_t cols, __T val) : rows(rows), cols(cols)
 	    {
 	       for (uint32_t r=0; r<rows; ++r)
 		  m.push_back(row_t(cols,val));
 	    }
+
+	    matrix(uint32_t rows, uint32_t cols) : rows(rows), cols(cols)
+	    {
+	       for (uint32_t r=0; r<rows; ++r)
+		  m.push_back(row_t(cols));
+	    }
+
 
 	    matrix(const matrix<__T>& x) 
 	    {
@@ -44,9 +54,10 @@ namespace qx
 	       cols = x.size2();
 	       for (uint32_t r=0; r<x.size1(); ++r)
 	       {
-		  m.push_back(row_t(x.m[r]));
-		  //for (uint32_t j=0; j<x.size2(); ++j)
-		     //m(i,j) = x(i,j);
+		  // m.push_back(row_t(x.m[r]));
+		  m.push_back(row_t(cols));
+		  for (uint32_t j=0; j<x.size2(); ++j)
+		     m[r][j] = x.m[r][j];
 	       }
 	    }
 
@@ -87,7 +98,7 @@ namespace qx
 	       return cols;
 	    }
 
-	    void dump()
+	    void dump() const
 	    {
 	       std::cout << "[i] ---[matrix]-------------------------------------------------------------------------------------------------" << std::endl;
 	       std::cout << std::fixed;
@@ -109,6 +120,65 @@ namespace qx
 	 };
 
 
+         /**
+	  * \brief tiny_matrix
+	  */
+      template <typename __T, size_t __N>
+	 class tiny_matrix
+	 {
+
+	    public:
+	    
+	    __T m[__N * __N] __attribute__((aligned(16))); 
+
+	    tiny_matrix() 
+	    {
+	       for (size_t i=0; i<(__N*__N); ++i)
+		  m[i] = 0;
+	    }
+
+	    tiny_matrix(const __T * pm) 
+	    {
+	       for (size_t i=0; i<(__N*__N); ++i)
+		  m[i] = pm[i];
+	    }
+
+	    // matrix(const matrix<__T>& x) 
+
+	    __T& operator()(uint32_t r, uint32_t c)
+	    {
+	       return m[r*__N+c];
+	    }
+
+	    uint32_t size1() const
+	    {
+	       return __N;
+	    }
+
+	    uint32_t size2() const
+	    {
+	       return __N;
+	    }
+
+	    void dump() const
+	    {
+	       std::cout << "[i] ---[matrix]-------------------------------------------------------------------------------------------------" << std::endl;
+	       std::cout << std::fixed;
+	       for (int32_t r=0; r<__N; ++r)
+	       {
+		  for (int32_t c=0; c<__N; ++c)
+		     std::cout << std::showpos << std::setw(5) << m[r*__N+c] << "\t";
+		  std::cout << std::endl;
+	       }
+	       std::cout << "[i] -----------------------------------------------------------------------------------------------------------" << std::endl;
+	    }
+
+
+	 };
+
+
+
+
 	 /**
 	  * \brief identity
 	  */
@@ -123,7 +193,7 @@ namespace qx
 	    /**
 	     * \brief identity_matrix
 	     */
-	    identity_matrix(uint32_t size) : size(size), diag(size), zero(0)
+	    identity_matrix(uint32_t size) : size(size), diag(size) //, zero(0)
 	    {
 	       for (uint32_t i=0; i<size; ++i)
 		  diag[i] = 1;
@@ -165,13 +235,30 @@ namespace qx
 	    {
 	       for (uint32_t j=0; j<m2.size2(); ++j)
 	       {
-		  __T x = 0;
+		  __T x = 0.0;
 		  for (uint32_t k=0; k<m1.size2(); ++k)
 		     x += m1(i,k)*m2(k,j);
 		  r(i,j) = x;
 	       }
 	    }
 	 }
+	 
+	 template<typename __T, size_t __N>
+	 void mul(tiny_matrix<__T,__N>& m1, tiny_matrix<__T,__N>& m2, tiny_matrix<__T,__N>& r)
+	 {
+	    for (uint32_t i=0; i<__N; ++i)
+	    {
+	       for (uint32_t j=0; j<__N; ++j)
+	       {
+		  __T x = 0.0;
+		  for (uint32_t k=0; k<m1.size2(); ++k)
+		     x += m1(i,k)*m2(k,j);
+		  r(i,j) = x;
+	       }
+	    }
+	 }
+
+
 
 
 	 template <typename __T>

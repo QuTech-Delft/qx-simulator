@@ -46,8 +46,15 @@ namespace qx
       __state_unknown__
    } state_t;
 
-   typedef std::vector<state_t> measurement_prediction_t;
-   typedef std::vector<bool>    measurement_register_t;
+   typedef struct __integration_t
+   {
+      size_t ground_states = 0;
+      size_t exited_states = 0;
+   } integration_t;
+
+   typedef std::vector<state_t>        measurement_prediction_t;
+   typedef std::vector<bool>           measurement_register_t;
+   typedef std::vector<integration_t>  measurement_averaging_t;
 
    /**
     * \brief quantum register implementation.
@@ -57,8 +64,11 @@ namespace qx
       private:
 
 	 cvector_t  data;
+	 cvector_t  aux;
 	 measurement_prediction_t  measurement_prediction; 
 	 measurement_register_t    measurement_register;
+
+
 	 uint32_t   n_qubits; 
 	 
 	 std::default_random_engine             rgenerator;
@@ -68,7 +78,6 @@ namespace qx
 	  * \brief collapse
 	  */
 	 uint32_t collapse(uint32_t entry);
-
 
 
 	 /**
@@ -92,6 +101,45 @@ namespace qx
 	  */
 	 qu_register(uint32_t n_qubits);
 
+	 
+	 /**
+	  * measurement averaging
+	  */
+	 measurement_averaging_t   measurement_averaging;
+	 bool measurement_averaging_enabled;
+
+	 void enable_measurement_averaging() 
+	 {
+	    measurement_averaging_enabled = true; 
+	    for (size_t i=0; i<measurement_averaging.size(); ++i)
+	    {
+	       measurement_averaging[i].ground_states = 0;
+	       measurement_averaging[i].exited_states = 0;
+	    }
+	 }
+
+	 void reset_measurement_averaging() 
+	 {
+	    measurement_averaging_enabled = true; 
+	    for (size_t i=0; i<measurement_averaging.size(); ++i)
+	    {
+	       measurement_averaging[i].ground_states = 0;
+	       measurement_averaging[i].exited_states = 0;
+	    }
+	 }
+
+
+	 void disable_measurement_averaging() 
+	 {
+	    measurement_averaging_enabled = true; 
+	    for (size_t i=0; i<measurement_averaging.size(); ++i)
+	    {
+	       measurement_averaging[i].ground_states = 0;
+	       measurement_averaging[i].ground_states = 0;
+	    }
+	 }
+
+
 
 	 /**
 	  * reset
@@ -103,6 +151,8 @@ namespace qx
 	  * \brief data getter
 	  */
 	 cvector_t& get_data();
+	 
+	 cvector_t& get_aux();
 
 	 /**
 	  * \brief data setter
@@ -212,6 +262,11 @@ namespace qx
 	  * \brief flip binary
 	  */
 	 void flip_binary(uint32_t q); 
+	 
+	 /**
+	  * \brief flip measurement
+	  */
+	 void flip_measurement(uint32_t q);
 
 	 /**
 	  * \brief return a string describing the quantum state
@@ -245,7 +300,7 @@ namespace qx
 	 {
 	      double length = 0;
 	      for (size_t k = 0; k < data.size(); k++) 
-		 length += std::norm(data[k]);
+		 length += data[k].norm(); // std::norm(data[k]);
 	      length = std::sqrt(length);
 	      for (size_t k = 0; k < data.size(); k++) 
 		 data[k] /= length;
@@ -261,7 +316,8 @@ namespace qx
 	    //for (int i=binary.size()-1; i>=0; --i)
 	       //ss << " | " << __format_bin(binary[i]); 
 	    for (int i=measurement_prediction.size()-1; i>=0; --i)
-	       ss << " | " << __format_bin(measurement_prediction[i]); 
+	       ss << " | " << __format_bin(measurement_register[i]); 
+	       // ss << " | " << __format_bin(measurement_prediction[i]); 
 	    ss << " | \n";
 	    ss << "END\n";
 	    return ss.str();
