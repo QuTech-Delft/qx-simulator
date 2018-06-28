@@ -14,7 +14,7 @@ pipeline {
         }
         stage('Test') {
             steps {
-                sh 'cd src/ && ./qx_simulator circuits/epr.qc'
+                sh for file in src/circuits/*.qc; do src/qx_simulator "$file"; done'
 
             }
         }
