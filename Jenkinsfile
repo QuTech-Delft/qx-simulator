@@ -9,15 +9,22 @@ pipeline {
         stage('Build') {
             steps {
                 sh 'pwd'
-                sh 'cd src/ && ./configure && make && make install'
+                sh 'mkdir build && cd build && cmake ../ && make'
             }
         }
         stage('Test') {
             steps {
-                sh 'cd src/ && ./qx_simulator circuits/epr.qc'
+                sh 'cd build/bin/qx-simulator/ && ./qx_simulator'
 
             }
         }
 
+    }
+}
+
+@NonCPS
+def echo_all(list) {
+    list.each { item ->
+        sh "echo Hello ${item}"
     }
 }
