@@ -1,6 +1,7 @@
 #ifndef XPU_STRINGS_H
 #define XPU_STRINGS_H
 
+#include <vector>
 
 namespace str
 {
