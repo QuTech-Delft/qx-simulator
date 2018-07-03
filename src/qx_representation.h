@@ -2,7 +2,7 @@
 #define QX_REPRESENTATION_H
 
 #include <vector>
-#include <core/circuit.h>
+#include <stdint.h>
 #include <core/error_model.h>
 
 namespace qx
@@ -11,7 +11,7 @@ namespace qx
 class QxRepresentation
 {
   public:
-    QxRepresentation(uint32_t) : qubits_count(qubits_count) {}
+    QxRepresentation(uint32_t count) : qubits_count(count) {}
     ~QxRepresentation()
     {
       for (auto circuit = circuits_.begin(); circuit != circuits_.end(); ++circuit)
@@ -20,37 +20,37 @@ class QxRepresentation
 
 
     uint32_t getQubitsCount()
-{
-  return qubits_count;
-}
+    {
+      return qubits_count;
+    }
 
 
     error_model_t getErrorModel(void)
-{
-  return error_model;
-}
+    {
+      return error_model;
+    }
 
     void setErrorModel(error_model_t model)
-{
-  error_model = model;
-}
+    {
+      error_model = model;
+    }
 
 
     void setErrorProbability(double probability)
-{
-  error_probability = probability;
-}
+    {
+      error_probability = probability;
+    }
 
     double getErrorProbability(void)
-{
-  return error_probability;
-}
+    {
+      return error_probability;
+    }
 
 
     std::vector<qx::circuit*> &circuits(void)
-{
-  return circuits_;
-}
+    {
+      return circuits_;
+    }
 
   private:
     uint32_t      qubits_count;

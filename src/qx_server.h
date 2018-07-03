@@ -21,7 +21,7 @@
 #include <xpu/net/tcp_server_socket.h>
 //#include <qcode/quantum_code_loader.h>
 
-#include <qcode/strings.h>
+#include <qcode/qx_strings.h>
 #include <core/circuit.h>
 #include <core/error_model.h>
 

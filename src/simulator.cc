@@ -5,13 +5,16 @@
  * @brief		
  */
 
-#include <iostream>
 
 #include <xpu.h>
 #include <xpu/runtime>
-
-#include <libqasm_interface.h>
 #include <qx_representation.h>
+#include <libqasm_interface.h>
+#include <parser/qasm_semantic.hpp>
+
+
+#include <iostream>
+
 
 void print_banner() {
    println("");

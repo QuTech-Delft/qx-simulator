@@ -2,6 +2,7 @@
 #define XPU_STRINGS_H
 
 #include <vector>
+#include <sstream>
 
 namespace str
 {
