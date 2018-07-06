@@ -3,6 +3,7 @@
 
 #include <cstdlib>
 #include <mm_malloc.h>
+#include <new>
 
 namespace xpu
 {
@@ -37,8 +38,11 @@ namespace xpu
 	    }
 
 	    inline pointer allocate (size_type n) {
-	       // return (pointer)_aligned_malloc(n*sizeof(value_type), N);
-	       return (pointer)_mm_malloc(n*sizeof(value_type), N);
+	       pointer rv = (pointer)_mm_malloc(n*sizeof(value_type), N);
+	       if(NULL==rv) {
+             throw std::bad_alloc();
+	       }
+	       return rv;
 	    }
 
 	    inline void deallocate (pointer p, size_type) {

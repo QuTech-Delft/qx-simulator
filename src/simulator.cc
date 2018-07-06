@@ -81,8 +81,19 @@ int main(int argc, char **argv)
   std::vector<qx::circuit*> circuits;
   uint32_t qubits = ast.numQubits();
   println("[+] creating quantum register of " << qubits << " qubits... ");
-  qx::qu_register reg(qubits);
-  
+  qx::qu_register *reg = NULL;
+
+  try {
+	   reg = new qx::qu_register(qubits);
+  } catch(std::bad_alloc& exception) {
+	   std::cerr << "[x] not enough memory, aborting" << std::endl;
+	   xpu::clean();
+	   return -1;
+  } catch(std::exception& exception) {
+	   std::cerr << "[x] unexpected exception (" << exception.what() << "), aborting" << std::endl;
+	   xpu::clean();
+	   return -1;
+  }
 
   // Convert libqasm ast to qx internal representation
   qx::QxRepresentation qxr = qx::QxRepresentation(qubits);
@@ -138,7 +149,7 @@ int main(int argc, char **argv)
   }
  
   for (uint32_t i=0; i<circuits.size(); i++)
-     circuits[i]->execute(reg);
+     circuits[i]->execute(*reg);
  
   xpu::clean();
 
