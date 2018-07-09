@@ -70,6 +70,7 @@ namespace qx
       // #define __buf_size 8192
 #define __buf_size 4096
 
+#undef __verbose__
 #define __verbose__ 1
 
       /**

@@ -2225,7 +2225,7 @@ namespace qx
 
          void dump()
          {
-            println("  [-] ctrl_phase_shift(ctrl_qubit=" << ctrl_qubit << ", target_qubit: " << target_qubit << ", phase = " << phase << ")");
+            println("  [-] ctrl_phase_shift(ctrl_qubit=" << ctrl_qubit << ", target_qubit: " << target_qubit << ", phase = (" << z.re << ", i." << z.im << ") )");
          }
 
          std::vector<uint64_t>  qubits()
@@ -2390,62 +2390,68 @@ namespace qx
     */
    class custom : public gate
    {
-	 private:
+      private:
 
-// #ifdef __BUILTIN_LINALG__
-           std::vector<uint64_t> qubits;
-// #else
-// 	   ublas::vector<uint64_t>  qubits;
-// #endif 
-	   // cmatrix_t m;
-	   qx::linalg::matrix<complex_t> m;
+         // std::vector<uint64_t> qubits;
+         uint64_t  qubit;
+         cmatrix_t m;
 
 	 public:
 
 // #ifdef __BUILTIN_LINALG__
-	   custom(std::vector<uint64_t>  qubits, qx::linalg::matrix<complex_t> m) : qubits(qubits), m(m)
+//	   custom(std::vector<uint64_t>  qubits, qx::linalg::matrix<complex_t> m) : qubits(qubits), m(m)
 // #else
-// 	   custom(ublas::vector<uint64_t>  qubits, cmatrix_t m) : qubits(qubits), m(m)
+ 	   custom(uint64_t  qubit, cmatrix_t m) : qubit(qubit), m(m)
 // #endif 
 	   {
-		 uint64_t size = 1 << qubits.size();
-		 if (size != m.size1() || size != m.size2())
-		    println("[x] error: cutom gate : the matrix size do not match the number of qubits !");
+//		 uint64_t size = 1 << qubits.size();
+//		 if (size != m.size1() || size != m.size2())
+//		    println("[x] error: cutom gate : the matrix size do not match the number of qubits !");
 		 // verify also that the matrix is unitary
 // #ifdef __BUILTIN_LINALG__
 		 // cmatrix_t ctr(m.size2(),m.size1());
-		 qx::linalg::matrix<complex_t> ctr(m.size2(),m.size1());
-		 for (uint64_t i=0; i<m.size2(); ++i)
-		    for (uint64_t j=0; j<m.size1(); ++j)
-		       ctr(i,j) = m(j,i).conj();
-		 // cmatrix_t mxctr = mxm(m,ctr);
-		 qx::linalg::matrix<complex_t> mxctr = mxm(m,ctr);
-		 qx::linalg::identity_matrix<complex_t> id(m.size1());
+		 // qx::linalg::matrix<complex_t> ctr(m.size2(),m.size1());
+		 // for (uint64_t i=0; i<m.size2(); ++i)
+		 //    for (uint64_t j=0; j<m.size1(); ++j)
+		 //       ctr(i,j) = m(j,i).conj();
+		 // // cmatrix_t mxctr = mxm(m,ctr);
+		 // qx::linalg::matrix<complex_t> mxctr = mxm(m,ctr);
+		 // qx::linalg::identity_matrix<complex_t> id(m.size1());
 // #else
 // 		 cmatrix_t mxctr = mxm(m,ublas::trans(conj(m)));
 // 		 ublas::identity_matrix<complex_t> id(m.size1());
 // #endif
 
 // #ifdef __BUILTIN_LINALG__
-		 if (qx::linalg::equals(mxctr,id))
+//		 if (qx::linalg::equals(mxctr,id))
 // #else
 // 		 if (equals(mxctr,id))
 // #endif
-		    println("[x] error: custom gate : the specified matrix is not unitary !");
+//		    println("[x] error: custom gate : the specified matrix is not unitary !");
 	   }
 
+      /**
+       * apply
+       */
 	   int32_t apply(qu_register& qreg)
 	   {
-	      println("[x] custom matrix not supported !");
+         sqg_apply(m,qubit,qreg);
+         qreg.set_measurement_prediction(qubit,__state_unknown__);
 	      return 0;
 	   }
 
+      /**
+       * dump
+       */
 	   void    dump()
 	   {
-		 println("  [-] custom matrix. ");
-		 // println("  [-] custom(qubits=" << qubits << ", matrix=" << m << ")");
+         println("  [-] custom matrix on qubit " << qubit);
+		   // println("  [-] custom(qubits=" << qubits << ", matrix=" << m << ")");
 	   }
 
+      /**
+       * type
+       */
 	   gate_type_t type()
 	   {
 	      return __custom_gate__; 
