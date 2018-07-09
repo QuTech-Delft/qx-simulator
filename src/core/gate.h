@@ -111,9 +111,9 @@ namespace qx
 	 public:
 	   
 	   virtual int32_t                apply(qu_register& qureg) = 0;
-	   virtual std::vector<uint32_t>  qubits() = 0;
-	   virtual std::vector<uint32_t>  control_qubits() = 0;
-	   virtual std::vector<uint32_t>  target_qubits()  = 0;
+	   virtual std::vector<uint64_t>  qubits() = 0;
+	   virtual std::vector<uint64_t>  control_qubits() = 0;
+	   virtual std::vector<uint64_t>  target_qubits()  = 0;
 	   virtual gate_type_t            type() = 0;
 	   virtual std::string            micro_code() { return "# unsupported operation : qubit out of range"; }
 	   virtual void                   dump() = 0;
@@ -171,7 +171,7 @@ namespace qx
    /**
     * \brief build n x n matrix from an array
     */
-   cmatrix_t build_matrix(const complex_t * c, uint32_t n)
+   cmatrix_t build_matrix(const complex_t * c, uint64_t n)
    {
          // assert(n==2); 
 	 // TO DO : remove the n parameter
@@ -188,9 +188,9 @@ namespace qx
     */
    #ifdef QX_COMPACT_GATE_OP
  
-   inline void sqg_apply(cmatrix_t & cm, uint32_t qubit, qu_register& qureg)
+   inline void sqg_apply(cmatrix_t & cm, uint64_t qubit, qu_register& qureg)
    {
-	 uint32_t n  = qureg.size();
+	 uint64_t n  = qureg.size();
 
 	 matrix_t m(2,row_t(2,0));
 	 m[0][0] = cm(0,0); m[0][1] = cm(0,1);
@@ -237,15 +237,15 @@ namespace qx
    // #elif QX_SPARSE_MV_MUL
    #else // QX_SPARSE_MV_MUL
    
-   uint32_t rw_process(int is, int ie, int s, uint32_t n, uint32_t qubit, const kronecker * m, cvector_t * v, cvector_t * res)
+   uint64_t rw_process(int is, int ie, int s, uint64_t n, uint64_t qubit, const kronecker * m, cvector_t * v, cvector_t * res)
    {
-      uint32_t k = n-qubit;
+      uint64_t k = n-qubit;
       // println("run : " << is << " .. " << ie);
       complex_t * pv = v->data();
       complex_t * pr = res->data();
       size_t nk = n-k;
 
-      for (uint32_t r=is; r<ie; ++r)
+      for (uint64_t r=is; r<ie; ++r)
       {
 	 size_t bc = r;
 	 size_t c1 = __bit_reset(bc,nk);
@@ -258,37 +258,17 @@ namespace qx
    }
       
 
-   void sparse_mulmv(uint32_t n, uint32_t qubit, const kronecker& m, cvector_t& v, cvector_t& res)
+   void sparse_mulmv(uint64_t n, uint64_t qubit, const kronecker& m, cvector_t& v, cvector_t& res)
    {
-      uint32_t k = n-qubit;
-      uint32_t rows = (1 << n);
-      uint32_t z = 0;
+      uint64_t k = n-qubit;
+      uint64_t rows = (1 << n);
+      uint64_t z = 0;
 
       xpu::task rw_t(rw_process,0,0,0,n,qubit,&m,&v,&res);
       xpu::parallel_for process(z,rows,1,&rw_t);
 
       process.run();
 
-/*
-      #pragma omp parallel for schedule(static)
-      for (uint32_t r=0; r<rows; r++)
-      {
-	 binary_counter bc(n);
-	 complex_t s = 0;
-	 bc = r;
-	 bc.unset(n-k);
-	 uint32_t c1 = bc.value();
-	 bc.set(n-k);
-	 uint32_t c2 = bc.value();
-	 //println("r=" << r << " : " << c1 << "," << c2);
-	 //println("v=" << v[c1] << " x m=" << m.get(r,c1));
-	 //println("v=" << v[c2] << " x m=" << m.get(r,c2));
-	 s += v[c1]*(m.get(r,c1));
-	 s += v[c2]*(m.get(r,c2));
-	 //println("s=" << s);
-	 res[r] = s;
-      }
- */
    }
 
    void __apply_m(std::size_t start, std::size_t end, const std::size_t qubit, complex_t * state, const std::size_t stride0, const std::size_t stride1, const complex_t * matrix)
@@ -334,7 +314,7 @@ namespace qx
    void __apply_x(std::size_t start, std::size_t end, const std::size_t qubit, complex_t * state, const std::size_t stride0, const std::size_t stride1, const complex_t * matrix)
    {
 #ifdef USE_OPENMP
-#pragma omp parallel for // private(m00,r00,neg)    // BUG : ERRORS WHEN ACTIVATING PARALLELISM
+#pragma omp parallel for // private(m00,r00,neg)    
 #endif
       for(size_t offset = start; offset < end; offset += (1L << (qubit + 1L)))
 	 for(size_t i = offset; i < offset + (1L << qubit); i++)
@@ -367,7 +347,7 @@ namespace qx
       __m128d   neg = _mm_set1_pd(-0.0f);
 
 #ifdef USE_OPENMP
-#pragma omp parallel for // private(m00,r00,neg)    // BUG : ERRORS WHEN ACTIVATING PARALLELISM
+#pragma omp parallel for // private(m00,r00,neg)    
 #endif
       for(size_t offset = start; offset < end; offset += (1L << (qubit + 1L)))
 	 for(size_t i = offset; i < offset + (1L << qubit); i++)
@@ -406,16 +386,16 @@ namespace qx
 #error "SSE not available !"
 #endif // SSE
 
-   uint32_t rw_process_ui(int is, int ie, int s, uint32_t n, uint32_t qubit, kronecker_ui m, cvector_t * v, cvector_t * res)
+   uint64_t rw_process_ui(int is, int ie, int s, uint64_t n, uint64_t qubit, kronecker_ui m, cvector_t * v, cvector_t * res)
    {
-      uint32_t k = n-qubit;
+      uint64_t k = n-qubit;
       // println("run : " << is << " .. " << ie);
       complex_t * pv = v->data();
       complex_t * pr = res->data();
       size_t bc, c1, c2;
       size_t nk = n-k;
 
-      for (uint32_t r=is; r<ie; ++r)
+      for (uint64_t r=is; r<ie; ++r)
       {
 	 bc = r;
 	 c1 = __bit_reset(bc,nk);
@@ -447,11 +427,11 @@ namespace qx
    }
  
 
-   void sparse_mulmv(uint32_t n, uint32_t qubit, kronecker_ui m, cvector_t& v, cvector_t& res)
+   void sparse_mulmv(uint64_t n, uint64_t qubit, kronecker_ui m, cvector_t& v, cvector_t& res)
    {
-      uint32_t k = n-qubit;
-      uint32_t rows = (1 << n);
-      uint32_t z = 0;
+      uint64_t k = n-qubit;
+      uint64_t rows = (1 << n);
+      uint64_t z = 0;
 
 #ifdef SEQUENTIAL
       rw_process_ui(z,rows,1,n,qubit,m,&v,&res);
@@ -462,16 +442,16 @@ namespace qx
 #endif
    }
 
-   uint32_t rw_process_iu(int is, int ie, int s, uint32_t n, uint32_t qubit, kronecker_iu m, cvector_t * v, cvector_t * res)
+   uint64_t rw_process_iu(int is, int ie, int s, uint64_t n, uint64_t qubit, kronecker_iu m, cvector_t * v, cvector_t * res)
    {
-      uint32_t k = n-qubit;
+      uint64_t k = n-qubit;
       // println("run : " << is << " .. " << ie);
       complex_t * pv = v->data();
       complex_t * pr = res->data();
       size_t bc, c1, c2;
       size_t nk = n-k;
 
-      for (uint32_t r=is; r<ie; ++r)
+      for (uint64_t r=is; r<ie; ++r)
       {
 	 bc = r;
 	 c1 = __bit_reset(bc,nk);
@@ -503,11 +483,11 @@ namespace qx
    }
  
 
-   void sparse_mulmv(uint32_t n, uint32_t qubit, kronecker_iu m, cvector_t& v, cvector_t& res)
+   void sparse_mulmv(uint64_t n, uint64_t qubit, kronecker_iu m, cvector_t& v, cvector_t& res)
    {
-      uint32_t k = n-qubit;
-      uint32_t rows = (1 << n);
-      uint32_t z = 0;
+      uint64_t k = n-qubit;
+      uint64_t rows = (1 << n);
+      uint64_t z = 0;
 
 #ifdef SEQUENTIAL
       rw_process_iu(z,rows,1,n,qubit,m,&v,&res);
@@ -520,16 +500,16 @@ namespace qx
    
    // static xpu::core::os::mutex mtx;
 
-   uint32_t rw_process_iui(int is, int ie, int s, uint32_t n, uint32_t qubit, kronecker_iui m, cvector_t * v, cvector_t * res)
+   uint64_t rw_process_iui(int is, int ie, int s, uint64_t n, uint64_t qubit, kronecker_iui m, cvector_t * v, cvector_t * res)
    {
-      uint32_t k = n-qubit;
+      uint64_t k = n-qubit;
       // println("run : " << is << " .. " << ie);
       complex_t * pv = v->data();
       complex_t * pr = res->data();
       size_t bc, c1, c2;
       size_t nk = n-k;
 
-      for (uint32_t r=is; r<ie; r++) //+=2)
+      for (uint64_t r=is; r<ie; r++) //+=2)
       {
 	 // 1st
 	 bc = r;
@@ -615,11 +595,11 @@ namespace qx
    }
  
 
-   void sparse_mulmv(uint32_t n, uint32_t qubit, kronecker_iui m, cvector_t& v, cvector_t& res)
+   void sparse_mulmv(uint64_t n, uint64_t qubit, kronecker_iui m, cvector_t& v, cvector_t& res)
    {
-      uint32_t k = n-qubit;
-      uint32_t rows = (1 << n);
-      uint32_t z = 0;
+      uint64_t k = n-qubit;
+      uint64_t rows = (1 << n);
+      uint64_t z = 0;
 
 #ifdef SEQUENTIAL
       rw_process_iui(z,rows,1,n,qubit,m,&v,&res);
@@ -632,106 +612,18 @@ namespace qx
 
 
 
-   inline void sqg_apply(cmatrix_t & cm, uint32_t qubit, qu_register& qureg)
+   inline void sqg_apply(cmatrix_t & cm, uint64_t qubit, qu_register& qureg)
    {
-	 uint32_t     n  = qureg.size();
+	 uint64_t     n  = qureg.size();
 	 complex_t *  s  = qureg.get_data().data();
 	 // cm.dump();
 	 __apply_m(0, (1 << n), qubit, s, 0, (1 << qubit), cm.m);
 	 return;
 
-#if 0
-	 if (qubit == 0)
-	 {
-	    /*
-	    identity       id(1 << (n-1));
-	    unitary_matrix um(cm.size1(),m);
-	    kronecker      k(&id, &um);
-	    // cvector_t      r(qureg.get_data());
-	    cvector_t&     r = qureg.get_aux(); //r(qureg.get_data());
-	    sparse_mulmv(n,qubit,k,qureg.get_data(),r);
-	    //qureg = r;
-	    qureg.get_data().swap(r);
-	    */
-	    // kronecker_ui k(cm,2,(1 << (n-1)));
-	    // kronecker_ui k(hadamard_c,2,(1 << (n-1)));
-	    kronecker_ui k(cm.m,2,(1 << (n-1)));
-	    cvector_t&     r = qureg.get_aux(); 
-	    sparse_mulmv(n,qubit,k,qureg.get_data(),r);
-	    qureg.get_data().swap(r);
-	 }
-	 else if (qubit == n-1)
-	 {
-	    /*
-	    identity       id(1 << (n-1));
-	    unitary_matrix um(cm.size1(),m);
-	    kronecker      k(&um, &id);
-	    cvector_t&     r = qureg.get_aux(); //r(qureg.get_data());
-	    sparse_mulmv(n,qubit,k,qureg.get_data(),r);
-	    //qureg = r;
-	    qureg.get_data().swap(r);
-	    */
-	    // kronecker_iu k(cm,2,(1 << (n-1)));
-	    // kronecker_iu k(hadamard_c,2,(1 << (n-1)));
-	    kronecker_iu k(cm.m,2,(1 << (n-1)));
-	    cvector_t&     r = qureg.get_aux(); 
-	    sparse_mulmv(n,qubit,k,qureg.get_data(),r);
-	    qureg.get_data().swap(r);
-	 }
-	 else
-	 {
-	    /*
-	    identity       id1(1 << (qubit));
-	    identity       id2(1 << (n-qubit-1));
-	    unitary_matrix um(cm.size1(),m);
-	    kronecker      k(&id2, &um, &id1);
-	    //cvector_t      r(qureg.get_data());
-	    cvector_t&     r = qureg.get_aux(); //r(qureg.get_data());
-	    sparse_mulmv(n,qubit,k,qureg.get_data(),r);
-	    //qureg = r;
-	    qureg.get_data().swap(r);
-	    */
-	    // kronecker_iui k(cm, 2, (1 << (n-qubit-1)), (1 << (qubit)));
-	    // kronecker_iui k(hadamard_c, 2, (1 << (n-qubit-1)), (1 << (qubit)));
-	    kronecker_iui k(cm.m, 2, (1 << (n-qubit-1)), (1 << (qubit)));
-	    cvector_t&     r = qureg.get_aux(); 
-	    sparse_mulmv(n,qubit,k,qureg.get_data(),r);
-	    qureg.get_data().swap(r);
-	 }
-#endif
    }
 
 #endif // remove naive tensor computation
 
-/*
-   #else
-
-   inline void sqg_apply(cmatrix_t &m, uint32_t qubit, qu_register& qureg)
-   {
-	 uint32_t n  = qureg.size();
-	 
-	 if (qubit == 0)
-	 {
-	    cidentity_t i(1 << (n-1));
-	    qureg = mxv(tensor(i,m), qureg.get_data());
-	 }
-	 else if (qubit == n-1)
-	 {
-	    cidentity_t i(1 << (n-1));
-	    qureg = mxv(tensor(m,i), qureg.get_data());
-	 }
-	 else
-	 {
-	    cidentity_t i1(1 << (qubit));
-	    cidentity_t i2(1 << (n-qubit-1));
-	    qureg = mxv(tensor(tensor(i2,m),i1), qureg.get_data());
-	 }
-   }
-
-
-   #endif // QX_COMPACT_GATE_OP
-
-*/
 
    typedef enum    
    {
@@ -761,12 +653,12 @@ namespace qx
    {
 	 private:
 
-	   uint32_t   qubit;
+	   uint64_t   qubit;
 	   cmatrix_t  m;
 
 	 public:
 	   
-	   hadamard(uint32_t qubit) : qubit(qubit) //,m((complex_t*)hadamard_c)
+	   hadamard(uint64_t qubit) : qubit(qubit) //,m((complex_t*)hadamard_c)
 	   {
 		 m = build_matrix(hadamard_c,2);
 	   }
@@ -802,22 +694,22 @@ namespace qx
 	      return uc.str();
 	   }
 
-	   std::vector<uint32_t>  qubits()
+	   std::vector<uint64_t>  qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 r.push_back(qubit);
 		 return r;
 	   }
 	   
-	   std::vector<uint32_t>  control_qubits()
+	   std::vector<uint64_t>  control_qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 return r;
 	   }
  
-	   std::vector<uint32_t>  target_qubits()
+	   std::vector<uint64_t>  target_qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 r.push_back(qubit);
 		 return r;
 	   }
@@ -886,14 +778,14 @@ namespace qx
    {
 	 private:
 
-	   uint32_t control_qubit;
-	   uint32_t target_qubit;
+	   uint64_t control_qubit;
+	   uint64_t target_qubit;
 
 	   cmatrix_t  m;
 
 	 public:
 
-	   cnot(uint32_t ctrl_q, uint32_t target_q) : control_qubit(ctrl_q), 
+	   cnot(uint64_t ctrl_q, uint64_t target_q) : control_qubit(ctrl_q), 
 	                                              target_qubit(target_q)
 	   {
 		 // m = build_matrix(cnot_c,4); // stack smaching
@@ -911,10 +803,10 @@ namespace qx
 	   {
 	         // println("cnot " << control_qubit << "," << target_qubit);
 		 #ifdef CG_MATRIX
-		 uint32_t sn = qreg.states();
-		 uint32_t qn = qreg.size();
-		 uint32_t cq = control_qubit;
-		 uint32_t tq = target_qubit;
+		 uint64_t sn = qreg.states();
+		 uint64_t qn = qreg.size();
+		 uint64_t cq = control_qubit;
+		 uint64_t tq = target_qubit;
 
 		 cmatrix_t i = cidentity_t(sn);
 		 perm_t    p = perms(qn,cq,tq);
@@ -935,10 +827,10 @@ namespace qx
 
 		 #elif defined(CG_BC)
 
-		 uint32_t sn = qreg.states();
-		 uint32_t qn = qreg.size();
-		 uint32_t cq = control_qubit;
-		 uint32_t tq = target_qubit;
+		 uint64_t sn = qreg.states();
+		 uint64_t qn = qreg.size();
+		 uint64_t cq = control_qubit;
+		 uint64_t tq = target_qubit;
 
 		 cvector_t& amp = qreg.get_data();
 
@@ -973,18 +865,18 @@ namespace qx
 
 		 #elif defined(CG_HASH_SET)
 		  
-		 uint32_t j = control_qubit+1;
-		 uint32_t k = target_qubit+1;
+		 uint64_t j = control_qubit+1;
+		 uint64_t k = target_qubit+1;
 
-		 uint32_t k2 = (1 << (k-1));
-		 uint32_t j2 = (1 << (j-1));
+		 uint64_t k2 = (1 << (k-1));
+		 uint64_t j2 = (1 << (j-1));
 		 
-		 uint32_t r_size = qreg.states(); 
+		 uint64_t r_size = qreg.states(); 
 
-		 xpu::container::hash_set<uint32_t> swap_set;
+		 xpu::container::hash_set<uint64_t> swap_set;
 
 		 // find swap pairs
-		 for (uint32_t t = 0; t < r_size; t++) 
+		 for (uint64_t t = 0; t < r_size; t++) 
 		 {
 		    if ((t & j2) <= 0) 
 			  continue;
@@ -997,7 +889,7 @@ namespace qx
 		 cvector_t& amp = qreg.get_data();
 		 complex_t c1, c2;
 
-		 for (xpu::container::hash_set<uint32_t>::iterator t = swap_set.begin(); t != swap_set.end(); ++t) 
+		 for (xpu::container::hash_set<uint64_t>::iterator t = swap_set.begin(); t != swap_set.end(); ++t) 
 		 {
 		    int32_t _t = *t;
 		    t2 = (_t + k2 < r_size) ? _t + k2 : _t - k2;
@@ -1023,24 +915,24 @@ namespace qx
 	   }
 
 
-	   std::vector<uint32_t>  qubits()
+	   std::vector<uint64_t>  qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 r.push_back(control_qubit);
 		 r.push_back(target_qubit);
 		 return r;
 	   }
  
-	   std::vector<uint32_t>  control_qubits()
+	   std::vector<uint64_t>  control_qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 r.push_back(control_qubit);
 		 return r;
 	   }
  
-	   std::vector<uint32_t>  target_qubits()
+	   std::vector<uint64_t>  target_qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 r.push_back(target_qubit);
 		 return r;
 	   }
@@ -1118,13 +1010,13 @@ namespace qx
    {
 	 private:
 
-	   uint32_t control_qubit_1;
-	   uint32_t control_qubit_2;
-	   uint32_t target_qubit;
+	   uint64_t control_qubit_1;
+	   uint64_t control_qubit_2;
+	   uint64_t target_qubit;
 
 	 public:
 
-	   toffoli(uint32_t ctrl_q1, uint32_t ctrl_q2, uint32_t target_q) : control_qubit_1(ctrl_q1), 
+	   toffoli(uint64_t ctrl_q1, uint64_t ctrl_q2, uint64_t target_q) : control_qubit_1(ctrl_q1), 
 	                                                                 control_qubit_2(ctrl_q2),
 									 target_qubit(target_q)
 	   {
@@ -1133,11 +1025,11 @@ namespace qx
 
 	   int32_t apply(qu_register& qreg)
 	   {
-		 uint32_t sn  = qreg.states();
-		 uint32_t qn  = qreg.size();
-		 uint32_t cq1 = control_qubit_1;
-		 uint32_t cq2 = control_qubit_2;
-		 uint32_t tq = target_qubit;
+		 uint64_t sn  = qreg.states();
+		 uint64_t qn  = qreg.size();
+		 uint64_t cq1 = control_qubit_1;
+		 uint64_t cq2 = control_qubit_2;
+		 uint64_t tq = target_qubit;
 
 		 cvector_t& amp = qreg.get_data();
 
@@ -1162,10 +1054,10 @@ namespace qx
 			  // println("swap : " << __bit_set(l,t) << "," << __bit_reset(l,t));
 		       }
 #else
-		 std::vector<uint32_t> done(sn, 0);
+		 std::vector<uint64_t> done(sn, 0);
 		 perm_t p = perms(qn,cq1,cq2,tq);
 		 
-		 uint32_t p1,p2;
+		 uint64_t p1,p2;
 
 		 for (perm_t::iterator it = p.begin(); it != p.end(); it++)
 		 {
@@ -1199,26 +1091,26 @@ namespace qx
 	   }
 
 
-	   std::vector<uint32_t>  qubits()
+	   std::vector<uint64_t>  qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 r.push_back(control_qubit_1);
 		 r.push_back(control_qubit_2);
 		 r.push_back(target_qubit);
 		 return r;
 	   }
  
-	   std::vector<uint32_t>  control_qubits()
+	   std::vector<uint64_t>  control_qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 r.push_back(control_qubit_1);
 		 r.push_back(control_qubit_2);
 		 return r;
 	   }
  
-	   std::vector<uint32_t>  target_qubits()
+	   std::vector<uint64_t>  target_qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 r.push_back(target_qubit);
 		 return r;
 	   }
@@ -1238,7 +1130,7 @@ namespace qx
    };
 
 
-   int fliper(int cs, int ce, int s, uint32_t q, cvector_t * p_amp)
+   int fliper(int cs, int ce, int s, uint64_t q, cvector_t * p_amp)
    {
       cvector_t &amp = * p_amp;
       for (int i=cs; i<ce; ++i)
@@ -1251,7 +1143,7 @@ namespace qx
 
    #define __swap_xmm(x,y) { x = _mm_xor_pd(x,y); y = _mm_xor_pd(y,x); x = _mm_xor_pd(x,y); }
 
-   void fast_flip(uint32_t q, uint32_t n, cvector_t& amp)
+   void fast_flip(uint64_t q, uint64_t n, cvector_t& amp)
    {
       complex_t * x = amp.data();
 #ifdef USE_OPENMP
@@ -1264,17 +1156,17 @@ namespace qx
    }
 
 
-   void flip(uint32_t q, uint32_t n, cvector_t& amp)
+   void flip(uint64_t q, uint64_t n, cvector_t& amp)
    {
-      uint32_t nn = (1 << n);
-      uint32_t p1, p2;
+      uint64_t nn = (1 << n);
+      uint64_t p1, p2;
       std::bitset<MAX_QB_N> b;
       // perm_t res;
 
       b.reset();
       b.set(q);  
 
-      uint32_t bc = b.to_ulong();
+      uint64_t bc = b.to_ulong();
 
       while (bc < nn)
       {
@@ -1304,12 +1196,12 @@ namespace qx
    {
 	 private:
 
-	   uint32_t                  qubit;
+	   uint64_t                  qubit;
 	   cmatrix_t  m;
 
 	 public:
 
-	   pauli_x(uint32_t qubit) : qubit(qubit)
+	   pauli_x(uint64_t qubit) : qubit(qubit)
 	   {
 		 m = build_matrix(pauli_x_c,2);
 	   }
@@ -1319,7 +1211,7 @@ namespace qx
 // #define FAST_FLIP
 #ifdef FAST_FLIP
 
-	      uint32_t qn = qreg.size();
+	      uint64_t qn = qreg.size();
 	      cvector_t& amp = qreg.get_data();
 	      
 	      // flip(qubit,qn,amp);
@@ -1330,7 +1222,7 @@ namespace qx
 	       parallel_flip.run();
 	      */
 #else
-	      uint32_t     n  = qreg.size();
+	      uint64_t     n  = qreg.size();
 	      complex_t *  s  = qreg.get_data().data();
 	      // cm.dump();
 	      __apply_m(0, (1 << n), qubit, s, 0, (1 << qubit), m.m);
@@ -1360,22 +1252,22 @@ namespace qx
 		 println("  [-] pauli-x(qubit=" << qubit << ")");
 	   }
 	   
-	   std::vector<uint32_t>  qubits()
+	   std::vector<uint64_t>  qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 r.push_back(qubit);
 		 return r;
 	   }
  
-	   std::vector<uint32_t>  control_qubits()
+	   std::vector<uint64_t>  control_qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 return r;
 	   }
  
-	   std::vector<uint32_t>  target_qubits()
+	   std::vector<uint64_t>  target_qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 r.push_back(qubit);
 		 return r;
 	   }
@@ -1398,12 +1290,12 @@ namespace qx
    {
 	 private:
 
-	   uint32_t                  qubit;
+	   uint64_t                  qubit;
 	   cmatrix_t  m;
 
 	 public:
 
-	   pauli_y(uint32_t qubit) : qubit(qubit)
+	   pauli_y(uint64_t qubit) : qubit(qubit)
 	   {
 		 m = build_matrix(pauli_y_c,2);
 	   }
@@ -1435,22 +1327,22 @@ namespace qx
 		 println("  [-] pauli-y(qubit=" << qubit << ")");
 	   }
 	   
-	   std::vector<uint32_t>  qubits()
+	   std::vector<uint64_t>  qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 r.push_back(qubit);
 		 return r;
 	   }
  
-	   std::vector<uint32_t>  control_qubits()
+	   std::vector<uint64_t>  control_qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 return r;
 	   }
  
-	   std::vector<uint32_t>  target_qubits()
+	   std::vector<uint64_t>  target_qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 r.push_back(qubit);
 		 return r;
 	   }
@@ -1474,12 +1366,12 @@ namespace qx
    {
 	 private:
 
-	   uint32_t                  qubit;
+	   uint64_t                  qubit;
 	   cmatrix_t  m;
 
 	 public:
 
-	   pauli_z(uint32_t qubit) : qubit(qubit)
+	   pauli_z(uint64_t qubit) : qubit(qubit)
 	   {
 		 m = build_matrix(pauli_z_c,2);
 	   }
@@ -1512,22 +1404,22 @@ namespace qx
 		 println("  [-] pauli-z(qubit=" << qubit << ")");
 	   }
 	   
-	   std::vector<uint32_t>  qubits()
+	   std::vector<uint64_t>  qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 r.push_back(qubit);
 		 return r;
 	   }
  
-	   std::vector<uint32_t>  control_qubits()
+	   std::vector<uint64_t>  control_qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 return r;
 	   }
  
-	   std::vector<uint32_t>  target_qubits()
+	   std::vector<uint64_t>  target_qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 r.push_back(qubit);
 		 return r;
 	   }
@@ -1548,12 +1440,12 @@ namespace qx
    {
 	 private:
 
-	   uint32_t                  qubit;
+	   uint64_t                  qubit;
 	   cmatrix_t  m;
 
 	 public:
 
-	   phase_shift(uint32_t qubit) : qubit(qubit)
+	   phase_shift(uint64_t qubit) : qubit(qubit)
 	   {
 		 m = build_matrix(phase_c,2);
 	   }
@@ -1582,22 +1474,22 @@ namespace qx
 		 println("  [-] phase(qubit=" << qubit << ")");
 	   }
 	   
-	   std::vector<uint32_t>  qubits()
+	   std::vector<uint64_t>  qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 r.push_back(qubit);
 		 return r;
 	   }
  
-	   std::vector<uint32_t>  control_qubits()
+	   std::vector<uint64_t>  control_qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 return r;
 	   }
  
-	   std::vector<uint32_t>  target_qubits()
+	   std::vector<uint64_t>  target_qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 r.push_back(qubit);
 		 return r;
 	   }
@@ -1616,12 +1508,12 @@ namespace qx
    {
    private:
 
-     uint32_t   qubit;
+     uint64_t   qubit;
      cmatrix_t  m;
 
    public:
 
-     s_dag_gate(uint32_t qubit) : qubit(qubit)
+     s_dag_gate(uint64_t qubit) : qubit(qubit)
      {
      m = build_matrix(sdag_gate_c,2);
      }
@@ -1637,22 +1529,22 @@ namespace qx
      println("  [-] s_dag_gate(qubit=" << qubit << ")");
      }
      
-     std::vector<uint32_t>  qubits()
+     std::vector<uint64_t>  qubits()
      {
-     std::vector<uint32_t> r;
+     std::vector<uint64_t> r;
      r.push_back(qubit);
      return r;
      }
  
-     std::vector<uint32_t>  control_qubits()
+     std::vector<uint64_t>  control_qubits()
      {
-     std::vector<uint32_t> r;
+     std::vector<uint64_t> r;
      return r;
      }
  
-     std::vector<uint32_t>  target_qubits()
+     std::vector<uint64_t>  target_qubits()
      {
-     std::vector<uint32_t> r;
+     std::vector<uint64_t> r;
      r.push_back(qubit);
      return r;
      }
@@ -1672,12 +1564,12 @@ namespace qx
    {
 	 private:
 
-	   uint32_t   qubit;
+	   uint64_t   qubit;
 	   cmatrix_t  m;
 
 	 public:
 
-	   t_gate(uint32_t qubit) : qubit(qubit)
+	   t_gate(uint64_t qubit) : qubit(qubit)
 	   {
 		 m = build_matrix(t_gate_c,2);
 	   }
@@ -1693,22 +1585,22 @@ namespace qx
 		 println("  [-] t_gate(qubit=" << qubit << ")");
 	   }
 	   
-	   std::vector<uint32_t>  qubits()
+	   std::vector<uint64_t>  qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 r.push_back(qubit);
 		 return r;
 	   }
  
-	   std::vector<uint32_t>  control_qubits()
+	   std::vector<uint64_t>  control_qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 return r;
 	   }
  
-	   std::vector<uint32_t>  target_qubits()
+	   std::vector<uint64_t>  target_qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 r.push_back(qubit);
 		 return r;
 	   }
@@ -1729,12 +1621,12 @@ namespace qx
    {
 	 private:
 
-	   uint32_t   qubit;
+	   uint64_t   qubit;
 	   cmatrix_t  m;
 
 	 public:
 
-	   t_dag_gate(uint32_t qubit) : qubit(qubit)
+	   t_dag_gate(uint64_t qubit) : qubit(qubit)
 	   {
 		 m = build_matrix(tdag_gate_c,2);
 	   }
@@ -1750,22 +1642,22 @@ namespace qx
 		 println("  [-] t_dag_gate(qubit=" << qubit << ")");
 	   }
 	   
-	   std::vector<uint32_t>  qubits()
+	   std::vector<uint64_t>  qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 r.push_back(qubit);
 		 return r;
 	   }
  
-	   std::vector<uint32_t>  control_qubits()
+	   std::vector<uint64_t>  control_qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 return r;
 	   }
  
-	   std::vector<uint32_t>  target_qubits()
+	   std::vector<uint64_t>  target_qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 r.push_back(qubit);
 		 return r;
 	   }
@@ -1789,13 +1681,13 @@ namespace qx
    {
 	 private:
 
-	   uint32_t   qubit;
+	   uint64_t   qubit;
 	   double     angle;
 	   cmatrix_t  m;
 
 	 public:
 
-	   rx(uint32_t qubit, double angle) : qubit(qubit), angle(angle)
+	   rx(uint64_t qubit, double angle) : qubit(qubit), angle(angle)
 	   {
 		 // m.resize(2,2);
 		 m(0,0) = cos(angle/2);      m(0,1) = complex_t(0,-sin(angle/2));
@@ -1815,22 +1707,22 @@ namespace qx
 		 println("  [-] rx(qubit=" << qubit << ", angle=" << angle << ")");
 	   }
 	   
-	   std::vector<uint32_t>  qubits()
+	   std::vector<uint64_t>  qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 r.push_back(qubit);
 		 return r;
 	   }
  
-	   std::vector<uint32_t>  control_qubits()
+	   std::vector<uint64_t>  control_qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 return r;
 	   }
  
-	   std::vector<uint32_t>  target_qubits()
+	   std::vector<uint64_t>  target_qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 r.push_back(qubit);
 		 return r;
 	   }
@@ -1850,13 +1742,13 @@ namespace qx
    {
 	 private:
 
-	   uint32_t   qubit;
+	   uint64_t   qubit;
 	   double     angle;
 	   cmatrix_t  m;
 
 	 public:
 
-	   ry(uint32_t qubit, double angle) : qubit(qubit), angle(angle)
+	   ry(uint64_t qubit, double angle) : qubit(qubit), angle(angle)
 	   {
 		 // m.resize(2,2);
 		 m(0,0) = cos(angle/2); m(0,1) = -sin(angle/2);
@@ -1876,22 +1768,22 @@ namespace qx
 		 println("  [-] ry(qubit=" << qubit << ", angle=" << angle << ")");
 	   }
 	   
-	   std::vector<uint32_t>  qubits()
+	   std::vector<uint64_t>  qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 r.push_back(qubit);
 		 return r;
 	   }
  
-	   std::vector<uint32_t>  control_qubits()
+	   std::vector<uint64_t>  control_qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 return r;
 	   }
  
-	   std::vector<uint32_t>  target_qubits()
+	   std::vector<uint64_t>  target_qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 r.push_back(qubit);
 		 return r;
 	   }
@@ -1911,13 +1803,13 @@ namespace qx
    {
 	 private:
 
-	   uint32_t   qubit;
+	   uint64_t   qubit;
 	   double     angle;
 	   cmatrix_t  m;
 
 	 public:
 
-	   rz(uint32_t qubit, double angle) : qubit(qubit), angle(angle)
+	   rz(uint64_t qubit, double angle) : qubit(qubit), angle(angle)
 	   {
 		 // m.resize(2,2);
 		 m(0,0) = complex_t(cos(-angle/2), sin(-angle/2));   m(0,1) = 0;
@@ -1937,22 +1829,22 @@ namespace qx
 		 println("  [-] rz(qubit=" << qubit << ", angle=" << angle << ")");
 	   }
 	   
-	   std::vector<uint32_t>  qubits()
+	   std::vector<uint64_t>  qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 r.push_back(qubit);
 		 return r;
 	   }
  
-	   std::vector<uint32_t>  control_qubits()
+	   std::vector<uint64_t>  control_qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 return r;
 	   }
  
-	   std::vector<uint32_t>  target_qubits()
+	   std::vector<uint64_t>  target_qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 r.push_back(qubit);
 		 return r;
 	   }
@@ -2016,15 +1908,15 @@ namespace qx
    }
 
 
-   uint32_t qft_1st_fold_worker(int is, int ie, int s, uint32_t n, uint32_t qubit, kronecker_ui m, cvector_t * v, cvector_t * res)
+   uint64_t qft_1st_fold_worker(int is, int ie, int s, uint64_t n, uint64_t qubit, kronecker_ui m, cvector_t * v, cvector_t * res)
    {
-      uint32_t k = n-qubit;
+      uint64_t k = n-qubit;
       // println("run : " << is << " .. " << ie);
       complex_t * pv = v->data();
       complex_t * pr = res->data();
       size_t bc, c1, c2;
 
-      for (uint32_t r=is; r<ie; ++r)
+      for (uint64_t r=is; r<ie; ++r)
       {
 	 bc = r;
 	 c1 = __bit_reset(bc,n-k);
@@ -2059,11 +1951,11 @@ namespace qx
    }
  
 
-   void qft_1st_fold(uint32_t n, uint32_t qubit, kronecker_ui m, cvector_t& v, cvector_t& res)
+   void qft_1st_fold(uint64_t n, uint64_t qubit, kronecker_ui m, cvector_t& v, cvector_t& res)
    {
-      uint32_t k = n-qubit;
-      uint32_t rows = (1 << n);
-      uint32_t z = 0;
+      uint64_t k = n-qubit;
+      uint64_t rows = (1 << n);
+      uint64_t z = 0;
 
       //xpu::task qf_t(qft_fold_worker,0,0,0,n,qubit,m,&v,&res);
       //xpu::parallel_for process(z,rows,1,&qf_t);
@@ -2074,15 +1966,15 @@ namespace qx
    }
 
 
-   uint32_t qft_nth_fold_worker(int is, int ie, int s, uint32_t n, uint32_t qubit, kronecker_iui m, cvector_t * v, cvector_t * res)
+   uint64_t qft_nth_fold_worker(int is, int ie, int s, uint64_t n, uint64_t qubit, kronecker_iui m, cvector_t * v, cvector_t * res)
    {
-      uint32_t k = n-qubit;
+      uint64_t k = n-qubit;
       // println("run : " << is << " .. " << ie);
       complex_t * pv = v->data();
       complex_t * pr = res->data();
       size_t bc, c1, c2;
 
-      for (uint32_t r=is; r<ie; ++r)
+      for (uint64_t r=is; r<ie; ++r)
       {
 	 bc = r;
 	 c1 = __bit_reset(bc,n-k);
@@ -2115,11 +2007,11 @@ namespace qx
       return 0;
    }
 
-   void qft_nth_fold(uint32_t n, uint32_t qubit, kronecker_iui m, cvector_t& v, cvector_t& res)
+   void qft_nth_fold(uint64_t n, uint64_t qubit, kronecker_iui m, cvector_t& v, cvector_t& res)
    {
-      uint32_t k = n-qubit;
-      uint32_t rows = (1 << n);
-      uint32_t z = 0;
+      uint64_t k = n-qubit;
+      uint64_t rows = (1 << n);
+      uint64_t z = 0;
 
       //xpu::task qf_t(qft_fold_worker,0,0,0,n,qubit,m,&v,&res);
       //xpu::parallel_for process(z,rows,1,&qf_t);
@@ -2190,12 +2082,12 @@ namespace qx
    {
 	 private:
 
-	   std::vector<uint32_t>     qubit;
+	   std::vector<uint64_t>     qubit;
 	   cmatrix_t                 hm;
 
 	 public:
 
-	   qft(std::vector<uint32_t> qubit) : qubit(qubit)
+	   qft(std::vector<uint64_t> qubit) : qubit(qubit)
 	   {
 		 hm = build_matrix(hadamard_c,2);
 	   }
@@ -2246,17 +2138,17 @@ namespace qx
 		 println("q" << qubit[qubit.size()-1] << ")");
 	   }
 	   
-	   std::vector<uint32_t>  qubits()
+	   std::vector<uint64_t>  qubits()
 	   {
 		 return qubit;
 	   }
  
-	   std::vector<uint32_t>  control_qubits()
+	   std::vector<uint64_t>  control_qubits()
 	   {
 		 return qubit;
 	   }
  
-	   std::vector<uint32_t>  target_qubits()
+	   std::vector<uint64_t>  target_qubits()
 	   {
 		 return qubit;
 	   }
@@ -2274,100 +2166,94 @@ namespace qx
     */ 
    class ctrl_phase_shift : public gate
    {
-	 private:
+      private:
 
-	   uint32_t                  ctrl_qubit;
-	   uint32_t                  target_qubit;
-	   complex_t                 z;
+         uint64_t                  ctrl_qubit;
+         uint64_t                  target_qubit;
+         complex_t                 z;
 
-	 public:
+      public:
 
-	   ctrl_phase_shift(uint32_t ctrl_qubit, uint32_t target_qubit) : ctrl_qubit(ctrl_qubit), 
-	                                                                  target_qubit(target_qubit), 
-		      						          z(cos(2*M_PI/(1 << (ctrl_qubit - target_qubit))), 
-								                  sin(2*M_PI/(1 << (ctrl_qubit - target_qubit))))
-	   {
-	   }
+         ctrl_phase_shift(uint64_t ctrl_qubit, uint64_t target_qubit) : ctrl_qubit(ctrl_qubit), 
+                                                                        target_qubit(target_qubit), 
+                                                                        z(cos(2*M_PI/(1 << (ctrl_qubit - target_qubit))), 
+                                                                          sin(2*M_PI/(1 << (ctrl_qubit - target_qubit))))
+      {
+      }
 
-	   int32_t apply(qu_register& qreg)
-	   {
-#if 0
-	      uint32_t nn = (1 << qreg.size());
-	      uint32_t p = 0;
-	      std::bitset<MAX_QB_N> b;
 
-	      b.reset();
-	      b.set(ctrl_qubit);  
-	      b.set(target_qubit);  
+         ctrl_phase_shift(uint64_t ctrl_qubit, uint64_t target_qubit, uint64_t k) : ctrl_qubit(ctrl_qubit), 
+                                                                                    target_qubit(target_qubit), 
+                                                                                    z(cos(2*M_PI/(1 << (k))), 
+                                                                                      sin(2*M_PI/(1 << (k))))
+      {
+      }
 
-	      uint32_t   bc    = b.to_ulong();
-	      cvector_t& state = qreg.get_data();
+         ctrl_phase_shift(uint64_t ctrl_qubit, uint64_t target_qubit, complex_t angle) : ctrl_qubit(ctrl_qubit), 
+                                                                                         target_qubit(target_qubit), 
+                                                                                         z(angle)
+      {
+      }
 
-	      while (bc < nn)
-	      {
-		 b.set(ctrl_qubit);  
-		 b.set(target_qubit);  
-		 p = b.to_ulong();
-		 state[p] *= z;
-		 b = inc(b);
-		 bc = b.to_ulong();
-	      }
-#endif
-	      size_t b1 = std::max(ctrl_qubit,target_qubit);
-	      size_t b2 = std::min(ctrl_qubit,target_qubit);
-	      size_t qn = qreg.size();
-	      size_t steps = ((1 << qn)-(__bit_set(0,b1)))/(1 << (b1+1))+1;
-	      cvector_t& amp = qreg.get_data();
+
+         int32_t apply(qu_register& qreg)
+         {
+
+            size_t b1 = std::max(ctrl_qubit,target_qubit);
+            size_t b2 = std::min(ctrl_qubit,target_qubit);
+            size_t qn = qreg.size();
+            size_t steps = ((1 << qn)-(__bit_set(0,b1)))/(1 << (b1+1))+1;
+            cvector_t& amp = qreg.get_data();
 
 #ifdef USE_OPENMP
-              #pragma omp parallel for
-	      for (size_t i=0; i<steps; ++i)
-	      {
-		 // shift_worker(i,i+1,1,&amp,b1,b2,z);
-		 size_t stride=(1 << (b1+1));
-		 size_t offset = __bit_set(0,b1);
-		 __shift(amp,b1,b2,z,offset+(i*stride));
-	      }
+#pragma omp parallel for
+            for (size_t i=0; i<steps; ++i)
+            {
+               // shift_worker(i,i+1,1,&amp,b1,b2,z);
+               size_t stride=(1 << (b1+1));
+               size_t offset = __bit_set(0,b1);
+               __shift(amp,b1,b2,z,offset+(i*stride));
+            }
 #else
-	      xpu::task t(shift_worker,0,0,0,&amp,b1,b2,z);
-	      xpu::parallel_for p_shifter(0, steps, 1, &t);
-	      p_shifter.run();
+            xpu::task t(shift_worker,0,0,0,&amp,b1,b2,z);
+            xpu::parallel_for p_shifter(0, steps, 1, &t);
+            p_shifter.run();
 #endif
 
-	      return 0;
-	   }
+            return 0;
+         }
 
-	   void dump()
-	   {
-		 println("  [-] ctrl_phase_shift(ctrl_qubit=" << ctrl_qubit << ", target_qubit: " << target_qubit << ")");
-	   }
-	   
-	   std::vector<uint32_t>  qubits()
-	   {
-		 std::vector<uint32_t> r;
-		 r.push_back(ctrl_qubit);
-		 r.push_back(target_qubit);
-		 return r;
-	   }
- 
-	   std::vector<uint32_t>  control_qubits()
-	   {
-		 std::vector<uint32_t> r;
-		 r.push_back(ctrl_qubit);
-		 return r;
-	   }
- 
-	   std::vector<uint32_t>  target_qubits()
-	   {
-		 std::vector<uint32_t> r;
-		 r.push_back(target_qubit);
-		 return r;
-	   }
+         void dump()
+         {
+            println("  [-] ctrl_phase_shift(ctrl_qubit=" << ctrl_qubit << ", target_qubit: " << target_qubit << ", phase = " << phase << ")");
+         }
 
-	   gate_type_t type()
-	   {
-	      return __ctrl_phase_shift_gate__; 
-	   }
+         std::vector<uint64_t>  qubits()
+         {
+            std::vector<uint64_t> r;
+            r.push_back(ctrl_qubit);
+            r.push_back(target_qubit);
+            return r;
+         }
+
+         std::vector<uint64_t>  control_qubits()
+         {
+            std::vector<uint64_t> r;
+            r.push_back(ctrl_qubit);
+            return r;
+         }
+
+         std::vector<uint64_t>  target_qubits()
+         {
+            std::vector<uint64_t> r;
+            r.push_back(target_qubit);
+            return r;
+         }
+
+         gate_type_t type()
+         {
+            return __ctrl_phase_shift_gate__; 
+         }
    };
 
 
@@ -2384,14 +2270,14 @@ namespace qx
    {
 	 private:
 	   
-	   uint32_t qubit1;
-	   uint32_t qubit2;
+	   uint64_t qubit1;
+	   uint64_t qubit2;
 	   
 	   // cmatrix_t m;
 
 	 public:
 
-	   swap(uint32_t qubit1, uint32_t qubit2) : qubit1(qubit1), qubit2(qubit2)
+	   swap(uint64_t qubit1, uint64_t qubit2) : qubit1(qubit1), qubit2(qubit2)
 	   {
 		 // m =  build_matrix(swap_c,4);
 	   }
@@ -2410,23 +2296,23 @@ namespace qx
 		 println("  [-] swap(q1=" << qubit1 << ", q2=" << qubit2 << ")");
 	   }
 
-	   std::vector<uint32_t>  qubits()
+	   std::vector<uint64_t>  qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 r.push_back(qubit1);
 		 r.push_back(qubit2);
 		 return r;
 	   }
  
-	   std::vector<uint32_t>  control_qubits()
+	   std::vector<uint64_t>  control_qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 return r;
 	   }
  
-	   std::vector<uint32_t>  target_qubits()
+	   std::vector<uint64_t>  target_qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 r.push_back(qubit1);
 		 r.push_back(qubit2);
 		 return r;
@@ -2447,12 +2333,12 @@ namespace qx
    {
 	 private:
 	   
-	   uint32_t ctrl_qubit;
-	   uint32_t target_qubit;
+	   uint64_t ctrl_qubit;
+	   uint64_t target_qubit;
 	   
 	 public:
 
-	   cphase(uint32_t ctrl_qubit, uint32_t target_qubit) : ctrl_qubit(ctrl_qubit), target_qubit(target_qubit)
+	   cphase(uint64_t ctrl_qubit, uint64_t target_qubit) : ctrl_qubit(ctrl_qubit), target_qubit(target_qubit)
 	   {
 	   }
 
@@ -2469,24 +2355,24 @@ namespace qx
 		 println("  [-] cphase(ctrl_qubit=" << ctrl_qubit << ", target_qubit=" << target_qubit << ")");
 	   }
 
-	   std::vector<uint32_t>  qubits()
+	   std::vector<uint64_t>  qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 r.push_back(ctrl_qubit);
 		 r.push_back(target_qubit);
 		 return r;
 	   }
  
-	   std::vector<uint32_t>  control_qubits()
+	   std::vector<uint64_t>  control_qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 r.push_back(ctrl_qubit);
 		 return r;
 	   }
  
-	   std::vector<uint32_t>  target_qubits()
+	   std::vector<uint64_t>  target_qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 r.push_back(target_qubit);
 		 return r;
 	   }
@@ -2507,9 +2393,9 @@ namespace qx
 	 private:
 
 // #ifdef __BUILTIN_LINALG__
-           std::vector<uint32_t> qubits;
+           std::vector<uint64_t> qubits;
 // #else
-// 	   ublas::vector<uint32_t>  qubits;
+// 	   ublas::vector<uint64_t>  qubits;
 // #endif 
 	   // cmatrix_t m;
 	   qx::linalg::matrix<complex_t> m;
@@ -2517,20 +2403,20 @@ namespace qx
 	 public:
 
 // #ifdef __BUILTIN_LINALG__
-	   custom(std::vector<uint32_t>  qubits, qx::linalg::matrix<complex_t> m) : qubits(qubits), m(m)
+	   custom(std::vector<uint64_t>  qubits, qx::linalg::matrix<complex_t> m) : qubits(qubits), m(m)
 // #else
-// 	   custom(ublas::vector<uint32_t>  qubits, cmatrix_t m) : qubits(qubits), m(m)
+// 	   custom(ublas::vector<uint64_t>  qubits, cmatrix_t m) : qubits(qubits), m(m)
 // #endif 
 	   {
-		 uint32_t size = 1 << qubits.size();
+		 uint64_t size = 1 << qubits.size();
 		 if (size != m.size1() || size != m.size2())
 		    println("[x] error: cutom gate : the matrix size do not match the number of qubits !");
 		 // verify also that the matrix is unitary
 // #ifdef __BUILTIN_LINALG__
 		 // cmatrix_t ctr(m.size2(),m.size1());
 		 qx::linalg::matrix<complex_t> ctr(m.size2(),m.size1());
-		 for (uint32_t i=0; i<m.size2(); ++i)
-		    for (uint32_t j=0; j<m.size1(); ++j)
+		 for (uint64_t i=0; i<m.size2(); ++i)
+		    for (uint64_t j=0; j<m.size1(); ++j)
 		       ctr(i,j) = m(j,i).conj();
 		 // cmatrix_t mxctr = mxm(m,ctr);
 		 qx::linalg::matrix<complex_t> mxctr = mxm(m,ctr);
@@ -2568,11 +2454,11 @@ namespace qx
   
    
 
-   int p1_worker(int cs, int ce, int s, double * p1, uint32_t qubit, xpu::lockable * l, cvector_t * p_data)
+   int p1_worker(int cs, int ce, int s, double * p1, uint64_t qubit, xpu::lockable * l, cvector_t * p_data)
    {
       cvector_t &data = * p_data;
       double local_p1 = 0;
-      for (uint32_t i=cs; i<ce; ++i)
+      for (uint64_t i=cs; i<ce; ++i)
       {
 	 i = __bit_set(i,qubit);
 	 if (i<ce)
@@ -2589,14 +2475,14 @@ namespace qx
    }
 
 
-   int zero_worker(int cs, int ce, int s, int m, double * length, uint32_t qubit, xpu::lockable * l, cvector_t * p_data)
+   int zero_worker(int cs, int ce, int s, int m, double * length, uint64_t qubit, xpu::lockable * l, cvector_t * p_data)
    {
       cvector_t &data = * p_data;
       double local_length = 0;
-      uint32_t       size = data.size(); 
+      uint64_t       size = data.size(); 
       if (m)
       {
-	 for (uint32_t i=cs; i<ce; ++i)
+	 for (uint64_t i=cs; i<ce; ++i)
 	 {
 	    if (!__bit_test(i,qubit))
 	       data[i] = 0;
@@ -2605,7 +2491,7 @@ namespace qx
       }
       else
       {
-	 for (uint32_t i=cs; i<ce; ++i)
+	 for (uint64_t i=cs; i<ce; ++i)
 	 {
 	    if (__bit_test(i,qubit))
 	       data[i] = 0;
@@ -2626,7 +2512,7 @@ namespace qx
       // println("avx");
       complex_t * vd = p_data->data();
       __m256d vl = _mm256_set1_pd(l);
-      for (uint32_t i=cs; i<ce; i+=2)
+      for (uint64_t i=cs; i<ce; i+=2)
       {
 	 double * pvd = (double*)&vd[i];
 	 __m256d va = _mm256_load_pd(pvd); 
@@ -2637,7 +2523,7 @@ namespace qx
       // println("sse");
       complex_t * vd = p_data->data();
       __m128d vl = _mm_set1_pd(l);
-      for (uint32_t i=cs; i<ce; ++i)
+      for (uint64_t i=cs; i<ce; ++i)
       {
 	 double * pvd = (double*)&vd[i];
 	 __m128d va = _mm_load_pd(pvd); 
@@ -2645,7 +2531,7 @@ namespace qx
 	 _mm_store_pd(pvd,vr);
       }
 #else
-      for (uint32_t i=cs; i<ce; ++i)
+      for (uint64_t i=cs; i<ce; ++i)
 	 data[i] /= l;
 #endif // __SSE__
       return 0;
@@ -2661,13 +2547,13 @@ namespace qx
    {
 	 private:
 
-	   uint32_t  qubit;
+	   uint64_t  qubit;
 	   bool      measure_all;
 	   bool      disable_averaging;
 
 	 public:
 
-	   measure(uint32_t qubit, bool disable_averaging=false) : qubit(qubit), measure_all(false), disable_averaging(disable_averaging)
+	   measure(uint64_t qubit, bool disable_averaging=false) : qubit(qubit), measure_all(false), disable_averaging(disable_averaging)
 	   {
 	   }
 	   
@@ -2724,7 +2610,7 @@ namespace qx
 		 std::bitset<MAX_QB_N> b;
 		 b.reset();
 		 b.set(qubit);
-		 uint32_t bc = b.to_ulong();
+		 uint64_t bc = b.to_ulong();
 
 		 while (bc < n)
 		 {
@@ -2741,7 +2627,7 @@ namespace qx
 
 		 if (value)   // 1
 		 {  // reset all states where the qubit is 0
-		    for (uint32_t i=0; i<(1 << size); ++i)
+		    for (uint64_t i=0; i<(1 << size); ++i)
 		    {
 		       if (!__bit_test(i,qubit))
 			  data[i] = 0;
@@ -2749,19 +2635,19 @@ namespace qx
 		 }
 		 else
 		 {
-		    for (uint32_t i=0; i<(1 << size); ++i)
+		    for (uint64_t i=0; i<(1 << size); ++i)
 		    {
 		       if (__bit_test(i,qubit))
 			  data[i] = 0;
 		    }
 		 }
 
-		 for (uint32_t k = 0; k < (1 << size); k++) 
+		 for (uint64_t k = 0; k < (1 << size); k++) 
 		    length += data[k].norm(); //std::norm(data[k]);
 
 		 length = std::sqrt(length);
 
-		 for (uint32_t k = 0; k < (1 << size); k++) 
+		 for (uint64_t k = 0; k < (1 << size); k++) 
 		    data[k] /= length;
 
 		 // #endif // PARALLEL_MEASUREMENT
@@ -2801,9 +2687,9 @@ namespace qx
 		 println("  [-] measure(qubit=" << qubit << ")");
 	   }
 	   
-	   std::vector<uint32_t>  qubits()
+	   std::vector<uint64_t>  qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 if (!measure_all)
 		    r.push_back(qubit);
 		 else   // this is a dirty hack, itshould be fixed later (unknown qubit number !)
@@ -2814,13 +2700,13 @@ namespace qx
 		 return r;
 	   }
 
-	   std::vector<uint32_t>  control_qubits()
+	   std::vector<uint64_t>  control_qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 return r;
 	   }
  
-	   std::vector<uint32_t>  target_qubits()
+	   std::vector<uint64_t>  target_qubits()
 	   {
 		 return qubits();
 	   }
@@ -2842,12 +2728,12 @@ namespace qx
    {
 	 private:
 
-	   uint32_t bit;
+	   uint64_t bit;
 	   gate *   g;
 
 	 public:
 
-	   bin_ctrl(uint32_t bit, gate * g) : bit(bit), g(g)
+	   bin_ctrl(uint64_t bit, gate * g) : bit(bit), g(g)
 	   {
 	   }
 
@@ -2863,7 +2749,7 @@ namespace qx
 	      return g;
 	   }
 
-	   uint32_t get_bit()
+	   uint64_t get_bit()
 	   {
 	      return bit;
 	   }
@@ -2874,17 +2760,17 @@ namespace qx
 		 g->dump();
 	   }
 	   
-	   std::vector<uint32_t>  qubits()
+	   std::vector<uint64_t>  qubits()
 	   {
 		 return g->qubits();
 	   }
 
-	   std::vector<uint32_t>  control_qubits()
+	   std::vector<uint64_t>  control_qubits()
 	   {
 		 return g->control_qubits();
 	   }
  
-	   std::vector<uint32_t>  target_qubits()
+	   std::vector<uint64_t>  target_qubits()
 	   {
 		 return g->target_qubits();
 	   }
@@ -2910,11 +2796,11 @@ namespace qx
    {
 	 private:
 
-	   uint32_t bit;
+	   uint64_t bit;
 
 	 public:
 
-	   classical_not(uint32_t bit) : bit(bit)
+	   classical_not(uint64_t bit) : bit(bit)
 	   {
 	   }
 
@@ -2924,7 +2810,7 @@ namespace qx
 	      return 0;
 	   }
 
-	   uint32_t get_bit()
+	   uint64_t get_bit()
 	   {
 	      return bit;
 	   }
@@ -2935,19 +2821,19 @@ namespace qx
 		 println(" not " << bit);
 	   }
 	   
-	   std::vector<uint32_t>  qubits()
+	   std::vector<uint64_t>  qubits()
 	   {
-	      return std::vector<uint32_t>();
+	      return std::vector<uint64_t>();
 	   }
 
-	   std::vector<uint32_t>  control_qubits()
+	   std::vector<uint64_t>  control_qubits()
 	   {
-	      return std::vector<uint32_t>();
+	      return std::vector<uint64_t>();
 	   }
  
-	   std::vector<uint32_t>  target_qubits()
+	   std::vector<uint64_t>  target_qubits()
 	   {
-	      return std::vector<uint32_t>();
+	      return std::vector<uint64_t>();
 	   }
 
 	   gate_type_t type()
@@ -2968,11 +2854,11 @@ namespace qx
    {
 	 private:
 
-	   uint32_t  qubit;
+	   uint64_t  qubit;
 
 	 public:
 
-	   prepz(uint32_t qubit) : qubit(qubit)
+	   prepz(uint64_t qubit) : qubit(qubit)
 	   {
 	   }
 	   
@@ -2990,20 +2876,20 @@ namespace qx
 	       println("  [-] prepz(qubit=" << qubit << ")");
 	   }
 	   
-	   std::vector<uint32_t>  qubits()
+	   std::vector<uint64_t>  qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 r.push_back(qubit);
 		 return r;
 	   }
 
-	   std::vector<uint32_t>  control_qubits()
+	   std::vector<uint64_t>  control_qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 return r;
 	   }
  
-	   std::vector<uint32_t>  target_qubits()
+	   std::vector<uint64_t>  target_qubits()
 	   {
 		 return qubits();
 	   }
@@ -3023,25 +2909,25 @@ namespace qx
    {
       private:
 
-        std::vector<uint32_t>      ctrl_bits;
-	std::map<uint32_t,gate *>  gates;   
+        std::vector<uint64_t>      ctrl_bits;
+	std::map<uint64_t,gate *>  gates;   
 
       public:
 
-        lookup_gate_table(uint32_t b0)
+        lookup_gate_table(uint64_t b0)
 	{
 	   ctrl_bits.push_back(b0);
 	}
 
 
-        lookup_gate_table(uint32_t b0, uint32_t b1)
+        lookup_gate_table(uint64_t b0, uint64_t b1)
 	{
 	   ctrl_bits.push_back(b0);
 	   ctrl_bits.push_back(b1);
 	}
 
         
-	lookup_gate_table(uint32_t b0, uint32_t b1, uint32_t b2)
+	lookup_gate_table(uint64_t b0, uint64_t b1, uint64_t b2)
 	{
 	   ctrl_bits.push_back(b0);
 	   ctrl_bits.push_back(b1);
@@ -3049,12 +2935,12 @@ namespace qx
 	}
 
 
-	lookup_gate_table(std::vector<uint32_t> ctrl_bits) : ctrl_bits(ctrl_bits)
+	lookup_gate_table(std::vector<uint64_t> ctrl_bits) : ctrl_bits(ctrl_bits)
 	{
 	}
 
 	
-	void add_gate(uint32_t cond, gate * g)
+	void add_gate(uint64_t cond, gate * g)
 	{
 	   assert(cond < (1<< ctrl_bits.size()));
 	   gates[cond] = g;
@@ -3063,9 +2949,9 @@ namespace qx
 	
 	int32_t apply(qu_register& qreg)
 	{
-	   uint32_t k = 0;
+	   uint64_t k = 0;
 
-	   for (uint32_t i=0; i<ctrl_bits.size(); i++)
+	   for (uint64_t i=0; i<ctrl_bits.size(); i++)
 	   {
 	      //println(qreg.get_binary(i));
 	      if (qreg.test(ctrl_bits[i]))
@@ -3076,7 +2962,7 @@ namespace qx
 
 	   // println("[+] lookup table : cond = " << k);
 
-	   std::map<uint32_t,gate*>::iterator it = gates.find(k);
+	   std::map<uint64_t,gate*>::iterator it = gates.find(k);
 
 	   if (it != gates.end())
 	      (*it).second->apply(qreg);
@@ -3084,42 +2970,42 @@ namespace qx
 	    return 0;
 	}
 
-	std::vector<uint32_t>  qubits()
+	std::vector<uint64_t>  qubits()
 	{
-	   std::vector<uint32_t> r;
+	   std::vector<uint64_t> r;
 	   // to do
-	   std::map<uint32_t,gate *>::iterator  ig;
+	   std::map<uint64_t,gate *>::iterator  ig;
 	   for (ig=gates.begin(); ig!=gates.end(); ++ig)
 	   {
-	      std::vector<uint32_t> ri = ig->second->qubits();
+	      std::vector<uint64_t> ri = ig->second->qubits();
 	      r.insert(r.begin(), ri.begin(), ri.end());
 	   }
 	   return r;
 	}
 
 
-	std::vector<uint32_t>  control_qubits()
+	std::vector<uint64_t>  control_qubits()
 	{
-	   std::vector<uint32_t> r;
+	   std::vector<uint64_t> r;
 	   // to do
-	   std::map<uint32_t,gate *>::iterator  ig;
+	   std::map<uint64_t,gate *>::iterator  ig;
 	   for (ig=gates.begin(); ig!=gates.end(); ++ig)
 	   {
-	      std::vector<uint32_t> ri = ig->second->control_qubits();
+	      std::vector<uint64_t> ri = ig->second->control_qubits();
 	      if (ri.size())
 		 r.insert(r.begin(), ri.begin(), ri.end());
 	   }
 	   return r;
 	}
 
-	std::vector<uint32_t>  target_qubits()
+	std::vector<uint64_t>  target_qubits()
 	{
-	   std::vector<uint32_t> r;
+	   std::vector<uint64_t> r;
 	   // to do
-	   std::map<uint32_t,gate *>::iterator  ig;
+	   std::map<uint64_t,gate *>::iterator  ig;
 	   for (ig=gates.begin(); ig!=gates.end(); ++ig)
 	   {
-	      std::vector<uint32_t> ri = ig->second->target_qubits();
+	      std::vector<uint64_t> ri = ig->second->target_qubits();
 	      if (ri.size())
 		 r.insert(r.begin(), ri.begin(), ri.end());
 	   }
@@ -3167,21 +3053,21 @@ namespace qx
 		 println("  [-] display(only_binary=" << only_binary << ")");
 	   }
 	   
-	   std::vector<uint32_t>  qubits()
+	   std::vector<uint64_t>  qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 return r;
 	   }
 
-	   std::vector<uint32_t>  control_qubits()
+	   std::vector<uint64_t>  control_qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 return r;
 	   }
  
-	   std::vector<uint32_t>  target_qubits()
+	   std::vector<uint64_t>  target_qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 return r;
 	   }
 
@@ -3211,12 +3097,12 @@ namespace qx
 
 	   int32_t apply(qu_register& qreg)
 	   {
-	      for (uint32_t i=0; i<gates.size(); i++)
+	      for (uint64_t i=0; i<gates.size(); i++)
 		 gates[i]->apply(qreg);
 	      return 0;
 	   }
 
-	   uint32_t add(gate * g)
+	   uint64_t add(gate * g)
 	   {
 		 gates.push_back(g);
 		 return gates.size();
@@ -3227,35 +3113,35 @@ namespace qx
 	      return gates;
 	   }
 	   
-	   std::vector<uint32_t>  qubits()
+	   std::vector<uint64_t>  qubits()
 	   {
-		 std::vector<uint32_t> r;
-		 for (uint32_t i=0; i<gates.size(); i++)
+		 std::vector<uint64_t> r;
+		 for (uint64_t i=0; i<gates.size(); i++)
 		 {
-		    std::vector<uint32_t> q = gates[i]->qubits();
+		    std::vector<uint64_t> q = gates[i]->qubits();
 		    r.insert(r.end(),q.begin(),q.end());	
 		 }
 		 return r;
 	   }
 	   
 	   
-	   std::vector<uint32_t>  control_qubits()
+	   std::vector<uint64_t>  control_qubits()
 	   {
-		 std::vector<uint32_t> r;
-		 for (uint32_t i=0; i<gates.size(); i++)
+		 std::vector<uint64_t> r;
+		 for (uint64_t i=0; i<gates.size(); i++)
 		 {
-		    std::vector<uint32_t> q = gates[i]->control_qubits();
+		    std::vector<uint64_t> q = gates[i]->control_qubits();
 		    r.insert(r.end(),q.begin(),q.end());	
 		 }
 		 return r;
 	   }
 	   
-	   std::vector<uint32_t>  target_qubits()
+	   std::vector<uint64_t>  target_qubits()
 	   {
-		 std::vector<uint32_t> r;
-		 for (uint32_t i=0; i<gates.size(); i++)
+		 std::vector<uint64_t> r;
+		 for (uint64_t i=0; i<gates.size(); i++)
 		 {
-		    std::vector<uint32_t> q = gates[i]->target_qubits();
+		    std::vector<uint64_t> q = gates[i]->target_qubits();
 		    r.insert(r.end(),q.begin(),q.end());	
 		 }
 		 return r;
@@ -3265,7 +3151,7 @@ namespace qx
 	   void dump()
 	   {
 		 println("  [-] parallel_gates (" << gates.size() << " gates) : ");
-		 for (uint32_t i=0; i<gates.size(); i++)
+		 for (uint64_t i=0; i<gates.size(); i++)
 		    gates[i]->dump();
 	   }
 
@@ -3335,22 +3221,22 @@ namespace qx
 		 println("  [-] prepare (quantum_state=" << state << ")");
 	   }
 	   
-	   std::vector<uint32_t>  qubits()
+	   std::vector<uint64_t>  qubits()
 	   {
-	      std::vector<uint32_t> r;
+	      std::vector<uint64_t> r;
 	      // this is a dirty hack, itshould be fixed later (unknown qubit number !)
 	      for (int32_t i=0; i<MAX_QB_N; ++i)
 		 r.push_back(i);
 	      return r;
 	   }
 
-	   std::vector<uint32_t>  control_qubits()
+	   std::vector<uint64_t>  control_qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 return r;
 	   }
  
-	   std::vector<uint32_t>  target_qubits()
+	   std::vector<uint64_t>  target_qubits()
 	   {
 		 return qubits();
 	   }
@@ -3388,21 +3274,21 @@ namespace qx
 		 println(" print " << str << "\"");
 	   }
 	   
-	   std::vector<uint32_t>  qubits()
+	   std::vector<uint64_t>  qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 return r;
 	   }
 
-	   std::vector<uint32_t>  control_qubits()
+	   std::vector<uint64_t>  control_qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 return r;
 	   }
  
-	   std::vector<uint32_t>  target_qubits()
+	   std::vector<uint64_t>  target_qubits()
 	   {
-		 std::vector<uint32_t> r;
+		 std::vector<uint64_t> r;
 		 return r;
 	   }
 
