@@ -1182,6 +1182,75 @@ namespace qx
       //return res;
    }
 
+   /**
+    * \brief  identity :
+    *
+    *    | 1  0 |
+    *    | 0  1 | 
+    *
+    */
+   class identity : public gate
+   {
+	 private:
+
+	   uint64_t   qubit;
+	   cmatrix_t  m;
+
+	 public:
+
+	   identity(uint64_t qubit) : qubit(qubit)
+	   {
+         m = build_matrix(identity_c,2);
+	   }
+
+	   int32_t apply(qu_register& qreg)
+	   {
+         return 0;
+	   }
+	   
+	   std::string  micro_code()
+	   {
+         if (qubit > 2) return "# unsupported operation : qubit out of range";
+	      std::stringstream uc;
+	      // uc << pulse_lt[qubit][__x180__] << "\n";
+	      uc << "  wait 4 \n";
+	      return uc.str();
+	   }
+
+
+	   void dump()
+	   {
+		 println("  [-] identity(qubit=" << qubit << ")");
+	   }
+	   
+	   std::vector<uint64_t>  qubits()
+	   {
+		 std::vector<uint64_t> r;
+		 r.push_back(qubit);
+		 return r;
+	   }
+ 
+	   std::vector<uint64_t>  control_qubits()
+	   {
+		 std::vector<uint64_t> r;
+		 return r;
+	   }
+ 
+	   std::vector<uint64_t>  target_qubits()
+	   {
+		 std::vector<uint64_t> r;
+		 r.push_back(qubit);
+		 return r;
+	   }
+
+	   gate_type_t type()
+	   {
+	      return __identity_gate__; 
+	   }
+
+   };
+
+
 
 
    
