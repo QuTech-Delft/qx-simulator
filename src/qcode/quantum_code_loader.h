@@ -19,7 +19,7 @@
 
 #include <stdint.h>
 
-#include <qcode/strings.h>
+#include <qcode/qx_strings.h>
 #include <qcode/quantum_state_loader.h>
 #include <core/circuit.h>
 #include <core/error_model.h>
