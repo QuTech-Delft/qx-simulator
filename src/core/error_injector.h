@@ -4,6 +4,7 @@
 #include <xpu/timer.h>
 #include <core/circuit.h>
 #include <core/gaussian.h>
+#include <core/random.h>
 
 namespace qx
 {

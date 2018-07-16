@@ -10,12 +10,14 @@
 #define QX_REGISTER_H
 
 #include <iostream>
+#include <iomanip>
 #include <complex>
 #include <vector>
 #include <cfloat>
 #include <cassert>
 #include <ctime>
 
+#include <random>
 
 #include <xpu/timer.h>
 #include <core/linalg.h>
@@ -32,9 +34,6 @@ using namespace qx::linalg;
 
 char bin_state_lt [] = { '0', '1', 'X' };
 
-
-
-
 namespace qx
 {
    /**
@@ -47,7 +46,15 @@ namespace qx
       __state_unknown__
    } state_t;
 
-   typedef std::vector<state_t> bvector_t;
+   typedef struct __integration_t
+   {
+      size_t ground_states = 0;
+      size_t exited_states = 0;
+   } integration_t;
+
+   typedef std::vector<state_t>        measurement_prediction_t;
+   typedef std::vector<bool>           measurement_register_t;
+   typedef std::vector<integration_t>  measurement_averaging_t;
 
    /**
     * \brief quantum register implementation.
@@ -57,14 +64,20 @@ namespace qx
       private:
 
 	 cvector_t  data;
-	 bvector_t  binary; 
+	 cvector_t  aux;
+	 measurement_prediction_t  measurement_prediction; 
+	 measurement_register_t    measurement_register;
+
+
 	 uint32_t   n_qubits; 
+	 
+	 std::default_random_engine             rgenerator;
+	 std::uniform_real_distribution<double> udistribution;
 
 	 /**
 	  * \brief collapse
 	  */
 	 uint32_t collapse(uint32_t entry);
-
 
 
 	 /**
@@ -76,7 +89,8 @@ namespace qx
 	 /**
 	  * \brief set from binary
 	  */
-	 void set_binary(uint32_t state, uint32_t nq);
+	 //void set_binary(uint32_t state, uint32_t nq);
+	 void set_measurement_prediction(uint32_t state, uint32_t nq);
 
 
 
@@ -86,6 +100,45 @@ namespace qx
 	  * \brief quantum register of n_qubit
 	  */
 	 qu_register(uint32_t n_qubits);
+
+	 
+	 /**
+	  * measurement averaging
+	  */
+	 measurement_averaging_t   measurement_averaging;
+	 bool measurement_averaging_enabled;
+
+	 void enable_measurement_averaging() 
+	 {
+	    measurement_averaging_enabled = true; 
+	    for (size_t i=0; i<measurement_averaging.size(); ++i)
+	    {
+	       measurement_averaging[i].ground_states = 0;
+	       measurement_averaging[i].exited_states = 0;
+	    }
+	 }
+
+	 void reset_measurement_averaging() 
+	 {
+	    measurement_averaging_enabled = true; 
+	    for (size_t i=0; i<measurement_averaging.size(); ++i)
+	    {
+	       measurement_averaging[i].ground_states = 0;
+	       measurement_averaging[i].exited_states = 0;
+	    }
+	 }
+
+
+	 void disable_measurement_averaging() 
+	 {
+	    measurement_averaging_enabled = true; 
+	    for (size_t i=0; i<measurement_averaging.size(); ++i)
+	    {
+	       measurement_averaging[i].ground_states = 0;
+	       measurement_averaging[i].ground_states = 0;
+	    }
+	 }
+
 
 
 	 /**
@@ -98,6 +151,8 @@ namespace qx
 	  * \brief data getter
 	  */
 	 cvector_t& get_data();
+	 
+	 cvector_t& get_aux();
 
 	 /**
 	  * \brief data setter
@@ -131,8 +186,17 @@ namespace qx
 	  */
 	 bool check();
 
+
+         /**
+	  * uniform rndom number generator
+	  */
+	 double rand()
+	 {
+	    return udistribution(rgenerator);
+	 }
+
 	 /**
-	  * \brief measures one qubit
+	  * \brief measure the entire quantum register
 	  */
 	 int32_t measure();
 
@@ -141,22 +205,51 @@ namespace qx
 	  */
 	 void dump(bool only_binary);
 
+	 /**
+	  * \brief return the quantum state as a string
+	  */
+	 std::string get_state(bool only_binary);
 
-	 void set_binary(uint32_t state);
+         
+	 std::string  to_binary_string(uint32_t state, uint32_t nq);
 
+	 /**
+	  * \brief set the regiter to <state>
+	  */
+	 void set_measurement_prediction(uint32_t state);
 
 	 /**
 	  * \brief setter
 	  * set bit <q>  to the state <s>
 	  */
-	 void set_binary(uint32_t q, state_t s);
+	 // void set_binary(uint32_t q, state_t s);
+	 void set_measurement_prediction(uint32_t q, state_t s);
+
+	 /**
+	  * \brief set measurement outcome
+	  */
+	 void set_measurement(uint32_t state, uint32_t nq);
+
+	 /**
+	  * \brief set measurement outcome
+	  */
+	 void set_measurement(uint32_t q, bool m);
+
+
+
 
 
 	 /**
 	  * \brief getter
-	  * \return the state of bit <q> 
+	  * \return the measurement prediction of qubit <q> 
 	  */
-	 state_t get_binary(uint32_t q);
+	 state_t get_measurement_prediction(uint32_t q);
+
+	 /**
+	  * \brief getter
+	  * \return the measurement outcome of qubit <q> 
+	  */
+	 bool get_measurement(uint32_t q);
 
 
 	 /**
@@ -169,6 +262,66 @@ namespace qx
 	  * \brief flip binary
 	  */
 	 void flip_binary(uint32_t q); 
+	 
+	 /**
+	  * \brief flip measurement
+	  */
+	 void flip_measurement(uint32_t q);
+
+	 /**
+	  * \brief return a string describing the quantum state
+	  */
+	 std::string quantum_state()
+	 {
+	    std::stringstream ss;
+	    ss << std::fixed;
+	    ss << "START\n";
+	    for (int i=0; i<data.size(); ++i)
+	    {
+	       if (data[i] != complex_t(0,0)) 
+	       {
+		  ss << "   " << std::fixed << data[i] << " |"; 
+		  //to_binary(i,n_qubits); 
+		  uint32_t k=0;
+		  uint32_t nq = n_qubits;
+		  uint32_t state = i;
+		  while (nq--) ss << (((state >> nq) & 1) ? "1" : "0");
+		  ss << "> +\n";
+	       }
+	    }
+	    ss << "END\n";
+	    return ss.str();
+	 }
+
+	 /**
+	  * \brief renormalize the quantum state
+	  */
+	 void normalize()
+	 {
+	      double length = 0;
+	      for (size_t k = 0; k < data.size(); k++) 
+		 length += data[k].norm(); // std::norm(data[k]);
+	      length = std::sqrt(length);
+	      for (size_t k = 0; k < data.size(); k++) 
+		 data[k] /= length;
+	 }
+
+	 /**
+	  * \brief returns a string describing the binary register
+	  */
+	 std::string binary_register()
+	 {
+	    std::stringstream ss;
+	    ss << "START\n";
+	    //for (int i=binary.size()-1; i>=0; --i)
+	       //ss << " | " << __format_bin(binary[i]); 
+	    for (int i=measurement_prediction.size()-1; i>=0; --i)
+	       ss << " | " << __format_bin(measurement_register[i]); 
+	       // ss << " | " << __format_bin(measurement_prediction[i]); 
+	    ss << " | \n";
+	    ss << "END\n";
+	    return ss.str();
+	 }
 
    };
 

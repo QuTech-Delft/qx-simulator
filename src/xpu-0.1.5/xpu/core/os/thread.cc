@@ -162,8 +162,13 @@ thread::set_core(int core)
    void 
 thread::start() throw (xpu::exception)
 {
+#ifdef __APPLE__
+   if (pthread_create_with_cpu_affinity(&m_id, m_core, &m_attr, reinterpret_cast<__xpu_task>(&run), (void*)this) != 0) 
+	 throw (xpu::exception("thread::start() : pthread_create_with_cpu_affinity() failed ",true)); 
+#else
    if (pthread_create(&m_id, &m_attr, reinterpret_cast<__xpu_task>(&run), (void*)this) != 0)
 	 throw (xpu::exception("thread::start() : pthread_create() failed ",true)); 
+#endif
 
 }
 

@@ -33,7 +33,7 @@
 #ifndef __XPU_CPU_SET_H__
 #define __XPU_CPU_SET_H__
 
-
+#include <cstdio>
 //#include <xpu.h>
 #include <xpu/types.h>
 #include <xpu/core/generic_worker.h>
@@ -46,9 +46,71 @@
   	CPU_SET(cpu, cs)
   #define xpu_cpu_init(cs)\
   	CPU_ZERO(cs)
+
+#elif __APPLE__
+
+#include <mach/thread_policy.h>
+#include <mach/task_info.h>
+#include <sys/types.h>
+#include <sys/sysctl.h>
+#include <mach/thread_policy.h>
+#include <mach/thread_act.h>
+#include <pthread.h>
+
+int get_thread_id();
+int numphyscpus();
+int pthread_create_with_cpu_affinity(pthread_t *__restrict thread, int cpu,
+const pthread_attr_t *__restrict attr, void *(*start_routine)(void *), void *__restrict arg);
+
+int get_thread_id() {
+   return pthread_mach_thread_np(pthread_self());
+}
+
+int numphyscpus() {
+   int numcpus;
+   size_t sizeofint = sizeof(numcpus);
+   if (-1 == sysctlbyname("hw.physicalcpu", &numcpus, &sizeofint, NULL, 0)) perror("sysctl");
+   return numcpus;
+}
+
+int pthread_create_with_cpu_affinity(pthread_t * thread, int cpu, const pthread_attr_t * attr, void *(*start_routine)(void *), void * arg) 
+{
+   thread_affinity_policy_data_t policy_data = { cpu };
+   int rv = pthread_create_suspended_np(thread, attr, start_routine, arg);
+   mach_port_t mach_thread = pthread_mach_thread_np(*thread);
+   if (rv != 0) {
+      return rv;
+   }
+   thread_policy_set(*(thread_t*)thread, THREAD_AFFINITY_POLICY, (thread_policy_t)&policy_data, THREAD_AFFINITY_POLICY_COUNT);
+   thread_resume(mach_thread);
+   return 0;
+}
+
+int set_realtime(int period, int computation, int constraint) {
+   struct thread_time_constraint_policy ttcpolicy;
+   int ret;
+   thread_port_t threadport = pthread_mach_thread_np(pthread_self());
+
+   ttcpolicy.period=period; // HZ/160
+   ttcpolicy.computation=computation; // HZ/3300;
+   ttcpolicy.constraint=constraint; // HZ/2200;
+   ttcpolicy.preemptible=1;
+
+   if ((ret=thread_policy_set(threadport,
+	       THREAD_TIME_CONSTRAINT_POLICY, (thread_policy_t)&ttcpolicy,
+	       THREAD_TIME_CONSTRAINT_POLICY_COUNT)) != KERN_SUCCESS) {
+      fprintf(stderr, "set_realtime() failed.\n");
+      return 0;
+   }
+   return 1;
+}
+
+
 #else
-//  #error "xpu::cpu::set : platform not supported ! "
-#endif // __unix__
+
+   #error "xpu::cpu::set : platform not supported ! "
+
+#endif
 
 namespace xpu
 {

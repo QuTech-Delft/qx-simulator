@@ -18,6 +18,10 @@
 
 #include <core/gate.h>
 
+// #ifndef XPU_TIMER
+// #define XPU_TIMER
+// #endif // XPU_TIMER
+
 #ifdef XPU_TIMER
 #include <xpu/timer.h>
 #endif // XPU_TIMER
@@ -32,13 +36,15 @@ namespace qx
                    uint32_t            n_qubit;
                    std::vector<gate *> gates;
 		   std::string         name;
+		   uint32_t            iteration;
+		   double              time;
 
            public:
 
                    /**
 	    * \brief circuit constructor
             */
-	   circuit(uint32_t n_qubit, std::string name = "") : n_qubit(n_qubit), name(name)
+	   circuit(uint32_t n_qubit, std::string name = "", uint32_t iteration=1) : n_qubit(n_qubit), name(name), iteration(iteration)
 	   {
 	   }
 
@@ -49,6 +55,30 @@ namespace qx
 	   {
 	     for (std::vector<gate*>::iterator it= gates.begin(); it != gates.end(); it++)
 	       delete (*it);
+	   }
+	   
+	   /**
+            * \brief micro code generator
+            */
+           std::string micro_code()
+	   {
+	      std::stringstream uc;
+	      uc << "\n" << name << ": \n"; 
+	     for (std::vector<gate*>::iterator it= gates.begin(); it != gates.end(); it++)
+		uc << (*it)->micro_code();
+             return uc.str();
+	   }
+
+
+
+	   /**
+            * \brief destructor
+            */
+           void clear()
+	   {
+	     for (std::vector<gate*>::iterator it= gates.begin(); it != gates.end(); it++)
+	       delete (*it);
+	     gates.clear();
 	   }
 
 	   /**
@@ -69,6 +99,22 @@ namespace qx
 	      return gates[i];
 	   }
 
+	   /**
+	    * \brief set iterations number
+	    */
+	    void set_iterations(uint32_t n)
+	    {
+	       iteration = n;
+	    }
+	    
+	    /**
+	    * \brief set iterations number
+	    */
+	    uint32_t get_iterations()
+	    {
+	       return iteration;
+	    }
+
            /**
 	    * \brief return gate <i>
 	    */
@@ -78,32 +124,36 @@ namespace qx
 	      return gates[i];
 	   }
 
-
 	   void execute(qu_register& reg, bool verbose=false, bool only_binary=false)
 	   {
-	      println("[+] executing circuit '" << name << "' ...");
+	      uint32_t it = iteration;
+
 	      #ifdef XPU_TIMER
+	      println("[+] executing circuit '" << name << "' (" << it << " iter) ...");
 	      xpu::timer tmr;
 	      tmr.start();
 	      #endif
 
-	      for (uint32_t i=0; i<gates.size(); ++i)
+	      while (it--)
 	      {
-		 if (verbose) 
+		 if (!verbose) 
+		    for (uint32_t i=0; i<gates.size(); ++i)
+		       gates[i]->apply(reg);
+		 else
 		 {
-		    println("[-] executing gate " << i << "...");
-		    gates[i]->dump();
-		 }
-		 gates[i]->apply(reg);
-		 if (verbose) 
-		    reg.dump(only_binary);
+		    for (uint32_t i=0; i<gates.size(); ++i)
+		    {
+		       println("[-] executing gate " << i << "...");
+		       gates[i]->dump();
+		       gates[i]->apply(reg);
+		       reg.dump(only_binary);
+		    }
+		 } 
 	      }
-
 	      #ifdef XPU_TIMER
 	      tmr.stop();
 	      println("[+] circuit execution time: " << tmr.elapsed() << " sec.");
 	      #endif // XPU_TIMER
-
 	   }
 
 	   /**
