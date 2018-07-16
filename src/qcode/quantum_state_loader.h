@@ -20,7 +20,7 @@
 
 #include <stdint.h>
 
-#include <qcode/strings.h>
+#include <qcode/qx_strings.h>
 #include <core/linalg.h>
 
 using namespace str;

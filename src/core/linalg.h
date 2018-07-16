@@ -27,6 +27,8 @@
 
 
 #include <xpu/aligned_memory_allocator.h>
+#include <xpu/vector.h>
+#include <xpu/complex.h>
 
 #define println(x) std::cout << x << std::endl
 #define print(x) std::cout << x 
@@ -41,19 +43,52 @@ namespace qx
 {
    namespace linalg
    { 
-	 typedef std::complex<double>      complex_t;
+	 //typedef std::complex<double>      complex_t;
+	 typedef xpu::complex_d complex_t;
 // #ifndef __BUILTIN_LINALG__
 // 	 typedef ublas::vector<complex_t>  cvector_t;
 // 	 typedef ublas::matrix<complex_t>  cmatrix_t;
 // 	 typedef ublas::identity_matrix<complex_t> cidentity_t;
 // #else
-	 typedef std::vector<complex_t,xpu::aligned_memory_allocator<complex_t,16> >  cvector_t;
-	 typedef qx::linalg::matrix<complex_t>  cmatrix_t;
+	 typedef std::vector<complex_t,xpu::aligned_memory_allocator<complex_t,32> >  cvector_t;
+	 // typedef xpu::vector<complex_t,16>  cvector_t;
+	 // typedef qx::linalg::matrix<complex_t>  cmatrix_t;
+	 typedef qx::linalg::tiny_matrix<complex_t,2>  cmatrix_t;
 	 typedef qx::linalg::identity_matrix<complex_t> cidentity_t;
 // #endif // __BUILTIN_LINALG__
 
 	 typedef std::vector<std::pair<uint32_t,uint32_t> > perm_t;
 
+#ifdef __SSE__
+	 void cmul(complex_t * x, complex_t * y, complex_t * z)
+	 {
+	    __m128d mx, my, xr_xi, yr_yr, xi_yi, yi_xr;
+	    __m128d a,b;
+	    mx    = _mm_load_pd((double *)x);
+	    my    = _mm_load_pd((double *)y);
+	    xr_xi = mx;
+	    yr_yr = _mm_shuffle_pd(my, my, 0); //_mm_broadcastsd_pd(my);
+	    xi_yi = _mm_shuffle_pd(mx, my, 3);  // 11b = 3
+	    yi_xr = _mm_shuffle_pd(my, mx, 1);  // 01b = 1
+	    _mm_shuffle_pd(mx, mx, 1); 
+
+	    // print("(xr,xi) : "); dump_m128d(xr_xi);
+	    // print("(yr,yr) : "); dump_m128d(yr_yr);
+	    // print("(xi,yi) : "); dump_m128d(xi_yi);
+	    // print("(yi,xr) : "); dump_m128d(yi_xr);
+
+	    a = _mm_mul_pd(xr_xi,yr_yr);
+	    b = _mm_mul_pd(xi_yi,yi_xr);
+	    a = _mm_addsub_pd(a,b);
+	    // print(" result : "); dump_m128d(a);
+	    _mm_store_pd((double *)z,a);
+	 }
+#else
+	 void cmul(complex_t * x, complex_t * y, complex_t * z)
+	 {
+	    *z=(*x)*(*y);
+	 }
+#endif
 	 
 	 /**
 	  * \brief tensor product of vectors
@@ -74,7 +109,7 @@ namespace qx
 	 /**
 	  * \brief tensor product of matrices
 	  */
-	 cmatrix_t tensor(cmatrix_t m1, cmatrix_t m2)
+	 qx::linalg::matrix<complex_t> tensor(qx::linalg::matrix<complex_t> m1, qx::linalg::matrix<complex_t> m2)
 	 {
 	    uint32_t rows_1 = m1.size1();
 	    uint32_t cols_1 = m1.size2();
@@ -83,8 +118,8 @@ namespace qx
 
 	    uint32_t rows = rows_1*rows_2;
 	    uint32_t cols = cols_1*cols_2;
-
-	    cmatrix_t m(rows,cols);
+	    complex_t z;
+	    qx::linalg::matrix<complex_t> m(rows,cols,z);
 
 	    for (uint32_t i=0; i<rows; ++i)
 		  for (uint32_t j=0; j<cols; ++j)
@@ -95,7 +130,7 @@ namespace qx
 	 /**
 	  * \brief tensor product of matrices (result in m)
 	  */
-	 uint32_t tensor(cmatrix_t& m1, cmatrix_t& m2, cmatrix_t& m)
+	 uint32_t tensor(qx::linalg::matrix<complex_t>& m1, qx::linalg::matrix<complex_t>& m2, qx::linalg::matrix<complex_t>& m)
 	 {
 	    uint32_t rows_1 = m1.size1();
 	    uint32_t cols_1 = m1.size2();
@@ -132,14 +167,14 @@ namespace qx
 	 /**
 	  * \brief matrix vector product
 	  */
-	 cvector_t mxv(cmatrix_t m, cvector_t v)
+	 cvector_t mxv(qx::linalg::matrix<complex_t> m, cvector_t v)
 	 {
 // #ifdef __BUILTIN_LINALG__
 	    uint32_t n = v.size();
 	    cvector_t r(n);
 	    for (uint32_t i=0; i<n; ++i)
 	    {
-	       complex_t c = 0;
+	       complex_t c;
 	       for (uint32_t j=0; j<n; ++j)
 		  c += m(i,j)*v[j];
 	       r[i] = c;
@@ -153,10 +188,11 @@ namespace qx
 	 /**
 	  * \brief matrix matrix product
 	  */
-	 cmatrix_t mxm(cmatrix_t m1, cmatrix_t m2)
+	 qx::linalg::matrix<complex_t> mxm(qx::linalg::matrix<complex_t> m1, qx::linalg::matrix<complex_t> m2)
 	 {
 // #ifdef __BUILTIN_LINALG__
-	    cmatrix_t r(m1.size1(), m2.size2());
+	    complex_t z;
+	    qx::linalg::matrix<complex_t> r(m1.size1(), m2.size2(),z);
 	    qx::linalg::mul(m1,m2,r);
 	    return r;
 // #else
@@ -165,9 +201,25 @@ namespace qx
 	 }
 
 	 /**
+	  * \brief matrix matrix product
+	  */
+	 cmatrix_t mxm(cmatrix_t m1, cmatrix_t m2)
+	 {
+// #ifdef __BUILTIN_LINALG__
+	    complex_t z;
+	    cmatrix_t r;
+	    qx::linalg::mul(m1,m2,r);
+	    return r;
+// #else
+// 	    return ublas::prec_prod(m1,m2);
+// #endif
+	 }
+
+
+	 /**
 	  * \brief verify if the matrices m1 and m2 are equals
 	  */
-	 bool equals(cmatrix_t m1, cmatrix_t m2, double epsilon=10e-14)
+	 bool equals(qx::linalg::matrix<complex_t>& m1, qx::linalg::matrix<complex_t>& m2, double epsilon=10e-14)
 	 {
 	    if (m1.size1() != m2.size1())
 		  return false;
@@ -178,7 +230,8 @@ namespace qx
 	    for (int i=0; i<m1.size1(); ++i)
 		  for (int j=0; j<m1.size2(); ++j) 
 		  {
-			double d = std::abs(std::norm(m1(i,j))-std::norm(m2(i,j)));
+			// double d = std::abs(std::norm(m1(i,j))-std::norm(m2(i,j)));
+			double d = m1(i,j).norm()-m2(i,j).norm();
 			if (d>epsilon)
 			   return false;
 		  }
@@ -322,7 +375,8 @@ namespace qx
 		  for (uint32_t j=0; j<m.size1(); ++j)
 		  {
 			if (complex_format) print(m(i,j) << "  ");
-			else print(m(i,j).real() << "  ");
+			else print(m(i,j).re << "  ");
+			//else print(m(i,j).real() << "  ");
 		  }
 	    }
 	    println("");

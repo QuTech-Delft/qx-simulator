@@ -18,9 +18,9 @@
 
 #include <core/gate.h>
 
-#ifndef XPU_TIMER
-#define XPU_TIMER
-#endif // XPU_TIMER
+// #ifndef XPU_TIMER
+// #define XPU_TIMER
+// #endif // XPU_TIMER
 
 #ifdef XPU_TIMER
 #include <xpu/timer.h>
@@ -56,6 +56,20 @@ namespace qx
 	     for (std::vector<gate*>::iterator it= gates.begin(); it != gates.end(); it++)
 	       delete (*it);
 	   }
+	   
+	   /**
+            * \brief micro code generator
+            */
+           std::string micro_code()
+	   {
+	      std::stringstream uc;
+	      uc << "\n" << name << ": \n"; 
+	     for (std::vector<gate*>::iterator it= gates.begin(); it != gates.end(); it++)
+		uc << (*it)->micro_code();
+             return uc.str();
+	   }
+
+
 
 	   /**
             * \brief destructor
@@ -91,6 +105,14 @@ namespace qx
 	    void set_iterations(uint32_t n)
 	    {
 	       iteration = n;
+	    }
+	    
+	    /**
+	    * \brief set iterations number
+	    */
+	    uint32_t get_iterations()
+	    {
+	       return iteration;
 	    }
 
            /**

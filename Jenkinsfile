@@ -9,12 +9,12 @@ pipeline {
         stage('Build') {
             steps {
                 sh 'pwd'
-                sh 'cd src/ && ./configure && make && make install'
+                sh 'mkdir build && cd build && cmake ../ && make'
             }
         }
         stage('Test') {
             steps {
-                sh 'cd src/ && ./qx_simulator circuits/epr.qc'
+               sh 'for file in src/circuits/*.qc; do build/bin/qx-simulator/qx-simulator "$file"; done'
 
             }
         }

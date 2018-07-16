@@ -75,7 +75,8 @@ std::string  qx::qu_register::to_binary_string(uint32_t state, uint32_t nq)
  * \brief quantum register of n_qubit
  */
 // qx::qu_register::qu_register(uint32_t n_qubits) : data(1 << n_qubits), binary(n_qubits), n_qubits(n_qubits), rgenerator(xpu::timer().current()*10e5), udistribution(.0,1)
-qx::qu_register::qu_register(uint32_t n_qubits) : data(1 << n_qubits), measurement_prediction(n_qubits), measurement_register(n_qubits), n_qubits(n_qubits), rgenerator(xpu::timer().current()*10e5), udistribution(.0,1)
+//qx::qu_register::qu_register(uint32_t n_qubits) : data(1 << n_qubits), measurement_prediction(n_qubits), measurement_register(n_qubits), n_qubits(n_qubits), rgenerator(xpu::timer().current()*10e5), udistribution(.0,1)
+qx::qu_register::qu_register(uint32_t n_qubits) : data(1 << n_qubits), aux(1 << n_qubits), measurement_prediction(n_qubits), measurement_register(n_qubits), n_qubits(n_qubits), rgenerator(xpu::timer().current()*10e5), udistribution(.0,1), measurement_averaging_enabled(true), measurement_averaging(n_qubits)
 {
    data[0] = complex_t(1,0);
    for (uint32_t i=1; i<(1 << n_qubits); ++i)
@@ -86,6 +87,11 @@ qx::qu_register::qu_register(uint32_t n_qubits) : data(1 << n_qubits), measureme
       measurement_register[i]   = 0;
    }
       //binary[i] = __state_0__;
+   for (size_t i=0; i<measurement_averaging.size(); ++i)
+   {
+      measurement_averaging[i].ground_states = 0;
+      measurement_averaging[i].ground_states = 0;
+   }
 }
 
 
@@ -114,6 +120,10 @@ cvector_t& qx::qu_register::get_data()
    return data;
 }
 
+cvector_t& qx::qu_register::get_aux()
+{
+   return aux;
+}
 
 /**
  * \brief data setter
@@ -173,7 +183,8 @@ bool qx::qu_register::check()
 {
    double sum=0;
    for (int i=0; i<data.size(); ++i)
-      sum += std::norm(data[i]);
+      sum += data[i].norm();
+      // sum += std::norm(data[i]);
    println("[+] register validity check : " << sum) ;
    return (std::fabs(sum-1) < QUBIT_ERROR_THRESHOLD);
 }
@@ -195,7 +206,8 @@ int32_t qx::qu_register::measure()
    
    for (int i=0; i<data.size(); ++i)
    {
-      r -= std::norm(data[i]);
+      // r -= std::norm(data[i]);
+      r -= data[i].norm();
       if (r <= 0)
       {
 	 collapse(i);
@@ -205,6 +217,7 @@ int32_t qx::qu_register::measure()
    return -1;
 }
 
+#define __amp_epsilon__ (0.0000001f)
 
 /**
  * \brief dump
@@ -217,11 +230,27 @@ void qx::qu_register::dump(bool only_binary=false)
       std::cout << std::fixed;
       for (int i=0; i<data.size(); ++i)
       {
-	 if (data[i] != complex_t(0,0)) 
+         if ((std::abs(data[i].re) > __amp_epsilon__) ||
+             (std::abs(data[i].im) > __amp_epsilon__))
 	 {
-	    print("   " << std::showpos << std::setw(7) << data[i] << " |"); to_binary(i,n_qubits); println("> +");
+	    print("   " << std::showpos << std::setw(14) << data[i] << " |"); to_binary(i,n_qubits); println("> +");
 	 }
       }
+   }
+   if (measurement_averaging_enabled)
+   {
+      println("------------------------------------------- ");
+      print("[>>] measurement averaging (ground state) :");
+      print(" ");
+      for (int i=measurement_averaging.size()-1; i>=0; --i)
+      {
+	 double gs = measurement_averaging[i].ground_states;
+	 double es = measurement_averaging[i].exited_states;
+	 // println("(" << gs << "," << es << ")");
+	 double av = ((es+gs) != 0. ? (gs/(es+gs)) : 0.);
+	 print(" | " << av);  
+      }
+      println(" |");
    }
    println("------------------------------------------- ");
    print("[>>] measurement prediction:");
@@ -342,6 +371,17 @@ void qx::qu_register::flip_binary(uint32_t q)
    // binary[q] = (s != __state_unknown__ ? (s == __state_1__ ? __state_0__ : __state_1__) : s);  
 }
 
+/**
+ * \brief
+ */
+void qx::qu_register::flip_measurement(uint32_t q)
+{
+   assert(q<n_qubits);
+   measurement_register[q] = !measurement_register[q];
+}
+
+
+
 
 /**
  * fidelity
@@ -356,7 +396,8 @@ double fidelity(qu_register& s1, qu_register& s2)
 
    double f = 0;  
    for (int i=0; i<s1.states(); ++i)
-      f += sqrt(std::norm(s1[i])*std::norm(s2[i]));
+      // f += sqrt(std::norm(s1[i])*std::norm(s2[i]));
+      f += sqrt(s1[i].norm()*s2[i].norm());
    
    return f;
 }

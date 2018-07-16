@@ -141,7 +141,19 @@ namespace xpu
 
 		  void start()
 		  {
-			pthread_create(&m_id, &m_attr, reinterpret_cast<__xpu_task>(&run), (void*)this); 
+		     #ifdef __APPLE__
+		     if (pthread_create_with_cpu_affinity(&m_id, m_cpu, &m_attr, reinterpret_cast<__xpu_task>(&run), (void*)this) != 0) 
+			throw (xpu::exception("thread::start() : pthread_create_with_cpu_affinity() failed ",true)); 
+		     #else
+		     if (pthread_create(&m_id, &m_attr, reinterpret_cast<__xpu_task>(&run), (void*)this) != 0) 
+			throw (xpu::exception("thread::start() : pthread_create() failed ",true)); 
+		     // set cpu
+		     cpu_set_t cpuset;
+		     CPU_ZERO(&cpuset);
+		     CPU_SET(m_cpu, &cpuset);
+		     if (pthread_setaffinity_np(m_id, sizeof(cpu_set_t), &cpuset))
+			throw (xpu::exception("thread::start() : pthread_setaffinity_np() failed ",true));
+		     #endif
 		  }
 
 	    protected:

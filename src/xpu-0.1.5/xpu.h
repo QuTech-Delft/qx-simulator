@@ -195,7 +195,7 @@ u_int32_t xpu::init()
    xpu::core::workers      = new xpu::core::generic_worker * [core::workers_count];
    xpu::core::lasy_workers = new xpu::core::generic_worker * [core::lasy_workers_count];
 
-   printf("[+] initializing xpu...\n");
+   //printf("[+] initializing xpu...\n");
 
    for (int i=0; i<core::workers_count; i++)
    {
@@ -211,7 +211,7 @@ u_int32_t xpu::init()
 
    xpu::core::initialized = true;
    
-   printf("[+] initialized.\n");
+   //printf("[+] initialized.\n");
    
    return 0;
 }

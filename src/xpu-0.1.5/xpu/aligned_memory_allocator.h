@@ -28,11 +28,11 @@ namespace xpu
 
 	    inline ~aligned_memory_allocator () throw () { }
 
-	    inline pointer adress (reference r) {
+	    inline pointer address (reference r) {
 	       return &r;
 	    }
 
-	    inline const_pointer adress (const_reference r) const {
+	    inline const_pointer address (const_reference r) const {
 	       return &r;
 	    }
 
