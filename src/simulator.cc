@@ -140,5 +140,7 @@ int main(int argc, char **argv)
   for (uint32_t i=0; i<circuits.size(); i++)
      circuits[i]->execute(reg);
  
+  xpu::clean();
+
   return 0;
 }
