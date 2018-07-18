@@ -58,6 +58,7 @@ int main(int argc, char **argv)
   if (!qasm_file)
   {
     std::cerr << "[x] Error: Could not open " << file_path << std::endl;
+    xpu::clean();
     return -1;
   }
 
@@ -73,6 +74,7 @@ int main(int argc, char **argv)
   {
     std::cerr << "Error while parsing file " << file_path << ": " << std::endl;
     std::cerr << e.what() << std::endl;
+    xpu::clean();
     return -1;
   }
 
@@ -97,6 +99,7 @@ int main(int argc, char **argv)
     catch (std::string type)
     {
       std::cerr << "[x] Encountered unsuported gate: " << type << std::endl;
+      xpu::clean();
       return -1;
     }
   }
