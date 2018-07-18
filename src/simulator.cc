@@ -10,7 +10,7 @@
 #include <xpu/runtime>
 #include <qx_representation.h>
 #include <libqasm_interface.h>
-#include <parser/libqasm/qasm_flex_bison/library/qasm_semantic.hpp>
+#include <qasm_semantic.hpp>
 
 
 #include <iostream>
