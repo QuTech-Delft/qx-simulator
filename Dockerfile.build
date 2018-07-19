@@ -1,4 +1,4 @@
 FROM ubuntu:16.04
 
 RUN apt-get update && \
-    apt-get -y install g++ cmake make
+    apt-get -y install g++ cmake make git python3 python3-dev bison flex swig
