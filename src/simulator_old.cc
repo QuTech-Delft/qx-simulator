@@ -59,10 +59,20 @@ int main(int argc, char **argv)
    qcp.parse();
    //qcp.dump();
 
+   qx::qu_register *reg = NULL;
 
    println("[+] creating quantum register of " << qcp.qubits() << " qubits... ");
-   qx::qu_register reg(qcp.qubits());
-
+   try {
+	   reg = new qx::qu_register(qcp.qubits());
+   } catch(std::bad_alloc& exception) {
+	   println("[!] not enough memory, aborting");
+	   xpu::clean();
+	   return -1;
+   } catch(std::exception& exception) {
+	   println("[!] unexpected exception (" << exception.what() << "), aborting");
+	   xpu::clean();
+	   return -1;
+   }
 
    qx::circuits_t circuits;
 
@@ -106,8 +116,10 @@ int main(int argc, char **argv)
   
    // qcp.execute(reg);
    for (uint32_t i=0; i<circuits.size(); i++)
-      circuits[i]->execute(reg);
+      circuits[i]->execute(*reg);
   
+   xpu::clean();
+
    return 0;
 }
 

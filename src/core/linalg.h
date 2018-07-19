@@ -50,7 +50,7 @@ namespace qx
 // 	 typedef ublas::matrix<complex_t>  cmatrix_t;
 // 	 typedef ublas::identity_matrix<complex_t> cidentity_t;
 // #else
-	 typedef std::vector<complex_t,xpu::aligned_memory_allocator<complex_t,32> >  cvector_t;
+	 typedef std::vector<complex_t,xpu::aligned_memory_allocator<complex_t,64> >  cvector_t;
 	 // typedef xpu::vector<complex_t,16>  cvector_t;
 	 // typedef qx::linalg::matrix<complex_t>  cmatrix_t;
 	 typedef qx::linalg::tiny_matrix<complex_t,2>  cmatrix_t;

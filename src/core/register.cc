@@ -1,3 +1,5 @@
+#include <exception>
+
 /**
  * set_binary
  */
@@ -76,17 +78,23 @@ std::string  qx::qu_register::to_binary_string(uint32_t state, uint32_t nq)
  */
 // qx::qu_register::qu_register(uint32_t n_qubits) : data(1 << n_qubits), binary(n_qubits), n_qubits(n_qubits), rgenerator(xpu::timer().current()*10e5), udistribution(.0,1)
 //qx::qu_register::qu_register(uint32_t n_qubits) : data(1 << n_qubits), measurement_prediction(n_qubits), measurement_register(n_qubits), n_qubits(n_qubits), rgenerator(xpu::timer().current()*10e5), udistribution(.0,1)
-qx::qu_register::qu_register(uint32_t n_qubits) : data(1 << n_qubits), aux(1 << n_qubits), measurement_prediction(n_qubits), measurement_register(n_qubits), n_qubits(n_qubits), rgenerator(xpu::timer().current()*10e5), udistribution(.0,1), measurement_averaging_enabled(true), measurement_averaging(n_qubits)
+qx::qu_register::qu_register(uint32_t n_qubits) : data(1ULL << n_qubits), aux(1ULL << n_qubits), measurement_prediction(n_qubits), measurement_register(n_qubits), n_qubits(n_qubits), rgenerator(xpu::timer().current()*10e5), udistribution(.0,1), measurement_averaging_enabled(true), measurement_averaging(n_qubits)
 {
+   if(n_qubits>63) {
+	   throw std::invalid_argument("hard limit of 63 qubits exceeded");
+   }
+
    data[0] = complex_t(1,0);
-   for (uint32_t i=1; i<(1 << n_qubits); ++i)
+   for (uint64_t i=1; i<(1ULL << n_qubits); ++i) {
       data[i] = 0;
+   }
+
    for (uint32_t i=0; i<n_qubits; i++)
    {
       measurement_prediction[i] = __state_0__;
       measurement_register[i]   = 0;
    }
-      //binary[i] = __state_0__;
+
    for (size_t i=0; i<measurement_averaging.size(); ++i)
    {
       measurement_averaging[i].ground_states = 0;
