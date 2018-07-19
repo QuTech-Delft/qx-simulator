@@ -2,7 +2,7 @@
 #define LIBQASM_INTERFACE_H
 
 #include <core/circuit.h>
-#include <parser/qasm_ast.hpp>
+#include <qasm_ast.hpp>
 
 #define ITER_FOR_IN(e, l) for (auto e = l.begin(); e != l.end(); e++)
 
