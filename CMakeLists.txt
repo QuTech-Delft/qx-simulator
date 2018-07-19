@@ -18,6 +18,12 @@ IF(CMAKE_COMPILER_IS_GNUCXX)
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wfatal-errors -O3 -DCG_BC -DQX_SPARSE_MV_MUL -D__BUILTIN_LINALG__ -msse4.2 -DUSE_OPENMP")
 ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 
+IF("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+  SET(CXX "Clang-omp++")
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -std=c++11 -Wall -Wfatal-errors -Wno-unused-local-typedef -O3 -DCG_BC -DQX_SPARSE_MV_MUL -D__BUILTIN_LINALG__ -msse4.2 -DUSE_OPENMP -Wno-reorder -Wno-unneeded-internal-declaration -Wno-unused-variable -Wno-unused-private-field -Wno-deprecated-register -Wno-unused-function")
+ENDIF("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+
+
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DXPU_TIMER")
 
 ADD_SUBDIRECTORY(
