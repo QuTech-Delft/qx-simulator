@@ -1,10 +1,11 @@
+version 1.0
+
 # 
 # date   : 07/04/2016
 # author : nader khammassi
 #
 # example: loading an arbitrary quantum state from a file
 #
-
 
 qubits 3
 
@@ -19,6 +20,6 @@ qubits 3
 
 # apply some gates to the new state
 .algorithm
-  x q0
-  cnot q0,q1
+  x q[0]
+  cnot q[0],q[1]
   display # display the fina result

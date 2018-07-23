@@ -1,3 +1,4 @@
+version 1.0
 
 # file   : qec_3q_bit_flip_code.qc
 # author : Nader Khammassi
@@ -9,49 +10,49 @@ qubits 5
 
 # initialize logical qubit
 .qec(100)
-   prepz q0
-   prepz q1
-   prepz q2
-   prepz q3
-   prepz q4
-   # x q0
+   prep_z q[0]
+   prep_z q[1]
+   prep_z q[2]
+   prep_z q[3]
+   prep_z q[4]
+   # x q[0]
    # display
 
 # encoding
 # .encoding
-   cnot q0,q1
-   cnot q0,q2
+   cnot q[0],q[1]
+   cnot q[0],q[2]
 #   display_binary
 
 # error injection
 # .error_injection
-#   x q0 
+#   x q[0] 
 #   display
 
 
 # parity check
 # .parity_check
-   cnot q0,q3
-   cnot q1,q3
-   cnot q0,q4
-   cnot q2,q4
-   measure q3
-   measure q4
+   cnot q[0],q[3]
+   cnot q[1],q[3]
+   cnot q[0],q[4]
+   cnot q[2],q[4]
+   measure q[3]
+   measure q[4]
 #    display_binary
 
 
 # error correction circuit can be described here 
 # .error_correction  
-  # syn : 11 -> q0   
-  c-x b4,b3,q0
-  # syn : 01 -> flip q1
-  not b4  
-  c-x b4,b3,q1
-  not b4
-  # syn : 10 -> q2
-  not b3  
-  c-x b4,b3,q2
-  not b3 
+  # syn : 11 -> q[0]   
+  c-x q[4],q[3],q[0]
+  # syn : 01 -> flip q[1]
+  not q[4]  
+  c-x q[4],q[3],q[1]
+  not q[4]
+  # syn : 10 -> q[2]
+  not q[3]  
+  c-x q[4],q[3],q[2]
+  not q[3] 
      
 
   # display
@@ -59,9 +60,9 @@ qubits 5
 
 # decoding
 # .decoding
-   cnot q0,q2
-   cnot q0,q1
-   measure q0
+   cnot q[0],q[2]
+   cnot q[0],q[1]
+   measure q[0]
 
 .result
    # display

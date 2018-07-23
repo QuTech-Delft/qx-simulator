@@ -1,3 +1,4 @@
+version 1.0
 
 # file   : qft_8q.qc
 # author : Nader Khammassi
@@ -8,57 +9,57 @@ qubits 8
 
 # init qubits to |0...01> (set your own input state here)
 .init
-   x q0
-   x q2
-   x q4
-   x q6
+   x q[0]
+   x q[2]
+   x q[4]
+   x q[6]
    display_binary  # display the input binary state 
 
 # main qft circuit
 .qft
-   h q0
-   cr q1,q0
-   cr q2,q0
-   cr q3,q0
-   cr q4,q0
-   cr q5,q0
-   cr q6,q0
-   cr q7,q0
-   h q1
-   cr q2,q1
-   cr q3,q1
-   cr q4,q1
-   cr q5,q1
-   cr q6,q1
-   cr q7,q1
-   h q2
-   cr q3,q2
-   cr q4,q2
-   cr q5,q2
-   cr q6,q2
-   cr q7,q2
-   h q3
-   cr q4,q3
-   cr q5,q3
-   cr q6,q3
-   cr q7,q3
-   h q4
-   cr q5,q4
-   cr q6,q4
-   cr q7,q4
-   h q5
-   cr q6,q5
-   cr q7,q5
-   h q6
-   cr q7,q6
-   h q7
+   h q[0]
+   cr q[1],q[0]
+   cr q[2],q[0]
+   cr q[3],q[0]
+   cr q[4],q[0]
+   cr q[5],q[0]
+   cr q[6],q[0]
+   cr q[7],q[0]
+   h q[1]
+   cr q[2],q[1]
+   cr q[3],q[1]
+   cr q[4],q[1]
+   cr q[5],q[1]
+   cr q[6],q[1]
+   cr q[7],q[1]
+   h q[2]
+   cr q[3],q[2]
+   cr q[4],q[2]
+   cr q[5],q[2]
+   cr q[6],q[2]
+   cr q[7],q[2]
+   h q[3]
+   cr q[4],q[3]
+   cr q[5],q[3]
+   cr q[6],q[3]
+   cr q[7],q[3]
+   h q[4]
+   cr q[5],q[4]
+   cr q[6],q[4]
+   cr q[7],q[4]
+   h q[5]
+   cr q[6],q[5]
+   cr q[7],q[5]
+   h q[6]
+   cr q[7],q[6]
+   h q[7]
 
 # reverse qubit order
 .reverse
-   swap q0,q7
-   swap q1,q6
-   swap q2,q5
-   swap q3,q4
+   swap q[0],q[7]
+   swap q[1],q[6]
+   swap q[2],q[5]
+   swap q[3],q[4]
 
 #   display
 

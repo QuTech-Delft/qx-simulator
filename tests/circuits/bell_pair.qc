@@ -1,9 +1,8 @@
-
-
+version 1.0
 
 qubits 2
 
 .epr
-  h q1
-  cnot q0,q1
+  h q[1]
+  cnot q[0],q[1]
   display

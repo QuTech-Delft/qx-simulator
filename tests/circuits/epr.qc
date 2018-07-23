@@ -1,3 +1,5 @@
+version 1.0
+
 # file   : epr.qc
 # author : Nader Khammassi
 # brief  : EPR pair circuit
@@ -8,17 +10,17 @@ qubits 2
 display 
 
 .init
-  prepz q0
-  prepz q1
+  prep_z q[0]
+  prep_z q[1]
 
 .entangle
-  h q0 
-  cnot q0,q1
+  h q[0] 
+  cnot q[0],q[1]
   display    # display the quantum state
 
 .measurement
-  measure q0
-  measure q1
+  measure q[0]
+  measure q[1]
   display
 
 # to activate error injection, uncomment the following line

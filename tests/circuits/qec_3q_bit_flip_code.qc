@@ -1,3 +1,4 @@
+version 1.0
 
 # file   : qec_3q_bit_flip_code.qc
 # author : Nader Khammassi
@@ -9,47 +10,47 @@ qubits 5
 
 # initialize logical qubit
 .init
-   x q0
+   x q[0]
    display
 
 # encoding
 .encoding
-   cnot q0,q1
-   cnot q0,q2
+   cnot q[0],q[1]
+   cnot q[0],q[2]
    display_binary
 
 # error injection
 .error_injection
-   x q2 
+   x q[2] 
    display
 
 
 # parity check
 .parity_check
-   cnot q0,q3
-   cnot q1,q3
-   cnot q0,q4
-   cnot q2,q4
-   measure q3
-   measure q4
+   cnot q[0],q[3]
+   cnot q[1],q[3]
+   cnot q[0],q[4]
+   cnot q[2],q[4]
+   measure q[3]
+   measure q[4]
    display_binary
 
 
 # error correction circuit can be described here 
 .error_correction
-  # x q4
-  # toffoli q3,q4,q1
-  # x q4
-  # not q4
-  # c-x b3,b4,q1
+  # x q[4]
+  # toffoli q[3],q[4],q[1]
+  # x q[4]
+  # not q[4]
+  # c-x b3,b4,q[1]
   
   display
 
 
 # decoding
 .decoding
-   cnot q0,q2
-   cnot q0,q1
+   cnot q[0],q[2]
+   cnot q[0],q[1]
    # display
    display_binary
 
