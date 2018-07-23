@@ -32,89 +32,248 @@ int bid(compiler::Operation &operation)
 
 qx::gate *gateLookup(compiler::Operation &operation)
 {
-  std::string type = operation.getType();
-  if (type == "h")
-    return new qx::hadamard(sqid(operation));
-  if (type == "cnot")
-    return new qx::cnot(
-      qid(operation, 1),
-      qid(operation, 2));
-  if (type == "toffoli")
-    return new qx::toffoli(
-      qid(operation, 1),
-      qid(operation, 2),
-      qid(operation, 3));
-  if (type == "x")
-    return new qx::pauli_x(sqid(operation));
-  if (type == "y")
-    return new qx::pauli_y(sqid(operation));
-  if (type == "z")
-    return new qx::pauli_z(sqid(operation));
-  if (type == "s")
-    return new qx::phase_shift(sqid(operation));
-  if (type == "sdag")
-    return new qx::s_dag_gate(sqid(operation));
-  if (type == "t")
-    return new qx::t_gate(sqid(operation));
-  if (type == "tdag")
-    return new qx::t_dag_gate(sqid(operation));
-  if (type == "rx")
-    return new qx::rx(
-      sqid(operation),
-      operation.getRotationAngle());
-  if (type == "ry")
-    return new qx::ry(
-      sqid(operation),
-      operation.getRotationAngle());
-  if (type == "rz")
-    return new qx::rz(
-      sqid(operation),
-      operation.getRotationAngle());
-  if (type == "swap")
-    return new qx::swap(
-      qid(operation, 1),
-      qid(operation, 2));
-  if (type == "cz")
-    return new qx::cphase(
-      qid(operation, 1),
-      qid(operation, 2));
-  if (type == "prep_z")
-    return new qx::prepz(sqid(operation));
-  if (type == "measure" || type == "measure_z")
-    return new qx::measure(sqid(operation));
-  if (type == "measure_all")
-    return new qx::measure();
-  if (type == "display")
-    return new qx::display();
-  if (type == "x90")
-    return new qx::rx(sqid(operation), M_PI/2);
-  if (type == "mx90")
-    return new qx::rx(sqid(operation), -M_PI/2);
-  if (type == "y90")
-    return new qx::ry(sqid(operation), M_PI/2);
-  if (type == "my90")
-    return new qx::ry(sqid(operation), -M_PI/2);
-  if (type == "c-x")
-    return new qx::bin_ctrl(
-      bid(operation),
-      new qx::pauli_x(sqid(operation)));
-  if (type == "c-z")
-    return new qx::bin_ctrl(
-      bid(operation),
-      new qx::pauli_z(sqid(operation)));
-  if (type == "prep_y")
-    return NULL;
-  if (type == "prep_x")
-    return NULL;
-  if (type == "measure_x")
-    return NULL;
-  if (type == "measure_y")
-    return NULL;
-  if (type == "cr")
-    return NULL;
-  if (type == "crk")
-    return NULL;
-  return NULL;
+   // operation.printOperation();
+   const std::vector<size_t> & qv = operation.getQubitsInvolved().getSelectedQubits().getIndices();
+   qx::parallel_gates * pg = NULL;
+   if (qv.size() > 1) 
+      pg = new qx::parallel_gates();
+   std::string type = operation.getType();
+   if (type == "h")
+   {
+      if (!pg)
+         return new qx::hadamard(sqid(operation));
+      else
+      {
+         for (auto q : qv)
+            pg->add(new qx::hadamard(q));
+         return pg;
+      }
+   }
+   if (type == "cnot")
+      return new qx::cnot(
+            qid(operation, 1),
+            qid(operation, 2));
+   if (type == "toffoli")
+      return new qx::toffoli(
+            qid(operation, 1),
+            qid(operation, 2),
+            qid(operation, 3));
+   if (type == "x")
+   {
+      if (!pg)
+         return new qx::pauli_x(sqid(operation));
+      else
+      {
+         for (auto q : qv)
+            pg->add(new qx::pauli_x(q));
+         return pg;
+      }
+   }
+   if (type == "y")
+   {
+      if (!pg)
+         return new qx::pauli_y(sqid(operation));
+      else
+      {
+         for (auto q : qv)
+            pg->add(new qx::pauli_y(q));
+         return pg;
+      }
+   }
+   if (type == "z")
+   {
+      if (!pg)
+         return new qx::pauli_z(sqid(operation));
+      else
+      {
+         for (auto q : qv)
+            pg->add(new qx::pauli_z(q));
+         return pg;
+      }
+   }
+   if (type == "s")
+   {
+      if (!pg)
+         return new qx::phase_shift(sqid(operation));
+      else
+      {
+         for (auto q : qv)
+            pg->add(new qx::phase_shift(q));
+         return pg;
+      }
+   }
+   if (type == "sdag")
+   {
+      if (!pg)
+         return new qx::s_dag_gate(sqid(operation));
+      else
+      {
+         for (auto q : qv)
+            pg->add(new qx::s_dag_gate(q));
+         return pg;
+      }
+   }
+   if (type == "t")
+   {
+      if (!pg)
+         return new qx::t_gate(sqid(operation));
+      else
+      {
+         for (auto q : qv)
+            pg->add(new qx::t_gate(q));
+         return pg;
+      }
+   }
+   if (type == "tdag")
+   {
+      if (!pg)
+         return new qx::t_dag_gate(sqid(operation));
+      else
+      {
+         for (auto q : qv)
+            pg->add(new qx::t_dag_gate(q));
+         return pg;
+      }
+   }
+   if (type == "rx")
+   {
+      double angle = operation.getRotationAngle();
+      if (!pg)
+         return new qx::rx(sqid(operation), angle);
+      else
+      {
+         for (auto q : qv)
+            pg->add(new qx::rx(q,angle));
+         return pg;
+      }
+   }
+   if (type == "ry")
+   {
+      double angle = operation.getRotationAngle();
+      if (!pg)
+         return new qx::ry(sqid(operation), angle);
+      else
+      {
+         for (auto q : qv)
+            pg->add(new qx::ry(q,angle));
+         return pg;
+      }
+   }
+   if (type == "rz")
+   {
+      double angle = operation.getRotationAngle();
+      if (!pg)
+         return new qx::rz(sqid(operation), angle);
+      else
+      {
+         for (auto q : qv)
+            pg->add(new qx::rz(q,angle));
+         return pg;
+      }
+   }
+   if (type == "swap")
+      return new qx::swap(
+            qid(operation, 1),
+            qid(operation, 2));
+   if (type == "cz")
+      return new qx::cphase(
+            qid(operation, 1),
+            qid(operation, 2));
+   if (type == "prep_z")
+   {
+      if (!pg)
+         return new qx::prepz(sqid(operation));
+      else
+      {
+         for (auto q : qv)
+            pg->add(new qx::prepz(q));
+         return pg;
+      }
+   }
+   if (type == "measure" || type == "measure_z")
+   {
+      if (!pg)
+         return new qx::measure(sqid(operation));
+      else
+      {
+         for (auto q : qv)
+            pg->add(new qx::measure(q));
+         return pg;
+      }
+   }
+   if (type == "measure_all")
+      return new qx::measure();
+   if (type == "display")
+      return new qx::display();
+   if (type == "x90")
+   {
+      double angle = M_PI/2;
+      if (!pg)
+         return new qx::rx(sqid(operation), angle);
+      else
+      {
+         for (auto q : qv)
+            pg->add(new qx::rx(q,angle));
+         return pg;
+      }
+   }
+   if (type == "mx90")
+   {
+      double angle = -M_PI/2;
+      if (!pg)
+         return new qx::rx(sqid(operation), angle);
+      else
+      {
+         for (auto q : qv)
+            pg->add(new qx::rx(q,angle));
+         return pg;
+      }
+   }
+   if (type == "y90")
+   {
+      double angle = M_PI/2;
+      if (!pg)
+         return new qx::ry(sqid(operation), angle);
+      else
+      {
+         for (auto q : qv)
+            pg->add(new qx::ry(q,angle));
+         return pg;
+      }
+   }
+   if (type == "my90")
+   {
+      double angle = -M_PI/2;
+      if (!pg)
+         return new qx::ry(sqid(operation), angle);
+      else
+      {
+         for (auto q : qv)
+            pg->add(new qx::ry(q,angle));
+         return pg;
+      }
+   }
+   if (type == "c-x")
+      return new qx::bin_ctrl(
+            bid(operation),
+            new qx::pauli_x(sqid(operation)));
+   if (type == "c-z")
+      return new qx::bin_ctrl(
+            bid(operation),
+            new qx::pauli_z(sqid(operation)));
+   if (type == "prep_y")
+      return NULL;
+   if (type == "prep_x")
+      return NULL;
+   if (type == "measure_x")
+      return NULL;
+   if (type == "measure_y")
+      return NULL;
+   if (type == "cr")
+      return NULL;
+   if (type == "crk")
+      return NULL;
+   return NULL;
 }
 
 qx::circuit *qxCircuitFromCQasm(uint32_t qubits_count, compiler::SubCircuit &subcircuit)
