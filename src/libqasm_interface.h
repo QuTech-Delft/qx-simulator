@@ -50,14 +50,42 @@ qx::gate *gateLookup(compiler::Operation &operation)
       }
    }
    if (type == "cnot")
-      return new qx::cnot(
-            qid(operation, 1),
-            qid(operation, 2));
+   {
+      const std::vector<size_t> & qv0 = operation.getQubitsInvolved(1).getSelectedQubits().getIndices();
+      const std::vector<size_t> & qv1 = operation.getQubitsInvolved(2).getSelectedQubits().getIndices();
+
+      if (qv0.size() != qv1.size())
+         throw ("[x] error : parallel cnot args have different sizes !"); 
+
+      if (qv0.size() == 1)
+         return new qx::cnot(qv0[0], qv1[0]);
+      else
+      {
+         pg = new qx::parallel_gates();
+         for (size_t i=0; i<qv0.size(); ++i)
+            pg->add(new qx::cnot(qv0[i],qv1[i]));
+         return pg;
+      }      
+   }
    if (type == "toffoli")
-      return new qx::toffoli(
-            qid(operation, 1),
-            qid(operation, 2),
-            qid(operation, 3));
+   {
+      const std::vector<size_t> & qv0 = operation.getQubitsInvolved(1).getSelectedQubits().getIndices();
+      const std::vector<size_t> & qv1 = operation.getQubitsInvolved(2).getSelectedQubits().getIndices();
+      const std::vector<size_t> & qv2 = operation.getQubitsInvolved(3).getSelectedQubits().getIndices();
+
+      if ((qv0.size() != qv1.size()) || (qv0.size() != qv2.size()))
+         throw ("[x] error : parallel toffoli args have different sizes !"); 
+
+      if (qv0.size() == 1)
+         return new qx::toffoli(qv0[0], qv1[0], qv2[0]);
+      else
+      {
+         pg = new qx::parallel_gates();
+         for (size_t i=0; i<qv0.size(); ++i)
+            pg->add(new qx::toffoli(qv0[i],qv1[i],qv2[i]));
+         return pg;
+      }      
+   }
    if (type == "x")
    {
       if (!pg)
@@ -172,13 +200,41 @@ qx::gate *gateLookup(compiler::Operation &operation)
       }
    }
    if (type == "swap")
-      return new qx::swap(
-            qid(operation, 1),
-            qid(operation, 2));
+   {
+      const std::vector<size_t> & qv0 = operation.getQubitsInvolved(1).getSelectedQubits().getIndices();
+      const std::vector<size_t> & qv1 = operation.getQubitsInvolved(2).getSelectedQubits().getIndices();
+
+      if (qv0.size() != qv1.size())
+         throw ("[x] error : parallel swap args have different sizes !"); 
+
+      if (qv0.size() == 1)
+         return new qx::swap(qv0[0], qv1[0]);
+      else
+      {
+         pg = new qx::parallel_gates();
+         for (size_t i=0; i<qv0.size(); ++i)
+            pg->add(new qx::swap(qv0[i],qv1[i]));
+         return pg;
+      }      
+   }
    if (type == "cz")
-      return new qx::cphase(
-            qid(operation, 1),
-            qid(operation, 2));
+   {
+      const std::vector<size_t> & qv0 = operation.getQubitsInvolved(1).getSelectedQubits().getIndices();
+      const std::vector<size_t> & qv1 = operation.getQubitsInvolved(2).getSelectedQubits().getIndices();
+
+      if (qv0.size() != qv1.size())
+         throw ("[x] error : parallel cz args have different sizes !"); 
+
+      if (qv0.size() == 1)
+         return new qx::cphase(qv0[0], qv1[0]);
+      else
+      {
+         pg = new qx::parallel_gates();
+         for (size_t i=0; i<qv0.size(); ++i)
+            pg->add(new qx::cphase(qv0[i],qv1[i]));
+         return pg;
+      }      
+   }
    if (type == "prep_z")
    {
       if (!pg)
@@ -304,7 +360,7 @@ qx::circuit *qxCircuitFromCQasm(uint32_t qubits_count, compiler::SubCircuit &sub
       }
     }
   }
-
+  // circuit->dump();
   return circuit;
 }
 
