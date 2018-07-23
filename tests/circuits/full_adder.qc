@@ -1,3 +1,5 @@
+version 1.0
+
 # file   : full_adder.qc
 # author : Nader Khammassi
 # brief  : quantum full adder (carry-save addition)
@@ -6,10 +8,10 @@
 qubits 4
 
 # rename qubits
-map q0,A 
-map q1,B
-map q2,C
-map q3,D
+map q[0],A 
+map q[1],B
+map q[2],C
+map q[3],D
 
 
 # init inputs to some values

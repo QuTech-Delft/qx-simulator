@@ -1,14 +1,14 @@
-
+version 1.0
 
 qubits 2
 
 
 .bell
- h q0
- cnot q0,q1
+ h q[0]
+ cnot q[0],q[1]
  display
 
 .measurement
- measure q0
- measure q1
+ measure q[0]
+ measure q[1]
  display

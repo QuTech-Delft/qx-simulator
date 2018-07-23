@@ -1,3 +1,4 @@
+version 1.0
 
 # 17 qubits ninja-star surface code
 
@@ -5,58 +6,58 @@
 qubits 26 
 
 
-map q0,da1
-map q1,da3
-map q2,da5
-map q3,da11
-map q4,da13
-map q5,da15
-map q6,da21
-map q7,da23
-map q8,da25
-map q9,db1   
-map q10,db3
-map q11,db5
-map q12,db11
-map q13,db13
-map q14,db15
-map q15,db21
-map q16,db23
-map q17,db25
+map q[0],da1
+map q[1],da3
+map q[2],da5
+map q[3],da11
+map q[4],da13
+map q[5],da15
+map q[6],da21
+map q[7],da23
+map q[8],da25
+map q[9],db1   
+map q[10],db3
+map q[11],db5
+map q[12],db11
+map q[13],db13
+map q[14],db15
+map q[15],db21
+map q[16],db23
+map q[17],db25
 
-map q18,x44
-map q19,z10
-map q20,x2
-map q21,z4
-map q22,z12
-map q23,x14
-map q24,z16
-map q25,x22 
+map q[18],x44
+map q[19],z10
+map q[20],x2
+map q[21],z4
+map q[22],z12
+map q[23],x14
+map q[24],z16
+map q[25],x22 
 
 
 
 # initialization circuit
 .initialization
 
-   cx b18,x44   # init x44 to zero
+   c-x b[18],x44   # init x44 to zero
    h x44
    cnot x44,da5 
    cnot x44,da3
    h x44
    measure x44
-   cz b18,da5
+   c-z b[18],da5
 
 
-   cx b25,x22 # init x22 to zero
+   c-x b[25],x22 # init x22 to zero
    h x22
    cnot x22,da23
    cnot x22,da21
    h x22
    measure x22
-   cz b25,da21
+   c-z b[25],da21
 
 
-   cx b20,x2   # init X2  to zero
+   c-x b[20],x2   # init X2  to zero
    h x2
    cnot x2,da3
    cnot x2,da1
@@ -64,10 +65,10 @@ map q25,x22
    cnot x2,da11
    h x2
    measure x2
-   cz b20,da1
+   c-z b[20],da1
 
 
-   cx b23,x14 # init X14 to zero
+   c-x b[23],x14 # init X14 to zero
    h x14
    cnot x14,da15
    cnot x14,da13
@@ -75,18 +76,18 @@ map q25,x22
    cnot x14,da23
    h x14
    measure x14
-   cz b23,da25
+   c-z b[23],da25
 
 # init ancillas
 .init_x_z
-   cx b18,x44   # init X44 to zero
-   cx b19,z10   # init Z10 to zero
-   cx b20,x2   # init X2  to zero
-   cx b21,z4   # init Z4  to zero
-   cx b22,z12 # init Z12 to zero
-   cx b23,x14 # init X14 to zero
-   cx b24,z16 # init Z16 to zero
-   cx b25,x22 # init X22 to zero
+   c-x b[18],x44   # init X44 to zero
+   c-x b[19],z10   # init Z10 to zero
+   c-x b[20],x2   # init X2  to zero
+   c-x b[21],z4   # init Z4  to zero
+   c-x b[22],z12 # init Z12 to zero
+   c-x b[23],x14 # init X14 to zero
+   c-x b[24],z16 # init Z16 to zero
+   c-x b[25],x22 # init X22 to zero
 
 
    # debug : display intermediate state

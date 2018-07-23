@@ -1,37 +1,37 @@
-
+version 1.0
 
 qubits 1
 
 
-# prepz q0
+# prep_z q[0]
 
 .rb(100)
- prepz q0
- x q0
- h q0
- y q0
- x q0
- x q0
- y q0
- h q0
- x q0
- x q0
- h q0
- y q0
- x q0
- x q0
- y q0
- h q0
- x q0
- x q0
- h q0
- y q0
- x q0
- x q0
- y q0
- h q0
- x q0
- measure q0
+ prep_z q[0]
+ x q[0]
+ h q[0]
+ y q[0]
+ x q[0]
+ x q[0]
+ y q[0]
+ h q[0]
+ x q[0]
+ x q[0]
+ h q[0]
+ y q[0]
+ x q[0]
+ x q[0]
+ y q[0]
+ h q[0]
+ x q[0]
+ x q[0]
+ h q[0]
+ y q[0]
+ x q[0]
+ x q[0]
+ y q[0]
+ h q[0]
+ x q[0]
+ measure q[0]
 
 .result
  

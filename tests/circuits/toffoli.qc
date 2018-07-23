@@ -1,10 +1,11 @@
+version 1.0
 
 # simple toffoli gate test
 
 qubits 3
 
-x q0
-x q1
+x q[0]
+x q[1]
 display
-toffoli q0,q1,q2
+toffoli q[0],q[1],q[2]
 display

@@ -1,29 +1,31 @@
+version 1.0
+
 qubits 24
 
-h q0
-cnot q0,q1
-cnot q0,q2
-cnot q0,q2
-cnot q0,q3
-cnot q0,q4
-cnot q0,q5
-cnot q0,q6
-cnot q0,q7
-cnot q0,q8
-cnot q0,q9
-cnot q0,q10
-cnot q0,q11
-cnot q0,q12
-cnot q0,q13
-cnot q0,q14
-cnot q0,q15
-cnot q0,q16
-cnot q0,q17
-cnot q0,q18
-cnot q0,q19
-cnot q0,q20
-cnot q0,q21
-cnot q0,q22
-cnot q0,q23
-measure 
+h q[0]
+cnot q[0],q[1]
+cnot q[0],q[2]
+cnot q[0],q[2]
+cnot q[0],q[3]
+cnot q[0],q[4]
+cnot q[0],q[5]
+cnot q[0],q[6]
+cnot q[0],q[7]
+cnot q[0],q[8]
+cnot q[0],q[9]
+cnot q[0],q[10]
+cnot q[0],q[11]
+cnot q[0],q[12]
+cnot q[0],q[13]
+cnot q[0],q[14]
+cnot q[0],q[15]
+cnot q[0],q[16]
+cnot q[0],q[17]
+cnot q[0],q[18]
+cnot q[0],q[19]
+cnot q[0],q[20]
+cnot q[0],q[21]
+cnot q[0],q[22]
+cnot q[0],q[23]
+measure_all
 

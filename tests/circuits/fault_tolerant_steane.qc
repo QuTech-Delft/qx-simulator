@@ -1,39 +1,41 @@
+version 1.0
+
 qubits 24
 
 
 # define logical qubits
-map q0,l0_0
-map q1,l0_1
-map q2,l0_2
-map q3,l0_3
-map q4,l0_4
-map q5,l0_5
-map q6,l0_6
-map q6,phy0
-map q7,l1_0
-map q8,l1_1
-map q9,l1_2
-map q10,l1_3
-map q11,l1_4
-map q12,l1_5
-map q13,l1_6
-map q13,phy1
-map q14,l2_0
-map q15,l2_1
-map q16,l2_2
-map q17,l2_3
-map q18,l2_4
-map q19,l2_5
-map q20,l2_6
-map q20,phy2
+map q[0],l0_0
+map q[1],l0_1
+map q[2],l0_2
+map q[3],l0_3
+map q[4],l0_4
+map q[5],l0_5
+map q[6],l0_6
+map q[6],phy0
+map q[7],l1_0
+map q[8],l1_1
+map q[9],l1_2
+map q[10],l1_3
+map q[11],l1_4
+map q[12],l1_5
+map q[13],l1_6
+map q[13],phy1
+map q[14],l2_0
+map q[15],l2_1
+map q[16],l2_2
+map q[17],l2_3
+map q[18],l2_4
+map q[19],l2_5
+map q[20],l2_6
+map q[20],phy2
 
 # define ancilla qubits
-map q21,syn0
-map b21,bsyn0
-map q22,syn1
-map b22,bsyn1
-map q23,syn2
-map b23,bsyn2
+map q[21],syn0
+map b[21],bsyn0
+map q[22],syn1
+map b[22],bsyn1
+map q[23],syn2
+map b[23],bsyn2
 
 .init
    x phy0
@@ -92,19 +94,19 @@ map b23,bsyn2
 
 # diagnose bitflip on qubit 0
 .diagnose_bitflip_l0
-   prepz syn0
+   prep_z syn0
    cnot l0_3,syn0
    cnot l0_2,syn0
    cnot l0_1,syn0
    cnot l0_0,syn0
    measure syn0
-   prepz syn1
+   prep_z syn1
    cnot l0_5,syn1
    cnot l0_4,syn1
    cnot l0_1,syn1
    cnot l0_0,syn1
    measure syn1
-   prepz syn2
+   prep_z syn2
    cnot l0_6,syn2
    cnot l0_4,syn2
    cnot l0_2,syn2
@@ -148,19 +150,19 @@ map b23,bsyn2
    h l0_4
    h l0_5
    h l0_6
-   prepz syn0
+   prep_z syn0
    cnot l0_3,syn0
    cnot l0_2,syn0
    cnot l0_1,syn0
    cnot l0_0,syn0
    measure syn0
-   prepz syn1
+   prep_z syn1
    cnot l0_5,syn1
    cnot l0_4,syn1
    cnot l0_1,syn1
    cnot l0_0,syn1
    measure syn1
-   prepz syn2
+   prep_z syn2
    cnot l0_6,syn2
    cnot l0_4,syn2
    cnot l0_2,syn2
@@ -176,19 +178,19 @@ map b23,bsyn2
 
 # diagnose bitflip on qubit 1
 .diagnose_bitflip_l1
-   prepz syn0
+   prep_z syn0
    cnot l1_3,syn0
    cnot l1_2,syn0
    cnot l1_1,syn0
    cnot l1_0,syn0
    measure syn0
-   prepz syn1
+   prep_z syn1
    cnot l1_5,syn1
    cnot l1_4,syn1
    cnot l1_1,syn1
    cnot l1_0,syn1
    measure syn1
-   prepz syn2
+   prep_z syn2
    cnot l1_6,syn2
    cnot l1_4,syn2
    cnot l1_2,syn2
@@ -232,19 +234,19 @@ map b23,bsyn2
    h l1_4
    h l1_5
    h l1_6
-   prepz syn0
+   prep_z syn0
    cnot l1_3,syn0
    cnot l1_2,syn0
    cnot l1_1,syn0
    cnot l1_0,syn0
    measure syn0
-   prepz syn1
+   prep_z syn1
    cnot l1_5,syn1
    cnot l1_4,syn1
    cnot l1_1,syn1
    cnot l1_0,syn1
    measure syn1
-   prepz syn2
+   prep_z syn2
    cnot l1_6,syn2
    cnot l1_4,syn2
    cnot l1_2,syn2
@@ -260,19 +262,19 @@ map b23,bsyn2
 
 # diagnose bitflip on qubit 2
 .diagnose_bitflip_l2
-   prepz syn0
+   prep_z syn0
    cnot l2_3,syn0
    cnot l2_2,syn0
    cnot l2_1,syn0
    cnot l2_0,syn0
    measure syn0
-   prepz syn1
+   prep_z syn1
    cnot l2_5,syn1
    cnot l2_4,syn1
    cnot l2_1,syn1
    cnot l2_0,syn1
    measure syn1
-   prepz syn2
+   prep_z syn2
    cnot l2_6,syn2
    cnot l2_4,syn2
    cnot l2_2,syn2
@@ -316,19 +318,19 @@ map b23,bsyn2
    h l2_4
    h l2_5
    h l2_6
-   prepz syn0
+   prep_z syn0
    cnot l2_3,syn0
    cnot l2_2,syn0
    cnot l2_1,syn0
    cnot l2_0,syn0
    measure syn0
-   prepz syn1
+   prep_z syn1
    cnot l2_5,syn1
    cnot l2_4,syn1
    cnot l2_1,syn1
    cnot l2_0,syn1
    measure syn1
-   prepz syn2
+   prep_z syn2
    cnot l2_6,syn2
    cnot l2_4,syn2
    cnot l2_2,syn2

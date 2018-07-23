@@ -1,3 +1,5 @@
+version 1.0
+
 # file   : qec_shor9_code.qc
 # author : Nader Khammassi
 # brief  : quantum error correction (shor's 9 qubits code)
@@ -6,21 +8,21 @@
 
 qubits 9
 
-map q0,p0
-map q1,x00
-map q2,x01
-map q3,p1
-map q4,x10
-map q5,x11
-map q6,p2
-map q7,x20
-map q8,x21
+map q[0],p0
+map q[1],x00
+map q[2],x01
+map q[3],p1
+map q[4],x10
+map q[5],x11
+map q[6],p2
+map q[7],x20
+map q[8],x21
 
 
 .init
   rx p0,1.3
   ry p0,0.3
-  # x q0
+  # x q[0]
   # display
 
 .phase_flip_encoding
@@ -47,9 +49,9 @@ map q8,x21
 
 
 .error_injection
-  x q3
-  # z q0
-  # x q1
+  x q[3]
+  # z q[0]
+  # x q[1]
 
 
 .bit_flip_decoding_and_correction

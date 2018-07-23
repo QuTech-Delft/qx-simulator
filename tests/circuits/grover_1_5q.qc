@@ -1,41 +1,43 @@
+version 1.0
+
 qubits 5
 
 .init
-   x q2
-   h q0
-   h q1
-   h q2
+   x q[2]
+   h q[0]
+   h q[1]
+   h q[2]
 
 # iterating 1 times
 .grover(1)
 
    # oracle_1
 
-   x q1
-   toffoli q0,q1,q3
-   toffoli q1,q3,q4
-   cnot q4,q2
-   toffoli q1,q3,q4
-   toffoli q0,q1,q3
-   x q1
-   h q0
-   h q1
+   x q[1]
+   toffoli q[0],q[1],q[3]
+   toffoli q[1],q[3],q[4]
+   cnot q[4],q[2]
+   toffoli q[1],q[3],q[4]
+   toffoli q[0],q[1],q[3]
+   x q[1]
+   h q[0]
+   h q[1]
 
    # inversion
 
-   x q0
-   x q1
-   h q1
-   toffoli q0,q1,q3
-   cnot q3,q1
-   toffoli q0,q1,q3
-   h q1
-   x q0
-   x q1
-   h q0
-   h q1
+   x q[0]
+   x q[1]
+   h q[1]
+   toffoli q[0],q[1],q[3]
+   cnot q[3],q[1]
+   toffoli q[0],q[1],q[3]
+   h q[1]
+   x q[0]
+   x q[1]
+   h q[0]
+   h q[1]
 
-.measure
-   h q2
-   measure q2
+.measurement
+   h q[2]
+   measure q[2]
    display
