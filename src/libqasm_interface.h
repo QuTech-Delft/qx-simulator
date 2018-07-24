@@ -261,6 +261,8 @@ qx::gate *gateLookup(compiler::Operation &operation)
       return new qx::measure();
    if (type == "display")
       return new qx::display();
+   if (type == "display_binary")
+      return new qx::display(trutruee);
    if (type == "x90")
    {
       double angle = M_PI/2;
