@@ -2653,21 +2653,21 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
                // #ifdef PARALLEL_MEASUREMENT
 
                xpu::lockable * l = new xpu::core::os::mutex();
-               xpu::task p1_worker_t(p1_worker, 0ull, n, 1ull, &p, qubit, l, &data); 
-               xpu::parallel_for parallel_p1( 0ull, n, 1ull, &p1_worker_t);
+               xpu::task p1_worker_t(p1_worker, (uint64_t)0, n, (uint64_t)1, &p, qubit, l, &data); 
+               xpu::parallel_for parallel_p1( (uint64_t)0, n, (uint64_t)1, &p1_worker_t);
                parallel_p1.run();
 
                if (f<p) value = 1;
                else value = 0;
 
-               xpu::task zero_worker_t(zero_worker, 0ull, n, 1ull, value, &length, qubit, l, &data); 
-               xpu::parallel_for parallel_zero( 0ull, n, 1ull, &zero_worker_t);
+               xpu::task zero_worker_t(zero_worker,(uint64_t)0, n, (uint64_t)1, value, &length, qubit, l, &data); 
+               xpu::parallel_for parallel_zero( (uint64_t)0, n, (uint64_t)1, &zero_worker_t);
                parallel_zero.run();
 
                length = std::sqrt(length);
 
-               xpu::task renorm_worker_t(renorm_worker, 0ull, n, 1ull, &length, &data); 
-               xpu::parallel_for parallel_renorm( 0ull, n, 1ul, &renorm_worker_t);
+               xpu::task renorm_worker_t(renorm_worker, (uint64_t)0, n, (uint64_t)1, &length, &data); 
+               xpu::parallel_for parallel_renorm( (uint64_t)0, n, (uint64_t)1, &renorm_worker_t);
                parallel_renorm.run();
             }
             else 
