@@ -1734,10 +1734,31 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
 
    };
 
+   /**
+    * phase factoring
+    */
+   void phasor(cmatrix_t& m)
+   {
+      double n = m(0,0).norm();
 
-
-
-
+      if (n > 10e-9)
+      {
+         complex_t p(m(0,0).re/n,m(0,0).im/n);
+         m(0,0) /= p;
+         m(0,1) /= p;
+         m(1,0) /= p;
+         m(1,1) /= p;
+      }
+      else
+      {
+         n = m(0,1).norm();
+         complex_t p(m(0,0).re/n,m(0,0).im/n);
+         m(0,0) /= p;
+         m(0,1) /= p;
+         m(1,0) /= p;
+         m(1,1) /= p;
+      }
+   }
 
    /**
     * \brief  rotation-x :
@@ -1757,6 +1778,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
             // m.resize(2,2);
             m(0,0) = cos(angle/2);      m(0,1) = complex_t(0,-sin(angle/2));
             m(1,0) = complex_t(0,-sin(angle/2)); m(1,1) = cos(angle/2);
+            phasor(m);
          }
 
          int64_t apply(qu_register& qreg)
@@ -1818,6 +1840,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
             // m.resize(2,2);
             m(0,0) = cos(angle/2); m(0,1) = -sin(angle/2);
             m(1,0) = sin(angle/2); m(1,1) = cos(angle/2);
+            phasor(m);
          }
 
          int64_t apply(qu_register& qreg)
@@ -1878,7 +1901,8 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
          {
             // m.resize(2,2);
             m(0,0) = complex_t(cos(-angle/2), sin(-angle/2));   m(0,1) = 0;
-            m(1,0) = 0;  m(1,1) =  complex_t(cos(angle/2), sin(angle/2));
+            m(1,0) = 0;  m(1,1) =  complex_t(cos(angle/2), sin(angle/2)); 
+            phasor(m);
          }
 
          int64_t apply(qu_register& qreg)
@@ -2224,10 +2248,42 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
          }
    };
 
+   /**
+    * phase shifter
+    */
+   void __apply_cm(complex_t * state, 
+         complex_t m[2][2],
+         std::size_t i11, std::size_t i12, std::size_t i13,
+         std::size_t i21, std::size_t i22, std::size_t i23,
+         std::size_t i31, std::size_t i32, std::size_t ish )
+   {
+      complex_t m00 = m[0][0],
+                m01 = m[0][1],
+                m10 = m[1][0],
+                m11 = m[1][1];
+
+      for(std::size_t r1 = i11; r1 < i12; r1 += i13)
+      {
+         #ifdef USE_OPENMP
+         #pragma omp parallel for
+         #endif
+         for(std::size_t r2 = r1 + i21; r2 < r1 + i22; r2 += i23)
+         {
+            for(std::size_t ind0 = r2 + i31; ind0 < r2 + i32; ind0++)
+            {
+               std::size_t ind1 = ind0 + ish;
+               complex_t    in0 = state[ind0], in1 = state[ind1];
+
+               state[ind0] = m00 * in0 + m01 * in1;
+               state[ind1] = m10 * in0 + m11 * in1;
+            }
+         }
+      }
+   }
+
 
    /**
-    * \brief  controlled phase shift by (2*pi/(2^(ctrl-target)))
-    *     
+    * \brief  controlled phase shift by arbitrary phase angle or (2*pi/(2^(k=ctrl-target)))
     */ 
    class ctrl_phase_shift : public gate
    {
@@ -2236,54 +2292,94 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
          uint64_t                  ctrl_qubit;
          uint64_t                  target_qubit;
          complex_t                 z;
+         complex_t                 m[2][2];
+         double                    phase;
+
+      protected:
+
+         void build_operator()
+         {
+            m[0][0] = complex_t(cos(-phase/2), sin(-phase/2));   m[0][1] = 0;
+            m[1][0] = 0;                                         m[1][1] =  complex_t(cos(phase/2), sin(phase/2));
+
+            double n = m[0][0].norm();
+            if (n > 10e-9)
+            {
+               complex_t p(m[0][0].re/n,m[0][0].im/n);
+               m[0][0] /= p;
+               m[0][1] /= p;
+               m[1][0] /= p;
+               m[1][1] /= p;
+            }
+            else
+            {
+               n = m[0][1].norm();
+               complex_t p(m[0][0].re/n,m[0][0].im/n);
+               m[0][0] /= p;
+               m[0][1] /= p;
+               m[1][0] /= p;
+               m[1][1] /= p;
+            }
+         }
+
+
 
       public:
 
+         /**
+          * ctor (q)
+          */
          ctrl_phase_shift(uint64_t ctrl_qubit, uint64_t target_qubit) :    ctrl_qubit(ctrl_qubit), 
-                                                                           target_qubit(target_qubit), 
-                                                                           z(cos(2*M_PI/(1 << (ctrl_qubit - target_qubit))), 
-                                                                           sin(2*M_PI/(1 << (ctrl_qubit - target_qubit))))
+                                                                           target_qubit(target_qubit)  
          {
+            phase = 2*M_PI/(1 << (ctrl_qubit - target_qubit));
+            build_operator();
          }
 
 
+         /**
+          * ctor (k)
+          */
          ctrl_phase_shift(uint64_t ctrl_qubit, uint64_t target_qubit, uint64_t k) : ctrl_qubit(ctrl_qubit), 
-                                                                                    target_qubit(target_qubit), 
-                                                                                    z(cos(2*M_PI/(1 << (k))), 
-                                                                                    sin(2*M_PI/(1 << (k))))
+                                                                                    target_qubit(target_qubit)  
          {               
+            phase = 2*M_PI/(1 << k);
+            build_operator();
          }
 
-         ctrl_phase_shift(uint64_t ctrl_qubit, uint64_t target_qubit, complex_t angle) : ctrl_qubit(ctrl_qubit), 
-                                                                                         target_qubit(target_qubit), 
-                                                                                         z(angle)
+
+         /**
+          * ctor (p)
+          */
+         ctrl_phase_shift(uint64_t ctrl_qubit, uint64_t target_qubit, double angle) : ctrl_qubit(ctrl_qubit), 
+                                                                                      target_qubit(target_qubit) 
          {
+            phase = angle;
+            build_operator();
          }
 
-
+         
          int64_t apply(qu_register& qreg)
          {
+            uint64_t     n  = qreg.size();
+            complex_t *  s  = qreg.get_data().data();
+            size_t       c  = ctrl_qubit;
+            size_t       t  = target_qubit;
 
-            size_t b1 = std::max(ctrl_qubit,target_qubit);
-            size_t b2 = std::min(ctrl_qubit,target_qubit);
-            size_t qn = qreg.size();
-            size_t steps = ((1 << qn)-(__bit_set(0,b1)))/(1 << (b1+1))+1;
-            cvector_t& amp = qreg.get_data();
+            if (c > t)
+               __apply_cm(qreg.get_data().data(),          
+                     m,                                    
+                     0, (1 << n), 1l << (c+1l),            
+                     1l << c, 1l << (c+1l), 1l << (t+1l),  
+                     0l,    1l << t,    1l << t);          
+            else
+               __apply_cm(qreg.get_data().data(),
+                     m,                          
+                     0, (1 << n), 1l << (t+1l),     
+                     0l,    1l << t,    1l << (c+1l),
+                     1l << c, 1l<< (c+1l), 1l << t);
 
-#ifdef USE_OPENMP
-#pragma omp parallel for
-            for (size_t i=0; i<steps; ++i)
-            {
-               // shift_worker(i,i+1,1,&amp,b1,b2,z);
-               size_t stride=(1 << (b1+1));
-               size_t offset = __bit_set(0,b1);
-               __shift(amp,b1,b2,z,offset+(i*stride));
-            }
-#else
-            xpu::task t(shift_worker,0,0,0,&amp,b1,b2,z);
-            xpu::parallel_for p_shifter(0, steps, 1, &t);
-            p_shifter.run();
-#endif
+
 
             return 0;
          }

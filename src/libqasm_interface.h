@@ -328,7 +328,24 @@ qx::gate *gateLookup(compiler::Operation &operation)
    if (type == "measure_y")
       return NULL;
    if (type == "cr")
-      return NULL;
+   {
+      double angle = operation.getRotationAngle();
+      const std::vector<size_t> & qv0 = operation.getQubitsInvolved(1).getSelectedQubits().getIndices();
+      const std::vector<size_t> & qv1 = operation.getQubitsInvolved(2).getSelectedQubits().getIndices();
+
+      if (qv0.size() != qv1.size())
+         throw ("[x] error : parallel cr args have different sizes !"); 
+
+      if (qv0.size() == 1)
+         return new qx::ctrl_phase_shift(qv0[0], qv1[0],angle);
+      else
+      {
+         pg = new qx::parallel_gates();
+         for (size_t i=0; i<qv0.size(); ++i)
+            pg->add(new qx::ctrl_phase_shift(qv0[i],qv1[i],angle));
+         return pg;
+      }      
+   }
    if (type == "crk")
       return NULL;
    return NULL;
