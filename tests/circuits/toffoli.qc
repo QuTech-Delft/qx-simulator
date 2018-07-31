@@ -1,11 +1,17 @@
 version 1.0
 
-# simple toffoli gate test
+# file   : toffoli.qc
+# author : Nader Khammassi
+# brief  : simple toffoli gate test
 
 qubits 3
 
-x q[0]
-x q[1]
-display
-toffoli q[0],q[1],q[2]
-display
+.input
+  x q[0]
+  x q[1]
+ display   # print input state
+
+.result
+  toffoli q[0],q[1],q[2]
+  measure q[0:2]
+  display  # print the result

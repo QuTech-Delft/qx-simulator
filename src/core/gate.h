@@ -1737,7 +1737,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
    /**
     * phase factoring
     */
-   void phasor(cmatrix_t& m)
+   void reset_gphase(cmatrix_t& m)
    {
       double n = m(0,0).norm();
 
@@ -1752,7 +1752,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
       else
       {
          n = m(0,1).norm();
-         complex_t p(m(0,0).re/n,m(0,0).im/n);
+         complex_t p(m(0,1).re/n,m(0,1).im/n);
          m(0,0) /= p;
          m(0,1) /= p;
          m(1,0) /= p;
@@ -1778,7 +1778,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
             // m.resize(2,2);
             m(0,0) = cos(angle/2);      m(0,1) = complex_t(0,-sin(angle/2));
             m(1,0) = complex_t(0,-sin(angle/2)); m(1,1) = cos(angle/2);
-            phasor(m);
+            reset_gphase(m);
          }
 
          int64_t apply(qu_register& qreg)
@@ -1838,9 +1838,9 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
          ry(uint64_t qubit, double angle) : qubit(qubit), angle(angle)
          {
             // m.resize(2,2);
-            m(0,0) = cos(angle/2); m(0,1) = -sin(angle/2);
-            m(1,0) = sin(angle/2); m(1,1) = cos(angle/2);
-            phasor(m);
+            m(0,0) = cos(angle/2);          m(0,1) = complex_t(0, -sin(angle/2));
+            m(1,0) = complex_t(0, sin(angle/2));   m(1,1) = cos(angle/2);
+            // reset_gphase(m);
          }
 
          int64_t apply(qu_register& qreg)
@@ -1902,7 +1902,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
             // m.resize(2,2);
             m(0,0) = complex_t(cos(-angle/2), sin(-angle/2));   m(0,1) = 0;
             m(1,0) = 0;  m(1,1) =  complex_t(cos(angle/2), sin(angle/2)); 
-            phasor(m);
+            reset_gphase(m);
          }
 
          int64_t apply(qu_register& qreg)

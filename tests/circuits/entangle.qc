@@ -1,8 +1,17 @@
 version 1.0
 
-qubits 16
+# file   : entangle.qc
+# author : Nader Khammassi
+# brief  : basic 8 qubits entanglement circuit 
 
-.entangle(10)
+qubits 8
+
+.init
+
+  prep_z q[0:7]
+
+.entangle
+
   h q[0]
   cnot q[0],q[1]
   cnot q[0],q[2]
@@ -11,30 +20,9 @@ qubits 16
   cnot q[0],q[5]
   cnot q[0],q[6]
   cnot q[0],q[7]
-  cnot q[0],q[8]
-  cnot q[0],q[9]
-  cnot q[0],q[10]
-  cnot q[0],q[11]
-  cnot q[0],q[12]
-  cnot q[0],q[13]
-  cnot q[0],q[14]
-  cnot q[0],q[15]
+  display
 
-# .measure
-  measure q[0]
-  measure q[1]
-  measure q[2]
-  measure q[3]
-  measure q[4]
-  measure q[5]
-  measure q[6]
-  measure q[7]
-  measure q[8]
-  measure q[9]
-  measure q[10]
-  measure q[11]
-  measure q[12]
-  measure q[13]
-  measure q[14]
-  measure q[15]
-  display_binary
+.measurement
+
+  measure q[0:7]
+  display

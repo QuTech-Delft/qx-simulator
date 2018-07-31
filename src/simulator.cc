@@ -46,23 +46,23 @@ int main(int argc, char **argv)
       return -1;
   }
     
-  // Parse arguments and initialise xpu cores
+  // parse arguments and initialise xpu cores
   file_path = argv[1];
   if (argc == 3) ncpu = (atoi(argv[2]));
   if (ncpu && ncpu < 128) xpu::init(ncpu);
   else xpu::init();
 
-  // Parse file and create abstract syntax tree
+  // parse file and create abstract syntax tree
   println("[+] loading circuit from '" << file_path << "' ...");
   FILE *qasm_file = fopen(file_path.c_str(), "r");
   if (!qasm_file)
   {
-    std::cerr << "[x] Error: Could not open " << file_path << std::endl;
+    std::cerr << "[x] error: could not open " << file_path << std::endl;
     xpu::clean();
     return -1;
   }
 
-  // Construct libqasm parser and safely parse input file
+  // construct libqasm parser and safely parse input file
   compiler::QasmSemanticChecker *parser;
   compiler::QasmRepresentation ast;
   try
@@ -72,7 +72,7 @@ int main(int argc, char **argv)
   }
   catch (std::exception &e)
   {
-    std::cerr << "Error while parsing file " << file_path << ": " << std::endl;
+    std::cerr << "error while parsing file " << file_path << ": " << std::endl;
     std::cerr << e.what() << std::endl;
     xpu::clean();
     return -1;
