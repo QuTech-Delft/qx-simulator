@@ -2340,7 +2340,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
          /**
           * ctor (k)
           */
-         ctrl_phase_shift(uint64_t ctrl_qubit, uint64_t target_qubit, uint64_t k) : ctrl_qubit(ctrl_qubit), 
+         ctrl_phase_shift(uint64_t ctrl_qubit, uint64_t target_qubit, size_t k) : ctrl_qubit(ctrl_qubit), 
                                                                                     target_qubit(target_qubit)  
          {               
             phase = 2*M_PI/(1 << k);
