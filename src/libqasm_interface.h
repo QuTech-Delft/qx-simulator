@@ -385,15 +385,24 @@ qx::circuit *qxCircuitFromCQasm(uint32_t qubits_count, compiler::SubCircuit &sub
       = (*p_cluster)->getOperations();
     ITER_FOR_IN(p_operation, operations)
     {
-      qx::gate *g = gateLookup(**p_operation);
-      if (!g)
-      {
-        throw (*p_operation)->getType();
-      }
-      else
-      {
-        circuit->add(g);
-      }
+       qx::gate * g;
+       try
+       {
+          g = gateLookup(**p_operation);
+       }
+       catch (const char * error)
+       {
+          std::cerr << error << std::endl;
+          exit(-1);
+       }
+       if (!g)
+       {
+          throw (*p_operation)->getType();
+       }
+       else
+       {
+          circuit->add(g);
+       }
     }
   }
   // circuit->dump();
