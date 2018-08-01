@@ -7,6 +7,7 @@
 #include <xpu.h>
 #include <xpu/runtime>
 #include <qx_server.h>
+#include "qx_version.h"
 
 
 int main(int argc, char **argv)
@@ -19,7 +20,7 @@ int main(int argc, char **argv)
    println("     /  /___/  /  _>  <      _\\ \\   _/ /   / /|_/ / / /_/ /  / /__ / __ | / /   / /_/ / / , _/        ");
    println("     \\______/\\__\\ /_/|_|    /___/  /___/  /_/  /_/  \\____/  /____//_/ |_|/_/    \\____/ /_/|_|         ");
    println("                                                                                                      ");
-   println("     version 0.1 beta - QuTech - 2016 - report bugs and suggestions to: nader.khammassi@gmail.com     ");
+   println("     version " << QX_VERSION << " - QuTech - " << QX_RELEASE_YEAR << " - report bugs and suggestions to: nader.khammassi@gmail.com");
    println("  =================================================================================================== ");
    println("");
 
