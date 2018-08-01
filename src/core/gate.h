@@ -1838,8 +1838,8 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
          ry(uint64_t qubit, double angle) : qubit(qubit), angle(angle)
          {
             // m.resize(2,2);
-            m(0,0) = cos(angle/2);          m(0,1) = complex_t(0, -sin(angle/2));
-            m(1,0) = complex_t(0, sin(angle/2));   m(1,1) = cos(angle/2);
+            m(0,0) = cos(angle/2);   m(0,1) = -sin(angle/2);
+            m(1,0) = sin(angle/2);   m(1,1) =  cos(angle/2);
             // reset_gphase(m);
          }
 
@@ -2265,7 +2265,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
       for(std::size_t r1 = i11; r1 < i12; r1 += i13)
       {
          #ifdef USE_OPENMP
-         #pragma omp parallel for
+         // #pragma omp parallel for
          #endif
          for(std::size_t r2 = r1 + i21; r2 < r1 + i22; r2 += i23)
          {
@@ -2743,7 +2743,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
             uint64_t n = (1 << size);
             cvector_t& data = qreg.get_data();
             double length = 0;
-            if (size > 12)
+            if (size > 17)
             {
                // #define PARALLEL_MEASUREMENT
                // #ifdef PARALLEL_MEASUREMENT
