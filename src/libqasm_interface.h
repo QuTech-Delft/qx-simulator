@@ -368,9 +368,9 @@ qx::gate *gateLookup(compiler::Operation &operation)
    return NULL;
 }
 
-qx::circuit *qxCircuitFromCQasm(uint32_t qubits_count, compiler::SubCircuit &subcircuit)
+qx::circuit *qxCircuitFromCQasm(uint64_t qubits_count, compiler::SubCircuit &subcircuit)
 {
-  uint32_t iterations = subcircuit.numberIterations();
+  uint64_t iterations = subcircuit.numberIterations();
   std::string name = subcircuit.nameSubCircuit();
 
   qx::circuit *circuit = new qx::circuit(qubits_count, name, iterations);

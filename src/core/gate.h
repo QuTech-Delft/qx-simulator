@@ -101,7 +101,6 @@ namespace qx
 
    #define __rc(r,c,s) (r*s+c)
 
-
    /**
     * \brief common abstract gate interface for
     *   all gates implementation.

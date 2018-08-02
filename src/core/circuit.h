@@ -31,178 +31,176 @@ namespace qx
 {
    class circuit
    {
-           private:
+      private:
 
-                   uint32_t            n_qubit;
-                   std::vector<gate *> gates;
-		   std::string         name;
-		   uint32_t            iteration;
-		   double              time;
+         uint64_t            n_qubit;
+         std::vector<gate *> gates;
+         std::string         name;
+         uint64_t            iteration;
+         double              time;
 
-           public:
+      public:
 
-                   /**
-	    * \brief circuit constructor
-            */
-	   circuit(uint32_t n_qubit, std::string name = "", uint32_t iteration=1) : n_qubit(n_qubit), name(name), iteration(iteration)
-	   {
-	   }
+         /**
+          * \brief circuit constructor
+          */
+         circuit(uint64_t n_qubit, std::string name = "", uint32_t iteration=1) : n_qubit(n_qubit), name(name), iteration(iteration)
+         {
+         }
 
-	   /**
-            * \brief destructor
-            */
-           ~circuit()
-	   {
-	     for (std::vector<gate*>::iterator it= gates.begin(); it != gates.end(); it++)
-	       delete (*it);
-	   }
-	   
-	   /**
-            * \brief micro code generator
-            */
-           std::string micro_code()
-	   {
-	      std::stringstream uc;
-	      uc << "\n" << name << ": \n"; 
-	     for (std::vector<gate*>::iterator it= gates.begin(); it != gates.end(); it++)
-		uc << (*it)->micro_code();
-             return uc.str();
-	   }
+         /**
+          * \brief destructor
+          */
+         ~circuit()
+         {
+            for (std::vector<gate*>::iterator it= gates.begin(); it != gates.end(); it++)
+               delete (*it);
+         }
 
+         /**
+          * \brief micro code generator
+          */
+         std::string micro_code()
+         {
+            std::stringstream uc;
+            uc << "\n" << name << ": \n"; 
+            for (std::vector<gate*>::iterator it= gates.begin(); it != gates.end(); it++)
+               uc << (*it)->micro_code();
+            return uc.str();
+         }
 
+         /**
+          * \brief destructor
+          */
+         void clear()
+         {
+            for (std::vector<gate*>::iterator it= gates.begin(); it != gates.end(); it++)
+               delete (*it);
+            gates.clear();
+         }
 
-	   /**
-            * \brief destructor
-            */
-           void clear()
-	   {
-	     for (std::vector<gate*>::iterator it= gates.begin(); it != gates.end(); it++)
-	       delete (*it);
-	     gates.clear();
-	   }
+         /**
+          * \brief add gate <g> at the end of the circuit
+          */
+         void add(gate * g)
+         {
+            // check gate validity before (target/ctrl qubits < n_qubit)
+            gates.push_back(g);
+         }
 
-	   /**
-	    * \brief add gate <g> at the end of the circuit
-	    */
-	   void add(gate * g)
-	   {
-		 // check gate validity before (target/ctrl qubits < n_qubit)
-		 gates.push_back(g);
-	   }
+         /**
+          * \brief return gate <i>
+          */
+         qx::gate * operator [] (uint64_t i)
+         {
+            assert(i < gates.size());
+            return gates[i];
+         }
 
-	   /**
-	    * \brief return gate <i>
-	    */
-	   qx::gate * operator [] (uint32_t i)
-	   {
-	      assert(i < gates.size());
-	      return gates[i];
-	   }
+         /**
+          * \brief set iterations number
+          */
+         void set_iterations(uint64_t n)
+         {
+            iteration = n;
+         }
 
-	   /**
-	    * \brief set iterations number
-	    */
-	    void set_iterations(uint32_t n)
-	    {
-	       iteration = n;
-	    }
-	    
-	    /**
-	    * \brief set iterations number
-	    */
-	    uint32_t get_iterations()
-	    {
-	       return iteration;
-	    }
+         /**
+          * \brief set iterations number
+          */
+         uint64_t get_iterations()
+         {
+            return iteration;
+         }
 
-           /**
-	    * \brief return gate <i>
-	    */
-	   qx::gate * get(uint32_t i)
-	   {
-	      assert(i < gates.size());
-	      return gates[i];
-	   }
+         /**
+          * \brief return gate <i>
+          */
+         qx::gate * get(uint64_t i)
+         {
+            assert(i < gates.size());
+            return gates[i];
+         }
 
-	   void execute(qu_register& reg, bool verbose=false, bool only_binary=false)
-	   {
-	      uint32_t it = iteration;
+         void execute(qu_register& reg, bool verbose=false, bool only_binary=false)
+         {
+            uint64_t it = iteration;
 
-	      #ifdef XPU_TIMER
-	      println("[+] executing circuit '" << name << "' (" << it << " iter) ...");
-	      xpu::timer tmr;
-	      tmr.start();
-	      #endif
+#ifdef XPU_TIMER
+            println("[+] executing circuit '" << name << "' (" << it << " iter) ...");
+            xpu::timer tmr;
+            tmr.start();
+#endif
 
-	      while (it--)
-	      {
-		 if (!verbose) 
-		    for (uint32_t i=0; i<gates.size(); ++i)
-		       gates[i]->apply(reg);
-		 else
-		 {
-		    for (uint32_t i=0; i<gates.size(); ++i)
-		    {
-		       println("[-] executing gate " << i << "...");
-		       gates[i]->dump();
-		       gates[i]->apply(reg);
-		       reg.dump(only_binary);
-		    }
-		 } 
-	      }
-	      #ifdef XPU_TIMER
-	      tmr.stop();
-	      println("[+] circuit execution time: " << tmr.elapsed() << " sec.");
-	      #endif // XPU_TIMER
-	   }
+            while (it--)
+            {
+               if (!verbose) 
+                  for (uint64_t i=0; i<gates.size(); ++i)
+                     gates[i]->apply(reg);
+               else
+               {
+                  for (uint64_t i=0; i<gates.size(); ++i)
+                  {
+                     println("[-] executing gate " << i << "...");
+                     gates[i]->dump();
+                     gates[i]->apply(reg);
+                     reg.dump(only_binary);
+                  }
+               } 
+            }
+#ifdef XPU_TIMER
+            tmr.stop();
+            println("[+] circuit execution time: " << tmr.elapsed() << " sec.");
+#endif // XPU_TIMER
+         }
 
-	   /**
-	    * \return gates count
-	    */
-	   uint32_t size()
-	   {
-	      return gates.size();
-	   }
+         /**
+          * \return gates count
+          */
+         uint64_t size()
+         {
+            return gates.size();
+         }
 
-           /**
-	    * insert a gate at the specified 
-	    * position
-	    */
-	   void insert(uint32_t pos, qx::gate * g)
-	   {
-	      gates.insert(gates.begin()+pos,g);
-	   }
+         /**
+          * insert a gate at the specified 
+          * position
+          */
+         void insert(uint64_t pos, qx::gate * g)
+         {
+            gates.insert(gates.begin()+pos,g);
+         }
 
 
-	   /**
-	    * \return the name of the circuit
-	    */
-	   std::string id()
-	   {
-	      return name;
-	   }
+         /**
+          * \return the name of the circuit
+          */
+         std::string id()
+         {
+            return name;
+         }
 
-	   void dump()
-	   {
-	      println("[+++] circuit '" << name << "' :");
-	      for (uint32_t i=0; i<gates.size(); ++i)
-	      {
-		 print("  |--" << i << "--");
-		 gates[i]->dump();
-	      }
-	   }
+         void dump()
+         {
+            println("[+++] circuit '" << name << "' :");
+            for (uint64_t i=0; i<gates.size(); ++i)
+            {
+               print("  |--" << i << "--");
+               gates[i]->dump();
+            }
+         }
 
-	   uint32_t get_qubit_count()
-	   {
-		 return n_qubit;
-	   }
-	   
-	   void set_qubit_count(uint32_t n)
-	   {
-		 n_qubit = n;
-		 // check gate validity (target/ctrl qubits < n_qubit)
-	   }
-	   	   
+         uint64_t get_qubit_count()
+         {
+            return n_qubit;
+         }
+
+         void set_qubit_count(uint64_t n)
+         {
+            n_qubit = n;
+            // check gate validity (target/ctrl qubits < n_qubit)
+         }
+
    };
 } // namespace qx
 
