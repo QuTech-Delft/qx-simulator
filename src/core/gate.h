@@ -68,6 +68,8 @@ namespace qx
       __tdag_gate__    ,
       __sdag_gate__    ,
       __custom_gate__  ,
+      __prepx_gate__   ,
+      __prepy_gate__   ,
       __prepz_gate__   ,
       __measure_gate__ ,
       __measure_reg_gate__,
@@ -80,7 +82,8 @@ namespace qx
       __lookup_table__,
       __classical_not_gate__,
       __qft_gate__,
-      __prepare_gate__
+      __prepare_gate__,
+      __unitary_gate__
    } gate_type_t;
 
 
@@ -1760,6 +1763,73 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
    }
 
    /**
+    *                  | (cos(?/2)       -e(i?)sin(?/2))    |
+    * general gate u = |                                    |
+    *                  | (e(i?)sin(?/2)   e(i?+i?)cos(?/2)) |
+    */
+   class unitary : public gate
+   {
+      private:
+
+         uint64_t   qubit;
+         double     angle[3];
+         cmatrix_t  m;
+
+      public:
+
+         unitary(uint64_t qubit, double angle[3]) : qubit(qubit)
+         {
+            // m.resize(2,2);
+            m(0,0) = cos(angle[1]/2);      m(0,1) = complex_t(-cos(angle[2]/2),-sin(angle[2]/2))*sin(angle[1]/2);
+            m(1,0) = complex_t(cos(angle[3]/2),sin(angle[3]/2))*sin(angle[1]/2) ; m(1,1) = complex_t(cos((angle[3]/2)+(angle[2]/2)),sin((angle[3]/2)+(angle[2]/2)))*cos(angle[1]/2);
+         }
+
+         int64_t apply(qu_register& qreg)
+         {
+            sqg_apply(m,qubit,qreg);
+            qreg.set_measurement_prediction(qubit,__state_unknown__);
+            // qreg.set_binary(qubit,__state_unknown__);
+            return 0;
+         }
+
+         double get_angle()
+         {
+            return *angle;
+         }
+
+         void dump()
+         {
+            println("  [-] unitary(qubit=" << qubit << ", angle=" << angle << ")");
+         }
+
+         std::vector<uint64_t>  qubits()
+         {
+            std::vector<uint64_t> r;
+            r.push_back(qubit);
+            return r;
+         }
+
+         std::vector<uint64_t>  control_qubits()
+         {
+            std::vector<uint64_t> r;
+            return r;
+         }
+
+         std::vector<uint64_t>  target_qubits()
+         {
+            std::vector<uint64_t> r;
+            r.push_back(qubit);
+            return r;
+         }
+
+         gate_type_t type()
+         {
+            return __unitary_gate__;
+         }
+
+   };
+
+   /**
     * \brief  rotation-x :
     */ 
    class rx : public gate
@@ -3061,6 +3131,121 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
          }
 
    };
+
+   /**
+    * prepx  
+    */
+   class prepx : public gate
+   {
+      private:
+
+         uint64_t  qubit;
+         hadamard  h;
+
+      public:
+
+         prepx(uint64_t qubit) : qubit(qubit), h(qubit)
+         {
+         }
+
+         int64_t apply(qu_register& qreg)
+         {
+            h.apply(qreg);
+            measure(qubit,true).apply(qreg);
+            h.apply(qreg);
+            bin_ctrl_pauli_z(qubit,qubit).apply(qreg);
+            qreg.set_measurement(qubit,false);
+            return 0; 
+         }
+
+         void dump()
+         {
+            println("  [-] prepx(qubit=" << qubit << ")");
+         }
+
+         std::vector<uint64_t>  qubits()
+         {
+            std::vector<uint64_t> r;
+            r.push_back(qubit);
+            return r;
+         }
+
+         std::vector<uint64_t>  control_qubits()
+         {
+            std::vector<uint64_t> r;
+            return r;
+         }
+
+         std::vector<uint64_t>  target_qubits()
+         {
+            return qubits();
+         }
+
+         gate_type_t type()
+         {
+            return __prepx_gate__;      
+         }
+
+   };
+
+
+   /**
+    * prepy  
+    */
+   class prepy : public gate
+   {
+      private:
+
+         uint64_t     qubit;
+         prepx        px;
+         phase_shift  s;
+
+      public:
+
+         prepy(uint64_t qubit) : qubit(qubit), px(qubit), s(qubit)
+         {
+         }
+
+         int64_t apply(qu_register& qreg)
+         {
+            px.apply(qreg);
+            s.apply(qreg);
+            qreg.set_measurement(qubit,false);
+            return 0; 
+         }
+
+         void dump()
+         {
+            println("  [-] prepy(qubit=" << qubit << ")");
+         }
+
+         std::vector<uint64_t>  qubits()
+         {
+            std::vector<uint64_t> r;
+            r.push_back(qubit);
+            return r;
+         }
+
+         std::vector<uint64_t>  control_qubits()
+         {
+            std::vector<uint64_t> r;
+            return r;
+         }
+
+         std::vector<uint64_t>  target_qubits()
+         {
+            return qubits();
+         }
+
+         gate_type_t type()
+         {
+            return __prepy_gate__;      
+         }
+
+   };
+
+
+
 
 
 

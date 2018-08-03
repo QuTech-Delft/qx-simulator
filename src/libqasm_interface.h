@@ -320,9 +320,27 @@ qx::gate *gateLookup(compiler::Operation &operation)
             bid(operation),
             new qx::pauli_z(sqid(operation)));
    if (type == "prep_y")
-      return NULL;
+   {
+      if (!pg)
+         return new qx::prepy(sqid(operation));
+      else
+      {
+         for (auto q : qv)
+            pg->add(new qx::prepy(q));
+         return pg;
+      }
+   }
    if (type == "prep_x")
-      return NULL;
+   {
+      if (!pg)
+         return new qx::prepx(sqid(operation));
+      else
+      {
+         for (auto q : qv)
+            pg->add(new qx::prepx(q));
+         return pg;
+      }
+   }
    if (type == "measure_x")
       return NULL;
    if (type == "measure_y")
