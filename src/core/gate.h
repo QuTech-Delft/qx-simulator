@@ -73,6 +73,10 @@ namespace qx
       __prepz_gate__   ,
       __measure_gate__ ,
       __measure_reg_gate__,
+      __measure_x_gate__ ,
+      __measure_x_reg_gate__,
+      __measure_y_gate__ ,
+      __measure_y_reg_gate__,
       __ctrl_phase_shift_gate__,
       __parallel_gate__,
       __display__,
@@ -2961,6 +2965,194 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
                return __measure_gate__; 
          }
    };
+
+   /**
+    * measure_x
+    */
+   class measure_x : public gate
+   {
+      private:
+
+         uint64_t  qubit;
+         bool      measure_all;
+         bool      disable_averaging;
+
+         qx::hadamard hg;
+         qx::measure  mg;
+
+      public:
+
+         measure_x(uint64_t qubit, bool disable_averaging=false) : qubit(qubit), measure_all(false), hg(qubit), mg(qubit), disable_averaging(disable_averaging)
+         {
+         }
+
+         measure_x() : qubit(0), hg(qubit), mg(qubit), measure_all(true)
+         {
+         }
+
+         int64_t apply(qu_register& qreg)
+         {
+            int64_t r = 0;
+
+            if (measure_all)
+            {
+               for (size_t i=0; i<qreg.size(); ++i)
+                  qx::hadamard(i).apply(qreg);
+               qreg.measure();
+               for (size_t i=0; i<qreg.size(); ++i)
+                  qx::hadamard(i).apply(qreg);
+               return 0;
+            }
+
+            hg.apply(qreg);
+            r = mg.apply(qreg);
+            hg.apply(qreg);
+
+            return r;
+         }
+
+         void dump()
+         {
+            if (measure_all)
+               println("  [-] measure_x(register)");
+            else
+               println("  [-] measure_x(qubit=" << qubit << ")");
+         }
+
+         std::vector<uint64_t>  qubits()
+         {
+            std::vector<uint64_t> r;
+            if (!measure_all)
+               r.push_back(qubit);
+            else   // this is a dirty hack, itshould be fixed later (unknown qubit number !)
+            {
+               for (int64_t i=0; i<MAX_QB_N; ++i)
+                  r.push_back(i);
+            }
+            return r;
+         }
+
+         std::vector<uint64_t>  control_qubits()
+         {
+            std::vector<uint64_t> r;
+            return r;
+         }
+
+         std::vector<uint64_t>  target_qubits()
+         {
+            return qubits();
+         }
+
+         gate_type_t type()
+         {
+            if (measure_all)
+               return __measure_x_reg_gate__;
+            else
+               return __measure_x_gate__; 
+         }
+   };
+
+   /**
+    * measure_y
+    */
+   class measure_y : public gate
+   {
+      private:
+
+         uint64_t  qubit;
+         bool      measure_all;
+         bool      disable_averaging;
+
+         qx::phase_shift  sg;
+         qx::pauli_z      zg;
+         qx::measure_x    mg;
+         /*
+            S(qubit);
+            Z(qubit);
+            bool b = MeasX(qubit, randint);
+            S(qubit);
+         */
+
+
+      public:
+
+         measure_y(uint64_t qubit, bool disable_averaging=false) : qubit(qubit), measure_all(false), sg(qubit), zg(qubit), mg(qubit), disable_averaging(disable_averaging)
+         {
+         }
+
+         measure_y() : qubit(0), sg(qubit), zg(qubit), mg(), measure_all(true)
+         {
+         }
+
+         int64_t apply(qu_register& qreg)
+         {
+            int64_t r = 0;
+
+            if (measure_all)
+            {
+               for (size_t i=0; i<qreg.size(); ++i)
+               {
+                  qx::phase_shift(i).apply(qreg);
+                  qx::pauli_z(i).apply(qreg);
+               }
+               mg.apply(qreg);
+               for (size_t i=0; i<qreg.size(); ++i)
+                  qx::phase_shift(i).apply(qreg);
+               return 0;
+            }
+
+            sg.apply(qreg);
+            zg.apply(qreg);
+            r = mg.apply(qreg);
+            sg.apply(qreg);
+
+            return r;
+         }
+
+         void dump()
+         {
+            if (measure_all)
+               println("  [-] measure_y(register)");
+            else
+               println("  [-] measure_y(qubit=" << qubit << ")");
+         }
+
+         std::vector<uint64_t>  qubits()
+         {
+            std::vector<uint64_t> r;
+            if (!measure_all)
+               r.push_back(qubit);
+            else   // this is a dirty hack, itshould be fixed later (unknown qubit number !)
+            {
+               for (int64_t i=0; i<MAX_QB_N; ++i)
+                  r.push_back(i);
+            }
+            return r;
+         }
+
+         std::vector<uint64_t>  control_qubits()
+         {
+            std::vector<uint64_t> r;
+            return r;
+         }
+
+         std::vector<uint64_t>  target_qubits()
+         {
+            return qubits();
+         }
+
+         gate_type_t type()
+         {
+            if (measure_all)
+               return __measure_y_reg_gate__;
+            else
+               return __measure_y_gate__; 
+         }
+   };
+
+
+
+
 
 
    /**

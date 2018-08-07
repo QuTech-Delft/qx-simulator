@@ -240,6 +240,29 @@ qx::gate *gateLookup(compiler::Operation &operation)
    if (type == "measure_all")
       return new qx::measure();
 
+   if (type == "measure_x")
+   {
+      if (!pg)
+         return new qx::measure_x(sqid(operation));
+      else
+      {
+         for (auto q : qv)
+            pg->add(new qx::measure_x(q));
+         return pg;
+      }
+   }
+   if (type == "measure_y")
+   {
+      if (!pg)
+         return new qx::measure_y(sqid(operation));
+      else
+      {
+         for (auto q : qv)
+            pg->add(new qx::measure_y(q));
+         return pg;
+      }
+   }
+
    ////////////// display /////////////////
    if (type == "display")
       return new qx::display();
@@ -331,10 +354,7 @@ qx::gate *gateLookup(compiler::Operation &operation)
       return new qx::bin_ctrl(
             bid(operation),
             new qx::pauli_z(sqid(operation))); 
-   if (type == "measure_x")
-      return NULL;
-   if (type == "measure_y")
-      return NULL;
+
    if (type == "cr")
    {
       double angle = operation.getRotationAngle();
