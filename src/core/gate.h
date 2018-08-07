@@ -1760,6 +1760,12 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
          m(1,0) /= p;
          m(1,1) /= p;
       }
+      double n1 = std::sqrt(m(0,0).norm()+m(1,0).norm());
+      double n2 = std::sqrt(m(0,1).norm()+m(1,1).norm());
+      m(0,0) /= n1;
+      m(0,1) /= n2;
+      m(1,0) /= n1;
+      m(1,1) /= n2;
    }
 
    /**
@@ -2964,18 +2970,30 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
    {
       private:
 
-         uint64_t bit;
+         // uint64_t bit;
+         std::vector<size_t> bits;
          gate *   g;
 
       public:
 
-         bin_ctrl(uint64_t bit, gate * g) : bit(bit), g(g)
+         bin_ctrl(size_t bit, gate * g) : g(g)
          {
+            bits.push_back(bit);
+         }
+
+         bin_ctrl(std::vector<size_t> bit, gate * g) : g(g)
+         {
+            for (auto b : bit)
+               bits.push_back(b);
          }
 
          int64_t apply(qu_register& qreg)
          {
-            if (qreg.test(bit))
+            bool m = true;
+            for (auto b : bits)
+               if (!qreg.test(b)) 
+                  m = false;
+            if (m)
                g->apply(qreg);
             return 0;
          }
@@ -2985,14 +3003,14 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
             return g;
          }
 
-         uint64_t get_bit()
+         std::vector<size_t> get_bits()
          {
-            return bit;
+            return bits;
          }
 
          void dump()
          {
-            print("  [-] bin_ctrl: \n bit=" << bit << " -> ");
+            print("  [-] bin_ctrl: \n bit=" << bits[0] << " -> ");
             g->dump();
          }
 

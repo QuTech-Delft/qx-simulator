@@ -6,6 +6,62 @@
 
 #define ITER_FOR_IN(e, l) for (auto e = l.begin(); e != l.end(); e++)
 
+#define __ret_gate_1(__g) \
+{\
+   if (!pg)\
+      if (!bc)\
+         return new __g(sqid(operation));\
+      else\
+         return new qx::bin_ctrl(bv, new __g(sqid(operation)));\
+   else\
+   {\
+      if (!bc)\
+      {\
+         for (auto q : qv)\
+            pg->add(new __g(q));\
+      }\
+      else\
+      {\
+         for (auto q : qv)\
+            pg->add(new qx::bin_ctrl(bv, new __g(q)));\
+      }\
+      return pg;\
+   }\
+}\
+
+#define __ret_gate_2(__g) \
+{\
+   const std::vector<size_t> & qv0 = operation.getQubitsInvolved(1).getSelectedQubits().getIndices();\
+   const std::vector<size_t> & qv1 = operation.getQubitsInvolved(2).getSelectedQubits().getIndices();\
+   \
+   if (qv0.size() != qv1.size())\
+      throw ("[x] error : parallel "+type+" args have different sizes !"); \
+   \
+   if (qv0.size() == 1)\
+   {\
+      if (!bc)\
+         return new __g(qv0[0], qv1[0]);\
+      else\
+         return new qx::bin_ctrl(bv, new __g(qv0[0], qv1[0]));\
+   }\
+   else\
+   {\
+      pg = new qx::parallel_gates();\
+      if (!bc)\
+      {\
+         for (size_t i=0; i<qv0.size(); ++i)\
+            pg->add(new __g(qv0[i],qv1[i]));\
+      }\
+      else\
+      {\
+         for (size_t i=0; i<qv0.size(); ++i)\
+            pg->add(new qx::bin_ctrl(bv, new __g(qv0[i],qv1[i])));\
+      }\
+      return pg;\
+   }\
+}\
+
+
 int sqid(compiler::Operation &operation)
 {
   return operation
@@ -33,40 +89,20 @@ int bid(compiler::Operation &operation)
 qx::gate *gateLookup(compiler::Operation &operation)
 {
    // operation.printOperation();
+   bool  bc = false;
    const std::vector<size_t> & qv = operation.getQubitsInvolved().getSelectedQubits().getIndices();
+   const std::vector<size_t> & bv = operation.getControlBits().getSelectedBits().getIndices();
    qx::parallel_gates * pg = NULL;
+
+   if (bv.size())
+      bc = true;
    if (qv.size() > 1) 
       pg = new qx::parallel_gates();
+
+   //if (bc) { std::cout << operation.getControlBits().printMembers(); }
+
    std::string type = operation.getType();
-   if (type == "h")
-   {
-      if (!pg)
-         return new qx::hadamard(sqid(operation));
-      else
-      {
-         for (auto q : qv)
-            pg->add(new qx::hadamard(q));
-         return pg;
-      }
-   }
-   if (type == "cnot")
-   {
-      const std::vector<size_t> & qv0 = operation.getQubitsInvolved(1).getSelectedQubits().getIndices();
-      const std::vector<size_t> & qv1 = operation.getQubitsInvolved(2).getSelectedQubits().getIndices();
-
-      if (qv0.size() != qv1.size())
-         throw ("[x] error : parallel cnot args have different sizes !"); 
-
-      if (qv0.size() == 1)
-         return new qx::cnot(qv0[0], qv1[0]);
-      else
-      {
-         pg = new qx::parallel_gates();
-         for (size_t i=0; i<qv0.size(); ++i)
-            pg->add(new qx::cnot(qv0[i],qv1[i]));
-         return pg;
-      }      
-   }
+   
    if (type == "toffoli")
    {
       const std::vector<size_t> & qv0 = operation.getQubitsInvolved(1).getSelectedQubits().getIndices();
@@ -77,101 +113,60 @@ qx::gate *gateLookup(compiler::Operation &operation)
          throw ("[x] error : parallel toffoli args have different sizes !"); 
 
       if (qv0.size() == 1)
-         return new qx::toffoli(qv0[0], qv1[0], qv2[0]);
+      {
+         if (!bc)
+            return new qx::toffoli(qv0[0], qv1[0], qv2[0]);
+         else
+            return new qx::bin_ctrl(bv, new qx::toffoli(qv0[0], qv1[0], qv2[0]));
+      }
       else
       {
          pg = new qx::parallel_gates();
-         for (size_t i=0; i<qv0.size(); ++i)
-            pg->add(new qx::toffoli(qv0[i],qv1[i],qv2[i]));
+         if (!bc)
+            for (size_t i=0; i<qv0.size(); ++i)
+               pg->add(new qx::toffoli(qv0[i],qv1[i],qv2[i]));
+         else
+            for (size_t i=0; i<qv0.size(); ++i)
+               pg->add(new qx::bin_ctrl(bv, new qx::toffoli(qv0[i],qv1[i],qv2[i])));
          return pg;
       }      
    }
+
+   ///////// common sq gates //////
    if (type == "x")
-   {
-      if (!pg)
-         return new qx::pauli_x(sqid(operation));
-      else
-      {
-         for (auto q : qv)
-            pg->add(new qx::pauli_x(q));
-         return pg;
-      }
-   }
+      __ret_gate_1(qx::pauli_x)
    if (type == "y")
-   {
-      if (!pg)
-         return new qx::pauli_y(sqid(operation));
-      else
-      {
-         for (auto q : qv)
-            pg->add(new qx::pauli_y(q));
-         return pg;
-      }
-   }
+      __ret_gate_1(qx::pauli_y)
    if (type == "z")
-   {
-      if (!pg)
-         return new qx::pauli_z(sqid(operation));
-      else
-      {
-         for (auto q : qv)
-            pg->add(new qx::pauli_z(q));
-         return pg;
-      }
-   }
+      __ret_gate_1(qx::pauli_z)
+   if (type == "h")
+      __ret_gate_1(qx::hadamard)
    if (type == "s")
-   {
-      if (!pg)
-         return new qx::phase_shift(sqid(operation));
-      else
-      {
-         for (auto q : qv)
-            pg->add(new qx::phase_shift(q));
-         return pg;
-      }
-   }
+      __ret_gate_1(qx::phase_shift)
    if (type == "sdag")
-   {
-      if (!pg)
-         return new qx::s_dag_gate(sqid(operation));
-      else
-      {
-         for (auto q : qv)
-            pg->add(new qx::s_dag_gate(q));
-         return pg;
-      }
-   }
+      __ret_gate_1(qx::s_dag_gate)
    if (type == "t")
-   {
-      if (!pg)
-         return new qx::t_gate(sqid(operation));
-      else
-      {
-         for (auto q : qv)
-            pg->add(new qx::t_gate(q));
-         return pg;
-      }
-   }
+      __ret_gate_1(qx::t_gate)
    if (type == "tdag")
-   {
-      if (!pg)
-         return new qx::t_dag_gate(sqid(operation));
-      else
-      {
-         for (auto q : qv)
-            pg->add(new qx::t_dag_gate(q));
-         return pg;
-      }
-   }
+      __ret_gate_1(qx::t_dag_gate)
+
+   /////////// rotations /////////
    if (type == "rx")
    {
       double angle = operation.getRotationAngle();
       if (!pg)
-         return new qx::rx(sqid(operation), angle);
+         if (!bc)
+            return new qx::rx(sqid(operation), angle);
+          else
+            return new qx::bin_ctrl(bv, new qx::rx(sqid(operation), angle));
       else
       {
-         for (auto q : qv)
-            pg->add(new qx::rx(q,angle));
+         if (!bc)
+            for (auto q : qv)
+               pg->add(new qx::rx(q,angle));
+         else
+            for (auto q : qv)
+               pg->add(new qx::bin_ctrl(bv, new qx::rx(q,angle)));
          return pg;
       }
    }
@@ -179,11 +174,18 @@ qx::gate *gateLookup(compiler::Operation &operation)
    {
       double angle = operation.getRotationAngle();
       if (!pg)
-         return new qx::ry(sqid(operation), angle);
+         if (!bc)
+            return new qx::ry(sqid(operation), angle);
+         else
+            return new qx::bin_ctrl(bv, new qx::ry(sqid(operation), angle));
       else
       {
-         for (auto q : qv)
-            pg->add(new qx::ry(q,angle));
+         if (!bc)
+            for (auto q : qv)
+               pg->add(new qx::ry(q,angle));
+         else
+            for (auto q : qv)
+               pg->add(new qx::bin_ctrl(bv, new qx::ry(q,angle)));
          return pg;
       }
    }
@@ -191,61 +193,39 @@ qx::gate *gateLookup(compiler::Operation &operation)
    {
       double angle = operation.getRotationAngle();
       if (!pg)
-         return new qx::rz(sqid(operation), angle);
+         if (!bc)
+            return new qx::rz(sqid(operation), angle);
+         else
+            return new qx::bin_ctrl(bv, new qx::rz(sqid(operation), angle));
       else
       {
-         for (auto q : qv)
-            pg->add(new qx::rz(q,angle));
+         if (!bc)
+            for (auto q : qv)
+               pg->add(new qx::rz(q,angle));
+         else
+            for (auto q : qv)
+               pg->add(new qx::bin_ctrl(bv, new qx::rz(q,angle)));
          return pg;
       }
    }
-   if (type == "swap")
-   {
-      const std::vector<size_t> & qv0 = operation.getQubitsInvolved(1).getSelectedQubits().getIndices();
-      const std::vector<size_t> & qv1 = operation.getQubitsInvolved(2).getSelectedQubits().getIndices();
 
-      if (qv0.size() != qv1.size())
-         throw ("[x] error : parallel swap args have different sizes !"); 
-
-      if (qv0.size() == 1)
-         return new qx::swap(qv0[0], qv1[0]);
-      else
-      {
-         pg = new qx::parallel_gates();
-         for (size_t i=0; i<qv0.size(); ++i)
-            pg->add(new qx::swap(qv0[i],qv1[i]));
-         return pg;
-      }      
-   }
+   //////////// two qubits gates //////////////
+   if (type == "cnot")
+      __ret_gate_2(qx::cnot)
    if (type == "cz")
-   {
-      const std::vector<size_t> & qv0 = operation.getQubitsInvolved(1).getSelectedQubits().getIndices();
-      const std::vector<size_t> & qv1 = operation.getQubitsInvolved(2).getSelectedQubits().getIndices();
-
-      if (qv0.size() != qv1.size())
-         throw ("[x] error : parallel cz args have different sizes !"); 
-
-      if (qv0.size() == 1)
-         return new qx::cphase(qv0[0], qv1[0]);
-      else
-      {
-         pg = new qx::parallel_gates();
-         for (size_t i=0; i<qv0.size(); ++i)
-            pg->add(new qx::cphase(qv0[i],qv1[i]));
-         return pg;
-      }      
-   }
+      __ret_gate_2(qx::cphase)
+   if (type == "swap")
+      __ret_gate_2(qx::swap)
+   
+   ///////////// prep gates //////////////////
    if (type == "prep_z")
-   {
-      if (!pg)
-         return new qx::prepz(sqid(operation));
-      else
-      {
-         for (auto q : qv)
-            pg->add(new qx::prepz(q));
-         return pg;
-      }
-   }
+      __ret_gate_1(qx::prepz)
+   if (type == "prep_y")
+      __ret_gate_1(qx::prepy)
+   if (type == "prep_x")
+      __ret_gate_1(qx::prepx)
+   
+   ////////// measurements //////////////////
    if (type == "measure" || type == "measure_z")
    {
       if (!pg)
@@ -259,19 +239,30 @@ qx::gate *gateLookup(compiler::Operation &operation)
    }
    if (type == "measure_all")
       return new qx::measure();
+
+   ////////////// display /////////////////
    if (type == "display")
       return new qx::display();
    if (type == "display_binary")
       return new qx::display(true);
+
+   /////////////// x90 //////////////////
    if (type == "x90")
    {
       double angle = M_PI/2;
       if (!pg)
-         return new qx::rx(sqid(operation), angle);
+         if (!bc)
+            return new qx::rx(sqid(operation), angle);
+         else
+            return new qx::bin_ctrl(bv, new qx::rx(sqid(operation), angle));
       else
       {
-         for (auto q : qv)
-            pg->add(new qx::rx(q,angle));
+         if (!bc)
+            for (auto q : qv)
+               pg->add(new qx::rx(q,angle));
+         else
+            for (auto q : qv)
+               pg->add(new qx::bin_ctrl(bv, new qx::rx(q,angle)));
          return pg;
       }
    }
@@ -279,11 +270,18 @@ qx::gate *gateLookup(compiler::Operation &operation)
    {
       double angle = -M_PI/2;
       if (!pg)
-         return new qx::rx(sqid(operation), angle);
+         if (!bc)
+            return new qx::rx(sqid(operation), angle);
+         else
+            return new qx::bin_ctrl(bv, new qx::rx(sqid(operation), angle));
       else
       {
-         for (auto q : qv)
-            pg->add(new qx::rx(q,angle));
+         if (!bc)
+            for (auto q : qv)
+               pg->add(new qx::rx(q,angle));
+         else
+            for (auto q : qv)
+               pg->add(new qx::bin_ctrl(bv, new qx::rx(q,angle)));
          return pg;
       }
    }
@@ -291,11 +289,18 @@ qx::gate *gateLookup(compiler::Operation &operation)
    {
       double angle = M_PI/2;
       if (!pg)
-         return new qx::ry(sqid(operation), angle);
+         if (!bc)
+            return new qx::ry(sqid(operation), angle);
+         else
+            return new qx::bin_ctrl(bv, new qx::ry(sqid(operation), angle));
       else
       {
-         for (auto q : qv)
-            pg->add(new qx::ry(q,angle));
+         if (!bc)
+            for (auto q : qv)
+               pg->add(new qx::ry(q,angle));
+         else
+            for (auto q : qv)
+               pg->add(new qx::bin_ctrl(bv, new qx::ry(q,angle)));
          return pg;
       }
    }
@@ -303,11 +308,18 @@ qx::gate *gateLookup(compiler::Operation &operation)
    {
       double angle = -M_PI/2;
       if (!pg)
-         return new qx::ry(sqid(operation), angle);
+         if (!bc)
+            return new qx::ry(sqid(operation), angle);
+         else
+            return new qx::bin_ctrl(bv, new qx::ry(sqid(operation), angle));
       else
       {
-         for (auto q : qv)
-            pg->add(new qx::ry(q,angle));
+         if (!bc)
+            for (auto q : qv)
+               pg->add(new qx::ry(q,angle));
+         else
+            for (auto q : qv)
+               pg->add(new qx::bin_ctrl(bv, new qx::ry(q,angle)));
          return pg;
       }
    }
@@ -318,29 +330,7 @@ qx::gate *gateLookup(compiler::Operation &operation)
    if (type == "c-z")
       return new qx::bin_ctrl(
             bid(operation),
-            new qx::pauli_z(sqid(operation)));
-   if (type == "prep_y")
-   {
-      if (!pg)
-         return new qx::prepy(sqid(operation));
-      else
-      {
-         for (auto q : qv)
-            pg->add(new qx::prepy(q));
-         return pg;
-      }
-   }
-   if (type == "prep_x")
-   {
-      if (!pg)
-         return new qx::prepx(sqid(operation));
-      else
-      {
-         for (auto q : qv)
-            pg->add(new qx::prepx(q));
-         return pg;
-      }
-   }
+            new qx::pauli_z(sqid(operation))); 
    if (type == "measure_x")
       return NULL;
    if (type == "measure_y")
@@ -355,12 +345,21 @@ qx::gate *gateLookup(compiler::Operation &operation)
          throw ("[x] error : parallel 'cr' args have different sizes !"); 
 
       if (qv0.size() == 1)
-         return new qx::ctrl_phase_shift(qv0[0], qv1[0],angle);
+      {
+         if (!bc)
+            return new qx::ctrl_phase_shift(qv0[0], qv1[0],angle);
+         else
+            return new qx::bin_ctrl(bv, new qx::ctrl_phase_shift(qv0[0], qv1[0],angle));
+      }
       else
       {
          pg = new qx::parallel_gates();
-         for (size_t i=0; i<qv0.size(); ++i)
-            pg->add(new qx::ctrl_phase_shift(qv0[i],qv1[i],angle));
+         if (!bc)
+            for (size_t i=0; i<qv0.size(); ++i)
+               pg->add(new qx::ctrl_phase_shift(qv0[i],qv1[i],angle));
+         else
+            for (size_t i=0; i<qv0.size(); ++i)
+               pg->add(new qx::bin_ctrl(bv, new qx::ctrl_phase_shift(qv0[i],qv1[i],angle)));
          return pg;
       }      
    }
@@ -374,15 +373,25 @@ qx::gate *gateLookup(compiler::Operation &operation)
          throw ("[x] error : parallel 'crk' args have different sizes !"); 
 
       if (qv0.size() == 1)
-         return new qx::ctrl_phase_shift(qv0[0], qv1[0],angle);
+      {
+         if (!bc)
+            return new qx::ctrl_phase_shift(qv0[0], qv1[0],angle);
+         else
+            return new qx::bin_ctrl(bv, new qx::ctrl_phase_shift(qv0[0], qv1[0],angle));
+      }
       else
       {
          pg = new qx::parallel_gates();
-         for (size_t i=0; i<qv0.size(); ++i)
-            pg->add(new qx::ctrl_phase_shift(qv0[i],qv1[i],angle));
+         if (!bc)
+            for (size_t i=0; i<qv0.size(); ++i)
+               pg->add(new qx::ctrl_phase_shift(qv0[i],qv1[i],angle));
+         else
+            for (size_t i=0; i<qv0.size(); ++i)
+               pg->add(new qx::bin_ctrl(bv, new qx::ctrl_phase_shift(qv0[i],qv1[i],angle)));
          return pg;
       }      
    }
+   
    return NULL;
 }
 

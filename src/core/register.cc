@@ -225,7 +225,7 @@ int64_t qx::qu_register::measure()
    return -1;
 }
 
-#define __amp_epsilon__ (0.0000001f)
+#define __amp_epsilon__ (0.000001f)
 
 /**
  * \brief dump
