@@ -29,6 +29,21 @@
    }\
 }\
 
+
+#define __ret_bin_gate(__g) \
+{\
+   if (!pg)\
+         return new __g(bid(operation));\
+   else\
+   {\
+         for (auto b : bv)\
+            pg->add(new __g(b));\
+      return pg;\
+   }\
+}\
+
+
+
 #define __ret_gate_2(__g) \
 {\
    const std::vector<size_t> & qv0 = operation.getQubitsInvolved(1).getSelectedQubits().getIndices();\
@@ -149,6 +164,11 @@ qx::gate *gateLookup(compiler::Operation &operation)
       __ret_gate_1(qx::t_gate)
    if (type == "tdag")
       __ret_gate_1(qx::t_dag_gate)
+
+   /////////// classical /////////
+
+   if (type == "not")
+      __ret_bin_gate(qx::classical_not)
 
    /////////// rotations /////////
    if (type == "rx")
