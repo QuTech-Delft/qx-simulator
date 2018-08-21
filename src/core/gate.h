@@ -2811,7 +2811,9 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
          {
             if (measure_all)
             {
-               qreg.measure();
+               // qreg.measure();
+               for (size_t q=0; q<qreg.size(); q++)
+                  qx::measure(q).apply(qreg);
                return 0;
             }
 
