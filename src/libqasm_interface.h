@@ -2,9 +2,80 @@
 #define LIBQASM_INTERFACE_H
 
 #include <core/circuit.h>
-#include <parser/qasm_ast.hpp>
+#include <qasm_ast.hpp>
 
 #define ITER_FOR_IN(e, l) for (auto e = l.begin(); e != l.end(); e++)
+
+#define __ret_gate_1(__g) \
+{\
+   if (!pg)\
+      if (!bc)\
+         return new __g(sqid(operation));\
+      else\
+         return new qx::bin_ctrl(bv, new __g(sqid(operation)));\
+   else\
+   {\
+      if (!bc)\
+      {\
+         for (auto q : qv)\
+            pg->add(new __g(q));\
+      }\
+      else\
+      {\
+         for (auto q : qv)\
+            pg->add(new qx::bin_ctrl(bv, new __g(q)));\
+      }\
+      return pg;\
+   }\
+}\
+
+
+#define __ret_bin_gate(__g) \
+{\
+   if (!pg)\
+         return new __g(bid(operation));\
+   else\
+   {\
+         for (auto b : bv)\
+            pg->add(new __g(b));\
+      return pg;\
+   }\
+}\
+
+
+
+#define __ret_gate_2(__g) \
+{\
+   const std::vector<size_t> & qv0 = operation.getQubitsInvolved(1).getSelectedQubits().getIndices();\
+   const std::vector<size_t> & qv1 = operation.getQubitsInvolved(2).getSelectedQubits().getIndices();\
+   \
+   if (qv0.size() != qv1.size())\
+      throw ("[x] error : parallel "+type+" args have different sizes !"); \
+   \
+   if (qv0.size() == 1)\
+   {\
+      if (!bc)\
+         return new __g(qv0[0], qv1[0]);\
+      else\
+         return new qx::bin_ctrl(bv, new __g(qv0[0], qv1[0]));\
+   }\
+   else\
+   {\
+      pg = new qx::parallel_gates();\
+      if (!bc)\
+      {\
+         for (size_t i=0; i<qv0.size(); ++i)\
+            pg->add(new __g(qv0[i],qv1[i]));\
+      }\
+      else\
+      {\
+         for (size_t i=0; i<qv0.size(); ++i)\
+            pg->add(new qx::bin_ctrl(bv, new __g(qv0[i],qv1[i])));\
+      }\
+      return pg;\
+   }\
+}\
+
 
 int sqid(compiler::Operation &operation)
 {
@@ -32,94 +103,341 @@ int bid(compiler::Operation &operation)
 
 qx::gate *gateLookup(compiler::Operation &operation)
 {
-  std::string type = operation.getType();
-  if (type == "h")
-    return new qx::hadamard(sqid(operation));
-  if (type == "cnot")
-    return new qx::cnot(
-      qid(operation, 1),
-      qid(operation, 2));
-  if (type == "toffoli")
-    return new qx::toffoli(
-      qid(operation, 1),
-      qid(operation, 2),
-      qid(operation, 3));
-  if (type == "x")
-    return new qx::pauli_x(sqid(operation));
-  if (type == "y")
-    return new qx::pauli_y(sqid(operation));
-  if (type == "z")
-    return new qx::pauli_z(sqid(operation));
-  if (type == "s")
-    return new qx::phase_shift(sqid(operation));
-  if (type == "sdag")
-    return new qx::s_dag_gate(sqid(operation));
-  if (type == "t")
-    return new qx::t_gate(sqid(operation));
-  if (type == "tdag")
-    return new qx::t_dag_gate(sqid(operation));
-  if (type == "rx")
-    return new qx::rx(
-      sqid(operation),
-      operation.getRotationAngle());
-  if (type == "ry")
-    return new qx::ry(
-      sqid(operation),
-      operation.getRotationAngle());
-  if (type == "rz")
-    return new qx::rz(
-      sqid(operation),
-      operation.getRotationAngle());
-  if (type == "swap")
-    return new qx::swap(
-      qid(operation, 1),
-      qid(operation, 2));
-  if (type == "cz")
-    return new qx::cphase(
-      qid(operation, 1),
-      qid(operation, 2));
-  if (type == "prep_z")
-    return new qx::prepz(sqid(operation));
-  if (type == "measure" || type == "measure_z")
-    return new qx::measure(sqid(operation));
-  if (type == "measure_all")
-    return new qx::measure();
-  if (type == "display")
-    return new qx::display();
-  if (type == "x90")
-    return new qx::rx(sqid(operation), M_PI/2);
-  if (type == "mx90")
-    return new qx::rx(sqid(operation), -M_PI/2);
-  if (type == "y90")
-    return new qx::ry(sqid(operation), M_PI/2);
-  if (type == "my90")
-    return new qx::ry(sqid(operation), -M_PI/2);
-  if (type == "c-x")
-    return new qx::bin_ctrl(
-      bid(operation),
-      new qx::pauli_x(sqid(operation)));
-  if (type == "c-z")
-    return new qx::bin_ctrl(
-      bid(operation),
-      new qx::pauli_z(sqid(operation)));
-  if (type == "prep_y")
-    return NULL;
-  if (type == "prep_x")
-    return NULL;
-  if (type == "measure_x")
-    return NULL;
-  if (type == "measure_y")
-    return NULL;
-  if (type == "cr")
-    return NULL;
-  if (type == "crk")
-    return NULL;
-  return NULL;
+   // operation.printOperation();
+   bool  bc = false;
+   const std::vector<size_t> & qv = operation.getQubitsInvolved().getSelectedQubits().getIndices();
+   const std::vector<size_t> & bv = operation.getControlBits().getSelectedBits().getIndices();
+   qx::parallel_gates * pg = NULL;
+
+   if (bv.size())
+      bc = true;
+   if (qv.size() > 1) 
+      pg = new qx::parallel_gates();
+
+   //if (bc) { std::cout << operation.getControlBits().printMembers(); }
+
+   std::string type = operation.getType();
+   
+   if (type == "toffoli")
+   {
+      const std::vector<size_t> & qv0 = operation.getQubitsInvolved(1).getSelectedQubits().getIndices();
+      const std::vector<size_t> & qv1 = operation.getQubitsInvolved(2).getSelectedQubits().getIndices();
+      const std::vector<size_t> & qv2 = operation.getQubitsInvolved(3).getSelectedQubits().getIndices();
+
+      if ((qv0.size() != qv1.size()) || (qv0.size() != qv2.size()))
+         throw ("[x] error : parallel toffoli args have different sizes !"); 
+
+      if (qv0.size() == 1)
+      {
+         if (!bc)
+            return new qx::toffoli(qv0[0], qv1[0], qv2[0]);
+         else
+            return new qx::bin_ctrl(bv, new qx::toffoli(qv0[0], qv1[0], qv2[0]));
+      }
+      else
+      {
+         pg = new qx::parallel_gates();
+         if (!bc)
+            for (size_t i=0; i<qv0.size(); ++i)
+               pg->add(new qx::toffoli(qv0[i],qv1[i],qv2[i]));
+         else
+            for (size_t i=0; i<qv0.size(); ++i)
+               pg->add(new qx::bin_ctrl(bv, new qx::toffoli(qv0[i],qv1[i],qv2[i])));
+         return pg;
+      }      
+   }
+
+   ///////// common sq gates //////
+   if (type == "x")
+      __ret_gate_1(qx::pauli_x)
+   if (type == "y")
+      __ret_gate_1(qx::pauli_y)
+   if (type == "z")
+      __ret_gate_1(qx::pauli_z)
+   if (type == "h")
+      __ret_gate_1(qx::hadamard)
+   if (type == "s")
+      __ret_gate_1(qx::phase_shift)
+   if (type == "sdag")
+      __ret_gate_1(qx::s_dag_gate)
+   if (type == "t")
+      __ret_gate_1(qx::t_gate)
+   if (type == "tdag")
+      __ret_gate_1(qx::t_dag_gate)
+
+   /////////// classical /////////
+
+   if (type == "not")
+      __ret_bin_gate(qx::classical_not)
+
+   /////////// rotations /////////
+   if (type == "rx")
+   {
+      double angle = operation.getRotationAngle();
+      if (!pg)
+         if (!bc)
+            return new qx::rx(sqid(operation), angle);
+          else
+            return new qx::bin_ctrl(bv, new qx::rx(sqid(operation), angle));
+      else
+      {
+         if (!bc)
+            for (auto q : qv)
+               pg->add(new qx::rx(q,angle));
+         else
+            for (auto q : qv)
+               pg->add(new qx::bin_ctrl(bv, new qx::rx(q,angle)));
+         return pg;
+      }
+   }
+   if (type == "ry")
+   {
+      double angle = operation.getRotationAngle();
+      if (!pg)
+         if (!bc)
+            return new qx::ry(sqid(operation), angle);
+         else
+            return new qx::bin_ctrl(bv, new qx::ry(sqid(operation), angle));
+      else
+      {
+         if (!bc)
+            for (auto q : qv)
+               pg->add(new qx::ry(q,angle));
+         else
+            for (auto q : qv)
+               pg->add(new qx::bin_ctrl(bv, new qx::ry(q,angle)));
+         return pg;
+      }
+   }
+   if (type == "rz")
+   {
+      double angle = operation.getRotationAngle();
+      if (!pg)
+         if (!bc)
+            return new qx::rz(sqid(operation), angle);
+         else
+            return new qx::bin_ctrl(bv, new qx::rz(sqid(operation), angle));
+      else
+      {
+         if (!bc)
+            for (auto q : qv)
+               pg->add(new qx::rz(q,angle));
+         else
+            for (auto q : qv)
+               pg->add(new qx::bin_ctrl(bv, new qx::rz(q,angle)));
+         return pg;
+      }
+   }
+
+   //////////// two qubits gates //////////////
+   if (type == "cnot")
+      __ret_gate_2(qx::cnot)
+   if (type == "cz")
+      __ret_gate_2(qx::cphase)
+   if (type == "swap")
+      __ret_gate_2(qx::swap)
+   
+   ///////////// prep gates //////////////////
+   if (type == "prep_z")
+      __ret_gate_1(qx::prepz)
+   if (type == "prep_y")
+      __ret_gate_1(qx::prepy)
+   if (type == "prep_x")
+      __ret_gate_1(qx::prepx)
+   
+   ////////// measurements //////////////////
+   if (type == "measure" || type == "measure_z")
+   {
+      if (!pg)
+         return new qx::measure(sqid(operation));
+      else
+      {
+         for (auto q : qv)
+            pg->add(new qx::measure(q));
+         return pg;
+      }
+   }
+   if (type == "measure_all")
+      return new qx::measure();
+
+   if (type == "measure_x")
+   {
+      if (!pg)
+         return new qx::measure_x(sqid(operation));
+      else
+      {
+         for (auto q : qv)
+            pg->add(new qx::measure_x(q));
+         return pg;
+      }
+   }
+   if (type == "measure_y")
+   {
+      if (!pg)
+         return new qx::measure_y(sqid(operation));
+      else
+      {
+         for (auto q : qv)
+            pg->add(new qx::measure_y(q));
+         return pg;
+      }
+   }
+
+   ////////////// display /////////////////
+   if (type == "display")
+      return new qx::display();
+   if (type == "display_binary")
+      return new qx::display(true);
+
+   /////////////// x90 //////////////////
+   if (type == "x90")
+   {
+      double angle = M_PI/2;
+      if (!pg)
+         if (!bc)
+            return new qx::rx(sqid(operation), angle);
+         else
+            return new qx::bin_ctrl(bv, new qx::rx(sqid(operation), angle));
+      else
+      {
+         if (!bc)
+            for (auto q : qv)
+               pg->add(new qx::rx(q,angle));
+         else
+            for (auto q : qv)
+               pg->add(new qx::bin_ctrl(bv, new qx::rx(q,angle)));
+         return pg;
+      }
+   }
+   if (type == "mx90")
+   {
+      double angle = -M_PI/2;
+      if (!pg)
+         if (!bc)
+            return new qx::rx(sqid(operation), angle);
+         else
+            return new qx::bin_ctrl(bv, new qx::rx(sqid(operation), angle));
+      else
+      {
+         if (!bc)
+            for (auto q : qv)
+               pg->add(new qx::rx(q,angle));
+         else
+            for (auto q : qv)
+               pg->add(new qx::bin_ctrl(bv, new qx::rx(q,angle)));
+         return pg;
+      }
+   }
+   if (type == "y90")
+   {
+      double angle = M_PI/2;
+      if (!pg)
+         if (!bc)
+            return new qx::ry(sqid(operation), angle);
+         else
+            return new qx::bin_ctrl(bv, new qx::ry(sqid(operation), angle));
+      else
+      {
+         if (!bc)
+            for (auto q : qv)
+               pg->add(new qx::ry(q,angle));
+         else
+            for (auto q : qv)
+               pg->add(new qx::bin_ctrl(bv, new qx::ry(q,angle)));
+         return pg;
+      }
+   }
+   if (type == "my90")
+   {
+      double angle = -M_PI/2;
+      if (!pg)
+         if (!bc)
+            return new qx::ry(sqid(operation), angle);
+         else
+            return new qx::bin_ctrl(bv, new qx::ry(sqid(operation), angle));
+      else
+      {
+         if (!bc)
+            for (auto q : qv)
+               pg->add(new qx::ry(q,angle));
+         else
+            for (auto q : qv)
+               pg->add(new qx::bin_ctrl(bv, new qx::ry(q,angle)));
+         return pg;
+      }
+   }
+   if (type == "c-x")
+      return new qx::bin_ctrl(
+            bid(operation),
+            new qx::pauli_x(sqid(operation)));
+   if (type == "c-z")
+      return new qx::bin_ctrl(
+            bid(operation),
+            new qx::pauli_z(sqid(operation))); 
+
+   if (type == "cr")
+   {
+      double angle = operation.getRotationAngle();
+      const std::vector<size_t> & qv0 = operation.getQubitsInvolved(1).getSelectedQubits().getIndices();
+      const std::vector<size_t> & qv1 = operation.getQubitsInvolved(2).getSelectedQubits().getIndices();
+
+      if (qv0.size() != qv1.size())
+         throw ("[x] error : parallel 'cr' args have different sizes !"); 
+
+      if (qv0.size() == 1)
+      {
+         if (!bc)
+            return new qx::ctrl_phase_shift(qv0[0], qv1[0],angle);
+         else
+            return new qx::bin_ctrl(bv, new qx::ctrl_phase_shift(qv0[0], qv1[0],angle));
+      }
+      else
+      {
+         pg = new qx::parallel_gates();
+         if (!bc)
+            for (size_t i=0; i<qv0.size(); ++i)
+               pg->add(new qx::ctrl_phase_shift(qv0[i],qv1[i],angle));
+         else
+            for (size_t i=0; i<qv0.size(); ++i)
+               pg->add(new qx::bin_ctrl(bv, new qx::ctrl_phase_shift(qv0[i],qv1[i],angle)));
+         return pg;
+      }      
+   }
+   if (type == "crk")
+   {
+      size_t angle = operation.getRotationAngle();
+      const std::vector<size_t> & qv0 = operation.getQubitsInvolved(1).getSelectedQubits().getIndices();
+      const std::vector<size_t> & qv1 = operation.getQubitsInvolved(2).getSelectedQubits().getIndices();
+
+      if (qv0.size() != qv1.size())
+         throw ("[x] error : parallel 'crk' args have different sizes !"); 
+
+      if (qv0.size() == 1)
+      {
+         if (!bc)
+            return new qx::ctrl_phase_shift(qv0[0], qv1[0],angle);
+         else
+            return new qx::bin_ctrl(bv, new qx::ctrl_phase_shift(qv0[0], qv1[0],angle));
+      }
+      else
+      {
+         pg = new qx::parallel_gates();
+         if (!bc)
+            for (size_t i=0; i<qv0.size(); ++i)
+               pg->add(new qx::ctrl_phase_shift(qv0[i],qv1[i],angle));
+         else
+            for (size_t i=0; i<qv0.size(); ++i)
+               pg->add(new qx::bin_ctrl(bv, new qx::ctrl_phase_shift(qv0[i],qv1[i],angle)));
+         return pg;
+      }      
+   }
+   
+   return NULL;
 }
 
-qx::circuit *qxCircuitFromCQasm(uint32_t qubits_count, compiler::SubCircuit &subcircuit)
+qx::circuit *qxCircuitFromCQasm(uint64_t qubits_count, compiler::SubCircuit &subcircuit)
 {
-  uint32_t iterations = subcircuit.numberIterations();
+  uint64_t iterations = subcircuit.numberIterations();
   std::string name = subcircuit.nameSubCircuit();
 
   qx::circuit *circuit = new qx::circuit(qubits_count, name, iterations);
@@ -134,18 +452,27 @@ qx::circuit *qxCircuitFromCQasm(uint32_t qubits_count, compiler::SubCircuit &sub
       = (*p_cluster)->getOperations();
     ITER_FOR_IN(p_operation, operations)
     {
-      qx::gate *g = gateLookup(**p_operation);
-      if (!g)
-      {
-        throw (*p_operation)->getType();
-      }
-      else
-      {
-        circuit->add(g);
-      }
+       qx::gate * g;
+       try
+       {
+          g = gateLookup(**p_operation);
+       }
+       catch (const char * error)
+       {
+          std::cerr << error << std::endl;
+          exit(-1);
+       }
+       if (!g)
+       {
+          throw (*p_operation)->getType();
+       }
+       else
+       {
+          circuit->add(g);
+       }
     }
   }
-
+  // circuit->dump();
   return circuit;
 }
 

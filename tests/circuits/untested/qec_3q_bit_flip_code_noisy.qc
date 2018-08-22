@@ -9,53 +9,63 @@ version 1.0
 qubits 5 
 
 # initialize logical qubit
-.init
-   x q[0]
-   display
+.qec(100)
+   prep_z q[0]
+   prep_z q[1]
+   prep_z q[2]
+   prep_z q[3]
+   prep_z q[4]
+   # x q[0]
+   # display
 
 # encoding
-.encoding
+# .encoding
    cnot q[0],q[1]
    cnot q[0],q[2]
-   display_binary
+#   display_binary
 
 # error injection
-.error_injection
-   x q[1] 
-   display
+# .error_injection
+#   x q[0] 
+#   display
 
 
 # parity check
-.parity_check
+# .parity_check
    cnot q[0],q[3]
    cnot q[1],q[3]
    cnot q[0],q[4]
    cnot q[2],q[4]
    measure q[3]
    measure q[4]
-   display_binary
+#    display_binary
 
 
 # error correction circuit can be described here 
-.error_correction
+# .error_correction  
   # syn : 11 -> q[0]   
-  c-x b[4,3],q[0]
+  c-x q[4],q[3],q[0]
   # syn : 01 -> flip q[1]
-  not b[4]  
-  c-x b[4,3],q[1]
-  not b[4]
+  not q[4]  
+  c-x q[4],q[3],q[1]
+  not q[4]
   # syn : 10 -> q[2]
-  not b[3]  
-  c-x b[4,3],q[2]
-  not b[3] 
-  display
+  not q[3]  
+  c-x q[4],q[3],q[2]
+  not q[3] 
+     
+
+  # display
 
 
 # decoding
-.decoding
+# .decoding
    cnot q[0],q[2]
    cnot q[0],q[1]
+   measure q[0]
+
+.result
    # display
    display_binary
 
-# error_model depolarizing_channel,0.1
+error_model depolarizing_channel,0.001

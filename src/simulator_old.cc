@@ -13,6 +13,7 @@
 #include <core/circuit.h>
 #include <qcode/quantum_code_loader.h>
 #include <core/error_model.h>
+#include "qx_version.h"
 
 /**
  * simulator
@@ -27,7 +28,7 @@ int main(int argc, char **argv)
    println("     /  /___/  /  _>  <      _\\ \\   _/ /   / /|_/ / / /_/ /  / /__ / __ | / /   / /_/ / / , _/        ");
    println("     \\______/\\__\\ /_/|_|    /___/  /___/  /_/  /_/  \\____/  /____//_/ |_|/_/    \\____/ /_/|_|         ");
    println("                                                                                                      ");
-   println("     version 0.1 beta - QuTech - 2016 - report bugs and suggestions to: nader.khammassi@gmail.com     ");
+   println("     version " << QX_VERSION << " - QuTech - " << QX_RELEASE_YEAR << " - report bugs and suggestions to: nader.khammassi@gmail.com");
    println("  =================================================================================================== ");
    println("");
 
@@ -59,10 +60,20 @@ int main(int argc, char **argv)
    qcp.parse();
    //qcp.dump();
 
+   qx::qu_register *reg = NULL;
 
    println("[+] creating quantum register of " << qcp.qubits() << " qubits... ");
-   qx::qu_register reg(qcp.qubits());
-
+   try {
+	   reg = new qx::qu_register(qcp.qubits());
+   } catch(std::bad_alloc& exception) {
+	   println("[!] not enough memory, aborting");
+	   xpu::clean();
+	   return -1;
+   } catch(std::exception& exception) {
+	   println("[!] unexpected exception (" << exception.what() << "), aborting");
+	   xpu::clean();
+	   return -1;
+   }
 
    qx::circuits_t circuits;
 
@@ -106,8 +117,10 @@ int main(int argc, char **argv)
   
    // qcp.execute(reg);
    for (uint32_t i=0; i<circuits.size(); i++)
-      circuits[i]->execute(reg);
+      circuits[i]->execute(*reg);
   
+   xpu::clean();
+
    return 0;
 }
 

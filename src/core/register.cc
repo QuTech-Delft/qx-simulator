@@ -1,11 +1,13 @@
+#include <exception>
+
 /**
  * set_binary
  */
-// void qx::qu_register::set_binary(uint32_t state, uint32_t nq)
-void qx::qu_register::set_measurement_prediction(uint32_t state, uint32_t nq)
+// void qx::qu_register::set_binary(uint64_t state, uint64_t nq)
+void qx::qu_register::set_measurement_prediction(uint64_t state, uint64_t nq)
 {
-   //uint32_t k=0;
-   uint32_t k=nq-1;
+   //uint64_t k=0;
+   uint64_t k=nq-1;
    while (nq--)
    {
       // binary[k--] = (((state >> nq) & 1) ? __state_1__ : __state_0__);
@@ -17,10 +19,10 @@ void qx::qu_register::set_measurement_prediction(uint32_t state, uint32_t nq)
 /**
  * \brief set measurement outcome
  */
-void qx::qu_register::set_measurement(uint32_t state, uint32_t nq)
+void qx::qu_register::set_measurement(uint64_t state, uint64_t nq)
 {
-   //uint32_t k=0;
-   uint32_t k=nq-1;
+   //uint64_t k=0;
+   uint64_t k=nq-1;
    while (nq--)
    {
       // binary[k--] = (((state >> nq) & 1) ? __state_1__ : __state_0__);
@@ -31,9 +33,9 @@ void qx::qu_register::set_measurement(uint32_t state, uint32_t nq)
 /**
  * collapse state
  */
-uint32_t qx::qu_register::collapse(uint32_t entry)
+uint64_t qx::qu_register::collapse(uint64_t entry)
 {
-   for (uint32_t i=0; i<data.size(); ++i)
+   for (uint64_t i=0; i<data.size(); ++i)
    {
       data[i] = 0;
    }
@@ -48,9 +50,9 @@ uint32_t qx::qu_register::collapse(uint32_t entry)
 /**
  * to binary
  */
-void qx::qu_register::to_binary(uint32_t state, uint32_t nq)
+void qx::qu_register::to_binary(uint64_t state, uint64_t nq)
 {
-   uint32_t k=0;
+   uint64_t k=0;
    while (nq--)
       std::cout << (((state >> nq) & 1) ? "1" : "0");
 }
@@ -58,10 +60,10 @@ void qx::qu_register::to_binary(uint32_t state, uint32_t nq)
 /**
  * to binary string
  */
-std::string  qx::qu_register::to_binary_string(uint32_t state, uint32_t nq)
+std::string  qx::qu_register::to_binary_string(uint64_t state, uint64_t nq)
 {
    std::string s(nq,'0');
-   uint32_t k=0;
+   uint64_t k=0;
    while (nq--)
    {
       s[k] = (((state >> nq) & 1) ? '1' : '0');
@@ -74,19 +76,25 @@ std::string  qx::qu_register::to_binary_string(uint32_t state, uint32_t nq)
 /**
  * \brief quantum register of n_qubit
  */
-// qx::qu_register::qu_register(uint32_t n_qubits) : data(1 << n_qubits), binary(n_qubits), n_qubits(n_qubits), rgenerator(xpu::timer().current()*10e5), udistribution(.0,1)
-//qx::qu_register::qu_register(uint32_t n_qubits) : data(1 << n_qubits), measurement_prediction(n_qubits), measurement_register(n_qubits), n_qubits(n_qubits), rgenerator(xpu::timer().current()*10e5), udistribution(.0,1)
-qx::qu_register::qu_register(uint32_t n_qubits) : data(1 << n_qubits), aux(1 << n_qubits), measurement_prediction(n_qubits), measurement_register(n_qubits), n_qubits(n_qubits), rgenerator(xpu::timer().current()*10e5), udistribution(.0,1), measurement_averaging_enabled(true), measurement_averaging(n_qubits)
+// qx::qu_register::qu_register(uint64_t n_qubits) : data(1 << n_qubits), binary(n_qubits), n_qubits(n_qubits), rgenerator(xpu::timer().current()*10e5), udistribution(.0,1)
+//qx::qu_register::qu_register(uint64_t n_qubits) : data(1 << n_qubits), measurement_prediction(n_qubits), measurement_register(n_qubits), n_qubits(n_qubits), rgenerator(xpu::timer().current()*10e5), udistribution(.0,1)
+qx::qu_register::qu_register(uint64_t n_qubits) : data(1ULL << n_qubits), aux(1ULL << n_qubits), measurement_prediction(n_qubits), measurement_register(n_qubits), n_qubits(n_qubits), rgenerator(xpu::timer().current()*10e5), udistribution(.0,1), measurement_averaging_enabled(true), measurement_averaging(n_qubits)
 {
+   if(n_qubits>63) {
+	   throw std::invalid_argument("hard limit of 63 qubits exceeded");
+   }
+
    data[0] = complex_t(1,0);
-   for (uint32_t i=1; i<(1 << n_qubits); ++i)
+   for (uint64_t i=1; i<(1ULL << n_qubits); ++i) {
       data[i] = 0;
-   for (uint32_t i=0; i<n_qubits; i++)
+   }
+
+   for (uint64_t i=0; i<n_qubits; i++)
    {
       measurement_prediction[i] = __state_0__;
       measurement_register[i]   = 0;
    }
-      //binary[i] = __state_0__;
+
    for (size_t i=0; i<measurement_averaging.size(); ++i)
    {
       measurement_averaging[i].ground_states = 0;
@@ -101,9 +109,9 @@ qx::qu_register::qu_register(uint32_t n_qubits) : data(1 << n_qubits), aux(1 << 
 void qx::qu_register::reset()
 {
    data[0] = complex_t(1,0);
-   for (uint32_t i=1; i<(1 << n_qubits); ++i)
+   for (uint64_t i=1; i<(1 << n_qubits); ++i)
       data[i] = 0;
-   for (uint32_t i=0; i<n_qubits; i++)
+   for (uint64_t i=0; i<n_qubits; i++)
    {
       // binary[i] = __state_0__;
       measurement_prediction[i] = __state_0__;
@@ -137,7 +145,7 @@ void qx::qu_register::set_data(cvector_t d)
 /**
  * \brief size getter
  */
-uint32_t qx::qu_register::size()
+uint64_t qx::qu_register::size()
 {
    return n_qubits;
 }
@@ -146,7 +154,7 @@ uint32_t qx::qu_register::size()
 /**
  * \brief get states
  */
-uint32_t qx::qu_register::states()
+uint64_t qx::qu_register::states()
 {
    return (1 << n_qubits);
 }
@@ -168,7 +176,7 @@ cvector_t & qx::qu_register::operator=(cvector_t d)
 /**
  * \brief return ith amplitude
  */
-complex_t& qx::qu_register::operator[](uint32_t i)
+complex_t& qx::qu_register::operator[](uint64_t i)
 {
    return data[i];
 }
@@ -193,7 +201,7 @@ bool qx::qu_register::check()
 /**
  * \brief measures one qubit
  */
-int32_t qx::qu_register::measure()
+int64_t qx::qu_register::measure()
 {
 #ifdef SAFE_MODE
    if (!check())
@@ -217,7 +225,7 @@ int32_t qx::qu_register::measure()
    return -1;
 }
 
-#define __amp_epsilon__ (0.0000001f)
+#define __amp_epsilon__ (0.000001f)
 
 /**
  * \brief dump
@@ -292,12 +300,12 @@ std::string qx::qu_register::get_state(bool only_binary=false)
 /**
  * set_binary
  */
-void qx::qu_register::set_measurement_prediction(uint32_t state)
+void qx::qu_register::set_measurement_prediction(uint64_t state)
 {
    // print("  [-] set binary register to state : ");
    to_binary(state,n_qubits);
-   uint32_t k=0;
-   uint32_t nq = n_qubits;
+   uint64_t k=0;
+   uint64_t nq = n_qubits;
    while (nq--)
    {
       // binary[k++] = (((state >> nq) & 1) ? __state_1__ : __state_0__);
@@ -310,7 +318,7 @@ void qx::qu_register::set_measurement_prediction(uint32_t state)
  * \brief setter
  * set bit <q>  to the state <s>
  */
-void qx::qu_register::set_measurement_prediction(uint32_t q, state_t s)
+void qx::qu_register::set_measurement_prediction(uint64_t q, state_t s)
 {
    assert(q<n_qubits);
    // binary[q] = s;
@@ -321,7 +329,7 @@ void qx::qu_register::set_measurement_prediction(uint32_t q, state_t s)
  * \brief setter
  * set measurement outcome of <q>  to the state <s>
  */
-void qx::qu_register::set_measurement(uint32_t q, bool m)
+void qx::qu_register::set_measurement(uint64_t q, bool m)
 {
    assert(q<n_qubits);
    // binary[q] = s;
@@ -333,14 +341,14 @@ void qx::qu_register::set_measurement(uint32_t q, bool m)
  * \brief getter
  * \return the state of bit <q> 
  */
-state_t qx::qu_register::get_measurement_prediction(uint32_t q)
+state_t qx::qu_register::get_measurement_prediction(uint64_t q)
 {
    assert(q<n_qubits);
    return measurement_prediction[q];
 }
 
 
-bool qx::qu_register::get_measurement(uint32_t q)
+bool qx::qu_register::get_measurement(uint64_t q)
 {
    assert(q<n_qubits);
    return measurement_register[q];
@@ -351,7 +359,7 @@ bool qx::qu_register::get_measurement(uint32_t q)
  * \brief test bit <q> of the binary register
  * \return true if bit <q> is 1
  */
-bool qx::qu_register::test(uint32_t q) // throw (qubit_not_measured_exception)  // trow exception if qubit value is unknown (never measured) !!!!
+bool qx::qu_register::test(uint64_t q) // throw (qubit_not_measured_exception)  // trow exception if qubit value is unknown (never measured) !!!!
 {
    assert(q<n_qubits);
    return (measurement_register[q]);
@@ -362,7 +370,7 @@ bool qx::qu_register::test(uint32_t q) // throw (qubit_not_measured_exception)  
 /**
  * \brief
  */
-void qx::qu_register::flip_binary(uint32_t q)
+void qx::qu_register::flip_binary(uint64_t q)
 {
    assert(q<n_qubits);
    // state_t s = binary[q];
@@ -374,7 +382,7 @@ void qx::qu_register::flip_binary(uint32_t q)
 /**
  * \brief
  */
-void qx::qu_register::flip_measurement(uint32_t q)
+void qx::qu_register::flip_measurement(uint64_t q)
 {
    assert(q<n_qubits);
    measurement_register[q] = !measurement_register[q];

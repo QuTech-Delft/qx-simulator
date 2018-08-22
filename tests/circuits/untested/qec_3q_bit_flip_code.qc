@@ -21,7 +21,7 @@ qubits 5
 
 # error injection
 .error_injection
-   x q[1] 
+   x q[2] 
    display
 
 
@@ -38,16 +38,12 @@ qubits 5
 
 # error correction circuit can be described here 
 .error_correction
-  # syn : 11 -> q[0]   
-  c-x b[4,3],q[0]
-  # syn : 01 -> flip q[1]
-  not b[4]  
-  c-x b[4,3],q[1]
-  not b[4]
-  # syn : 10 -> q[2]
-  not b[3]  
-  c-x b[4,3],q[2]
-  not b[3] 
+  # x q[4]
+  # toffoli q[3],q[4],q[1]
+  # x q[4]
+  # not q[4]
+  # c-x b3,b4,q[1]
+  
   display
 
 

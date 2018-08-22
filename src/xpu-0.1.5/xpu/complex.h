@@ -351,6 +351,19 @@ namespace xpu
 	    #endif
 	 }
 
+	 void operator/= (const complex_d &v)
+	 { 	    
+	    // #ifdef __SSE__
+	    // __m128d d = _mm_set1_pd(v);
+	    // xmm = _mm_div_pd(xmm, d); 
+	    // #else
+       double a = re, b = im, c = v.re, d = v.im;
+	    re = (a*c+b*d)/(c*c+d*d); 
+	    im = (b*c-a*d)/(c*c+d*d);
+	    // #endif
+    }
+	
+
 	 void operator>> (double *v)
 	 { 
 	    #ifdef __SSE__

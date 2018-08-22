@@ -10,11 +10,12 @@
 #include <xpu/runtime>
 #include <qx_representation.h>
 #include <libqasm_interface.h>
-#include <parser/qasm_semantic.hpp>
+#include <qasm_semantic.hpp>
 
 
 #include <iostream>
 
+#include "qx_version.h"
 
 void print_banner() {
    println("");
@@ -25,7 +26,7 @@ void print_banner() {
    println("     /  /___/  /  _>  <      _\\ \\   _/ /   / /|_/ / / /_/ /  / /__ / __ | / /   / /_/ / / , _/        ");
    println("     \\______/\\__\\ /_/|_|    /___/  /___/  /_/  /_/  \\____/  /____//_/ |_|/_/    \\____/ /_/|_|         ");
    println("                                                                                                      ");
-   println("     version 0.1 beta - QuTech - 2016 - report bugs and suggestions to: nader.khammassi@gmail.com     ");
+   println("     version " << QX_VERSION << " - QuTech - " << QX_RELEASE_YEAR << " - report bugs and suggestions to: nader.khammassi@gmail.com");
    println("  =================================================================================================== ");
    println("");
 }
@@ -46,22 +47,23 @@ int main(int argc, char **argv)
       return -1;
   }
     
-  // Parse arguments and initialise xpu cores
+  // parse arguments and initialise xpu cores
   file_path = argv[1];
   if (argc == 3) ncpu = (atoi(argv[2]));
   if (ncpu && ncpu < 128) xpu::init(ncpu);
   else xpu::init();
 
-  // Parse file and create abstract syntax tree
+  // parse file and create abstract syntax tree
   println("[+] loading circuit from '" << file_path << "' ...");
   FILE *qasm_file = fopen(file_path.c_str(), "r");
   if (!qasm_file)
   {
-    std::cerr << "[x] Error: Could not open " << file_path << std::endl;
+    std::cerr << "[x] error: could not open " << file_path << std::endl;
+    xpu::clean();
     return -1;
   }
 
-  // Construct libqasm parser and safely parse input file
+  // construct libqasm parser and safely parse input file
   compiler::QasmSemanticChecker *parser;
   compiler::QasmRepresentation ast;
   try
@@ -71,8 +73,9 @@ int main(int argc, char **argv)
   }
   catch (std::exception &e)
   {
-    std::cerr << "Error while parsing file " << file_path << ": " << std::endl;
+    std::cerr << "error while parsing file " << file_path << ": " << std::endl;
     std::cerr << e.what() << std::endl;
+    xpu::clean();
     return -1;
   }
 
@@ -81,8 +84,19 @@ int main(int argc, char **argv)
   std::vector<qx::circuit*> circuits;
   uint32_t qubits = ast.numQubits();
   println("[+] creating quantum register of " << qubits << " qubits... ");
-  qx::qu_register reg(qubits);
-  
+  qx::qu_register *reg = NULL;
+
+  try {
+	   reg = new qx::qu_register(qubits);
+  } catch(std::bad_alloc& exception) {
+	   std::cerr << "[x] not enough memory, aborting" << std::endl;
+	   xpu::clean();
+	   return -1;
+  } catch(std::exception& exception) {
+	   std::cerr << "[x] unexpected exception (" << exception.what() << "), aborting" << std::endl;
+	   xpu::clean();
+	   return -1;
+  }
 
   // Convert libqasm ast to qx internal representation
   qx::QxRepresentation qxr = qx::QxRepresentation(qubits);
@@ -97,6 +111,7 @@ int main(int argc, char **argv)
     catch (std::string type)
     {
       std::cerr << "[x] Encountered unsuported gate: " << type << std::endl;
+      xpu::clean();
       return -1;
     }
   }
@@ -138,7 +153,7 @@ int main(int argc, char **argv)
   }
  
   for (uint32_t i=0; i<circuits.size(); i++)
-     circuits[i]->execute(reg);
+     circuits[i]->execute(*reg);
  
   xpu::clean();
 
