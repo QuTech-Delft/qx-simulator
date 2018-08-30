@@ -247,30 +247,32 @@ void qx::qu_register::dump(bool only_binary=false)
    }
    if (measurement_averaging_enabled)
    {
+      // std::cout.precision(9);
+      std::setprecision(9);
       println("------------------------------------------- ");
       print("[>>] measurement averaging (ground state) :");
       print(" ");
       for (int i=measurement_averaging.size()-1; i>=0; --i)
       {
-	 double gs = measurement_averaging[i].ground_states;
-	 double es = measurement_averaging[i].exited_states;
-	 // println("(" << gs << "," << es << ")");
-	 double av = ((es+gs) != 0. ? (gs/(es+gs)) : 0.);
-	 print(" | " << av);  
+         double gs = measurement_averaging[i].ground_states;
+         double es = measurement_averaging[i].exited_states;
+         // println("(" << gs << "," << es << ")");
+         double av = ((es+gs) != 0. ? (gs/(es+gs)) : 0.);
+         print(" | " << std::setw(9) << av);  
       }
       println(" |");
    }
    println("------------------------------------------- ");
-   print("[>>] measurement prediction:");
+   print("[>>] measurement prediction               :");
    print(" ");
    for (int i=measurement_prediction.size()-1; i>=0; --i)
-      print(" | " << __format_bin(measurement_prediction[i]));  
+      print(" | " <<  std::setw(9) << __format_bin(measurement_prediction[i]));  
    println(" |");
    println("------------------------------------------- ");
-   print("[>>] measurement register  :");
+   print("[>>] measurement register                 :");
    print(" ");
    for (int i=measurement_register.size()-1; i>=0; --i)
-      print(" | " << (measurement_register[i] ? '1' : '0'));  
+      print(" | " <<  std::setw(9) << (measurement_register[i] ? '1' : '0'));  
    println(" |");
    println("------------------------------------------- ");
 }

@@ -57,7 +57,7 @@ int main(int argc, char **argv)
 
    // parse file and create abstract syntax tree
    println("[+] loading circuit from '" << file_path << "' ...");
-   FILE *qasm_file = fopen(file_path.c_str(), "r");
+   FILE * qasm_file = fopen(file_path.c_str(), "r");
    if (!qasm_file)
    {
       std::cerr << "[x] error: could not open " << file_path << std::endl;
@@ -66,7 +66,7 @@ int main(int argc, char **argv)
    }
 
    // construct libqasm parser and safely parse input file
-   compiler::QasmSemanticChecker *parser;
+   compiler::QasmSemanticChecker * parser;
    compiler::QasmRepresentation ast;
    try
    {
@@ -83,6 +83,7 @@ int main(int argc, char **argv)
 
    // create qx circuits and register
    std::vector<qx::circuit*> circuits;
+   std::vector<qx::circuit*> noisy_circuits;
    size_t qubits = ast.numQubits();
    println("[+] creating quantum register of " << qubits << " qubits... ");
    qx::qu_register *reg = NULL;
@@ -99,7 +100,7 @@ int main(int argc, char **argv)
       return -1;
    }
 
-   // Convert libqasm ast to qx internal representation
+   // convert libqasm ast to qx internal representation
    qx::QxRepresentation qxr = qx::QxRepresentation(qubits);
    std::vector<compiler::SubCircuit> subcircuits
       = ast.getSubCircuits().getAllSubCircuits();
@@ -107,11 +108,12 @@ int main(int argc, char **argv)
    {
       try
       {
-         circuits.push_back(qxCircuitFromCQasm(qubits, *subcircuit));
+         // circuits.push_back(qxCircuitFromCQasm(qubits, *subcircuit));
+         qxr.circuits().push_back(qxCircuitFromCQasm(qubits, *subcircuit));
       }
       catch (std::string type)
       {
-         std::cerr << "[x] Encountered unsuported gate: " << type << std::endl;
+         std::cerr << "[x] encountered unsuported gate: " << type << std::endl;
          xpu::clean();
          return -1;
       }
@@ -121,55 +123,87 @@ int main(int argc, char **argv)
    size_t total_errors = 0;
 
    // check whether an error model is specified
-   if (qxr.getErrorModel() == qx::__depolarizing_channel__)
+   if (ast.getErrorModelType() == "depolarizing_channel")
    {
-      println("[+] generating noisy circuits...");
-      double error_probability = qxr.getErrorProbability(); 
-      std::vector<qx::circuit*> perfect_circuits = qxr.circuits();
-      for (size_t i=0; i<perfect_circuits.size(); i++)
-      {
-         println("[>] processing circuit '" << perfect_circuits[i]->id() << "'...");
-         size_t iterations = perfect_circuits[i]->get_iterations();
-         if (iterations > 1)
-         {
-            for (size_t it=0; it<iterations; ++it)
-            {
-               qx::depolarizing_channel dep_ch(perfect_circuits[i], qubits, error_probability);
-               qx::circuit * noisy_c = dep_ch.inject(true);
-               println("[+] noisy circuit : " << std::hex << noisy_c);
-               circuits.push_back(noisy_c);
-               total_errors += dep_ch.get_total_errors();
-            }
-         }
-         else
-         {
-            qx::depolarizing_channel dep_ch(perfect_circuits[i], qubits, error_probability);
-            qx::circuit * noisy_c = dep_ch.inject(true);
-            circuits.push_back(noisy_c);
-            total_errors += dep_ch.get_total_errors();
-         }
-      }
-      println("[+] total errors injected in all circuits : " << total_errors);
+      qxr.setErrorModel(qx::__depolarizing_channel__);
+      qxr.setErrorProbability(ast.getErrorModelProbability());
    }
 
+   std::vector<qx::circuit *> perfect_circuits = qxr.circuits();
+   double p = qxr.getErrorProbability();
+
+   // for (auto c : circuits)
+      // c->dump();
    // measurement averaging
    if (navg)
    {
-      qx::measure m;
-      for (size_t s=0; s<navg; ++s)
+      if (qxr.getErrorModel() == qx::__depolarizing_channel__)
       {
-         reg->reset();
-         for (size_t i=0; i<circuits.size(); i++)
-            circuits[i]->execute(*reg,false,true);
-         m.apply(*reg);
+         qx::measure m;
+         for (size_t s=0; s<navg; ++s)
+         {
+            reg->reset();
+            for (size_t i=0; i<perfect_circuits.size(); i++)
+            {
+               if (perfect_circuits[i]->size() == 0)
+                  continue;
+               size_t iterations = perfect_circuits[i]->get_iterations();
+               if (iterations > 1)
+               {
+                  for (size_t it=0; it<iterations; ++it)
+                  {
+                     qx::noisy_dep_ch(perfect_circuits[i],p,total_errors)->execute(*reg,false,true);
+                  }
+               } else
+                     qx::noisy_dep_ch(perfect_circuits[i],p,total_errors)->execute(*reg,false,true);
+            }
+            m.apply(*reg);
+         }
       }
+      else
+      {
+         qx::measure m;
+         for (size_t s=0; s<navg; ++s)
+         {
+            reg->reset();
+            for (size_t i=0; i<perfect_circuits.size(); i++)
+               perfect_circuits[i]->execute(*reg,false,true);
+            m.apply(*reg);
+         }
+      }
+      
       println("[+] average measurement after " << navg << " shots:");
       reg->dump(true);
    }
    else
    {
-         for (size_t i=0; i<circuits.size(); i++)
-            circuits[i]->execute(*reg);
+      if (qxr.getErrorModel() == qx::__depolarizing_channel__)
+      {
+         // println("[+] generating noisy circuits (p=" << qxr.getErrorProbability() << ")...");
+         for (size_t i=0; i<perfect_circuits.size(); i++)
+         {
+            if (perfect_circuits[i]->size() == 0)
+               continue;
+            // println("[>] processing circuit '" << perfect_circuits[i]->id() << "'...");
+            size_t iterations = perfect_circuits[i]->get_iterations();
+            if (iterations > 1)
+            {
+               for (size_t it=0; it<iterations; ++it)
+                  circuits.push_back(qx::noisy_dep_ch(perfect_circuits[i],p,total_errors));
+            }
+            else
+            {
+               circuits.push_back(qx::noisy_dep_ch(perfect_circuits[i],p,total_errors));
+            }
+         }
+         // println("[+] total errors injected in all circuits : " << total_errors);
+      }
+      else 
+         circuits = qxr.circuits();
+
+
+      for (size_t i=0; i<circuits.size(); i++)
+         circuits[i]->execute(*reg);
    }
 
    xpu::clean();

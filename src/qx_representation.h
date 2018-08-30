@@ -11,9 +11,7 @@ namespace qx
    class QxRepresentation
    {
       public:
-
-         QxRepresentation(size_t_t count) : qubits_count(count) {}
-
+         QxRepresentation(size_t count) : qubits_count(count) {}
          ~QxRepresentation()
          {
             for (auto circuit = circuits_.begin(); circuit != circuits_.end(); ++circuit)
@@ -21,7 +19,7 @@ namespace qx
          }
 
 
-         size_t_t getQubitsCount()
+         size_t getQubitsCount()
          {
             return qubits_count;
          }
@@ -55,7 +53,7 @@ namespace qx
          }
 
       private:
-         size_t_t      qubits_count;
+         size_t      qubits_count;
          error_model_t error_model =  __unknown_error_model__;
          double        error_probability;
          std::vector<qx::circuit*> circuits_;
