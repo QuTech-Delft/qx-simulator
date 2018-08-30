@@ -232,49 +232,52 @@ int64_t qx::qu_register::measure()
  */
 void qx::qu_register::dump(bool only_binary=false)
 {
-   if (!only_binary)
-   {
-      println("--------------[quantum state]-------------- ");
-      std::cout << std::fixed;
-      for (int i=0; i<data.size(); ++i)
-      {
-         if ((std::abs(data[i].re) > __amp_epsilon__) ||
-             (std::abs(data[i].im) > __amp_epsilon__))
-	 {
-	    print("   " << std::showpos << std::setw(14) << data[i] << " |"); to_binary(i,n_qubits); println("> +");
-	 }
-      }
-   }
-   if (measurement_averaging_enabled)
-   {
-      // std::cout.precision(9);
-      std::setprecision(9);
-      println("------------------------------------------- ");
-      print("[>>] measurement averaging (ground state) :");
-      print(" ");
-      for (int i=measurement_averaging.size()-1; i>=0; --i)
-      {
-         double gs = measurement_averaging[i].ground_states;
-         double es = measurement_averaging[i].exited_states;
-         // println("(" << gs << "," << es << ")");
-         double av = ((es+gs) != 0. ? (gs/(es+gs)) : 0.);
-         print(" | " << std::setw(9) << av);  
-      }
-      println(" |");
-   }
-   println("------------------------------------------- ");
-   print("[>>] measurement prediction               :");
-   print(" ");
-   for (int i=measurement_prediction.size()-1; i>=0; --i)
-      print(" | " <<  std::setw(9) << __format_bin(measurement_prediction[i]));  
-   println(" |");
-   println("------------------------------------------- ");
-   print("[>>] measurement register                 :");
-   print(" ");
-   for (int i=measurement_register.size()-1; i>=0; --i)
-      print(" | " <<  std::setw(9) << (measurement_register[i] ? '1' : '0'));  
-   println(" |");
-   println("------------------------------------------- ");
+    if (!only_binary)
+    {
+        println("--------------[quantum state]-------------- ");
+        std::streamsize stream_size = std::cout.precision();
+        std::cout.precision(std::numeric_limits<double>::digits10);
+        std::cout << std::fixed;
+        for (int i=0; i<data.size(); ++i)
+        {
+            if ((std::abs(data[i].re) > __amp_epsilon__) ||
+                (std::abs(data[i].im) > __amp_epsilon__))
+            {
+                print("  " << std::showpos << data[i] << " |");
+                to_binary(i,n_qubits);
+                println("> +");
+            }
+        }
+        std::cout.precision(stream_size);
+    }
+    if (measurement_averaging_enabled)
+    {
+        std::setprecision(9);
+        println("------------------------------------------- ");
+        print("[>>] measurement averaging (ground state) :");
+        print(" ");
+        for (int i=measurement_averaging.size()-1; i>=0; --i)
+        {
+            double gs = measurement_averaging[i].ground_states;
+            double es = measurement_averaging[i].exited_states;
+            double av = ((es+gs) != 0. ? (gs/(es+gs)) : 0.);
+            print(" | " << std::setw(9) << av);  
+        }
+        println(" |");
+    }
+    println("------------------------------------------- ");
+    print("[>>] measurement prediction               :");
+    print(" ");
+    for (int i=measurement_prediction.size()-1; i>=0; --i)
+        print(" | " <<  std::setw(9) << __format_bin(measurement_prediction[i]));  
+    println(" |");
+    println("------------------------------------------- ");
+    print("[>>] measurement register                 :");
+    print(" ");
+    for (int i=measurement_register.size()-1; i>=0; --i)
+        print(" | " <<  std::setw(9) << (measurement_register[i] ? '1' : '0'));  
+    println(" |");
+    println("------------------------------------------- ");
 }
 
 /**
@@ -411,4 +414,3 @@ double fidelity(qu_register& s1, qu_register& s2)
    
    return f;
 }
-
