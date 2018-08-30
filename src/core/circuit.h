@@ -122,16 +122,18 @@ namespace qx
             return gates[i];
          }
 
-         void execute(qu_register& reg, bool verbose=false, bool only_binary=false)
+         void execute(qu_register& reg, bool verbose=false, bool silent=false, bool only_binary=false)
          {
             size_t it = iteration;
 
 #ifdef XPU_TIMER
-            println("[+] executing circuit '" << name << "' (" << it << " iter) ...");
             xpu::timer tmr;
-            tmr.start();
+            if (!silent)
+            {
+               println("[+] executing circuit '" << name << "' (" << it << " iter) ...");
+               tmr.start();
+            }
 #endif
-
             while (it--)
             {
                if (!verbose) 
@@ -149,8 +151,11 @@ namespace qx
                } 
             }
 #ifdef XPU_TIMER
-            tmr.stop();
-            println("[+] circuit execution time: " << tmr.elapsed() << " sec.");
+            if (!silent)
+            {
+               tmr.stop();
+               println("[+] circuit execution time: " << tmr.elapsed() << " sec.");
+            }
 #endif // XPU_TIMER
          }
 

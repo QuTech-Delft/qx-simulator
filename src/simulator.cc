@@ -38,18 +38,20 @@ int main(int argc, char **argv)
 {
    std::string file_path;
    size_t ncpu = 0;
+   size_t navg = 0;
    print_banner();
 
-   if (!(argc == 2 || argc == 3))
+   if (!(argc == 2 || argc == 3 || argc == 4))
    {
       println("error : you must specify a circuit file !");
-      println("usage: \n   " << argv[0] << " file.qc");
+      println("usage: \n   " << argv[0] << " file.qc [iterations] [num_cpu]");
       return -1;
    }
 
    // parse arguments and initialise xpu cores
    file_path = argv[1];
-   if (argc == 3) ncpu = (atoi(argv[2]));
+   if (argc > 2) navg = (atoi(argv[2]));
+   if (argc > 3) ncpu = (atoi(argv[3]));
    if (ncpu && ncpu < 128) xpu::init(ncpu);
    else xpu::init();
 
@@ -79,8 +81,7 @@ int main(int argc, char **argv)
       return -1;
    }
 
-
-   // Create qx circuits and register
+   // create qx circuits and register
    std::vector<qx::circuit*> circuits;
    size_t qubits = ast.numQubits();
    println("[+] creating quantum register of " << qubits << " qubits... ");
@@ -116,7 +117,7 @@ int main(int argc, char **argv)
       }
    }
 
-   // Execute qx code
+   // execute qx code
    size_t total_errors = 0;
 
    // check whether an error model is specified
@@ -149,11 +150,27 @@ int main(int argc, char **argv)
          }
       }
       println("[+] total errors injected in all circuits : " << total_errors);
-
    }
 
-   for (size_t i=0; i<circuits.size(); i++)
-      circuits[i]->execute(*reg);
+   // measurement averaging
+   if (navg)
+   {
+      qx::measure m;
+      for (size_t s=0; s<navg; ++s)
+      {
+         reg->reset();
+         for (size_t i=0; i<circuits.size(); i++)
+            circuits[i]->execute(*reg,false,true);
+         m.apply(*reg);
+      }
+      println("[+] average measurement after " << navg << " shots:");
+      reg->dump(true);
+   }
+   else
+   {
+         for (size_t i=0; i<circuits.size(); i++)
+            circuits[i]->execute(*reg);
+   }
 
    xpu::clean();
 
