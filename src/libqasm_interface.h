@@ -4,7 +4,7 @@
 #include <core/circuit.h>
 #include <qasm_ast.hpp>
 
-#define ITER_FOR_IN(e, l) for (auto e = l.begin(); e != l.end(); e++)
+#define __for_in(e, l) for (auto e = l.begin(); e != l.end(); e++)
 
 #define __ret_gate_1(__g) \
 {\
@@ -437,7 +437,7 @@ qx::gate *gateLookup(compiler::Operation &operation)
    return NULL;
 }
 
-qx::circuit *qxCircuitFromCQasm(uint64_t qubits_count, compiler::SubCircuit &subcircuit)
+qx::circuit * load_cqasm_code(uint64_t qubits_count, compiler::SubCircuit &subcircuit)
 {
   uint64_t iterations = subcircuit.numberIterations();
   std::string name = subcircuit.nameSubCircuit();
@@ -448,11 +448,11 @@ qx::circuit *qxCircuitFromCQasm(uint64_t qubits_count, compiler::SubCircuit &sub
   const std::vector<compiler::OperationsCluster*>& clusters
     = subcircuit.getOperationsCluster();
 
-  ITER_FOR_IN(p_cluster, clusters)
+  __for_in(p_cluster, clusters)
   {
     const std::vector<compiler::Operation*> operations
       = (*p_cluster)->getOperations();
-    ITER_FOR_IN(p_operation, operations)
+    __for_in(p_operation, operations)
     {
        qx::gate * g;
        try
