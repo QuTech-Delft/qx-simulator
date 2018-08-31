@@ -148,8 +148,10 @@ qx::gate *gateLookup(compiler::Operation &operation)
    }
 
    ///////// common sq gates //////
+   if (type == "i")
+      __ret_gate_1(qx::identity)
    if (type == "x")
-      __ret_gate_1(qx::pauli_x)
+	  __ret_gate_1(qx::pauli_x)
    if (type == "y")
       __ret_gate_1(qx::pauli_y)
    if (type == "z")
