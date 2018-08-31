@@ -206,6 +206,7 @@ int main(int argc, char **argv)
          circuits[i]->execute(*reg);
    }
 
+   // exit(0);
    xpu::clean();
 
    return 0;

@@ -236,13 +236,15 @@ void qx::qu_register::dump(bool only_binary=false)
     {
         println("--------------[quantum state]-------------- ");
         std::streamsize stream_size = std::cout.precision();
-        std::cout.precision(std::numeric_limits<double>::digits10);
+        // std::cout.precision(std::numeric_limits<double>::digits10);
+        std::cout.precision(7); //std::numeric_limits<double>::digits10);
         std::cout << std::fixed;
         for (int i=0; i<data.size(); ++i)
         {
             if ((std::abs(data[i].re) > __amp_epsilon__) ||
                 (std::abs(data[i].im) > __amp_epsilon__))
             {
+                print("  [p = " << std::showpos << data[i].norm() << "]");
                 print("  " << std::showpos << data[i] << " |");
                 to_binary(i,n_qubits);
                 println("> +");
