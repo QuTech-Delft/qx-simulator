@@ -33,10 +33,10 @@ namespace qx
    {
       private:
 
-         uint64_t            n_qubit;
+         size_t              n_qubit;
          std::vector<gate *> gates;
          std::string         name;
-         uint64_t            iteration;
+         size_t              iteration;
          double              time;
 
       public:
@@ -44,7 +44,7 @@ namespace qx
          /**
           * \brief circuit constructor
           */
-         circuit(uint64_t n_qubit, std::string name = "", uint32_t iteration=1) : n_qubit(n_qubit), name(name), iteration(iteration)
+         circuit(size_t n_qubit, std::string name = "", size_t iteration=1) : n_qubit(n_qubit), name(name), iteration(iteration)
          {
          }
 
@@ -91,7 +91,7 @@ namespace qx
          /**
           * \brief return gate <i>
           */
-         qx::gate * operator [] (uint64_t i)
+         qx::gate * operator [] (size_t i)
          {
             assert(i < gates.size());
             return gates[i];
@@ -100,7 +100,7 @@ namespace qx
          /**
           * \brief set iterations number
           */
-         void set_iterations(uint64_t n)
+         void set_iterations(size_t n)
          {
             iteration = n;
          }
@@ -108,7 +108,7 @@ namespace qx
          /**
           * \brief set iterations number
           */
-         uint64_t get_iterations()
+         size_t get_iterations()
          {
             return iteration;
          }
@@ -116,30 +116,32 @@ namespace qx
          /**
           * \brief return gate <i>
           */
-         qx::gate * get(uint64_t i)
+         qx::gate * get(size_t i)
          {
             assert(i < gates.size());
             return gates[i];
          }
 
-         void execute(qu_register& reg, bool verbose=false, bool only_binary=false)
+         void execute(qu_register& reg, bool verbose=false, bool silent=false, bool only_binary=false)
          {
-            uint64_t it = iteration;
+            size_t it = iteration;
 
 #ifdef XPU_TIMER
-            println("[+] executing circuit '" << name << "' (" << it << " iter) ...");
             xpu::timer tmr;
-            tmr.start();
+            if (!silent)
+            {
+               println("[+] executing circuit '" << name << "' (" << it << " iter) ...");
+               tmr.start();
+            }
 #endif
-
             while (it--)
             {
                if (!verbose) 
-                  for (uint64_t i=0; i<gates.size(); ++i)
+                  for (size_t i=0; i<gates.size(); ++i)
                      gates[i]->apply(reg);
                else
                {
-                  for (uint64_t i=0; i<gates.size(); ++i)
+                  for (size_t i=0; i<gates.size(); ++i)
                   {
                      println("[-] executing gate " << i << "...");
                      gates[i]->dump();
@@ -149,15 +151,18 @@ namespace qx
                } 
             }
 #ifdef XPU_TIMER
-            tmr.stop();
-            println("[+] circuit execution time: " << tmr.elapsed() << " sec.");
+            if (!silent)
+            {
+               tmr.stop();
+               println("[+] circuit execution time: " << tmr.elapsed() << " sec.");
+            }
 #endif // XPU_TIMER
          }
 
          /**
           * \return gates count
           */
-         uint64_t size()
+         size_t size()
          {
             return gates.size();
          }
@@ -166,7 +171,7 @@ namespace qx
           * insert a gate at the specified 
           * position
           */
-         void insert(uint64_t pos, qx::gate * g)
+         void insert(size_t pos, qx::gate * g)
          {
             gates.insert(gates.begin()+pos,g);
          }
@@ -183,19 +188,19 @@ namespace qx
          void dump()
          {
             println("[+++] circuit '" << name << "' :");
-            for (uint64_t i=0; i<gates.size(); ++i)
+            for (size_t i=0; i<gates.size(); ++i)
             {
                print("  |--" << i << "--");
                gates[i]->dump();
             }
          }
 
-         uint64_t get_qubit_count()
+         size_t get_qubit_count()
          {
             return n_qubit;
          }
 
-         void set_qubit_count(uint64_t n)
+         void set_qubit_count(size_t n)
          {
             n_qubit = n;
             // check gate validity (target/ctrl qubits < n_qubit)
