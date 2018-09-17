@@ -42,7 +42,7 @@ namespace qx
 	 public:
 
 	    virtual complex_t get(size_t i, size_t j) const = 0;
-	    virtual inline size_t size() const = 0;
+	    virtual size_t size() const = 0;
       };
 
       /**

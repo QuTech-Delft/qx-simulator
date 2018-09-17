@@ -63,7 +63,7 @@ namespace qx
       map_t         definitions;
 
       // circuits
-      uint32_t                   qubits_count;
+      size_t                   qubits_count;
       std::vector<qx::circuit *> circuits;
 
       quantum_states_t           quantum_states;
@@ -170,14 +170,14 @@ namespace qx
 	    println("[!] no circuits: quantum code file not loaded yet !");
 	    return;
 	 }
-	 for (uint32_t i=0; i<circuits.size(); ++i)
+	 for (size_t i=0; i<circuits.size(); ++i)
 	    circuits[i]->dump();
       }
 
       /**
        * \brief execute circuits
        */
-      void execute(qx::qu_register& reg, uint32_t address=0, bool verbose=false, bool binary=false)
+      void execute(qx::qu_register& reg, size_t address=0, bool verbose=false, bool binary=false)
       {
 	 if (!parsed_successfully)
 	 {
@@ -189,14 +189,14 @@ namespace qx
 	    println("[x] invalid circuit pointer (" << address << ") , there is only " << circuits.size() << " sub-circuits !");
 	    return;
 	 }
-	 for (uint32_t i=address; i<circuits.size(); ++i)
+	 for (size_t i=address; i<circuits.size(); ++i)
 	    circuits[i]->execute(reg,verbose,binary);
       }
       
       /**
        * qubits
        */
-      uint32_t qubits()
+      size_t qubits()
       {
 	 return qubits_count;
       }
@@ -227,7 +227,7 @@ namespace qx
       {
 	 if (!is_dot(str[0]))
 	    return false;
-	 for (uint32_t i=1; i<str.size(); ++i)
+	 for (size_t i=1; i<str.size(); ++i)
 	 {
 	    if ((!is_letter(str[i])) && (!is_digit(str[i])) && (str[i]!='(') && (str[i]!=')'))
 	       return false;
@@ -257,7 +257,7 @@ namespace qx
       {
 	 if (str[0] != 'q')
 	    return false;
-	 uint32_t l = str.length();
+	 size_t l = str.length();
 	 if (l>=1)
 	 {
 	    for (size_t i=1; i<l; ++i)
@@ -270,7 +270,7 @@ namespace qx
       /**
        * \brief retrieve qubit number <N> from a string "qN"
        */
-      uint32_t qubit_id(std::string& str)
+      size_t qubit_id(std::string& str)
       {
 	 std::string& original_line = str;
 	 std::string  qubit;
@@ -303,7 +303,7 @@ namespace qx
       /**
        * \brief retrieve bit number <N> from an identifer <bN>
        */
-      uint32_t bit_id(std::string& str)
+      size_t bit_id(std::string& str)
       {
 	 std::string& original_line = str;
 	 if (str[0] != 'b')
@@ -321,7 +321,7 @@ namespace qx
        * \return 
        *    a pointer to the current sub-circuit 
        */
-      qx::circuit * current_sub_circuit(uint32_t qubits_count)
+      qx::circuit * current_sub_circuit(size_t qubits_count)
       {
 	 if (circuits.size())
 	 {
@@ -332,7 +332,7 @@ namespace qx
       }
 
 
-      uint32_t iterations(std::string label)
+      size_t iterations(std::string label)
       {
 	 std::string& original_line = label;
 	 int32_t i1 = label.find('('); 
@@ -347,7 +347,7 @@ namespace qx
 	 // find iteration count
 	 std::string it = label.substr(i1+1,i2-i1-1);
 	 // println("it = " << it);
-	 for (uint32_t i=0; i<it.length(); ++i)
+	 for (size_t i=0; i<it.length(); ++i)
 	 {
 	    if (!is_digit(it[i]))
 	       print_semantic_error(" invalid sub-circuit's iteration count !");
@@ -437,7 +437,7 @@ namespace qx
 	 else if (words[0] == "map") // definitions
 	 {
 	    strings params = word_list(words[1],",");
-	    uint32_t q     = 0;
+	    size_t q     = 0;
 	    if (params[0][0] == 'q') 
 	       q = qubit_id(params[0]);
 	    else if (params[0][0] == 'b')
@@ -517,7 +517,7 @@ namespace qx
 	  */
 	 else if (words[0] == "h")    // hadamard gate
 	 {
-	    uint32_t q = qubit_id(words[1]); // atoi(words[1].c_str());
+	    size_t q = qubit_id(words[1]); // atoi(words[1].c_str());
 	    if (q > (qubits_count-1))
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => hadamard gate on: " << q);
@@ -528,7 +528,7 @@ namespace qx
 	 } 
 	 else if (words[0] == "rx90")    // rx90 
 	 {
-	    uint32_t q = qubit_id(words[1]); // atoi(words[1].c_str());
+	    size_t q = qubit_id(words[1]); // atoi(words[1].c_str());
 	    if (q > (qubits_count-1))
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => hadamard gate on: " << q);
@@ -539,7 +539,7 @@ namespace qx
 	 }
 	 else if (words[0] == "mrx90")    // mrx90 
 	 {
-	    uint32_t q = qubit_id(words[1]); // atoi(words[1].c_str());
+	    size_t q = qubit_id(words[1]); // atoi(words[1].c_str());
 	    if (q > (qubits_count-1))
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => hadamard gate on: " << q);
@@ -550,7 +550,7 @@ namespace qx
 	 }
 	 else if (words[0] == "rx180")    // rx90 
 	 {
-	    uint32_t q = qubit_id(words[1]); // atoi(words[1].c_str());
+	    size_t q = qubit_id(words[1]); // atoi(words[1].c_str());
 	    if (q > (qubits_count-1))
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => hadamard gate on: " << q);
@@ -561,7 +561,7 @@ namespace qx
 	 }
 	 else if (words[0] == "ry90")    // rx90 
 	 {
-	    uint32_t q = qubit_id(words[1]); // atoi(words[1].c_str());
+	    size_t q = qubit_id(words[1]); // atoi(words[1].c_str());
 	    if (q > (qubits_count-1))
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => hadamard gate on: " << q);
@@ -572,7 +572,7 @@ namespace qx
 	 }
 	 else if (words[0] == "mry90")    // rx90 
 	 {
-	    uint32_t q = qubit_id(words[1]); // atoi(words[1].c_str());
+	    size_t q = qubit_id(words[1]); // atoi(words[1].c_str());
 	    if (q > (qubits_count-1))
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => hadamard gate on: " << q);
@@ -583,7 +583,7 @@ namespace qx
 	 }
 	 else if (words[0] == "ry180")    // rx90 
 	 {
-	    uint32_t q = qubit_id(words[1]); // atoi(words[1].c_str());
+	    size_t q = qubit_id(words[1]); // atoi(words[1].c_str());
 	    if (q > (qubits_count-1))
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => hadamard gate on: " << q);
@@ -596,8 +596,8 @@ namespace qx
 	 else if (words[0] == "cnot") // cnot gate
 	 {
 	    strings params = word_list(words[1],",");
-	    uint32_t cq = qubit_id(params[0]);
-	    uint32_t tq = qubit_id(params[1]);
+	    size_t cq = qubit_id(params[0]);
+	    size_t tq = qubit_id(params[1]);
 	    if (cq > (qubits_count-1))
 	       print_semantic_error(" control qubit out of range !");
 	    if (tq > (qubits_count-1))
@@ -611,8 +611,8 @@ namespace qx
 	 else if (words[0] == "swap") // cnot gate
 	 {
 	    strings params = word_list(words[1],",");
-	    uint32_t q1 = qubit_id(params[0]);
-	    uint32_t q2 = qubit_id(params[1]);
+	    size_t q1 = qubit_id(params[0]);
+	    size_t q2 = qubit_id(params[1]);
 	    if ((q1 > (qubits_count-1)) || (q1 > (qubits_count-1)))
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => swap gate : qubit_1=" << q1 << ", qubit_2=" << q2); 
@@ -628,8 +628,8 @@ namespace qx
 	 else if (words[0] == "cr") 
 	 {
 	    strings params = word_list(words[1],",");
-	    uint32_t q1 = qubit_id(params[0]);
-	    uint32_t q2 = qubit_id(params[1]);
+	    size_t q1 = qubit_id(params[0]);
+	    size_t q2 = qubit_id(params[1]);
 	    if ((q1 > (qubits_count-1)) || (q1 > (qubits_count-1)))
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => controlled phase shift gate : ctrl_qubit=" << q1 << ", target_qubit=" << q2); 
@@ -644,8 +644,8 @@ namespace qx
 	 else if (words[0] == "cphase") 
 	 {
 	    strings params = word_list(words[1],",");
-	    uint32_t q1 = qubit_id(params[0]);
-	    uint32_t q2 = qubit_id(params[1]);
+	    size_t q1 = qubit_id(params[0]);
+	    size_t q2 = qubit_id(params[1]);
 	    if ((q1 > (qubits_count-1)) || (q1 > (qubits_count-1)))
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => controlled phase shift gate : ctrl_qubit=" << q1 << ", target_qubit=" << q2); 
@@ -660,7 +660,7 @@ namespace qx
 	  */
 	 else if (words[0] == "x")   // x gate
 	 {
-	    uint32_t q = qubit_id(words[1]);
+	    size_t q = qubit_id(words[1]);
 	    if (q > (qubits_count-1))
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => pauli x gate on: " << q);
@@ -674,8 +674,8 @@ namespace qx
 	    strings params = word_list(words[1],",");
 	    translate(params[0]);
 	    bool bit = is_bit(params[0]);
-	    uint32_t ctrl   = (bit ? bit_id(params[0]) : qubit_id(params[0]));
-	    uint32_t target = qubit_id(params[1]);
+	    size_t ctrl   = (bit ? bit_id(params[0]) : qubit_id(params[0]));
+	    size_t target = qubit_id(params[1]);
 
 	    if (ctrl > (qubits_count-1))
 	       print_semantic_error(" ctrl qubit out of range !");
@@ -701,19 +701,19 @@ namespace qx
 	 else if (words[0] == "c-x")   // c-x gate
 	 {
 	    strings params = word_list(words[1],",");
-	    for (uint32_t i=0; i<params.size(); ++i)
+	    for (size_t i=0; i<params.size(); ++i)
 	           translate(params[i]);
 	    // target qubit processing
-	    uint32_t target = qubit_id(params[params.size()-1]);
+	    size_t target = qubit_id(params[params.size()-1]);
 	    if (target > (qubits_count-1))
 	       print_semantic_error(" target qubit out of range !");
 	    qx::gate * g = new qx::pauli_x(target);
 	    // control bit(s) processing
-	    for (uint32_t i=0; i<params.size()-1; ++i)
+	    for (size_t i=0; i<params.size()-1; ++i)
 	    {
 	       if (!is_bit(params[i]))
 		     print_semantic_error(" invalid control bit !");
-	       uint32_t ctrl = bit_id(params[i]);
+	       size_t ctrl = bit_id(params[i]);
 	       if (ctrl > (qubits_count-1))
 		  print_semantic_error(" ctrl bit out of range !");
 	       g = new qx::bin_ctrl(ctrl, g);
@@ -725,7 +725,7 @@ namespace qx
 	    }
 	 else if (words[0] == "y")   // y gate
 	 {
-	    uint32_t q = qubit_id(words[1]);
+	    size_t q = qubit_id(words[1]);
 	    if (q > (qubits_count-1))
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => pauli y gate on: " << atoi(words[1].c_str()));
@@ -740,16 +740,16 @@ namespace qx
 	    strings params = word_list(words[1],",");
 	    translate(params[0]);
 	    // target qubit processing
-	    uint32_t target = qubit_id(params[params.size()-1]);
+	    size_t target = qubit_id(params[params.size()-1]);
 	    if (target > (qubits_count-1))
 	       print_semantic_error(" target qubit out of range !");
 	    qx::gate * g = new qx::pauli_y(target);
 	    // control bit(s) processing
-	    for (uint32_t i=0; i<params.size()-1; ++i)
+	    for (size_t i=0; i<params.size()-1; ++i)
 	    {
 	       if (!is_bit(params[i]))
 		     print_semantic_error(" invalid control bit !");
-	       uint32_t ctrl = bit_id(params[i]);
+	       size_t ctrl = bit_id(params[i]);
 	       if (ctrl > (qubits_count-1))
 		  print_semantic_error(" ctrl bit out of range !");
 	       g = new qx::bin_ctrl(ctrl, g);
@@ -761,7 +761,7 @@ namespace qx
 	    }
 	 else if (words[0] == "z")   // z gate
 	 {
-	    uint32_t q = qubit_id(words[1]);
+	    size_t q = qubit_id(words[1]);
 	    if (q > (qubits_count-1))
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => pauli z gate on: " << atoi(words[1].c_str()));
@@ -775,8 +775,8 @@ namespace qx
 	    strings params = word_list(words[1],",");
 	    translate(params[0]);
 	    bool bit = is_bit(params[0]);
-	    uint32_t ctrl   = (bit ? bit_id(params[0]) : qubit_id(params[0]));
-	    uint32_t target = qubit_id(params[1]);
+	    size_t ctrl   = (bit ? bit_id(params[0]) : qubit_id(params[0]));
+	    size_t target = qubit_id(params[1]);
 
 	    if (ctrl > (qubits_count-1))
 	       print_semantic_error(" ctrl qubit out of range !");
@@ -803,19 +803,19 @@ namespace qx
 	 else if (words[0] == "c-z")   // c-z gate
 	 {
 	    strings params = word_list(words[1],",");
-	    for (uint32_t i=0; i<params.size(); ++i)
+	    for (size_t i=0; i<params.size(); ++i)
 	           translate(params[i]);
 	    // target qubit processing
-	    uint32_t target = qubit_id(params[params.size()-1]);
+	    size_t target = qubit_id(params[params.size()-1]);
 	    if (target > (qubits_count-1))
 	       print_semantic_error(" target qubit out of range !");
 	    qx::gate * g = new qx::pauli_z(target);
 	    // control bit(s) processing
-	    for (uint32_t i=0; i<params.size()-1; ++i)
+	    for (size_t i=0; i<params.size()-1; ++i)
 	    {
 	       if (!is_bit(params[i]))
 		     print_semantic_error(" invalid control bit !");
-	       uint32_t ctrl = bit_id(params[i]);
+	       size_t ctrl = bit_id(params[i]);
 	       if (ctrl > (qubits_count-1))
 		  print_semantic_error(" ctrl bit out of range !");
 	       g = new qx::bin_ctrl(ctrl, g);
@@ -830,7 +830,7 @@ namespace qx
 	  */
 	 else if (words[0] == "t")   // T gate
 	 {
-	    uint32_t q = qubit_id(words[1]);
+	    size_t q = qubit_id(words[1]);
 	    if (q > (qubits_count-1))
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => t gate on: " << q);
@@ -844,7 +844,7 @@ namespace qx
 	  */
 	 else if (words[0] == "tdag")   // Tdag gate
 	 {
-	    uint32_t q = qubit_id(words[1]);
+	    size_t q = qubit_id(words[1]);
 	    if (q > (qubits_count-1))
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => t gate on: " << q);
@@ -859,7 +859,7 @@ namespace qx
 	  */
 	 else if (words[0] == "prepz")   // prepz gate
 	 {
-	    uint32_t q = qubit_id(words[1]);
+	    size_t q = qubit_id(words[1]);
 	    if (q > (qubits_count-1))
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => t gate on: " << q);
@@ -880,7 +880,7 @@ namespace qx
 	 else if (words[0] == "rx")   // rx gate
 	 {
 	    strings params = word_list(words[1],",");
-	    uint32_t q = qubit_id(params[0]);
+	    size_t q = qubit_id(params[0]);
 	    if (q > (qubits_count-1))
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => rx gate on " << process_qubit(params[0]) << " (angle=" << params[1] << ")");
@@ -892,7 +892,7 @@ namespace qx
 	 else if (words[0] == "ry")   // ry gate
 	 {
 	    strings params = word_list(words[1],",");
-	    uint32_t q = qubit_id(params[0]);
+	    size_t q = qubit_id(params[0]);
 	    if (q > (qubits_count-1))
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => ry gate on " << process_qubit(params[0]) << " (angle=" << params[1] << ")");
@@ -904,7 +904,7 @@ namespace qx
 	 else if (words[0] == "rz")   // rz gate
 	 {
 	    strings params = word_list(words[1],",");
-	    uint32_t q = qubit_id(params[0]);
+	    size_t q = qubit_id(params[0]);
 	    if (q > (qubits_count-1))
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => rz gate on " << process_qubit(params[0]) << " (angle=" << params[1] << ")");
@@ -920,7 +920,7 @@ namespace qx
 	 else if (words[0] == "ph")   // phase shift gate
 	 {
 	    //strings params = word_list(words[1],",");
-	    uint32_t q = qubit_id(words[1]);
+	    size_t q = qubit_id(words[1]);
 	    if (q > (qubits_count-1))
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => phase gate on " << process_qubit(words[1]));
@@ -932,7 +932,7 @@ namespace qx
 	 else if (words[0] == "s")   // phase shift gate
 	 {
 	    //strings params = word_list(words[1],",");
-	    uint32_t q = qubit_id(words[1]);
+	    size_t q = qubit_id(words[1]);
 	    if (q > (qubits_count-1))
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => phase gate on " << process_qubit(words[1]));
@@ -943,7 +943,7 @@ namespace qx
 	 }
 	 else if (words[0] == "sdag")   // Sdag gate
 	 {
-	    uint32_t q = qubit_id(words[1]);
+	    size_t q = qubit_id(words[1]);
 	    if (q > (qubits_count-1))
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => sdag gate on: " << q);
@@ -957,7 +957,7 @@ namespace qx
 	    translate(words[1]);
 	    if (!is_bit(words[1]))
 	       print_semantic_error(" invalid target bit !");
-	    uint32_t b = bit_id(words[1]);
+	    size_t b = bit_id(words[1]);
 	    if (b > (qubits_count-1))
 	       print_semantic_error(" target bit out of range !");
 	    qx::gate * g = new qx::classical_not(b);
@@ -972,7 +972,7 @@ namespace qx
 	  */
 	 else if (words[0] == "measure")   // measurement
 	 {
-	    uint32_t q = qubit_id(words[1]);
+	    size_t q = qubit_id(words[1]);
 	    if (q > (qubits_count-1))
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => measure qubit " << atoi(words[1].c_str()));
@@ -990,9 +990,9 @@ namespace qx
 	    strings params = word_list(words[1],",");
 	    if (params.size() != 3)
 	       print_semantic_error(" toffoli gate requires 3 qubits !");
-	    uint32_t q0 = qubit_id(params[0]);
-	    uint32_t q1 = qubit_id(params[1]);
-	    uint32_t q2 = qubit_id(params[2]);
+	    size_t q0 = qubit_id(params[0]);
+	    size_t q1 = qubit_id(params[1]);
+	    size_t q2 = qubit_id(params[2]);
 	    if (q0 > (qubits_count-1)) print_semantic_error(" first control qubit out of range !");
 	    if (q1 > (qubits_count-1)) print_semantic_error(" scond control qubit out of range !");
 	    if (q2 > (qubits_count-1)) print_semantic_error(" target qubit out of range !");
@@ -1027,7 +1027,7 @@ namespace qx
       }
 
 /*
-	 uint32_t qubit_id(std::string& str)
+	 size_t qubit_id(std::string& str)
 	 {
 	 std::string id = str.substr(1);
 	 println("id=" << id);
