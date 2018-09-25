@@ -75,7 +75,7 @@ namespace xpu
 	   pointers get_in_data()
 	   {
 		 pointers ptrs; 
-		 #pragma unroll
+		 // #pragma unroll
 		 for (int j=0; j<N; j++)
 		    ptrs += m_tasks[j]->get_in_data();
 		 return ptrs;
@@ -84,7 +84,7 @@ namespace xpu
 	   pointers get_out_data()
 	   {
 		 pointers ptrs; 
-		 #pragma unroll
+		 // #pragma unroll
 		 for (int j=0; j<N; j++)
 		    ptrs += m_tasks[j]->get_out_data();
 		 return ptrs;
@@ -92,7 +92,7 @@ namespace xpu
 
 	   void set_shared(pointer p, lockable * l)
 	   {
-		 #pragma unroll
+		 // #pragma unroll
 		 for (int i=0; i<N; i++)
 		    m_tasks[i]->set_shared(p,l);
 	   }
@@ -100,7 +100,7 @@ namespace xpu
 	   pointers get_pointers()
 	   {
 		 pointers ptrs;
-		 #pragma unroll
+		 // #pragma unroll
 		 for (int i=0; i<N; i++)
 		    ptrs += m_tasks[i]->get_pointers();
 		 return ptrs;
