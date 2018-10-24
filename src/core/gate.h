@@ -1,8 +1,8 @@
 /**
- * @file		gate.h
- * @author	Nader KHAMMASSI - nader.khammassi@gmail.com 
- * @date		02-10-15
- * @brief		
+ * @file        gate.h
+ * @author  Nader KHAMMASSI - nader.khammassi@gmail.com 
+ * @date        02-10-15
+ * @brief       
  */
 
 #pragma once
@@ -114,23 +114,23 @@ namespace qx
     */
    class gate
    {
-	 public:
-	   
-	   virtual int64_t                apply(qu_register& qureg) = 0;
-	   virtual std::vector<uint64_t>  qubits() = 0;
-	   virtual std::vector<uint64_t>  control_qubits() = 0;
-	   virtual std::vector<uint64_t>  target_qubits()  = 0;
-	   virtual gate_type_t            type() = 0;
-	   virtual std::string            micro_code() { return "# unsupported operation : qubit out of range"; }
-	   virtual void                   dump() = 0;
-	   virtual                        ~gate() { };                
+     public:
+       
+       virtual int64_t                apply(qu_register& qureg) = 0;
+       virtual std::vector<uint64_t>  qubits() = 0;
+       virtual std::vector<uint64_t>  control_qubits() = 0;
+       virtual std::vector<uint64_t>  target_qubits()  = 0;
+       virtual gate_type_t            type() = 0;
+       virtual std::string            micro_code() { return "# unsupported operation : qubit out of range"; }
+       virtual void                   dump() = 0;
+       virtual                        ~gate() { };                
 
-	   virtual void                   set_duration(uint64_t d) { duration = d; }
-	   virtual uint64_t               get_duration() { return duration; }
-	 
-	 protected:
+       virtual void                   set_duration(uint64_t d) { duration = d; }
+       virtual uint64_t               get_duration() { return duration; }
+     
+     protected:
 
-	   uint64_t                       duration;
+       uint64_t                       duration;
 
    };
 
@@ -142,10 +142,10 @@ namespace qx
     */
    inline cmatrix_t rotation(double theta)
    {
-	 cmatrix_t r; // (2,2);
-	 r(0,0) = complex_t(cos(theta),0); r(0,1) = complex_t(-sin(theta),0);
-	 r(1,0) = complex_t(sin(theta),0); r(1,1) = complex_t(cos(theta),0);
-	 return r;
+     cmatrix_t r; // (2,2);
+     r(0,0) = complex_t(cos(theta),0); r(0,1) = complex_t(-sin(theta),0);
+     r(1,0) = complex_t(sin(theta),0); r(1,1) = complex_t(cos(theta),0);
+     return r;
    }
 
    /**
@@ -153,10 +153,10 @@ namespace qx
     */
    inline cmatrix_t phase(double phi)
    {
-	 cmatrix_t p; // (2,2);
-	 p(0,0) = complex_t(1,0); p(0,1) = complex_t(0,0);
-	 p(1,0) = complex_t(0,0); p(1,1) = complex_t(cos(phi),sin(phi));
-	 return p;
+     cmatrix_t p; // (2,2);
+     p(0,0) = complex_t(1,0); p(0,1) = complex_t(0,0);
+     p(1,0) = complex_t(0,0); p(1,1) = complex_t(cos(phi),sin(phi));
+     return p;
    }
 
    /**
@@ -620,11 +620,11 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
 
    inline void sqg_apply(cmatrix_t & cm, uint64_t qubit, qu_register& qureg)
    {
-	 uint64_t     n  = qureg.size();
-	 complex_t *  s  = qureg.get_data().data();
-	 // cm.dump();
-	 __apply_m(0, (1 << n), qubit, s, 0, (1 << qubit), cm.m);
-	 return;
+     uint64_t     n  = qureg.size();
+     complex_t *  s  = qureg.get_data().data();
+     // cm.dump();
+     __apply_m(0, (1 << n), qubit, s, 0, (1 << qubit), cm.m);
+     return;
 
    }
 
@@ -792,8 +792,8 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
       public:
 
          cnot(uint64_t ctrl_q, uint64_t target_q) : control_qubit(ctrl_q), 
-	                                                 target_qubit(target_q)
-	      {
+                                                     target_qubit(target_q)
+          {
             // m = build_matrix(cnot_c,4); // stack smaching
          }
 
@@ -954,20 +954,20 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
             println("  [-] cnot(ctrl_qubit=" << control_qubit << ", target_qubit=" << target_qubit << ")");
          }
 
-	   private:
+       private:
 #if 0
-	   void __swap(cvector_t& amp, size_t size, size_t bit, size_t trg, size_t ctrl, size_t offset=0)
-	   {
-	      // println("bit=" << bit);
-	      // println("ctrl=" << ctrl);
-	      for (size_t i=__bit_set(0,bit); i<(1<<size); i += (1 << (bit+1)))
-		 for (size_t j=0; j<(1<<bit); j++)
-		 {
-		    size_t v = i+j+offset; 
-		    std::swap(amp[v], amp[__bit_reset(v,trg)]);
-		    // println(" swap(" << std::bitset<16>(v) << "," << std::bitset<16>(__bit_reset(v,trg)) << ")");
-		 }
-	   }
+       void __swap(cvector_t& amp, size_t size, size_t bit, size_t trg, size_t ctrl, size_t offset=0)
+       {
+          // println("bit=" << bit);
+          // println("ctrl=" << ctrl);
+          for (size_t i=__bit_set(0,bit); i<(1<<size); i += (1 << (bit+1)))
+         for (size_t j=0; j<(1<<bit); j++)
+         {
+            size_t v = i+j+offset; 
+            std::swap(amp[v], amp[__bit_reset(v,trg)]);
+            // println(" swap(" << std::bitset<16>(v) << "," << std::bitset<16>(__bit_reset(v,trg)) << ")");
+         }
+       }
 #endif
 
 
@@ -1633,54 +1633,54 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
     */
    class t_gate : public gate
    {
-	 private:
+     private:
 
-	   uint64_t   qubit;
-	   cmatrix_t  m;
+       uint64_t   qubit;
+       cmatrix_t  m;
 
-	 public:
+     public:
 
-	   t_gate(uint64_t qubit) : qubit(qubit)
-	   {
-		 m = build_matrix(t_gate_c,2);
-	   }
+       t_gate(uint64_t qubit) : qubit(qubit)
+       {
+         m = build_matrix(t_gate_c,2);
+       }
 
-	   int64_t apply(qu_register& qreg)
-	   {
-		 sqg_apply(m,qubit,qreg);
-		 return 0;
-	   }
+       int64_t apply(qu_register& qreg)
+       {
+         sqg_apply(m,qubit,qreg);
+         return 0;
+       }
 
-	   void dump()
-	   {
-		 println("  [-] t_gate(qubit=" << qubit << ")");
-	   }
-	   
-	   std::vector<uint64_t>  qubits()
-	   {
-		 std::vector<uint64_t> r;
-		 r.push_back(qubit);
-		 return r;
-	   }
+       void dump()
+       {
+         println("  [-] t_gate(qubit=" << qubit << ")");
+       }
+       
+       std::vector<uint64_t>  qubits()
+       {
+         std::vector<uint64_t> r;
+         r.push_back(qubit);
+         return r;
+       }
  
-	   std::vector<uint64_t>  control_qubits()
-	   {
-		 std::vector<uint64_t> r;
-		 return r;
-	   }
+       std::vector<uint64_t>  control_qubits()
+       {
+         std::vector<uint64_t> r;
+         return r;
+       }
  
-	   std::vector<uint64_t>  target_qubits()
-	   {
-		 std::vector<uint64_t> r;
-		 r.push_back(qubit);
-		 return r;
-	   }
+       std::vector<uint64_t>  target_qubits()
+       {
+         std::vector<uint64_t> r;
+         r.push_back(qubit);
+         return r;
+       }
 
 
-	   gate_type_t type()
-	   {
-	      return __t_gate__; 
-	   }
+       gate_type_t type()
+       {
+          return __t_gate__; 
+       }
 
    };
 
@@ -2639,14 +2639,14 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
       public:
 
          // #ifdef __BUILTIN_LINALG__
-         //	   custom(std::vector<uint64_t>  qubits, qx::linalg::matrix<complex_t> m) : qubits(qubits), m(m)
+         //    custom(std::vector<uint64_t>  qubits, qx::linalg::matrix<complex_t> m) : qubits(qubits), m(m)
          // #else
          custom(uint64_t  qubit, cmatrix_t m) : qubit(qubit), m(m)
                                                 // #endif 
          {
-            //		 uint64_t size = 1 << qubits.size();
-            //		 if (size != m.size1() || size != m.size2())
-            //		    println("[x] error: cutom gate : the matrix size do not match the number of qubits !");
+            //       uint64_t size = 1 << qubits.size();
+            //       if (size != m.size1() || size != m.size2())
+            //          println("[x] error: cutom gate : the matrix size do not match the number of qubits !");
             // verify also that the matrix is unitary
             // #ifdef __BUILTIN_LINALG__
             // cmatrix_t ctr(m.size2(),m.size1());
@@ -2658,16 +2658,16 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
             // qx::linalg::matrix<complex_t> mxctr = mxm(m,ctr);
             // qx::linalg::identity_matrix<complex_t> id(m.size1());
             // #else
-            // 		 cmatrix_t mxctr = mxm(m,ublas::trans(conj(m)));
-            // 		 ublas::identity_matrix<complex_t> id(m.size1());
+            //       cmatrix_t mxctr = mxm(m,ublas::trans(conj(m)));
+            //       ublas::identity_matrix<complex_t> id(m.size1());
             // #endif
 
             // #ifdef __BUILTIN_LINALG__
-            //		 if (qx::linalg::equals(mxctr,id))
+            //       if (qx::linalg::equals(mxctr,id))
             // #else
-            // 		 if (equals(mxctr,id))
+            //       if (equals(mxctr,id))
             // #endif
-            //		    println("[x] error: custom gate : the specified matrix is not unitary !");
+            //          println("[x] error: custom gate : the specified matrix is not unitary !");
          }
 
          /**
@@ -2828,8 +2828,9 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
             {
                // #define PARALLEL_MEASUREMENT
                // #ifdef PARALLEL_MEASUREMENT
-
+               std::cout << "lock problems? size = " << size << std::endl;
                xpu::lockable * l = new xpu::core::os::mutex();
+               std::cout << "lock problems? before lockable." << std::endl;
                xpu::task p1_worker_t(p1_worker, (uint64_t)0, n, (uint64_t)1, &p, qubit, l, &data); 
                xpu::parallel_for parallel_p1( (uint64_t)0, n, (uint64_t)1, &p1_worker_t);
                parallel_p1.run();
@@ -3676,7 +3677,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
             for (uint64_t i=0; i<gates.size(); i++)
             {
                std::vector<uint64_t> q = gates[i]->qubits();
-               r.insert(r.end(),q.begin(),q.end());	
+               r.insert(r.end(),q.begin(),q.end()); 
             }
             return r;
          }
@@ -3688,7 +3689,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
             for (uint64_t i=0; i<gates.size(); i++)
             {
                std::vector<uint64_t> q = gates[i]->control_qubits();
-               r.insert(r.end(),q.begin(),q.end());	
+               r.insert(r.end(),q.begin(),q.end()); 
             }
             return r;
          }
@@ -3699,7 +3700,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
             for (uint64_t i=0; i<gates.size(); i++)
             {
                std::vector<uint64_t> q = gates[i]->target_qubits();
-               r.insert(r.end(),q.begin(),q.end());	
+               r.insert(r.end(),q.begin(),q.end()); 
             }
             return r;
          }

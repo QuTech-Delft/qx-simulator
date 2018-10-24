@@ -35,101 +35,106 @@ namespace xpu
 {
    namespace core
    {
-	 namespace os
-	 {
-	    class data_control
-	    {
-		  public:
-		     
-		    /**
-		     * ctor
-		     */
-			data_control()
-			{
-			   pthread_mutex_init(&m_mutex,NULL);
-			   pthread_cond_init(&m_cond,NULL);
-			   m_active = 1;
-			}
+     namespace os
+     {
+        class data_control
+        {
+          public:
+             
+            /**
+             * ctor
+             */
+            data_control()
+            {
+               pthread_mutex_init(&m_mutex,NULL);
+               pthread_cond_init(&m_cond,NULL);
+               m_active = 1;
+            }
 
-			/**
-			 * dtor
-			 */
-			~data_control()
-			{
-			   pthread_mutex_destroy(&m_mutex);
-			   pthread_cond_destroy(&m_cond);
-			   m_active = 0;
-			}
+            /**
+             * dtor
+             */
+            ~data_control()
+            {
+               pthread_mutex_destroy(&m_mutex);
+               pthread_cond_destroy(&m_cond);
+               m_active = 0;
+            }
 
-			/**
-			 * reset data_control
-			 */
-			inline void reset()
-			{
-			   pthread_mutex_init(&m_mutex,NULL);
-			   pthread_cond_init(&m_cond,NULL);
-			   m_active = 1;
-			}
+            /**
+             * reset data_control
+             */
+            inline void reset()
+            {
+               pthread_mutex_init(&m_mutex,NULL);
+               pthread_cond_init(&m_cond,NULL);
+               m_active = 1;
+            }
 
-			/**
-			 * activate
-			 */
-			inline void activate()
-			{
-			   pthread_mutex_lock(&m_mutex);
-			   m_active = 1;
-			   pthread_mutex_unlock(&m_mutex);
-			   pthread_cond_broadcast(&m_cond);
-			}
+            /**
+             * activate
+             */
+            inline void activate()
+            {
+               pthread_mutex_lock(&m_mutex);
+               m_active = 1;
+               pthread_mutex_unlock(&m_mutex);
+               pthread_cond_broadcast(&m_cond);
+            }
 
-			/**
-			 * deactivate
-			 */
-			inline void deactivate()
-			{
-			   pthread_mutex_lock(&m_mutex);
-			   m_active = 0;
-			   pthread_mutex_unlock(&m_mutex);
-			   pthread_cond_broadcast(&m_cond);
-			}
+            /**
+             * deactivate
+             */
+            inline void deactivate()
+            {
+                if ( pthread_equal(pthread_self(), m_owner) )
+                    throw " thread cannot lock same mutex twice !";
+                pthread_mutex_lock (&m_mutex);
+                m_active = 0;
+                if ( !pthread_equal(pthread_self(), m_owner) )
+                    throw "only thread witch locked the mutex can release it !";
+                pthread_mutex_unlock(&m_mutex);
+                pthread_cond_broadcast(&m_cond);
+            }
 
-			inline int active()
-			{
-			   return m_active;
-			}
+            inline int active()
+            {
+               return m_active;
+            }
 
-			inline void lock()
-			{
-			   pthread_mutex_lock(&m_mutex);
-			}
+            inline void lock()
+            {
+               pthread_mutex_lock(&m_mutex);
+            }
 
-			inline void unlock()
-			{
-			   pthread_mutex_unlock(&m_mutex);
-			}
+            inline void unlock()
+            {
+               pthread_mutex_unlock(&m_mutex);
+            }
 
-			inline void wait()
-			{
-			   pthread_cond_wait(&m_cond, &m_mutex);
-			}
+            inline void wait()
+            {
+               pthread_cond_wait(&m_cond, &m_mutex);
+            }
 
-			inline void signal()
-			{
-			   pthread_cond_signal(&m_cond);
-			}
+            inline void signal()
+            {
+               pthread_cond_signal(&m_cond);
+            }
 
-			inline void broadcast()
-			{
-			   pthread_cond_broadcast(&m_cond);
-			}
+            inline void broadcast()
+            {
+               pthread_cond_broadcast(&m_cond);
+            }
 
-		  private:
+          private:
 
-		    pthread_mutex_t m_mutex;
-		    pthread_cond_t  m_cond;
-		    int             m_active;
-	    };
-	 } // os
+            pthread_mutex_t m_mutex;
+            pthread_cond_t  m_cond;
+            int             m_active;
+            pthread_t       m_owner = pthread_self();
+        };
+     } // os
    } // core
 } // xpu
 

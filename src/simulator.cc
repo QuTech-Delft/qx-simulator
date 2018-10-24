@@ -1,10 +1,13 @@
 /**
  * @file	simulator.cc
  * @author	Nader KHAMMASSI - nader.khammassi@gmail.com 
- * @date	01-01-16
- * @brief		
+ * @date 01-01-16
+ * @brief      
  */
 
+#include <execinfo.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include <xpu.h>
 #include <xpu/runtime>
@@ -14,8 +17,33 @@
 
 
 #include <iostream>
+// #include <fstream>
 
 #include "qx_version.h"
+
+// #define assert_error_report_helper(cond) "assertion failed: " #cond
+// #ifdef NDEBUG
+// #undef assert
+// #define assert(cond)  {if(!(cond)) { std::cerr << assert_error_report_helper(cond) "\n"; throw assert_error_report_helper(cond); } }
+// #endif
+
+
+// /* Obtain a backtrace and print it to stdout. */
+// void print_trace (void)
+// {
+//    void *array[10];
+//    size_t size;
+//    char **strings;
+//    size_t i;
+//    size = backtrace (array, 10);
+//    strings = backtrace_symbols (array, size);
+
+//    std::cout << "Obtained " << size << " stack frames.\n" << std::endl;
+
+//    for (i = 0; i < size; i++)
+//       std::cout << strings[i] << std::endl;
+//    free (strings);
+// }
 
 void print_banner() {
    println("");
@@ -40,6 +68,12 @@ int main(int argc, char **argv)
    size_t ncpu = 0;
    size_t navg = 0;
    print_banner();
+   // print_trace();
+   // std::fstream logger_file;
+   // std::string log_file_path("./log_where_am_i.log");
+
+   // logger_file.open(log_file_path,
+   //                  std::fstream::out);
 
    if (!(argc == 2 || argc == 3 || argc == 4))
    {
@@ -48,12 +82,19 @@ int main(int argc, char **argv)
       return -1;
    }
 
-   // parse arguments and initialise xpu cores
-   file_path = argv[1];
-   if (argc > 2) navg = (atoi(argv[2]));
-   if (argc > 3) ncpu = (atoi(argv[3]));
-   if (ncpu && ncpu < 128) xpu::init(ncpu);
-   else xpu::init();
+   try{
+      // parse arguments and initialise xpu cores
+      file_path = argv[1];
+      if (argc > 2) navg = (atoi(argv[2]));
+      if (argc > 3) ncpu = (atoi(argv[3]));
+      if (ncpu && ncpu < 128) xpu::init(ncpu);
+      else xpu::init();
+   }
+   catch (...)
+   {
+      std::cerr << "simulator.cc: init" << std::endl;
+      return -1;
+   }
 
    // parse file and create abstract syntax tree
    println("[+] loading circuit from '" << file_path << "' ...");
@@ -64,6 +105,10 @@ int main(int argc, char **argv)
       xpu::clean();
       return -1;
    }
+
+   //FIXME:
+   // logger_file << "In 110:" << std::endl;
+   // logger_file.close();
 
    // construct libqasm parser and safely parse input file
    compiler::QasmSemanticChecker * parser;
@@ -94,6 +139,10 @@ int main(int argc, char **argv)
 
    // create the quantum state
    println("[+] creating quantum register of " << qubits << " qubits... ");
+   // logger_file.open(log_file_path,
+   //                  std::fstream::out | std::fstream::app);
+   // logger_file << "line 144: " << std::endl;
+   // logger_file.close();
    try {
       reg = new qx::qu_register(qubits);
    } catch(std::bad_alloc& exception) {
@@ -125,11 +174,15 @@ int main(int argc, char **argv)
    }
 
    println("[i] loaded " << perfect_circuits.size() << " circuits.");
+   // logger_file.open(log_file_path,
+   //                  std::fstream::out | std::fstream::app);
+   // logger_file << "line 179: " << std::endl;
+   // logger_file.close();
 
    // check whether an error model is specified
    if (ast.getErrorModelType() == "depolarizing_channel")
    {
-      error_probability = ast.getErrorModelParameters().at(0);
+      error_probability = ast.getErrorModelProbability();
       error_model       = qx::__depolarizing_channel__;
    }
 
@@ -138,76 +191,139 @@ int main(int argc, char **argv)
    {
       if (error_model == qx::__depolarizing_channel__)
       {
-         qx::measure m;
-         for (size_t s=0; s<navg; ++s)
-         {
-            reg->reset();
-            for (size_t i=0; i<perfect_circuits.size(); i++)
+         // logger_file.open(log_file_path,
+         //         std::fstream::out | std::fstream::app);
+         // logger_file << "line 188: " << std::endl;
+         // logger_file.close();
+         try{
+            qx::measure m;
+            for (size_t s=0; s<navg; ++s)
             {
-               if (perfect_circuits[i]->size() == 0)
-                  continue;
-               size_t iterations = perfect_circuits[i]->get_iterations();
-               if (iterations > 1)
+               reg->reset();
+               for (size_t i=0; i<perfect_circuits.size(); i++)
                {
-                  for (size_t it=0; it<iterations; ++it)
+                  if (perfect_circuits[i]->size() == 0)
+                     continue;
+                  size_t iterations = perfect_circuits[i]->get_iterations();
+                  if (iterations > 1)
                   {
-                     qx::noisy_dep_ch(perfect_circuits[i],error_probability,total_errors)->execute(*reg,false,true);
-                  }
-               } else
-                     qx::noisy_dep_ch(perfect_circuits[i],error_probability,total_errors)->execute(*reg,false,true);
+                     for (size_t it=0; it<iterations; ++it)
+                     {
+                        qx::noisy_dep_ch(perfect_circuits[i],error_probability,total_errors)->execute(*reg,false,true);
+                     }
+                  } else
+                        qx::noisy_dep_ch(perfect_circuits[i],error_probability,total_errors)->execute(*reg,false,true);
+               }
+               m.apply(*reg);
             }
-            m.apply(*reg);
+         }
+         catch(...)
+         {
+            std::cerr << "line 222" << std::endl;
          }
       }
       else
       {
-         qx::measure m;
-         for (size_t s=0; s<navg; ++s)
+         // logger_file.open(log_file_path,
+         //                  std::fstream::out | std::fstream::app);
+         // logger_file << "line 229: " << std::endl;
+         // logger_file.close();
+         try{
+            qx::measure m;
+            for (size_t s=0; s<navg; ++s)
+            {
+               reg->reset();
+               for (size_t i=0; i<perfect_circuits.size(); i++)
+                  perfect_circuits[i]->execute(*reg,false,true);
+               m.apply(*reg);
+            }
+         }
+         catch(...)
          {
-            reg->reset();
-            for (size_t i=0; i<perfect_circuits.size(); i++)
-               perfect_circuits[i]->execute(*reg,false,true);
-            m.apply(*reg);
+            std::cerr << "line 243" << std::endl;
          }
       }
       
       println("[+] average measurement after " << navg << " shots:");
-      reg->dump(true);
+      // logger_file.open(log_file_path,
+      //                  std::fstream::out | std::fstream::app);
+      // logger_file << "line 250: " << std::endl;
+      // logger_file.close();
+      try{
+         reg->dump(true);
+      }
+      catch(...)
+      {
+         std::cerr << "line 257" << std::endl;
+      }
    }
    else
    {
-      // if (qxr.getErrorModel() == qx::__depolarizing_channel__)
-      if (error_model == qx::__depolarizing_channel__)
-      {
-         // println("[+] generating noisy circuits (p=" << qxr.getErrorProbability() << ")...");
-         for (size_t i=0; i<perfect_circuits.size(); i++)
+      // logger_file.open(log_file_path,
+      //                  std::fstream::out | std::fstream::app);
+      // logger_file << "line 264: " << std::endl;
+      // logger_file.close();
+      try{
+         // if (qxr.getErrorModel() == qx::__depolarizing_channel__)
+         if (error_model == qx::__depolarizing_channel__)
          {
-            if (perfect_circuits[i]->size() == 0)
-               continue;
-            // println("[>] processing circuit '" << perfect_circuits[i]->id() << "'...");
-            size_t iterations = perfect_circuits[i]->get_iterations();
-            if (iterations > 1)
+            // println("[+] generating noisy circuits (p=" << qxr.getErrorProbability() << ")...");
+            for (size_t i=0; i<perfect_circuits.size(); i++)
             {
-               for (size_t it=0; it<iterations; ++it)
+               if (perfect_circuits[i]->size() == 0)
+                  continue;
+               // println("[>] processing circuit '" << perfect_circuits[i]->id() << "'...");
+               size_t iterations = perfect_circuits[i]->get_iterations();
+               if (iterations > 1)
+               {
+                  for (size_t it=0; it<iterations; ++it)
+                     circuits.push_back(qx::noisy_dep_ch(perfect_circuits[i],error_probability,total_errors));
+               }
+               else
+               {
                   circuits.push_back(qx::noisy_dep_ch(perfect_circuits[i],error_probability,total_errors));
+               }
             }
-            else
-            {
-               circuits.push_back(qx::noisy_dep_ch(perfect_circuits[i],error_probability,total_errors));
-            }
+            // println("[+] total errors injected in all circuits : " << total_errors);
          }
-         // println("[+] total errors injected in all circuits : " << total_errors);
+         else 
+            circuits = perfect_circuits; // qxr.circuits();
       }
-      else 
-         circuits = perfect_circuits; // qxr.circuits();
+      catch(...)
+      {
+         std::cerr << "line 294" << std::endl;
+      }
 
-
-      for (size_t i=0; i<circuits.size(); i++)
-         circuits[i]->execute(*reg);
+      try{
+         // logger_file.open(log_file_path,
+         //                  std::fstream::out | std::fstream::app);
+         // logger_file << "line 300: " << std::endl;
+         // logger_file.close();
+         for (size_t i=0; i<circuits.size(); i++)
+            circuits[i]->execute(*reg);
+         // logger_file.open(log_file_path,
+         //                  std::fstream::out | std::fstream::app);
+         // logger_file << "line 306: " << std::endl;
+         // logger_file.close();
+      }
+      catch(...)
+      {
+         std::cerr << "line 311" << std::endl;
+      }
    }
 
    // exit(0);
-   xpu::clean();
+   try{
+      // logger_file.open(log_file_path,
+      //                  std::fstream::out | std::fstream::app);
+      // logger_file << "line 319: " << std::endl;
+      // logger_file.close();
+      xpu::clean();
+   }
+   catch(...)
+   {
+      std::cerr << "line 325" << std::endl;
+   }
 
    return 0;
 }

@@ -185,6 +185,7 @@ u_int32_t xpu::core::system::explore()
 inline
 u_int32_t xpu::init()
 {
+    try{
    if (xpu::core::initialized)
 	 return 0;
    // exlore hardware architecture and capabilities
@@ -210,7 +211,10 @@ u_int32_t xpu::init()
    }
 
    xpu::core::initialized = true;
-   
+   }
+   catch(...){
+        std::cerr << "Init failed 0." << std::endl;
+    }
    //printf("[+] initialized.\n");
    
    return 0;
@@ -222,6 +226,7 @@ u_int32_t xpu::init()
 inline
 u_int32_t xpu::init(u_int32_t processor_count)
 {
+    try{
    if (xpu::core::initialized)
 	 return 0;
    // exlore hardware architecture and capabilities
@@ -250,7 +255,10 @@ u_int32_t xpu::init(u_int32_t processor_count)
    xpu::core::initialized = true;
    
    printf("[+] initialized.\n");
-   
+   }
+   catch(...){
+        std::cerr << "Init failed 1." << std::endl;
+    }
    return 0;
 }
 
@@ -260,29 +268,41 @@ u_int32_t xpu::init(u_int32_t processor_count)
 inline
 u_int32_t xpu::clean()
 {
+    try{
    // stop tam and cleanup memory
    //__debug("stopping workers...");
    for (u_int32_t i=0; i<xpu::core::workers_count; i++)
    {
+     try{
 	 xpu::core::workers[i]->stop();
-	 try {xpu::core::workers[i]->join(); }
+	 xpu::core::workers[i]->join(); }
 	 catch(...) { continue; } 
    }
 
    for (u_int32_t i=0; i<xpu::core::workers_count; i++)
    {
-	 //xpu::core::lasy_workers[i]->stop();
+     try{
+	 xpu::core::lasy_workers[i]->stop();
 	 xpu::core::dynamic_work_queue.deactivate();
-	 //try {xpu::core::lazy_workers[i]->join(); }
-	 //catch(...) { continue; } 
+	 xpu::core::lasy_workers[i]->join(); }
+	 catch(...) { continue; } 
    }
    //__debug("cleanup memory...");
    for (u_int32_t i=0; i<xpu::core::workers_count; i++)
    {
+     try{
 	 delete xpu::core::workers[i];
-	 //delete xpu::core::lazy_workers[i];
+	 delete xpu::core::lasy_workers[i];
+    }
+    catch(...)
+    {continue;}
    }
    //__debug("cleanup done.");
+    }
+    catch(...){
+        std::cerr << "Cleaning failed." << std::endl;
+        return 0;
+    }
    return 0;
 }
 

@@ -56,8 +56,8 @@ void xpu::core::os::mutex::lock()
    }
    catch (char const * e)
    {
-	//cerr << " (x) " <<__FILE__ << ":" << __LINE__ << ":" << __func__ << ": fatal exception : " << e << endl;
-	//throw e;
+	  cerr << " (x) " <<__FILE__ << ":" << __LINE__ << ":" << __func__ << ": fatal exception : " << e << endl;
+	  throw e;
    } 
 }
 
@@ -73,7 +73,8 @@ void xpu::core::os::mutex::unlock()
    }
    catch (char const * e)
    {
-	// cerr << " (x) " << __FILE__ << ":" << __LINE__ << ":" << __func__ << ": fatal exception : " << e << endl;
+	  cerr << " (x) " << __FILE__ << ":" << __LINE__ << ":" << __func__ << ": fatal exception : " << e << endl;
+     throw e;
    } 
 }
 
