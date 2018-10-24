@@ -15,35 +15,24 @@
 #include <libqasm_interface.h>
 #include <qasm_semantic.hpp>
 
-
 #include <iostream>
-// #include <fstream>
-
 #include "qx_version.h"
 
-// #define assert_error_report_helper(cond) "assertion failed: " #cond
-// #ifdef NDEBUG
-// #undef assert
-// #define assert(cond)  {if(!(cond)) { std::cerr << assert_error_report_helper(cond) "\n"; throw assert_error_report_helper(cond); } }
-// #endif
+#ifdef NDEBUG
+#include <fstream>
+
+void print_log_file(std::fstream& logger_file, std::string log_file_path,
+                    size_t linenum)
+{
+   logger_file.open(log_file_path,
+                    std::fstream::out | std::fstream::app);
+   logger_file << "line: " << linenum << std::endl;
+   logger_file.close();
+}
+#endif
 
 
-// /* Obtain a backtrace and print it to stdout. */
-// void print_trace (void)
-// {
-//    void *array[10];
-//    size_t size;
-//    char **strings;
-//    size_t i;
-//    size = backtrace (array, 10);
-//    strings = backtrace_symbols (array, size);
 
-//    std::cout << "Obtained " << size << " stack frames.\n" << std::endl;
-
-//    for (i = 0; i < size; i++)
-//       std::cout << strings[i] << std::endl;
-//    free (strings);
-// }
 
 void print_banner() {
    println("");
@@ -69,11 +58,10 @@ int main(int argc, char **argv)
    size_t navg = 0;
    print_banner();
    // print_trace();
-   // std::fstream logger_file;
-   // std::string log_file_path("./log_where_am_i.log");
-
-   // logger_file.open(log_file_path,
-   //                  std::fstream::out);
+   #ifdef NDEBUG
+   std::fstream logger_file;
+   std::string log_file_path("./log_where_am_i.log");
+   #endif
 
    if (!(argc == 2 || argc == 3 || argc == 4))
    {
@@ -107,8 +95,9 @@ int main(int argc, char **argv)
    }
 
    //FIXME:
-   // logger_file << "In 110:" << std::endl;
-   // logger_file.close();
+   #ifdef NDEBUG
+   print_log_file(logger_file, log_file_path, __LINE__);
+   #endif
 
    // construct libqasm parser and safely parse input file
    compiler::QasmSemanticChecker * parser;
@@ -139,10 +128,9 @@ int main(int argc, char **argv)
 
    // create the quantum state
    println("[+] creating quantum register of " << qubits << " qubits... ");
-   // logger_file.open(log_file_path,
-   //                  std::fstream::out | std::fstream::app);
-   // logger_file << "line 144: " << std::endl;
-   // logger_file.close();
+   #ifdef NDEBUG
+   print_log_file(logger_file, log_file_path, __LINE__);
+   #endif
    try {
       reg = new qx::qu_register(qubits);
    } catch(std::bad_alloc& exception) {
@@ -174,15 +162,14 @@ int main(int argc, char **argv)
    }
 
    println("[i] loaded " << perfect_circuits.size() << " circuits.");
-   // logger_file.open(log_file_path,
-   //                  std::fstream::out | std::fstream::app);
-   // logger_file << "line 179: " << std::endl;
-   // logger_file.close();
-
+   #ifdef NDEBUG
+   print_log_file(logger_file, log_file_path, __LINE__);
+   #endif
    // check whether an error model is specified
    if (ast.getErrorModelType() == "depolarizing_channel")
    {
       error_probability = ast.getErrorModelParameters().at(0);
+      // error_probability = ast.getErrorModelProbability();
       error_model       = qx::__depolarizing_channel__;
    }
 
@@ -191,10 +178,9 @@ int main(int argc, char **argv)
    {
       if (error_model == qx::__depolarizing_channel__)
       {
-         // logger_file.open(log_file_path,
-         //         std::fstream::out | std::fstream::app);
-         // logger_file << "line 188: " << std::endl;
-         // logger_file.close();
+         #ifdef NDEBUG
+         print_log_file(logger_file, log_file_path, __LINE__);
+         #endif
          try{
             qx::measure m;
             for (size_t s=0; s<navg; ++s)
@@ -224,10 +210,9 @@ int main(int argc, char **argv)
       }
       else
       {
-         // logger_file.open(log_file_path,
-         //                  std::fstream::out | std::fstream::app);
-         // logger_file << "line 229: " << std::endl;
-         // logger_file.close();
+         #ifdef NDEBUG
+         print_log_file(logger_file, log_file_path, __LINE__);
+         #endif
          try{
             qx::measure m;
             for (size_t s=0; s<navg; ++s)
@@ -245,10 +230,9 @@ int main(int argc, char **argv)
       }
       
       println("[+] average measurement after " << navg << " shots:");
-      // logger_file.open(log_file_path,
-      //                  std::fstream::out | std::fstream::app);
-      // logger_file << "line 250: " << std::endl;
-      // logger_file.close();
+      #ifdef NDEBUG
+      print_log_file(logger_file, log_file_path, __LINE__);
+      #endif
       try{
          reg->dump(true);
       }
@@ -259,10 +243,9 @@ int main(int argc, char **argv)
    }
    else
    {
-      // logger_file.open(log_file_path,
-      //                  std::fstream::out | std::fstream::app);
-      // logger_file << "line 264: " << std::endl;
-      // logger_file.close();
+      #ifdef NDEBUG
+      print_log_file(logger_file, log_file_path, __LINE__);
+      #endif
       try{
          // if (qxr.getErrorModel() == qx::__depolarizing_channel__)
          if (error_model == qx::__depolarizing_channel__)
@@ -295,16 +278,14 @@ int main(int argc, char **argv)
       }
 
       try{
-         // logger_file.open(log_file_path,
-         //                  std::fstream::out | std::fstream::app);
-         // logger_file << "line 300: " << std::endl;
-         // logger_file.close();
+         #ifdef NDEBUG
+         print_log_file(logger_file, log_file_path, __LINE__);
+         #endif
          for (size_t i=0; i<circuits.size(); i++)
             circuits[i]->execute(*reg);
-         // logger_file.open(log_file_path,
-         //                  std::fstream::out | std::fstream::app);
-         // logger_file << "line 306: " << std::endl;
-         // logger_file.close();
+         #ifdef NDEBUG
+         print_log_file(logger_file, log_file_path, __LINE__);
+         #endif
       }
       catch(...)
       {
@@ -314,11 +295,13 @@ int main(int argc, char **argv)
 
    // exit(0);
    try{
-      // logger_file.open(log_file_path,
-      //                  std::fstream::out | std::fstream::app);
-      // logger_file << "line 319: " << std::endl;
-      // logger_file.close();
+      #ifdef NDEBUG
+      print_log_file(logger_file, log_file_path, __LINE__);
+      #endif
       xpu::clean();
+      #ifdef NDEBUG
+      print_log_file(logger_file, log_file_path, __LINE__);
+      #endif
    }
    catch(...)
    {

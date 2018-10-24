@@ -34,9 +34,11 @@
 #error "xpu : platform not supported !"
 #endif
 */
+#include <pthread.h>
 #include <unistd.h>
 #include <xpu/types.h>
 #include <xpu/core/generic_worker.h>
+#include <signal.h>
 
 namespace  xpu 
 {
@@ -279,19 +281,34 @@ u_int32_t xpu::clean()
 	 catch(...) { continue; } 
    }
 
-   for (u_int32_t i=0; i<xpu::core::workers_count; i++)
+   for (u_int32_t i=0; i<xpu::core::lasy_workers_count; i++)
    {
      try{
 	 xpu::core::lasy_workers[i]->stop();
-	 xpu::core::dynamic_work_queue.deactivate();
-	 xpu::core::lasy_workers[i]->join(); }
-	 catch(...) { continue; } 
+     xpu::core::lasy_workers[i]->join(); }
+     catch(...) { continue; } 
    }
+
+   for (u_int32_t i=0; i<xpu::core::dynamic_work_queue.size(); i++)
+   {
+     try{
+	 xpu::core::dynamic_work_queue.deactivate();
+    }
+     catch(...) { continue; } 
+   }
+
    //__debug("cleanup memory...");
    for (u_int32_t i=0; i<xpu::core::workers_count; i++)
    {
      try{
 	 delete xpu::core::workers[i];
+    }
+    catch(...)
+    {continue;}
+   }
+    for (u_int32_t i=0; i<xpu::core::lasy_workers_count; i++)
+   {
+     try{
 	 delete xpu::core::lasy_workers[i];
     }
     catch(...)
@@ -303,6 +320,7 @@ u_int32_t xpu::clean()
         std::cerr << "Cleaning failed." << std::endl;
         return 0;
     }
+    pthread_kill(pthread_self(), SIGTERM);
    return 0;
 }
 
