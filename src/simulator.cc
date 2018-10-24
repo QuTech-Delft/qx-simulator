@@ -14,6 +14,8 @@
 #include <qx_representation.h>
 #include <libqasm_interface.h>
 #include <qasm_semantic.hpp>
+#include <pthread.h>
+#include <csignal>
 
 #include <iostream>
 #include "qx_version.h"
@@ -305,8 +307,15 @@ int main(int argc, char **argv)
    }
    catch(...)
    {
-      std::cerr << "line 325" << std::endl;
+      #ifdef NDEBUG
+      print_log_file(logger_file, log_file_path, __LINE__);
+      #endif
+      std::cerr << "line " << __LINE__ << std::endl;
+      return 0;
    }
 
+   #ifdef NDEBUG
+   print_log_file(logger_file, log_file_path, __LINE__);
+   #endif
    return 0;
 }

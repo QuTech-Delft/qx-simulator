@@ -194,7 +194,7 @@ u_int32_t xpu::init()
    xpu::core::system::explore();
 
    xpu::core::workers_count      = xpu::core::system::processor::logical_processor_count * 2;
-   xpu::core::lasy_workers_count = xpu::core::system::processor::logical_processor_count;
+   xpu::core::lasy_workers_count = xpu::core::system::processor::logical_processor_count ;
    xpu::core::workers      = new xpu::core::generic_worker * [core::workers_count];
    xpu::core::lasy_workers = new xpu::core::generic_worker * [core::lasy_workers_count];
 
@@ -233,7 +233,6 @@ u_int32_t xpu::init(u_int32_t processor_count)
 	 return 0;
    // exlore hardware architecture and capabilities
    xpu::core::system::explore();
-
    // set workers count
    xpu::core::workers_count      = processor_count * 2;
    xpu::core::lasy_workers_count = processor_count * 2; //xpu::system::processor::logical_processor_count;
@@ -270,58 +269,55 @@ u_int32_t xpu::init(u_int32_t processor_count)
 inline
 u_int32_t xpu::clean()
 {
-    try{
-   // stop tam and cleanup memory
-   //__debug("stopping workers...");
-   for (u_int32_t i=0; i<xpu::core::workers_count; i++)
-   {
-     try{
-	 xpu::core::workers[i]->stop();
-	 xpu::core::workers[i]->join(); }
-	 catch(...) { continue; } 
-   }
+    try
+    {
+        for (u_int32_t i=0; i<xpu::core::workers_count; i++)
+        {
+            try
+            {
+                xpu::core::workers[i]->stop();
+                xpu::core::workers[i]->join();
+            }
+            catch(...) { continue; } 
+        }
+        for (u_int32_t i=0; i<xpu::core::lasy_workers_count; i++)
+        {
+            try
+            {
+                xpu::core::lasy_workers[i]->stop();
+                xpu::core::lasy_workers[i]->join();
+            }
+            catch(...) { continue; } 
+        }
+        
+        try
+        {
+            xpu::core::dynamic_work_queue.deactivate();
+        }
+        catch(...) { } 
 
-   for (u_int32_t i=0; i<xpu::core::lasy_workers_count; i++)
-   {
-     try{
-	 xpu::core::lasy_workers[i]->stop();
-     xpu::core::lasy_workers[i]->join(); }
-     catch(...) { continue; } 
-   }
-
-   for (u_int32_t i=0; i<xpu::core::dynamic_work_queue.size(); i++)
-   {
-     try{
-	 xpu::core::dynamic_work_queue.deactivate();
-    }
-     catch(...) { continue; } 
-   }
-
-   //__debug("cleanup memory...");
-   for (u_int32_t i=0; i<xpu::core::workers_count; i++)
-   {
-     try{
-	 delete xpu::core::workers[i];
-    }
-    catch(...)
-    {continue;}
-   }
-    for (u_int32_t i=0; i<xpu::core::lasy_workers_count; i++)
-   {
-     try{
-	 delete xpu::core::lasy_workers[i];
-    }
-    catch(...)
-    {continue;}
-   }
-   //__debug("cleanup done.");
+        for (u_int32_t i=0; i<xpu::core::workers_count; i++)
+        {
+            try
+            {
+                delete xpu::core::workers[i];
+            }
+            catch(...) { continue; }
+        }
+        for (u_int32_t i=0; i<xpu::core::lasy_workers_count; i++)
+        {
+            try
+            {
+                delete xpu::core::lasy_workers[i];
+            }
+            catch(...) { continue; }
+        }
     }
     catch(...){
-        std::cerr << "Cleaning failed." << std::endl;
         return 0;
     }
-    pthread_kill(pthread_self(), SIGTERM);
-   return 0;
+
+    return 0;
 }
 
 #include <xpu/parallel_tasks.h>

@@ -52,8 +52,8 @@ namespace xpu
 		 
 		 ~work_queue()
 		 {
-		    delete m_control;
-		    delete m_queue;
+		    // delete m_control;
+		    // delete m_queue;
 		 }
 		 
 		 inline data_control * get_control()
