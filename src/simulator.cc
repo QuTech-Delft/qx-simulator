@@ -182,7 +182,7 @@ int main(int argc, char **argv)
    // check whether an error model is specified
    if (ast.getErrorModelType() == "depolarizing_channel")
    {
-      error_probability = ast.getErrorModelProbability();
+      error_probability = ast.getErrorModelParameters().at(0);
       error_model       = qx::__depolarizing_channel__;
    }
 
