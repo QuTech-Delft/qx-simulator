@@ -33,6 +33,7 @@
 #define __XPU_MUTEX_79424B4E0A_H__
 
 #include <xpu/lockable.h>
+#include <iostream>
 
 namespace xpu
 {
