@@ -5,17 +5,12 @@
  * @brief      
  */
 
-#include <execinfo.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 #include <xpu.h>
 #include <xpu/runtime>
 #include <qx_representation.h>
 #include <libqasm_interface.h>
 #include <qasm_semantic.hpp>
-#include <pthread.h>
-#include <csignal>
 
 #include <iostream>
 #include "qx_version.h"
@@ -59,10 +54,10 @@ int main(int argc, char **argv)
    size_t ncpu = 0;
    size_t navg = 0;
    print_banner();
-   // print_trace();
+
    #ifdef NDEBUG
    std::fstream logger_file;
-   std::string log_file_path("./log_where_am_i.log");
+   std::string log_file_path("./simulator_cc_debug.log");
    #endif
 
    if (!(argc == 2 || argc == 3 || argc == 4))
@@ -111,7 +106,9 @@ int main(int argc, char **argv)
    }
    catch (std::exception &e)
    {
-      std::cerr << "error while parsing file " << file_path << ": " << std::endl;
+      std::cerr << "error while parsing file " 
+                << file_path << ": " 
+                << std::endl;
       std::cerr << e.what() << std::endl;
       xpu::clean();
       return -1;
@@ -140,20 +137,20 @@ int main(int argc, char **argv)
       xpu::clean();
       return -1;
    } catch(std::exception& exception) {
-      std::cerr << "[x] unexpected exception (" << exception.what() << "), aborting" << std::endl;
+      std::cerr << "[x] unexpected exception (" << exception.what() 
+                << "), aborting" << std::endl;
       xpu::clean();
       return -1;
    }
 
    // convert libqasm ast to qx internal representation
-   // qx::QxRepresentation qxr = qx::QxRepresentation(qubits);
-   std::vector<compiler::SubCircuit> subcircuits = ast.getSubCircuits().getAllSubCircuits();
-   __for_in(subcircuit, subcircuits)
+   std::vector<compiler::SubCircuit> subcircuits = 
+                                      ast.getSubCircuits().getAllSubCircuits();
+   for (auto subcircuit : subcircuits)
    {
       try
       {
-         // qxr.circuits().push_back(load_cqasm_code(qubits, *subcircuit));
-         perfect_circuits.push_back(load_cqasm_code(qubits, * subcircuit));
+         perfect_circuits.push_back(load_cqasm_code(qubits, subcircuit));
       }
       catch (std::string type)
       {
@@ -197,17 +194,25 @@ int main(int argc, char **argv)
                   {
                      for (size_t it=0; it<iterations; ++it)
                      {
-                        qx::noisy_dep_ch(perfect_circuits[i],error_probability,total_errors)->execute(*reg,false,true);
+                        qx::noisy_dep_ch(perfect_circuits[i],
+                                         error_probability,
+                                         total_errors)->execute(*reg,
+                                                                false,
+                                                                true);
                      }
                   } else
-                        qx::noisy_dep_ch(perfect_circuits[i],error_probability,total_errors)->execute(*reg,false,true);
+                        qx::noisy_dep_ch(perfect_circuits[i],
+                                         error_probability,
+                                         total_errors)->execute(*reg,
+                                                                false,
+                                                                true);
                }
                m.apply(*reg);
             }
          }
          catch(...)
          {
-            std::cerr << "line 222" << std::endl;
+            std::cerr << "line " << __LINE__ << std::endl;
          }
       }
       else
@@ -227,7 +232,7 @@ int main(int argc, char **argv)
          }
          catch(...)
          {
-            std::cerr << "line 243" << std::endl;
+            std::cerr << "line " << __LINE__ << std::endl;
          }
       }
       
@@ -240,7 +245,7 @@ int main(int argc, char **argv)
       }
       catch(...)
       {
-         std::cerr << "line 257" << std::endl;
+         std::cerr << "line " << __LINE__ << std::endl;
       }
    }
    else
@@ -249,73 +254,68 @@ int main(int argc, char **argv)
       print_log_file(logger_file, log_file_path, __LINE__);
       #endif
       try{
-         // if (qxr.getErrorModel() == qx::__depolarizing_channel__)
          if (error_model == qx::__depolarizing_channel__)
          {
-            // println("[+] generating noisy circuits (p=" << qxr.getErrorProbability() << ")...");
             for (size_t i=0; i<perfect_circuits.size(); i++)
             {
                if (perfect_circuits[i]->size() == 0)
                   continue;
-               // println("[>] processing circuit '" << perfect_circuits[i]->id() << "'...");
                size_t iterations = perfect_circuits[i]->get_iterations();
+               //TODO: This block can be simplified -KKL
                if (iterations > 1)
                {
                   for (size_t it=0; it<iterations; ++it)
-                     circuits.push_back(qx::noisy_dep_ch(perfect_circuits[i],error_probability,total_errors));
+                     circuits.push_back(
+                                          qx::noisy_dep_ch(perfect_circuits[i],
+                                                           error_probability,
+                                                           total_errors)
+                                       );
                }
                else
                {
-                  circuits.push_back(qx::noisy_dep_ch(perfect_circuits[i],error_probability,total_errors));
+                  circuits.push_back(
+                                       qx::noisy_dep_ch(perfect_circuits[i],
+                                                        error_probability,
+                                                        total_errors)
+                                    );
                }
             }
-            // println("[+] total errors injected in all circuits : " << total_errors);
          }
          else 
             circuits = perfect_circuits; // qxr.circuits();
       }
       catch(...)
       {
-         std::cerr << "line 294" << std::endl;
+         std::cerr << "line " << __LINE__ << std::endl;
       }
 
       try{
          #ifdef NDEBUG
          print_log_file(logger_file, log_file_path, __LINE__);
          #endif
+         
          for (size_t i=0; i<circuits.size(); i++)
             circuits[i]->execute(*reg);
+         
          #ifdef NDEBUG
          print_log_file(logger_file, log_file_path, __LINE__);
          #endif
       }
       catch(...)
       {
-         std::cerr << "line 311" << std::endl;
+         std::cerr << "line " << __LINE__ << std::endl;
       }
-   }
-
-   // exit(0);
-   try{
-      #ifdef NDEBUG
-      print_log_file(logger_file, log_file_path, __LINE__);
-      #endif
-      xpu::clean();
-      #ifdef NDEBUG
-      print_log_file(logger_file, log_file_path, __LINE__);
-      #endif
-   }
-   catch(...)
-   {
-      #ifdef NDEBUG
-      print_log_file(logger_file, log_file_path, __LINE__);
-      #endif
-      std::cerr << "line " << __LINE__ << std::endl;
-      return 0;
    }
 
    #ifdef NDEBUG
    print_log_file(logger_file, log_file_path, __LINE__);
    #endif
+
+   xpu::clean();
+
+   #ifdef NDEBUG
+   print_log_file(logger_file, log_file_path, __LINE__);
+   #endif
+
    return 0;
 }

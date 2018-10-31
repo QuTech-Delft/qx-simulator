@@ -29,6 +29,8 @@
  *    xpu runtime   
  */
 
+// FIXME: In the current deployment environment, we don't ever use this file. -KKL
+
 
 #include "config.h"
 #include <xpu.h>

@@ -4,6 +4,7 @@
  * @date        02-10-15
  * @brief       
  */
+// FIXME: This file is interesting. Lots of commented lines, and if 0 which makes it error prone. -KKL
 
 #pragma once
 
@@ -2828,9 +2829,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
             {
                // #define PARALLEL_MEASUREMENT
                // #ifdef PARALLEL_MEASUREMENT
-               std::cout << "lock problems? size = " << size << std::endl;
                xpu::lockable * l = new xpu::core::os::mutex();
-               std::cout << "lock problems? before lockable." << std::endl;
                xpu::task p1_worker_t(p1_worker, (uint64_t)0, n, (uint64_t)1, &p, qubit, l, &data); 
                xpu::parallel_for parallel_p1( (uint64_t)0, n, (uint64_t)1, &p1_worker_t);
                parallel_p1.run();

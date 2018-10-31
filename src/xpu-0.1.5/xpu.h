@@ -192,7 +192,7 @@ u_int32_t xpu::init()
 	 return 0;
    // exlore hardware architecture and capabilities
    xpu::core::system::explore();
-
+   //FIXME: Why is the lasy_workers_count not a multiple of 2 as defined in the other init function? -KKL
    xpu::core::workers_count      = xpu::core::system::processor::logical_processor_count * 2;
    xpu::core::lasy_workers_count = xpu::core::system::processor::logical_processor_count ;
    xpu::core::workers      = new xpu::core::generic_worker * [core::workers_count];

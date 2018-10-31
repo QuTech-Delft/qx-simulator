@@ -52,8 +52,6 @@ namespace xpu
 		 
 		 ~work_queue()
 		 {
-		    // delete m_control;
-		    // delete m_queue;
 		 }
 		 
 		 inline data_control * get_control()
@@ -106,20 +104,14 @@ namespace xpu
 
 		  generic_worker(int cpu, work_queue * wq) : thread(NULL), m_cpu(cpu), m_work_queue(wq)
 	    {
-		  //m_cpuset.only(cpu);
-		  //m_control = new data_control;
-		  //m_queue   = new queue<work*>;
 	    }
 
 		  ~generic_worker()
 		  {
-			//delete m_control;
-			//delete m_queue;
 		  }
 
 		  void stop()
 		  {
-			//m_control->deactivate();
 			m_work_queue->deactivate();
 		  }
 
@@ -164,7 +156,6 @@ namespace xpu
 		  static
 			void * run(void * args)
 			{
-			   //println("[+] generic worker started (tid:" << pthread_self() << ")");
 			   generic_worker * t = (generic_worker*)args;
 			   t->m_cpuset.setup();
 			   data_control * t_control = t->m_work_queue->get_control();
@@ -179,7 +170,6 @@ namespace xpu
 				 if (!t_control->active())
 				 {
 				    t_control->unlock();
-				    //println("[+] generic worker left : work queue not active anymore (tid:" << pthread_self() << ")");
 				    break;
 				 }
 				 try 
@@ -188,11 +178,10 @@ namespace xpu
 				    t_control->unlock();
 				    w->perform();
 				    t_control->lock();
-				 } catch (exception e) { /* println("[" << pthread_self() << "] work missed."); */ }
+				 } catch (exception e) { }
 			   }
 			   t_control->signal();
 			   t_control->unlock();
-			   //println("[+] generic worker stopped (tid:" << pthread_self() << ")");
 			   return NULL;
 			}
 	 };
