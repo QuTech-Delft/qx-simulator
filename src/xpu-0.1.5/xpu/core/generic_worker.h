@@ -178,8 +178,6 @@ namespace xpu
 				 }
 				 if (!t_control->active())
 				 {
-				    t_control->unlock();
-				    //println("[+] generic worker left : work queue not active anymore (tid:" << pthread_self() << ")");
 				    break;
 				 }
 				 try 
