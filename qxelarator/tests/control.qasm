@@ -1,31 +1,32 @@
+version 1.0
+
 qubits 6
 
 .init
-	prepz q0
-	prepz q1
-	prepz q2
-	x q0
-	x q1
-	x q2
+	prep_z q[0]
+	prep_z q[1]
+	prep_z q[2]
+	x q[0]
+	x q[1]
+	x q[2]
 
-	prepz q3
-	prepz q4
+	prep_z q[3]
+	prep_z q[4]
 
-	prepz q5
-	#x q5
+	prep_z q[5]
 
 .cc_x
-	toffoli q0, q1, q3
-	toffoli q2, q3, q4
+	toffoli q[0], q[1], q[3]
+	toffoli q[2], q[3], q[4]
 
-	cnot q4, q5
+	cnot q[4], q[5]
 
-	toffoli q2, q3, q4
-	toffoli q0, q1, q3
+	toffoli q[2], q[3], q[4]
+	toffoli q[0], q[1], q[3]
 
-	measure q0
-	measure q1
-	measure q2
-	measure q3
- 	measure q4
- 	measure q5
+	measure q[0]
+	measure q[1]
+	measure q[2]
+	measure q[3]
+ 	measure q[4]
+ 	measure q[5]

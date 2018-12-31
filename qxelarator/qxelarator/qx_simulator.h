@@ -45,23 +45,35 @@ class simulator
 {
 protected:
     qx::qu_register * reg;
-    std::string file_path;
-    FILE * qasm_file;
+    compiler::QasmRepresentation ast;
 
 public:
-    simulator() : reg(nullptr), file_path(""), qasm_file(nullptr) {}
+    simulator() : reg(nullptr) {}
     ~simulator() {}
 
-    void set(std::string fname)
+    void set(std::string file_path)
     {
-        file_path=fname;
-        qasm_file = fopen(file_path.c_str(), "r");
+        FILE * qasm_file = fopen(file_path.c_str(), "r");
         if (!qasm_file)
         {
             error("Could not open " << file_path );
-            xpu::clean();
+        }
+
+        // construct libqasm parser and safely parse input file
+        compiler::QasmSemanticChecker * parser;
+        // compiler::QasmRepresentation ast;
+        try
+        {
+            parser = new compiler::QasmSemanticChecker(qasm_file);
+            ast = parser->getQasmRepresentation();
+        }
+        catch (std::exception &e)
+        {
+            error("parsing file " << file_path);
+            error(e.what());
         }
     }
+
 
     /**
      * execute qasm file
@@ -71,26 +83,11 @@ public:
         size_t navg=0;
         xpu::init();
 
-        // construct libqasm parser and safely parse input file
-        compiler::QasmSemanticChecker * parser;
-        compiler::QasmRepresentation ast;
-        try
-        {
-            parser = new compiler::QasmSemanticChecker(qasm_file);
-            ast = parser->getQasmRepresentation();
-        }
-        catch (std::exception &e)
-        {
-            error("parsing file " << file_path);
-            std::cerr << e.what() << std::endl;
-            xpu::clean();
-        }
-
         // quantum state and circuits
         size_t                     qubits = ast.numQubits();
         std::vector<qx::circuit*>  circuits;
         std::vector<qx::circuit*>  noisy_circuits;
-        std::vector<qx::circuit *> perfect_circuits;
+        std::vector<qx::circuit*>  perfect_circuits;
 
         // error model parameters
         size_t                     total_errors      = 0;
@@ -206,10 +203,12 @@ public:
             else
                 circuits = perfect_circuits; // qxr.circuits();
 
-
             for (size_t i=0; i<circuits.size(); i++)
+            {
                 circuits[i]->execute(*reg);
+            }
         }
+
         xpu::clean();
     }
 
