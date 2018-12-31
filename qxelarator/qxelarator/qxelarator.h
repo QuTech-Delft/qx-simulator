@@ -10,6 +10,7 @@
 #include <iostream>
 #include <qx_simulator.h>
 
+
 class QX
 {
 public:
@@ -17,7 +18,15 @@ public:
 
     QX()
     {
-        qx_sim = new qx::simulator();
+        try
+        {
+            qx_sim = new qx::simulator();
+        }
+        catch (std::exception &e)
+        {
+            std::cerr << "error creating qx::simulator " << std::endl;
+            std::cerr << e.what() << std::endl;
+        }
     }
 
     void set(std::string qasm_file_name)

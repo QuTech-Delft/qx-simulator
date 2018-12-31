@@ -10,6 +10,7 @@ INCLUDE(${SWIG_USE_FILE})
 
 FIND_PACKAGE(PythonLibs)
 
+
 ## These are the include directories used by the compiler.
 INCLUDE_DIRECTORIES(
     ${PROJECT_SOURCE_DIR}
@@ -17,6 +18,10 @@ INCLUDE_DIRECTORIES(
     ${PROJECT_SOURCE_DIR}/../../src/xpu-0.1.5
     ${PYTHON_INCLUDE_PATH}
     ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+LINK_DIRECTORIES(
+    ${PROJECT_SOURCE_DIR}/../../src/parser/libqasm/qasm_flex_bison/build
 )
 
 FIND_PACKAGE(OpenMP)

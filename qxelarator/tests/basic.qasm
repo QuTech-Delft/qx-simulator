@@ -1,16 +1,14 @@
-qubits 3
+version 1.0
+qubits 2
 
 .init
-	prepz q1
-	prepz q2
-	x q1
+	prep_z q[0]
+	prep_z q[1]
+	h q[1]
 
 .kernel1
-	s q1
-
-# .kernel2
-# 	cz q2, q1
+	x q[1]
 
 .measurement
-	measure q1
-	measure q2
+	measure q[0]
+	measure q[1]
