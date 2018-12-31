@@ -32,8 +32,8 @@
  * i/o helpers
  */
 
-#define println(x) std::cout <<"[QXELERATOR]" << __FILE__ << ":" << __LINE__ << x << std::endl
-#define error(x) std::cerr <<"[QXELERATOR]" << __FILE__ << ":" << __LINE__ << "Error:" << x << std::endl
+#define println(x) std::cout <<"[QXELERATOR]" << __FILE__ << ":" << __LINE__ << " " << x << std::endl
+#define error(x) std::cerr <<"[QXELERATOR]" << __FILE__ << ":" << __LINE__ << " Error:" << x << std::endl
 
 namespace qx
 {
@@ -49,17 +49,16 @@ protected:
     FILE * qasm_file;
 
 public:
-    simulator() {reg=nullptr; file_path=""; qasm_file=nullptr;}
+    simulator() : reg(nullptr), file_path(""), qasm_file(nullptr) {}
     ~simulator() {}
 
     void set(std::string fname)
     {
-        std::cout << "using qasm file: " << fname << std::endl;
         file_path=fname;
         qasm_file = fopen(file_path.c_str(), "r");
         if (!qasm_file)
         {
-            std::cerr << "[x] error: could not open " << file_path << std::endl;
+            error("Could not open " << file_path );
             xpu::clean();
         }
     }
@@ -82,7 +81,7 @@ public:
         }
         catch (std::exception &e)
         {
-            std::cerr << "error while parsing file " << file_path << ": " << std::endl;
+            error("parsing file " << file_path);
             std::cerr << e.what() << std::endl;
             xpu::clean();
         }
@@ -99,19 +98,19 @@ public:
         qx::error_model_t          error_model       = qx::__unknown_error_model__;
 
         // create the quantum state
-        println("[+] creating quantum register of " << qubits << " qubits... ");
+        println("Creating quantum register of " << qubits << " qubits... ");
         try
         {
             reg = new qx::qu_register(qubits);
         }
         catch(std::bad_alloc& exception)
         {
-            std::cerr << "[x] not enough memory, aborting" << std::endl;
+            std::cerr << "Not enough memory, aborting" << std::endl;
             xpu::clean();
         }
         catch(std::exception& exception)
         {
-            std::cerr << "[x] unexpected exception (" << exception.what() << "), aborting" << std::endl;
+            std::cerr << "Unexpected exception (" << exception.what() << "), aborting" << std::endl;
             xpu::clean();
         }
 
@@ -125,12 +124,12 @@ public:
             }
             catch (std::string type)
             {
-                std::cerr << "[x] encountered unsupported gate: " << type << std::endl;
+                std::cerr << "Encountered unsupported gate: " << type << std::endl;
                 xpu::clean();
             }
         }
 
-        println("[i] loaded " << perfect_circuits.size() << " circuits.");
+        println("Loaded " << perfect_circuits.size() << " circuits.");
 
         // check whether an error model is specified
         if (ast.getErrorModelType() == "depolarizing_channel")
@@ -178,7 +177,7 @@ public:
                 }
             }
 
-            println("[+] average measurement after " << navg << " shots:");
+            println("Average measurement after " << navg << " shots:");
             reg->dump(true);
         }
         else

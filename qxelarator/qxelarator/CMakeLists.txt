@@ -16,6 +16,7 @@ INCLUDE_DIRECTORIES(
     ${PROJECT_SOURCE_DIR}
     ${PROJECT_SOURCE_DIR}/../../src
     ${PROJECT_SOURCE_DIR}/../../src/xpu-0.1.5
+    ${PROJECT_SOURCE_DIR}/../../src/parser/libqasm/qasm_flex_bison/library
     ${PYTHON_INCLUDE_PATH}
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
@@ -40,4 +41,4 @@ ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 SET_SOURCE_FILES_PROPERTIES(qxelarator.i PROPERTIES CPLUSPLUS ON)
 SET_PROPERTY(SOURCE qxelarator.i PROPERTY SWIG_FLAGS -castmode -modern -keyword)
 SWIG_ADD_MODULE(qxelarator python qxelarator.i)
-SWIG_LINK_LIBRARIES(qxelarator ${PYTHON_LIBRARIES})
+SWIG_LINK_LIBRARIES(qxelarator ${PYTHON_LIBRARIES} lexgram)
