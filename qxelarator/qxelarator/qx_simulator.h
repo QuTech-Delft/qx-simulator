@@ -78,9 +78,8 @@ public:
     /**
      * execute qasm file
      */
-    void execute()
+    void execute(size_t navg)
     {
-        size_t navg=0;
         xpu::init();
 
         // quantum state and circuits

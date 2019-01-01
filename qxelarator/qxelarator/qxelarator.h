@@ -34,9 +34,9 @@ public:
         qx_sim->set(qasm_file_name);
     }
 
-    void execute()
+    void execute(size_t navg=0)
     {
-        qx_sim->execute();
+        qx_sim->execute(navg);
     }
 
     bool get_measurement_outcome(size_t q)
