@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
 SET(PROJECT_NAME "qxelarator")
 
@@ -22,8 +22,8 @@ INCLUDE_DIRECTORIES(
 )
 
 LINK_DIRECTORIES(
-    ${PROJECT_SOURCE_DIR}/../../src/parser/libqasm/qasm_flex_bison/build
-)
+  ${PROJECT_SOURCE_DIR}/../libqasmbuild/bin/parser/libqasm/qasm_flex_bison/library
+  )
 
 FIND_PACKAGE(OpenMP)
 IF(OPENMP_FOUND)

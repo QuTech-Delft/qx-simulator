@@ -3,7 +3,7 @@
 import os
 import shutil
 
-dirs = ['build', 'cbuild', 'dist', 'qxelarator.egg-info']
+dirs = ['build', 'cbuild', 'dist', 'qxelarator.egg-info', 'libqasmbuild']
 files = ['qxelarator/qxelarator.py']
 
 for dir in dirs:
