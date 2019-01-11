@@ -1,3 +1,5 @@
+#QX build
+
 To build run the following in the current directory:
 
 mkdir build && cd build && cmake ../ && make
@@ -9,7 +11,13 @@ Each containing its respective executable
 
 To install you can further run:
   make install
+
 which installs the two executables under the default bin directory, usually:
   /usr/local/bin
+
 To change this, cmake can be ran with the following prefix:
+
   cmake -DCMAKE_INSTALL_PREFIX=<desired_absolute_path>
+
+# QXELERATOR build
+Follow the instructions README.md file in the qxelerator directory.
