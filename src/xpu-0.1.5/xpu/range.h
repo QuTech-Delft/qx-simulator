@@ -86,7 +86,7 @@ namespace xpu
 #ifdef  __xpu_use_spinlock__
 	    m = new spinlock(); 
 #else // use mutex
-	    m = new mutex(); 
+	    m = new xpu::core::os::mutex(); 
 #endif
 #endif
 	    if ((max-min) >= core::workers_count) 
