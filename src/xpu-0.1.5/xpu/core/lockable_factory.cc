@@ -54,7 +54,7 @@
        #ifdef __XPU_USE_SPINLOCK__
          lockable * l = new spinlock();
        #else
-         lockable * l = new mutex();
+         lockable * l = new xpu::core::os::mutex();
        #endif
        m_shared[p] = l;
 
