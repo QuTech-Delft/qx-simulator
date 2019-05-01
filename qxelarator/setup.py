@@ -51,7 +51,7 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(name='qxelarator',
-      version='0.0.1',
+      version='0.3.0',
       description='qxelarator Python Package',
       # long_description=read('README.md'),
       author='Imran Ashraf',
