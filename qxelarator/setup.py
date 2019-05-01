@@ -6,14 +6,26 @@ from sys import platform
 
 rootDir = os.path.dirname(os.path.realpath(__file__))
 buildDir = os.path.join(rootDir, "cbuild")
+libqasmBuildDir = os.path.join(rootDir, "libqasmbuild")
 clibDir = buildDir
 
 if not os.path.exists(buildDir):
     os.makedirs(buildDir)
-os.chdir(buildDir)
+
+if not os.path.exists(libqasmBuildDir):
+    os.makedirs(libqasmBuildDir)
 
 if platform == "linux" or platform == "linux2":
     print('Detected Linux OS, installing qxelarator ... ')
+    os.chdir(libqasmBuildDir)
+    cmd = 'cmake ../..'
+    proc = subprocess.Popen(cmd, shell=True)
+    proc.communicate()
+    cmd = 'make'
+    proc = subprocess.Popen(cmd, shell=True)
+    proc.communicate()
+
+    os.chdir(buildDir)
     cmd = 'cmake ../qxelarator/.'
     proc = subprocess.Popen(cmd, shell=True)
     proc.communicate()
