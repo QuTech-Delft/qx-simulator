@@ -28,6 +28,10 @@ public:
             std::cerr << e.what() << std::endl;
         }
     }
+    ~QX()
+    {
+        delete(qx_sim);
+    }
 
     void set(std::string qasm_file_name)
     {

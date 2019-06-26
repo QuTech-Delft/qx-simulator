@@ -48,8 +48,8 @@ protected:
     compiler::QasmRepresentation ast;
 
 public:
-    simulator() : reg(nullptr) {}
-    ~simulator() {}
+    simulator() : reg(nullptr) { xpu::init(); }
+    ~simulator() { xpu::clean(); }
 
     void set(std::string file_path)
     {
@@ -61,7 +61,6 @@ public:
 
         // construct libqasm parser and safely parse input file
         compiler::QasmSemanticChecker * parser;
-        // compiler::QasmRepresentation ast;
         try
         {
             parser = new compiler::QasmSemanticChecker(qasm_file);
@@ -80,8 +79,6 @@ public:
      */
     void execute(size_t navg)
     {
-        xpu::init();
-
         // quantum state and circuits
         size_t                     qubits = ast.numQubits();
         std::vector<qx::circuit*>  circuits;
@@ -207,8 +204,6 @@ public:
                 circuits[i]->execute(*reg);
             }
         }
-
-        xpu::clean();
     }
 
     bool move(size_t q)
