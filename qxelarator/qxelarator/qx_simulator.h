@@ -57,7 +57,16 @@ private:
 
 public:
     simulator() : reg(nullptr) { xpu::init(); }
-    ~simulator() { xpu::clean(); }
+    ~simulator()
+    { 
+        for ( auto vec : {perfect_circuits, noisy_circuits} )
+        {
+            for (auto ptr : vec)
+                delete ptr;
+            vec.clear();
+        }
+        xpu::clean();
+    }
 
     void set(std::string file_path)
     {
@@ -89,6 +98,13 @@ public:
         {
             error_probability = ast.getErrorModelParameters().at(0);
             error_model       = qx::__depolarizing_channel__;
+        }
+
+        for ( auto vec : {perfect_circuits, noisy_circuits} )
+        {
+            for (auto ptr : vec)
+                delete ptr;
+            vec.clear();
         }
 
         // convert libqasm ast to qx internal representation
