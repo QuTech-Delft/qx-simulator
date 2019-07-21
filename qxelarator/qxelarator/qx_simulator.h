@@ -45,7 +45,6 @@ class simulator
 {
 protected:
     qx::qu_register * reg;
-    compiler::QasmRepresentation ast;
 
 private:
     size_t                     qubits = 0;
@@ -56,15 +55,21 @@ private:
     double                     error_probability = 0;
 
 public:
-    simulator() : reg(nullptr) { xpu::init(); }
+    simulator() : reg(nullptr) 
+    {
+        xpu::init(); 
+    }
+
     ~simulator()
     { 
         for ( auto vec : {perfect_circuits, noisy_circuits} )
         {
             for (auto ptr : vec)
                 delete ptr;
-            vec.clear();
         }
+        perfect_circuits.clear();
+        noisy_circuits.clear();
+
         xpu::clean();
     }
 
@@ -74,10 +79,12 @@ public:
         if (!qasm_file)
         {
             error("Could not open " << file_path );
+            return;
         }
 
 
         // construct libqasm parser and safely parse input file
+        compiler::QasmRepresentation ast;
         compiler::QasmSemanticChecker * parser;
         try
         {
@@ -89,6 +96,7 @@ public:
             error("parsing file " << file_path);
             error(e.what());
         }
+        delete parser;
 
         // set number of qubits
         qubits = ast.numQubits();
@@ -104,13 +112,19 @@ public:
         {
             for (auto ptr : vec)
                 delete ptr;
-            vec.clear();
         }
+        perfect_circuits.clear();
+        noisy_circuits.clear();
 
         // convert libqasm ast to qx internal representation
         std::vector<compiler::SubCircuit> subcircuits = ast.getSubCircuits().getAllSubCircuits();
         for(auto subcircuit : subcircuits)
         {
+            // libqasm is detecting default subcircuit for some reason
+            // TODO: report it on libqasm github
+            if( subcircuit.nameSubCircuit() == "default")
+                continue;
+
             try
             {
                 perfect_circuits.push_back(load_cqasm_code(qubits, subcircuit));
@@ -121,8 +135,6 @@ public:
                 xpu::clean();
             }
         }
-        println("Loaded " << perfect_circuits.size() << " circuits.");
-
 
         if (error_model == qx::__depolarizing_channel__)
         {
@@ -147,7 +159,7 @@ public:
     void execute(size_t navg)
     {
         // create the quantum state
-        println("Creating quantum register of " << qubits << " qubits... ");
+        // println("Creating quantum register of " << qubits << " qubits... ");
         try
         {
             reg = new qx::qu_register(qubits);
