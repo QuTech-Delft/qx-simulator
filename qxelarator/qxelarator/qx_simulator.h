@@ -97,6 +97,7 @@ public:
             error(e.what());
         }
         delete parser;
+        fclose(qasm_file);
 
         // set number of qubits
         qubits = ast.numQubits();
