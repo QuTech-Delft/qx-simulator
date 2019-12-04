@@ -32,14 +32,12 @@
 
 #define __ret_bin_gate(__g) \
 {\
-   if (!pg && (bv.size() > 1))\
-      pg = new qx::parallel_gates();\
    if (!pg)\
-      return new __g(bid(operation));\
+         return new __g(bid(operation));\
    else\
    {\
-      for (auto b : bv)\
-         pg->add(new __g(b));\
+         for (auto b : bv)\
+            pg->add(new __g(b));\
       return pg;\
    }\
 }\
@@ -113,7 +111,7 @@ qx::gate *gateLookup(compiler::Operation &operation)
 
    if (bv.size())
       bc = true;
-   if (qv.size() > 1)
+   if (qv.size() > 1) 
       pg = new qx::parallel_gates();
 
    //if (bc) { std::cout << operation.getControlBits().printMembers(); }
@@ -153,7 +151,7 @@ qx::gate *gateLookup(compiler::Operation &operation)
    if (type == "i")
       __ret_gate_1(qx::identity)
    if (type == "x")
-      __ret_gate_1(qx::pauli_x)
+	  __ret_gate_1(qx::pauli_x)
    if (type == "y")
       __ret_gate_1(qx::pauli_y)
    if (type == "z")
