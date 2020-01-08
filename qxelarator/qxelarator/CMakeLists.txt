@@ -38,6 +38,11 @@ IF(CMAKE_COMPILER_IS_GNUCXX)
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wfatal-errors -O3 -DCG_BC -DQX_SPARSE_MV_MUL -D__BUILTIN_LINALG__ -msse4.2 -DUSE_OPENMP")
 ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 
+IF("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+  SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -Wall -Wfatal-errors -ggdb")
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -std=c++11 -Wall -Wfatal-errors -Wno-unused-local-typedef -ggdb")
+ENDIF("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+
 SET_SOURCE_FILES_PROPERTIES(qxelarator.i PROPERTIES CPLUSPLUS ON)
 SET_PROPERTY(SOURCE qxelarator.i PROPERTY SWIG_FLAGS -castmode -modern -keyword)
 SWIG_ADD_MODULE(qxelarator python qxelarator.i)

@@ -33,6 +33,26 @@ if platform == "linux" or platform == "linux2":
     proc = subprocess.Popen(cmd, shell=True)
     proc.communicate()
     clibname = "_qxelarator.so"
+
+elif platform == "darwin":
+    print('Detected OSX, installing qxelarator ... ')
+    os.chdir(libqasmBuildDir)
+    cmd = 'cmake ../..'
+    proc = subprocess.Popen(cmd, shell=True)
+    proc.communicate()
+    cmd = 'make'
+    proc = subprocess.Popen(cmd, shell=True)
+    proc.communicate()
+
+    os.chdir(buildDir)
+    cmd = 'cmake ../qxelarator/.'
+    proc = subprocess.Popen(cmd, shell=True)
+    proc.communicate()
+    cmd = 'make'
+    proc = subprocess.Popen(cmd, shell=True)
+    proc.communicate()
+    clibname = "_qxelarator.so"
+
 else:
     print('Unknown/Unsupported OS !!!')
 

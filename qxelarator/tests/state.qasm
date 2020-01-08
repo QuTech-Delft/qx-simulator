@@ -1,9 +1,11 @@
+version 1.0
+
 qubits 3
 
 .init
-	prepz q1
-	prepz q2
-	x q1
+	prep_z q[1]
+	prep_z q[2]
+	x q[1]
 
 .kernel1
-	s q1
+	s q[1]
