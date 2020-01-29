@@ -90,16 +90,29 @@ ENDIF("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
 SET_SOURCE_FILES_PROPERTIES(qxelarator.i PROPERTIES CPLUSPLUS ON)
 SET_PROPERTY(SOURCE qxelarator.i PROPERTY SWIG_FLAGS -castmode -modern -keyword)
 
-SWIG_ADD_MODULE(qxelarator python qxelarator.i)
-# SWIG_ADD_LIBRARY(qxelarator TYPE shared LANGUAGE python SOURCES qxelarator.i)
+# SWIG_ADD_MODULE(qxelarator python qxelarator.i)
+SWIG_ADD_LIBRARY( qxelarator
+                  TYPE MODULE
+                  LANGUAGE python
+                  SOURCES qxelarator.i
+                )
 
 SWIG_LINK_LIBRARIES(qxelarator ${PYTHON_LIBRARY} lexgram)
 # SWIG_LINK_LIBRARIES(qxelarator ${PYTHON_LIBRARIES} lexgram)
 
+# IF (NOT PYTHON_LINK_LIBRARIES)
+#     IF (APPLE)
+#         SET_TARGET_PROPERTIES(qxelarator PROPERTIES LINK_FLAGS "-Wl,-flat_namespace,-undefined,dynamic_lookup")
+#     ENDIF()
+# ENDIF()
 
-IF (NOT PYTHON_LINK_LIBRARIES)
-    IF (APPLE)
-        SET_TARGET_PROPERTIES(${MODULE_NAME} PROPERTIES LINK_FLAGS "-Wl,-flat_namespace,-undefined,dynamic_lookup")
-    ENDIF()
-ENDIF()
+
+# add_library(qx INTERFACE)
+# set_target_properties(qx PROPERTIES
+#     INTERFACE_LINK_LIBRARIES
+#         lexgram
+#     INTERFACE_LINK_LIBRARIES
+#         qxelarator
+# )
+
 
