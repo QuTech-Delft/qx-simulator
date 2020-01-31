@@ -44,11 +44,6 @@ elif platform == "darwin":
     proc = subprocess.Popen(cmd, shell=True)
     proc.communicate()
 
-
-    # copyfile(os.path.join(rootDir, "libqasmbuild/bin/parser/libqasm/qasm_flex_bison/library/liblexgram.a"),
-         # os.path.join(rootDir, "qxelarator", "liblexgramm.a"))
-
-
     os.chdir(buildDir)
     cmd = 'cmake ../qxelarator/.'
     proc = subprocess.Popen(cmd, shell=True)
@@ -62,9 +57,7 @@ else:
     print('Unknown/Unsupported OS !!!')
 
 genclib = os.path.join(clibDir, clibname)
-print('genclib {}'.format(genclib) )
 clib = os.path.join(rootDir, "qxelarator", clibname)
-print('clib {}'.format(clib) )
 copyfile(genclib, clib)
 
 copyfile(os.path.join(clibDir, "qxelarator.py"),
