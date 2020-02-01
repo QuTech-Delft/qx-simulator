@@ -7,6 +7,12 @@ A universal quantum computer simulator.
 
 * Linux
 * Windows
+* OSX
+
+# QXelerator Installation
+
+QXelerator is the python interface to QX simulator, which is perhaps the most easiest way to start simulating quantum circuits. Python binary wheels are available which can be used to setup QXelerator by following the instructions in [README.md](qxelarator/README.md) available in the qxelerator directory.
+
 
 # Required Packages
 
@@ -45,10 +51,6 @@ To change this, cmake can be ran with the following prefix:
 ```sh
 cmake -DCMAKE_INSTALL_PREFIX=<desired_absolute_path>
 ```
-
-# QXelerator Installation
-
-Follow the instructions in [README.md](qxelarator/README.md) in the qxelerator directory.
 
 
 # Licensing
