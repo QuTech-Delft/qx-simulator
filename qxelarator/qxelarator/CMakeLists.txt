@@ -20,16 +20,14 @@ INCLUDE_DIRECTORIES(
     ${PROJECT_SOURCE_DIR}
     ${PROJECT_SOURCE_DIR}/../../src
     ${PROJECT_SOURCE_DIR}/../../src/xpu-0.1.5
-    ${PROJECT_SOURCE_DIR}/../../src/parser/libqasm/qasm_flex_bison/library
+    ${PROJECT_SOURCE_DIR}/../../src/parser/libqasm/src/library
     ${PYTHON_INCLUDE_PATH}
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 LINK_DIRECTORIES(
-  ${PROJECT_SOURCE_DIR}/../libqasmbuild/bin/parser/libqasm/qasm_flex_bison/library
+  ${PROJECT_SOURCE_DIR}/../libqasmbuild/bin/parser/libqasm/src/library
   )
-
-message(${PROJECT_SOURCE_DIR}/../libqasmbuild/bin/parser/libqasm/qasm_flex_bison/library)
 
 FIND_PACKAGE(OpenMP)
 IF(OPENMP_FOUND)
@@ -64,8 +62,8 @@ else()
 endif()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    SWIG_LINK_LIBRARIES(qxelarator lexgram)
+    SWIG_LINK_LIBRARIES(qxelarator lexgramstatic)
     set_target_properties(_qxelarator PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
 else ()
-    SWIG_LINK_LIBRARIES(qxelarator ${PYTHON_LIBRARIES} lexgram)
+    SWIG_LINK_LIBRARIES(qxelarator ${PYTHON_LIBRARIES} lexgramstatic)
 endif()
