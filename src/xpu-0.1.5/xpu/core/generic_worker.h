@@ -100,7 +100,7 @@ namespace xpu
 	 /**
 	  * generic worker
 	  */
-	 class generic_worker : public thread
+	 class generic_worker : public xpu::core::os::thread
 	 {
 	    public:
 
