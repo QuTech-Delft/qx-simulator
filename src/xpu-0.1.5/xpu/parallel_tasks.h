@@ -48,7 +48,7 @@ namespace xpu
 		 for (int i=0; i<N; i++)
 		 {
 		    m_tasks[i]    = tasks[i];
-		    m_threads[i]  = new thread((task*)tasks[i]);
+		    m_threads[i]  = new xpu::core::os::thread((task*)tasks[i]);
 		    m_works[i]    = new basic_work((task*)tasks[i]);
 		 }
 		 #ifndef XPU_DISABLE_AUTOMATIC_SHARED_MEMORY_DETECTION
@@ -171,9 +171,9 @@ namespace xpu
 
 	 private:
 
-	   task_group * m_tasks[N];
-	   thread     * m_threads[N];
-	   basic_work * m_works[N];
+	   task_group            * m_tasks[N];
+	   xpu::core::os::thread * m_threads[N];
+	   basic_work            * m_works[N];
    };
 
 
