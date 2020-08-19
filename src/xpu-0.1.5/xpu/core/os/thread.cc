@@ -29,7 +29,7 @@
 /**
  * constructor
  */ 
-thread::thread(task_group *cb): m_id(0),
+xpu::core::os::thread::thread(task_group *cb): m_id(0),
    m_running(false),
    m_core(-1), // not defined, let the kernel choose it for us... (default)
    m_join_id(0),
@@ -52,7 +52,7 @@ thread::thread(task_group *cb): m_id(0),
 /**
  * destructor
  */
-thread::~thread()
+xpu::core::os::thread::~thread()
 {
    return;
 }
@@ -66,7 +66,7 @@ thread::~thread()
    */
 
    void
-thread::set_task(task_group * cb)
+xpu::core::os::thread::set_task(task_group * cb)
 {
    m_task = cb;
 }
@@ -76,7 +76,7 @@ thread::set_task(task_group * cb)
  *   return thread id if running else -1
  */
    pthread_t  
-thread::id()
+xpu::core::os::thread::id()
 {
    if (m_running) 
 	 return pthread_self();
@@ -85,51 +85,51 @@ thread::id()
 }
 
    pthread_attr_t    
-thread::get_attributes()
+xpu::core::os::thread::get_attributes()
 {
    return m_attr;
 }
 
    void * 
-thread::get_exit_status()
+xpu::core::os::thread::get_exit_status()
 {
    return m_exit_status;
 }
 
    void
-thread::set_exit_status(void * exit_status)
+xpu::core::os::thread::set_exit_status(void * exit_status)
 {
    m_exit_status = exit_status;
 }
 
 
    barrier * 
-thread::get_barrier()
+xpu::core::os::thread::get_barrier()
 {
    return m_barrier;
 }
 
    void 
-thread::set_barrier(barrier * _barrier )
+xpu::core::os::thread::set_barrier(barrier * _barrier )
 {
    m_barrier = _barrier;
 }
 
    void 
-thread::remove_barrier()
+xpu::core::os::thread::remove_barrier()
 {
    m_barrier = NULL;
 }
 
 
    pthread_t
-thread::get_join_id()
+xpu::core::os::thread::get_join_id()
 {
    return m_id;
 }
 
    void **
-thread::get_join_result()
+xpu::core::os::thread::get_join_result()
 {
    return m_join_result;
 }
@@ -149,7 +149,7 @@ thread::get_join_result()
  * @cpu core index
  */
    void 
-thread::set_core(int core)
+xpu::core::os::thread::set_core(int core)
 {
    m_core = core;
    m_cpuset.only(core);
@@ -160,7 +160,7 @@ thread::set_core(int core)
  * create thread on run function on core n° <cpu>
  */ 
    void 
-thread::start() throw (xpu::exception)
+xpu::core::os::thread::start() throw (xpu::exception)
 {
 #ifdef __APPLE__
    if (pthread_create_with_cpu_affinity(&m_id, m_core, &m_attr, reinterpret_cast<__xpu_task>(&run), (void*)this) != 0) 
@@ -178,7 +178,7 @@ thread::start() throw (xpu::exception)
  * @join_result join task result
  */ 
    void 
-thread::join(pthread_t id, void ** join_result)
+xpu::core::os::thread::join(pthread_t id, void ** join_result)
 {
    m_join_id = id; 
    m_join_result = join_result; 
@@ -186,7 +186,7 @@ thread::join(pthread_t id, void ** join_result)
 
 
    void 
-thread::join() throw (xpu::exception)
+xpu::core::os::thread::join() throw (xpu::exception)
 {
    if (pthread_join(m_id, NULL) != 0)
 	 throw (xpu::exception("thread::join() : pthread_join() failed ",true)); 
@@ -195,7 +195,7 @@ thread::join() throw (xpu::exception)
 
 #if defined(__linux) || defined(__osf__) || defined(__sun)
    int
-thread::try_join(long timeout) 
+xpu::core::os::thread::try_join(long timeout) 
 {
    struct timespec ts;
    int s;
@@ -214,25 +214,25 @@ thread::try_join(long timeout)
 // Applyed to calling thread ...
 
 //void 
-//thread::wait(barrier * barrier); 
+//xpu::core::os::thread::wait(barrier * barrier); 
 
 // wait for all no detached threads then exit..
    void 
-thread::wait_for_all_threads()
+xpu::core::os::thread::wait_for_all_threads()
 {
    pthread_exit(NULL);
 }
 
 // join thread t
    void 
-thread::join(thread *t) throw (xpu::exception)
+xpu::core::os::thread::join(thread *t) throw (xpu::exception)
 {
    if (pthread_join(t->m_id, t->m_join_result) != 0) 
 	 throw (xpu::exception("thread::join() : pthread_join() failed ",true)); 
 }
 
    void * 
-thread::run(void *args) 
+xpu::core::os::thread::run(void *args) 
 {
    //cpu_set_t cpuset;
    //CPU_ZERO(&cpuset);
