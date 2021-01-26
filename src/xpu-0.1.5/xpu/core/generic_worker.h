@@ -148,11 +148,14 @@ namespace xpu
 		     if (pthread_create(&m_id, &m_attr, reinterpret_cast<__xpu_task>(&run), (void*)this) != 0) 
 			throw (xpu::exception("thread::start() : pthread_create() failed ",true)); 
 		     // set cpu
+		     /* NOTE (Jeroen van Straten): this stuff causes crashes, undoubtedly
+		     because m_cpu contains garbage when set_cpu() is never called.
 		     cpu_set_t cpuset;
 		     CPU_ZERO(&cpuset);
 		     CPU_SET(m_cpu, &cpuset);
 		     if (pthread_setaffinity_np(m_id, sizeof(cpu_set_t), &cpuset))
 			throw (xpu::exception("thread::start() : pthread_setaffinity_np() failed ",true));
+		     */
 		     #endif
 		  }
 
