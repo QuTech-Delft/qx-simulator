@@ -3,6 +3,7 @@
 
 #include <xpu/aligned_memory_allocator.h>
 #include <iostream>
+#include <cstring>
 
 #define __xpu_bound_check__ 0
 

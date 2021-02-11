@@ -270,10 +270,10 @@ namespace qx
       uint64_t rows = (1 << n);
       uint64_t z = 0;
 
-      xpu::task rw_t(rw_process,0,0,0,n,qubit,&m,&v,&res);
+      /*xpu::task rw_t(rw_process,0,0,0,n,qubit,&m,&v,&res);
       xpu::parallel_for process(z,rows,1,&rw_t);
-
-      process.run();
+      process.run();*/
+      rw_process(z,rows,0,n,qubit,&m,&v,&res);
 
    }
 
@@ -442,9 +442,10 @@ namespace qx
 #ifdef SEQUENTIAL
       rw_process_ui(z,rows,1,n,qubit,m,&v,&res);
 #else
-      xpu::task rw_t(rw_process_ui,0,0,0,n,qubit,m,&v,&res);
+      /*xpu::task rw_t(rw_process_ui,0,0,0,n,qubit,m,&v,&res);
       xpu::parallel_for process(z,rows,1,&rw_t);
-      process.run();
+      process.run();*/
+      rw_process_ui(z,rows,0,n,qubit,m,&v,&res);
 #endif
    }
 
@@ -498,9 +499,10 @@ namespace qx
 #ifdef SEQUENTIAL
       rw_process_iu(z,rows,1,n,qubit,m,&v,&res);
 #else
-      xpu::task rw_t(rw_process_iu,0,0,0,n,qubit,m,&v,&res);
+      /*xpu::task rw_t(rw_process_iu,0,0,0,n,qubit,m,&v,&res);
       xpu::parallel_for process(z,rows,1,&rw_t);
-      process.run();
+      process.run();*/
+      rw_process_iu(z,rows,0,n,qubit,m,&v,&res);
 #endif
    }
    
@@ -610,9 +612,9 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
 #ifdef SEQUENTIAL
       rw_process_iui(z,rows,1,n,qubit,m,&v,&res);
 #else
-      xpu::task rw_t(rw_process_iui,0,0,0,n,qubit,m,&v,&res);
+      /*xpu::task rw_t(rw_process_iui,0,0,0,n,qubit,m,&v,&res);
       xpu::parallel_for process(z,rows,1,&rw_t);
-      process.run();
+      process.run();*/
 #endif
    }
 
@@ -2700,7 +2702,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
   
    
 
-   int p1_worker(uint64_t cs, uint64_t ce, uint64_t s, double * p1, uint64_t qubit, xpu::lockable * l, cvector_t * p_data)
+   int p1_worker(uint64_t cs, uint64_t ce, uint64_t s, double * p1, uint64_t qubit, /*xpu::lockable * l,*/ cvector_t * p_data)
    {
       cvector_t &data = * p_data;
       double local_p1 = 0;
@@ -2713,15 +2715,15 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
          // local_p1 += std::norm(data[i]);
       }
 
-      l->lock();
+      //l->lock();
       // println("l_p1 [" << cs << ".." << ce << "]: " << local_p1);
       *p1 += local_p1;
-      l->unlock();
+      //l->unlock();
       return 0;
    }
 
 
-   int zero_worker(uint64_t cs, uint64_t ce, uint64_t s, int64_t m, double * length, uint64_t qubit, xpu::lockable * l, cvector_t * p_data)
+   int zero_worker(uint64_t cs, uint64_t ce, uint64_t s, int64_t m, double * length, uint64_t qubit, /*xpu::lockable * l, */cvector_t * p_data)
    {
       cvector_t &data = * p_data;
       double local_length = 0;
@@ -2744,9 +2746,9 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
             local_length += data[i].norm(); //std::norm(data[i]);
          }
       }
-      l->lock();
+      //l->lock();
       *length += local_length;
-      l->unlock();
+      //l->unlock();
       return 0;
    }
 
@@ -2829,23 +2831,26 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
                // #define PARALLEL_MEASUREMENT
                // #ifdef PARALLEL_MEASUREMENT
 
-               xpu::lockable * l = new xpu::core::os::mutex();
+               /*xpu::lockable * l = new xpu::core::os::mutex();
                xpu::task p1_worker_t(p1_worker, (uint64_t)0, n, (uint64_t)1, &p, qubit, l, &data); 
                xpu::parallel_for parallel_p1( (uint64_t)0, n, (uint64_t)1, &p1_worker_t);
-               parallel_p1.run();
+               parallel_p1.run();*/
+               p1_worker((uint64_t)0, n, (uint64_t)1, &p, qubit, &data);
 
                if (f<p) value = 1;
                else value = 0;
 
-               xpu::task zero_worker_t(zero_worker,(uint64_t)0, n, (uint64_t)1, value, &length, qubit, l, &data); 
+               /*xpu::task zero_worker_t(zero_worker,(uint64_t)0, n, (uint64_t)1, value, &length, qubit, l, &data);
                xpu::parallel_for parallel_zero( (uint64_t)0, n, (uint64_t)1, &zero_worker_t);
-               parallel_zero.run();
+               parallel_zero.run();*/
+               zero_worker((uint64_t)0, n, (uint64_t)1, value, &length, qubit, &data);
 
                length = std::sqrt(length);
 
-               xpu::task renorm_worker_t(renorm_worker, (uint64_t)0, n, (uint64_t)1, &length, &data); 
+               /*xpu::task renorm_worker_t(renorm_worker, (uint64_t)0, n, (uint64_t)1, &length, &data);
                xpu::parallel_for parallel_renorm( (uint64_t)0, n, (uint64_t)1, &renorm_worker_t);
-               parallel_renorm.run();
+               parallel_renorm.run();*/
+               renorm_worker((uint64_t)0, n, (uint64_t)1, &length, &data);
             }
             else 
             {

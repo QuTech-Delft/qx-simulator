@@ -4,8 +4,6 @@
  * @date        25-02-16
  */
 
-#include <xpu.h>
-#include <xpu/runtime>
 #include <qx_server.h>
 #include "qx_version.h"
 
@@ -23,8 +21,6 @@ int main(int argc, char **argv)
    println("     version " << QX_VERSION << " - QuTech - " << QX_RELEASE_YEAR << " - report bugs and suggestions to: nader.khammassi@gmail.com");
    println("  =================================================================================================== ");
    println("");
-
-   xpu::init();
 
    size_t port = 5555;
 
