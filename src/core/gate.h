@@ -17,6 +17,8 @@
 #include <immintrin.h> // avx
 #include <emmintrin.h> // sse
 
+#include <algorithm>
+
 #include <core/hash_set.h>
 #include <core/linalg.h>
 #include <core/register.h>
@@ -2131,7 +2133,11 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
       //xpu::parallel_for process(z,rows,1,&qf_t);
       //process.run();
 
-      qft_1st_fold_worker(0,rows,1,n,qubit,m,&v,&res);
+      static const uint64_t SIZE = 1000;
+      #pragma omp parallel for
+      for (uint64_t batch = 0; batch <= rows / SIZE; batch++) {
+        qft_1st_fold_worker(batch*SIZE,std::min((batch+1)*SIZE,rows),1,n,qubit,m,&v,&res);
+      }
 
    }
 
@@ -2187,7 +2193,11 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
       //xpu::parallel_for process(z,rows,1,&qf_t);
       //process.run();
 
-      qft_nth_fold_worker(0,rows,1,n,qubit,m,&v,&res);
+      static const uint64_t SIZE = 1000;
+      #pragma omp parallel for
+      for (uint64_t batch = 0; batch <= rows / SIZE; batch++) {
+        qft_nth_fold_worker(batch*SIZE,std::min((batch+1)*SIZE,rows),1,n,qubit,m,&v,&res);
+      }
 
    }
 
@@ -2771,6 +2781,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
       // println("sse");
       complex_t * vd = p_data->data();
       __m128d vl = _mm_set1_pd(l);
+      #pragma omp parallel for
       for (uint64_t i=cs; i<ce; ++i)
       {
          double * pvd = (double*)&vd[i];
