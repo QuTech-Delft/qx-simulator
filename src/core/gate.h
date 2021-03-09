@@ -26,6 +26,8 @@
 #include <core/binary_counter.h>
 #include <core/kronecker.h>
 
+#include <omp.h>
+
 // #ifndef __BUILTIN_LINALG__
 // #include <boost/numeric/ublas/matrix.hpp>
 // #endif
@@ -43,6 +45,9 @@
 
 //#define SQRT_2   (1.41421356237309504880f)
 //#define R_SQRT_2 (0.70710678118654752440f)
+
+#define ROUND_DOWN(x, s) ((x) & ~((s)-1))
+#define IS_ODD(x) (x & 1)
 
 namespace qx
 {
@@ -736,15 +741,18 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
 
    };
 
-   void __swap(cvector_t& amp, size_t size, size_t bit, size_t trg, size_t ctrl, size_t offset=0)
+   inline void __swap(cvector_t& amp, size_t size, size_t bit, size_t trg, size_t ctrl, size_t offset=0)
    {
       // println("bit=" << bit);
       // println("ctrl=" << ctrl);
       complex_t * p = amp.data();
-      for (size_t i=__bit_set(0,bit); i<(1<<size); i += (1 << (bit+1)))
+      size_t incrementer = 1 << (bit+1);
+      for (size_t i=__bit_set(0,bit), end=(1<<size); i<end; i+=incrementer) {
+         size_t v = i+offset;
          for (size_t j=0; j<(1<<bit); j++)
          {
-            size_t v = i+j+offset; 
+            // size_t v = i+j+offset; 
+            v += j;
             /*
                #ifdef __SSE__
                __m128d x = _mm_load_pd((const double *)&p[v]);
@@ -757,21 +765,24 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
             // println("swap("<<v<<","<<__bit_reset(v,trg)<<")");
             // #endif
          }
+      }
    }
 
 
-   int cx_worker(int cs, int ce, int s, cvector_t * p_amp, size_t bit1, size_t bit2, size_t trg, size_t ctrl)
+   inline int cx_worker(int cs, int ce, int s, cvector_t * p_amp, size_t bit1, size_t bit2, size_t trg, size_t ctrl)
    {
       cvector_t &amp = * p_amp;
       // xpu::parallel_for fswp(__bit_set(0,b1), (1 << qn), (1 << (b1+1)), &t);
       size_t step=(1 << (bit1+1));
-      size_t b   = cs;
-      size_t e   = ce;
+      // size_t b   = cs;
+      // size_t e   = ce;
       size_t offset = __bit_set(0,bit1);
 
       //for (size_t i=__bit_set(0,bit1); i<(1<<size); i += (1 << (bit1+1)))
       //__swap(amp,bit1,bit2,trg,ctrl,i);
-      for (size_t i=b; i<e; i++)
+      // for (size_t i=b; i<e; i++)
+      //    __swap(amp,bit1,bit2,trg,ctrl,offset+(i*step));
+      for (size_t i=cs; i<ce; i++)
          __swap(amp,bit1,bit2,trg,ctrl,offset+(i*step));
       return 0;
    }
@@ -862,7 +873,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
             else
             {
 #ifdef USE_OPENMP
-#pragma omp parallel for
+#pragma omp parallel for //schedule(runtime)
                for (size_t i=0; i<steps; ++i)
                   cx_worker(i,i+1,1,&amp,b1,b2,(size_t)tq,(size_t)cq);
 #else
@@ -2734,28 +2745,67 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
    }
 
 
-   double zero_worker(uint64_t cs, uint64_t ce, uint64_t s, int64_t m, /*double * length,*/ uint64_t qubit, /*xpu::lockable * l, */cvector_t * p_data)
+   // double zero_worker(uint64_t cs, uint64_t ce, uint64_t s, int64_t m, /*double * length,*/ uint64_t qubit, /*xpu::lockable * l, */cvector_t * p_data)
+   // {
+   //    cvector_t &data = * p_data;
+   //    double local_length = 0;
+   //    uint64_t       size = data.size(); 
+   //    if (m)
+   //    {
+   //       for (uint64_t i=cs; i<ce; ++i)
+   //       {
+   //          if (!__bit_test(i,qubit))
+   //             data[i] = 0;
+   //          local_length += data[i].norm(); //std::norm(data[i]);
+   //       }
+   //    }
+   //    else
+   //    {
+   //       for (uint64_t i=cs; i<ce; ++i)
+   //       {
+   //          if (__bit_test(i,qubit))
+   //             data[i] = 0;
+   //          local_length += data[i].norm(); //std::norm(data[i]);
+   //       }
+   //    }
+   //    //l->lock();
+   //    //*length += local_length;
+   //    //l->unlock();
+   //    //return 0;
+   //    return local_length;
+   // }
+
+   inline double zero_worker_true(uint64_t cs, uint64_t ce, uint64_t s, /*double * length,*/ uint64_t qubit, /*xpu::lockable * l, */cvector_t * p_data)
    {
       cvector_t &data = * p_data;
-      double local_length = 0;
+      double local_length = 0.;
       uint64_t       size = data.size(); 
-      if (m)
+      for (uint64_t i=cs; i<ce; ++i)
       {
-         for (uint64_t i=cs; i<ce; ++i)
-         {
-            if (!__bit_test(i,qubit))
-               data[i] = 0;
+         if (__bit_test(i,qubit))
+            data[i] = 0.;
+         else
             local_length += data[i].norm(); //std::norm(data[i]);
-         }
       }
-      else
+      //l->lock();
+      //*length += local_length;
+      //l->unlock();
+      //return 0;
+      return local_length;
+   }
+
+   inline double zero_worker_false(uint64_t cs, uint64_t ce, uint64_t s, /*double * length,*/ uint64_t qubit, /*xpu::lockable * l, */cvector_t * p_data)
+   {
+      cvector_t &data = * p_data;
+      double local_length = 0.;
+      uint64_t size = data.size(); 
+      for (uint64_t i=cs; i<ce; ++i)
       {
-         for (uint64_t i=cs; i<ce; ++i)
-         {
-            if (__bit_test(i,qubit))
-               data[i] = 0;
+         // ((x) & (1<<(pos)))
+         if (!__bit_test(i,qubit))
+            data[i] = 0.;
+         else 
             local_length += data[i].norm(); //std::norm(data[i]);
-         }
       }
       //l->lock();
       //*length += local_length;
@@ -2768,33 +2818,70 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
    {
       cvector_t &data = * p_data;
       double l = *length;
-#ifdef __AVX__
-      // println("avx");
+
+#ifdef __AVX512F__
+      uint32_t nthreads = omp_get_max_threads();
+      uint64_t num_elts = ce - cs;
+      uint64_t offset = ROUND_DOWN(num_elts / nthreads, nthreads);
+      if (IS_ODD(offset)) --offset;
       complex_t * vd = p_data->data();
-      __m256d vl = _mm256_set1_pd(l);
-      for (uint64_t i=cs; i<ce; i+=2)
-      {
-         double * pvd = (double*)&vd[i];
-         __m256d va = _mm256_load_pd(pvd); 
-         __m256d vr = _mm256_div_pd(va, vl);
-         _mm256_store_pd(pvd,vr);
+#pragma omp parallel for num_threads(nthreads)
+      for(uint32_t thr = 0; thr < nthreads; ++thr) {
+         __m512d vl = _mm512_set1_pd(l);
+         uint64_t start = cs + thr * offset;
+         uint64_t end  = cs + (thr + 1) * offset;
+         for(uint64_t i = start; i < end; i+=4) {
+            double * pvd = (double*)&vd[i];
+            _mm512_store_pd(pvd, _mm512_div_pd(_mm512_load_pd(pvd), vl));
+         }
+      }
+      for(uint64_t i = cs + nthreads * offset; i < ce; ++i) {
+         data[i] /= l;
+      }
+#elif defined(__AVX__)
+      uint32_t nthreads = omp_get_max_threads();
+      uint64_t num_elts = ce - cs;
+      uint64_t offset = ROUND_DOWN(num_elts / nthreads, nthreads);
+      if (IS_ODD(offset)) --offset;
+      complex_t * vd = p_data->data();
+#pragma omp parallel for num_threads(nthreads)
+      for(uint32_t thr = 0; thr < nthreads; ++thr) {
+         __m256d vl = _mm256_set1_pd(l);
+         uint64_t start = cs + thr * offset;
+         uint64_t end  = cs + (thr + 1) * offset;
+         for(uint64_t i = start; i < end; i+=2) {
+            double * pvd = (double*)&vd[i];
+            _mm256_store_pd(pvd, _mm256_div_pd(_mm256_load_pd(pvd), vl));
+         }
+      }
+      for(uint64_t i = cs + nthreads * offset; i < ce; ++i) {
+         data[i] /= l;
       }
 #elif defined(__SSE__)
-      // println("sse");
+      uint32_t nthreads = omp_get_max_threads();
+      uint64_t num_elts = ce - cs;
+      uint64_t offset = ROUND_DOWN(num_elts / nthreads, nthreads);
+      if (IS_ODD(offset)) --offset;
       complex_t * vd = p_data->data();
-      __m128d vl = _mm_set1_pd(l);
-      #pragma omp parallel for
-      for (uint64_t i=cs; i<ce; ++i)
-      {
-         double * pvd = (double*)&vd[i];
-         __m128d va = _mm_load_pd(pvd); 
-         __m128d vr = _mm_div_pd(va, vl);
-         _mm_store_pd(pvd,vr);
+#pragma omp parallel for num_threads(nthreads)
+      for(uint32_t thr = 0; thr < nthreads; ++thr) {
+         __m128d vl = _mm_set1_pd(l);
+         uint64_t start = cs + thr * offset;
+         uint64_t end  = cs + (thr + 1) * offset;
+         for(uint64_t i = start; i < end; ++i) {
+            double * pvd = (double*)&vd[i];
+            _mm_store_pd(pvd, _mm_div_pd(_mm_load_pd(pvd), vl));
+         }
+      }
+      for(uint64_t i = cs + nthreads * offset; i < ce; ++i) {
+         data[i] /= l;
       }
 #else
+#pragma omp parallel for
       for (uint64_t i=cs; i<ce; ++i)
          data[i] /= l;
-#endif // __SSE__
+#endif
+
       return 0;
    }
 
@@ -2849,7 +2936,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
                xpu::parallel_for parallel_p1( (uint64_t)0, n, (uint64_t)1, &p1_worker_t);
                parallel_p1.run();*/
                static const uint64_t SIZE = 1000;
-               #pragma omp parallel for reduction(+: p)
+               #pragma omp parallel for reduction(+: p) //schedule(runtime)
                for (uint64_t batch = 0; batch <= n / SIZE; batch++) {
                    p += p1_worker(batch*SIZE, std::min((batch+1)*SIZE,n), (uint64_t)1, qubit, &data);
                }
@@ -2861,9 +2948,21 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
                /*xpu::task zero_worker_t(zero_worker,(uint64_t)0, n, (uint64_t)1, value, &length, qubit, l, &data);
                xpu::parallel_for parallel_zero( (uint64_t)0, n, (uint64_t)1, &zero_worker_t);
                parallel_zero.run();*/
-               #pragma omp parallel for reduction(+: length)
-               for (uint64_t batch = 0; batch <= n / SIZE; batch++) {
-                   length += zero_worker(batch*SIZE, std::min((batch+1)*SIZE,n), (uint64_t)1, value, qubit, &data);
+               // #pragma omp parallel for reduction(+: length) schedule(dynamic, 1000)
+               // for (uint64_t batch = 0; batch <= n / SIZE; batch++) {
+               //     length += zero_worker(batch*SIZE, std::min((batch+1)*SIZE,n), (uint64_t)1, value, qubit, &data);
+               // }
+               if (value) {
+                  #pragma omp parallel for reduction(+: length) //schedule(runtime)
+                  for (uint64_t batch = 0; batch <= n / SIZE; batch++) {
+                     length += zero_worker_true(batch*SIZE, std::min((batch+1)*SIZE,n), (uint64_t)1, qubit, &data);
+                  }
+               }
+               else {
+                  #pragma omp parallel for reduction(+: length) //schedule(runtime)
+                  for (uint64_t batch = 0; batch <= n / SIZE; batch++) {
+                     length += zero_worker_false(batch*SIZE, std::min((batch+1)*SIZE,n), (uint64_t)1, qubit, &data);
+                  }
                }
 
                length = std::sqrt(length);

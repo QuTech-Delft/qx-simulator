@@ -85,7 +85,9 @@ qx::qu_register::qu_register(uint64_t n_qubits) : data(1ULL << n_qubits), aux(1U
    }
 
    data[0] = complex_t(1,0);
-   for (uint64_t i=1; i<(1ULL << n_qubits); ++i) {
+   uint64_t num_elts = (1ULL << n_qubits);
+#pragma omp parallel for
+   for (uint64_t i=1; i<num_elts; ++i) {
       data[i] = 0;
    }
 
@@ -163,7 +165,7 @@ uint64_t qx::qu_register::states()
 /**
  * \brief assign operator
  */
-cvector_t & qx::qu_register::operator=(cvector_t d) 
+cvector_t & qx::qu_register::operator=(cvector_t d)
 { 
    assert(d.size() == data.size());
    data.resize(d.size());
