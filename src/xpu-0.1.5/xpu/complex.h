@@ -376,18 +376,7 @@ namespace xpu
 	
 	 inline double norm()
 	 {
-		// __m128d c = _mm_mul_pd(xmm,xmm);
-		// return _mm_cvtsd_f64(_mm_hadd_pd(c,c));
-
 		return _mm_cvtsd_f64(_mm_hadd_pd(_mm_mul_pd(xmm,xmm),_mm_set1_pd(0.)));
-
-	    // __m128d c = xmm; 
-	    // c = _mm_mul_pd(c,c);
-	    // c = _mm_hadd_pd(c,c);
-		// return _mm_cvtsd_f64(c);
-	    // __v2d x; 
-	    // x.xmm = c;
-	    // return x.d1;
 	 }
 
 	 friend std::ostream &operator<<(std::ostream &os, const complex_d& c)
