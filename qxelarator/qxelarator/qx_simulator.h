@@ -9,9 +9,6 @@
 #ifndef QX_SIMULATOR_H
 #define QX_SIMULATOR_H
 
-#include <xpu.h>
-#include <xpu/runtime>
-
 #include <core/circuit.h>
 #include <qx_representation.h>
 #include <libqasm_interface.h>
@@ -48,8 +45,8 @@ protected:
     compiler::QasmRepresentation ast;
 
 public:
-    simulator() : reg(nullptr) { xpu::init(); }
-    ~simulator() { xpu::clean(); }
+    simulator() : reg(nullptr) { /*xpu::init();*/ }
+    ~simulator() { /*xpu::clean();*/ }
 
     void set(std::string file_path)
     {
@@ -99,12 +96,12 @@ public:
         catch(std::bad_alloc& exception)
         {
             std::cerr << "Not enough memory, aborting" << std::endl;
-            xpu::clean();
+            // xpu::clean();
         }
         catch(std::exception& exception)
         {
             std::cerr << "Unexpected exception (" << exception.what() << "), aborting" << std::endl;
-            xpu::clean();
+            // xpu::clean();
         }
 
         // convert libqasm ast to qx internal representation
@@ -118,7 +115,7 @@ public:
             catch (std::string type)
             {
                 std::cerr << "Encountered unsupported gate: " << type << std::endl;
-                xpu::clean();
+                // xpu::clean();
             }
         }
 
