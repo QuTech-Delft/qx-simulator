@@ -9,7 +9,9 @@
 #include <qx_representation.h>
 #include <libqasm_interface.h>
 #include <qasm_semantic.hpp>
-
+#ifdef USE_GPERFTOOLS
+#include <gperftools/profiler.h>
+#endif
 
 #include <iostream>
 
@@ -134,6 +136,9 @@ int main(int argc, char **argv)
    // measurement averaging
    if (navg)
    {
+#ifdef USE_GPERFTOOLS
+      ProfilerStart("profile.log");
+#endif
       if (error_model == qx::__depolarizing_channel__)
       {
          qx::measure m;
@@ -168,7 +173,9 @@ int main(int argc, char **argv)
             m.apply(*reg);
          }
       }
-      
+#ifdef USE_GPERFTOOLS
+      ProfilerStop();
+#endif
       println("[+] average measurement after " << navg << " shots:");
       reg->dump(true);
    }

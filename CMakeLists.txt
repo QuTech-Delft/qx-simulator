@@ -14,17 +14,27 @@ ELSE(OPENMP_FOUND)
   message("ERROR: OpenMP could not be found.")
 ENDIF(OPENMP_FOUND)
 
-IF(CMAKE_COMPILER_IS_GNUCXX)
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wfatal-errors -O3 -DCG_BC -DQX_SPARSE_MV_MUL -D__BUILTIN_LINALG__ -Wno-sign-compare -msse4.2 -DUSE_OPENMP -Wno-unused-variable -Wno-reorder")
-ENDIF(CMAKE_COMPILER_IS_GNUCXX)
+IF("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
+  add_compile_options(-O3 -msse4.2 -std=c++11 -Wall -Wfatal-errors -DCG_BC -DQX_SPARSE_MV_MUL -D__BUILTIN_LINALG__ -DUSE_OPENMP -Wno-sign-compare -Wno-unused-variable -Wno-reorder)
+  if(USE_GPERFTOOLS)
+    add_compile_options(-g3)
+  endif()
+ENDIF("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
+
+IF("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel")
+  add_compile_options(-O3 -ipo -xHost -std=c++11 -no-prec-div -Wall -Wfatal-errors -DCG_BC -DQX_SPARSE_MV_MUL -D__BUILTIN_LINALG__ -DUSE_OPENMP -Wno-reorder -Wno-unused-variable -Wno-unused-function)
+  if(USE_GPERFTOOLS)
+    add_compile_options(-g -debug all -O3 -traceback)
+  endif()
+ENDIF("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel")
 
 IF("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
   SET(CXX "Clang-omp++")
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -std=c++11 -Wall -Wfatal-errors -Wno-unused-local-typedef -O3 -DCG_BC -DQX_SPARSE_MV_MUL -D__BUILTIN_LINALG__ -msse4.2 -DUSE_OPENMP -Wno-reorder -Wno-unneeded-internal-declaration -Wno-unused-variable -Wno-unused-private-field -Wno-deprecated-register -Wno-unused-function")
+  add_compile_options(-O3 -std=c++11 -Wall -Wfatal-errors -Wno-unused-local-typedef -O3 -DCG_BC -DQX_SPARSE_MV_MUL -D__BUILTIN_LINALG__ -msse4.2 -DUSE_OPENMP -Wno-reorder -Wno-unneeded-internal-declaration -Wno-unused-variable -Wno-unused-private-field -Wno-deprecated-register -Wno-unused-function)
 ENDIF("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
 
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DXPU_TIMER")
+add_compile_options(-DXPU_TIMER)
 
 ADD_SUBDIRECTORY(
   src bin
