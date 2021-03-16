@@ -14,18 +14,15 @@ ELSE(OPENMP_FOUND)
   message("ERROR: OpenMP could not be found.")
 ENDIF(OPENMP_FOUND)
 
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
-
 IF("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
-  add_compile_options(-O3 -msse4.2 -Wall -Wfatal-errors -DCG_BC -DQX_SPARSE_MV_MUL -D__BUILTIN_LINALG__ -DUSE_OPENMP -Wno-sign-compare -Wno-unused-variable -Wno-reorder)
+  add_compile_options(-O3 -msse4.2 -std=c++11 -Wall -Wfatal-errors -DCG_BC -DQX_SPARSE_MV_MUL -D__BUILTIN_LINALG__ -DUSE_OPENMP -Wno-sign-compare -Wno-unused-variable -Wno-reorder)
   if(USE_GPERFTOOLS)
     add_compile_options(-g3)
   endif()
 ENDIF("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
 
 IF("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel")
-  add_compile_options(-O3 -ipo -xHost -no-prec-div -Wall -Wfatal-errors -DCG_BC -DQX_SPARSE_MV_MUL -D__BUILTIN_LINALG__ -DUSE_OPENMP -Wno-reorder -Wno-unused-variable -Wno-unused-function)
+  add_compile_options(-O3 -ipo -xHost -std=c++11 -no-prec-div -Wall -Wfatal-errors -DCG_BC -DQX_SPARSE_MV_MUL -D__BUILTIN_LINALG__ -DUSE_OPENMP -Wno-reorder -Wno-unused-variable -Wno-unused-function)
   if(USE_GPERFTOOLS)
     add_compile_options(-g -debug all -O3 -traceback)
   endif()
@@ -33,7 +30,7 @@ ENDIF("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel")
 
 IF("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
   SET(CXX "Clang-omp++")
-  add_compile_options(-O3 -Wall -Wfatal-errors -Wno-unused-local-typedef -O3 -DCG_BC -DQX_SPARSE_MV_MUL -D__BUILTIN_LINALG__ -msse4.2 -DUSE_OPENMP -Wno-reorder -Wno-unneeded-internal-declaration -Wno-unused-variable -Wno-unused-private-field -Wno-deprecated-register -Wno-unused-function)
+  add_compile_options(-O3 -std=c++11 -Wall -Wfatal-errors -Wno-unused-local-typedef -O3 -DCG_BC -DQX_SPARSE_MV_MUL -D__BUILTIN_LINALG__ -msse4.2 -DUSE_OPENMP -Wno-reorder -Wno-unneeded-internal-declaration -Wno-unused-variable -Wno-unused-private-field -Wno-deprecated-register -Wno-unused-function)
 ENDIF("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
 
 
