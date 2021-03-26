@@ -35,9 +35,12 @@ void qx::qu_register::set_measurement(uint64_t state, uint64_t nq)
  */
 uint64_t qx::qu_register::collapse(uint64_t entry)
 {
+#ifdef USE_OPENMP
+#pragma omp parallel for
+#endif
    for (uint64_t i=0; i<data.size(); ++i)
    {
-      data[i] = 0;
+      data[i] = 0.0;
    }
    data[entry] = 1;
    // set_binary(entry,n_qubits);
@@ -84,12 +87,14 @@ qx::qu_register::qu_register(uint64_t n_qubits) : data(1ULL << n_qubits), aux(1U
 	   throw std::invalid_argument("hard limit of 63 qubits exceeded");
    }
 
-   data[0] = complex_t(1,0);
    uint64_t num_elts = (1ULL << n_qubits);
+#ifdef USE_OPENMP
 #pragma omp parallel for
-   for (uint64_t i=1; i<num_elts; ++i) {
-      data[i] = 0;
+#endif
+   for (uint64_t i=0; i<num_elts; ++i) {
+      data[i] = 0.0;
    }
+   data[0] = complex_t(1,0);
 
    for (uint64_t i=0; i<n_qubits; i++)
    {
@@ -110,9 +115,15 @@ qx::qu_register::qu_register(uint64_t n_qubits) : data(1ULL << n_qubits), aux(1U
  */
 void qx::qu_register::reset()
 {
+   uint64_t num_elts = (1 << n_qubits);
+#ifdef USE_OPENMP
+#pragma omp parallel for
+#endif
+   for (uint64_t i=0; i<num_elts; ++i) {
+      data[i] = 0.0;
+   }
    data[0] = complex_t(1,0);
-   for (uint64_t i=1; i<(1 << n_qubits); ++i)
-      data[i] = 0;
+   
    for (uint64_t i=0; i<n_qubits; i++)
    {
       // binary[i] = __state_0__;
@@ -192,6 +203,9 @@ complex_t& qx::qu_register::operator[](uint64_t i)
 bool qx::qu_register::check()
 {
    double sum=0;
+#ifdef USE_OPENMP
+#pragma omp parallel for reduction(+:sum)
+#endif
    for (int i=0; i<data.size(); ++i)
       sum += data[i].norm();
       // sum += std::norm(data[i]);
@@ -220,8 +234,8 @@ int64_t qx::qu_register::measure()
       r -= data[i].norm();
       if (r <= 0)
       {
-	 collapse(i);
-	 return 1; 
+         collapse(i);
+         return 1; 
       }
    }
    return -1;
@@ -295,11 +309,11 @@ std::string qx::qu_register::get_state(bool only_binary=false)
       std::cout << std::fixed;
       for (int i=0; i<data.size(); ++i)
       {
-	 if (data[i] != complex_t(0,0)) 
-	 {
-	    ss << "   " << std::showpos << std::setw(7) << data[i] << " |"; ss << to_binary_string(i,n_qubits); ss << "> +";
-	    ss << "\n";
-	 }
+         if (data[i] != complex_t(0,0)) 
+         {
+            ss << "   " << std::showpos << std::setw(7) << data[i] << " |"; ss << to_binary_string(i,n_qubits); ss << "> +";
+            ss << "\n";
+         }
       }
    }
    return ss.str();

@@ -149,7 +149,7 @@ namespace qx
       /**
        * const
        */
-      const static complex_t __c_zero__;
+      const static complex_t __c_zero__ = 0.0;
       const static complex_t __c_one__ = 1.0f;
       const static complex_t i_diag[] = { 0.0, 1.0 };
 #if 0
@@ -439,7 +439,7 @@ namespace qx
 	 #pragma omp parallel for schedule(static)
 	 for (int i=0; i<v.size(); i++)
 	 {
-	    complex_t s; // = 0;
+	    complex_t s = 0.0;
 	    for (int j=0; j<v.size(); j++)
 	       s += v[j]*(k.get(i,j));
 	    r[i] = s;
@@ -451,8 +451,8 @@ namespace qx
        */
       void mulmv_(kronecker& k, cvector_t& v, cvector_t& r)
       {
-	 complex_t s; // = 0;
-	 complex_t x; // = 0;
+	 complex_t s = 0.;
+	 complex_t x = 0.;
 	 #pragma omp parallel for private(s,x) schedule(static)
 	 for (int i=0; i<v.size(); i++)
 	 {

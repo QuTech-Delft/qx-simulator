@@ -22,7 +22,7 @@ IF("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
 ENDIF("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
 
 IF("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel")
-  add_compile_options(-O3 -ipo -xHost -std=c++11 -no-prec-div -Wall -Wfatal-errors -DCG_BC -DQX_SPARSE_MV_MUL -D__BUILTIN_LINALG__ -DUSE_OPENMP -Wno-reorder -Wno-unused-variable -Wno-unused-function)
+  add_compile_options(-O3 -qopenmp -qopenmp-simd -g -traceback -debug all -qopt-report=5 -ipo -xHost -std=c++11 -no-prec-div -Wall -Wfatal-errors -DCG_BC -DQX_SPARSE_MV_MUL -D__BUILTIN_LINALG__ -DUSE_OPENMP -Wno-reorder -Wno-unused-variable -Wno-unused-function)
   if(USE_GPERFTOOLS)
     add_compile_options(-g -debug all -O3 -traceback)
   endif()

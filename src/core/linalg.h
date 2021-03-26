@@ -118,7 +118,7 @@ namespace qx
 
 	    uint32_t rows = rows_1*rows_2;
 	    uint32_t cols = cols_1*cols_2;
-	    complex_t z;
+	    complex_t z(0.0, 0.0);
 	    qx::linalg::matrix<complex_t> m(rows,cols,z);
 
 	    for (uint32_t i=0; i<rows; ++i)
@@ -174,7 +174,7 @@ namespace qx
 	    cvector_t r(n);
 	    for (uint32_t i=0; i<n; ++i)
 	    {
-	       complex_t c;
+	       complex_t c(0.0, 0.0);
 	       for (uint32_t j=0; j<n; ++j)
 		  c += m(i,j)*v[j];
 	       r[i] = c;
@@ -191,7 +191,7 @@ namespace qx
 	 qx::linalg::matrix<complex_t> mxm(qx::linalg::matrix<complex_t> m1, qx::linalg::matrix<complex_t> m2)
 	 {
 // #ifdef __BUILTIN_LINALG__
-	    complex_t z;
+	    complex_t z(0.0, 0.0);
 	    qx::linalg::matrix<complex_t> r(m1.size1(), m2.size2(),z);
 	    qx::linalg::mul(m1,m2,r);
 	    return r;
@@ -206,7 +206,7 @@ namespace qx
 	 cmatrix_t mxm(cmatrix_t m1, cmatrix_t m2)
 	 {
 // #ifdef __BUILTIN_LINALG__
-	    complex_t z;
+	    complex_t z(0.0, 0.0);
 	    cmatrix_t r;
 	    qx::linalg::mul(m1,m2,r);
 	    return r;
