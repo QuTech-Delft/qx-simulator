@@ -2737,9 +2737,12 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
    {
       cvector_t &data = * p_data;
       double local_p1 = 0;
+      uint64_t pos = 1<<qubit;
       for (uint64_t i=cs; i<ce; ++i)
       {
-         i = __bit_set(i,qubit);
+         // ((x) | (1<<(pos)))
+         // i = __bit_set(i,qubit);
+         i = i | pos;
          if (i<ce)
             local_p1 += data[i].norm(); //std::norm(data[i]);
          // if (__bit_test(i,qubit))
@@ -2785,22 +2788,54 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
    //    return local_length;
    // }
 
+   inline double zero_worker_norm(uint64_t cs, uint64_t ce, cvector_t * p_data)
+   {
+      uint64_t num_elts = ce - cs;
+      uint64_t tile_size = std::min(num_elts, 32UL);
+      complex_t * vd = p_data->data();
+      double local_length = 0.;
+
+#if defined(__AVX__)
+      __m256d sum = _mm256_set1_pd(0.0);
+      for (uint64_t i=cs; i<ce; i+=tile_size)
+      {
+         for (uint64_t j=i, end=std::min(ce,tile_size+i); j<end; j+=2)
+         {
+            double * pvd = (double*)&vd[j];
+            sum = _mm256_add_pd(sum, _mm256_mul_pd(_mm256_load_pd(pvd), _mm256_load_pd(pvd)));
+         }
+      }
+      __m256d r2 = _mm256_hadd_pd(sum, sum);
+      local_length = _mm_cvtsd_f64(_mm_add_pd(_mm256_extractf128_pd(r2, 1),
+                                              _mm256_castpd256_pd128(r2)));
+#elif defined(__SSE__)
+      __m128d sum = _mm_set1_pd(0.0);
+      for (uint64_t i=cs; i<ce; i+=tile_size)
+      {
+         for (uint64_t j=i, end=std::min(ce,tile_size+i); j<end; ++j)
+         {
+            double * pvd = (double*)&vd[j];
+            sum = _mm_add_pd(sum, _mm_mul_pd(_mm_load_pd(pvd), _mm_load_pd(pvd)));
+         }
+      }
+      local_length = _mm_cvtsd_f64(_mm_hadd_pd(sum, sum));
+#else
+      for (uint64_t i=cs; i<ce; i+=tile_size)
+      {
+         for (uint64_t j=i, end=std::min(ce,tile_size+i); j<end; j+=2) 
+         {
+            local_length += data[j].norm() + data[j+1].norm();
+         }
+      }
+#endif
+      return local_length;
+   }
+
    inline double zero_worker_true(uint64_t cs, uint64_t ce, uint64_t s, /*double * length,*/ uint64_t qubit, /*xpu::lockable * l, */cvector_t * p_data)
    {
       cvector_t &data = * p_data;
-      double local_length = 0.;
-      uint64_t       size = data.size(); 
-
-// #pragma omp simd
-//       for (uint64_t i=cs; i<ce; ++i)
-//       {
-//          if (__bit_test(i,qubit))
-//             data[i] = 0.;
-//          else
-//             local_length += data[i].norm(); //std::norm(data[i]);
-//       }
-
       uint64_t pos = 1 << qubit;
+
       for (uint64_t i=cs; i<ce; i+=2)
       {
          // ((x) & (1<<(pos)))
@@ -2810,116 +2845,25 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
             data[i+1] = 0.0;
       }
 
-      uint64_t num_elts = ce - cs;
-      uint64_t tile_size = std::min(num_elts, 64UL);
-      for (uint64_t i=cs; i<ce; i+=tile_size)
-      {
-         for (uint64_t j=i, end=std::min(ce,tile_size+i); j<end; j+=2) 
-         {
-            local_length += data[j].norm() + data[j].norm();
-         }
-      }
-
-      //l->lock();
-      //*length += local_length;
-      //l->unlock();
-      //return 0;
-      return local_length;
+      return zero_worker_norm(cs, ce, p_data);
    }
 
    inline double zero_worker_false(uint64_t cs, uint64_t ce, uint64_t s, /*double * length,*/ uint64_t qubit, /*xpu::lockable * l, */cvector_t * p_data)
    {
       cvector_t &data = * p_data;
-      double local_length = 0.;
-      // uint64_t size = data.size(); 
-
-// #pragma omp simd
-//       for (uint64_t i=cs; i<ce; ++i)
-//       {
-//          // ((x) & (1<<(pos)))
-//          if (__bit_test(i,qubit))
-//             local_length += data[i].norm(); //std::norm(data[i]);
-//          else 
-//             data[i] = 0.;
-//       }
-
-      // uint64_t tile_size = 2;//std::min(ce - cs, 1024UL);
-      // uint64_t pos = 1 << qubit;
-      // for (uint64_t i=cs; i<ce; ++tile_size)
-      // {
-      //    for (uint64_t j=i; j<i+tile_size; ++j)
-      //    {
-      //       if (j & pos)
-      //          local_length += data[j].norm();
-      //       else 
-      //          data[j] = 0.;
-      //    }
-      // }
-
-      // std::cout << cs << " " << qubit << "\n";
       uint64_t pos = 1 << qubit;
-      uint64_t counter = 0;
-      for (uint64_t i=cs; i<ce; ++i)
+
+      for (uint64_t i=cs; i<ce; i+=2)
       {
          // ((x) & (1<<(pos)))
          if (!(i & pos)) {
             data[i] = 0.0;
-            ++counter;
          }
+         if (!(i+1 & pos))
+            data[i+1] = 0.0;
       }
 
-      /************************************/
-      uint64_t num_elts = ce - cs;
-      uint64_t tile_size = std::min(num_elts, 128UL);
-      for (uint64_t i=cs; i<ce; i+=tile_size)
-      {
-         for (uint64_t j=i, end=std::min(ce,tile_size+i); j<end; j+=2) 
-         {
-            local_length += data[j].norm() + data[j].norm();
-            // local_length += data[j].re*data[j].re + data[j].im*data[j].im
-            //                + data[j+1].re*data[j+1].re + data[j+1].im*data[j+1].im;
-         }
-      }
-      /************************************/
-      std::cout << local_length << " vs. ";
-      local_length = 0.;
-
-      // uint64_t num_elts = ce - cs;
-      // uint64_t tile_size = std::min(num_elts, 128UL);
-      complex_t * vd = p_data->data();
-      // __m128d sum = _mm_set1_pd(0.0);
-      __m256d sum = _mm256_set1_pd(0.0);
-      for (uint64_t i=cs; i<ce; i+=tile_size)
-      {
-         // for (uint64_t j=i, end=std::min(ce,tile_size+i); j<end; ++j)
-         // {
-         //    double * pvd = (double*)&vd[j];
-         //    sum = _mm_add_pd(sum, _mm_mul_pd(_mm_load_pd(pvd), _mm_load_pd(pvd)));
-         // }
-         for (uint64_t j=i, end=std::min(ce,tile_size+i); j<end; j+=2)
-         {
-            double * pvd = (double*)&vd[j];
-            sum = _mm256_add_pd(sum, _mm256_mul_pd(_mm256_load_pd(pvd), _mm256_load_pd(pvd)));
-         }
-      }
-      local_length = _mm256_cvtsd_f64(_mm256_hadd_pd(sum, sum));
-      std::cout << local_length << "\n";
-
-      // // Update the remaining elements if there are any
-      // uint64_t reminder = num_elts % tile_size;
-      // if (reminder) {
-      //    for (uint64_t i=ce-reminder; i<ce; ++i)
-      //    {
-      //       local_length += data[i].norm();
-      //    }
-      // }
-
-      //l->lock();
-      //*length += local_length;
-      //l->unlock();
-      //return 0;
-
-      return local_length;
+      return zero_worker_norm(cs, ce, p_data);
    }
 
    int renorm_worker(uint64_t cs, uint64_t ce, uint64_t s, double * length, cvector_t * p_data)
@@ -2928,7 +2872,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
       double l = *length;
       double l_rec = 1./l;
       uint64_t num_elts = ce - cs;
-      uint64_t tile_size = std::min(num_elts, 8UL);
+      uint64_t tile_size = std::min(num_elts, 16UL);
       complex_t * vd = p_data->data();
 
 #ifdef USE_OPENMP
@@ -3128,6 +3072,10 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
                /*xpu::task zero_worker_t(zero_worker,(uint64_t)0, n, (uint64_t)1, value, &length, qubit, l, &data);
                xpu::parallel_for parallel_zero( (uint64_t)0, n, (uint64_t)1, &zero_worker_t);
                parallel_zero.run();*/
+               // #pragma omp parallel for reduction(+: length)
+               // for (uint64_t batch = 0; batch <= n / SIZE; batch++) {
+               //    length += zero_worker(batch*SIZE, std::min((batch+1)*SIZE,n), (uint64_t)1, value, qubit, &data);
+               // }
 #ifdef USE_OPENMP
 #pragma omp parallel
 {
@@ -3137,7 +3085,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
 #pragma omp for reduction(+: length)
 #endif
                   for (uint64_t batch = 0; batch <= n / SIZE; batch++) {
-                     length += zero_worker_true(batch*SIZE, std::min((batch+1)*SIZE,n), (uint64_t)1, qubit, &data);
+                     length += zero_worker_false(batch*SIZE, std::min((batch+1)*SIZE,n), (uint64_t)1, qubit, &data);
                   }
                }
                else {
@@ -3145,7 +3093,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
 #pragma omp for reduction(+: length)
 #endif
                   for (uint64_t batch = 0; batch <= n / SIZE; batch++) {
-                     length += zero_worker_false(batch*SIZE, std::min((batch+1)*SIZE,n), (uint64_t)1, qubit, &data);
+                     length += zero_worker_true(batch*SIZE, std::min((batch+1)*SIZE,n), (uint64_t)1, qubit, &data);
                   }
                }
 #ifdef USE_OPENMP
