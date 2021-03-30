@@ -93,6 +93,7 @@ qx::qu_register::qu_register(uint64_t n_qubits) : data(1ULL << n_qubits), aux(1U
 #endif
    for (uint64_t i=0; i<num_elts; ++i) {
       data[i] = 0.0;
+      aux[i] = 0.0;
    }
    data[0] = complex_t(1,0);
 
