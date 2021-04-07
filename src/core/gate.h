@@ -749,23 +749,32 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
       // println("ctrl=" << ctrl);
       complex_t * p = amp.data();
       size_t incrementer = 1 << (bit+1);
-      for (size_t i=__bit_set(0,bit), end=(1<<size); i<end; i+=incrementer) {
-         size_t v = i+offset;
-         for (size_t j=0; j<(1<<bit); j++)
-         {
-            // size_t v = i+j+offset; 
-            v += j;
-            /*
-               #ifdef __SSE__
-               __m128d x = _mm_load_pd((const double *)&p[v]);
-               __m128d y = _mm_load_pd((const double *)&p[__bit_reset(v,trg)]);
-               _mm_store_pd((double *)&p[__bit_reset(v,trg)],x);
-               _mm_store_pd((double *)&p[v],y);
-               #else
-             */
+
+      if ((1<<bit) == 1) {
+         for (size_t i=__bit_set(0,bit), end=(1<<size); i<end; i+=incrementer) {
+            size_t v = i+offset;
             std::swap(amp[v], amp[__bit_reset(v,trg)]);
-            // println("swap("<<v<<","<<__bit_reset(v,trg)<<")");
-            // #endif
+         }
+      }
+      else {
+         for (size_t i=__bit_set(0,bit), end=(1<<size); i<end; i+=incrementer) {
+            size_t v = i+offset;
+            for (size_t j=0; j<(1<<bit); j++)
+            {
+               // v += j;
+               /*
+                  #ifdef __SSE__
+                  __m128d x = _mm_load_pd((const double *)&p[v]);
+                  __m128d y = _mm_load_pd((const double *)&p[__bit_reset(v,trg)]);
+                  _mm_store_pd((double *)&p[__bit_reset(v,trg)],x);
+                  _mm_store_pd((double *)&p[v],y);
+                  #else
+               */
+               std::swap(amp[v], amp[__bit_reset(v,trg)]);
+               ++v;
+               // println("swap("<<v<<","<<__bit_reset(v,trg)<<")");
+               // #endif
+            }
          }
       }
    }
@@ -2738,13 +2747,15 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
       cvector_t &data = * p_data;
       double local_p1 = 0;
       uint64_t pos = 1<<qubit;
+
       for (uint64_t i=cs; i<ce; ++i)
       {
          // ((x) | (1<<(pos)))
          // i = __bit_set(i,qubit);
          i = i | pos;
          if (i<ce)
-            local_p1 += data[i].norm(); //std::norm(data[i]);
+            local_p1 += data[i].re * data[i].re + data[i].im * data[i].im;
+            // local_p1 += data[i].norm(); //std::norm(data[i]);
          // if (__bit_test(i,qubit))
          // local_p1 += std::norm(data[i]);
       }

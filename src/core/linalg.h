@@ -99,6 +99,10 @@ namespace qx
 	    uint32_t n2 = v2.size();
 	    cvector_t res(n1*n2);
 
+#pragma omp parallel for
+		for(uint32_t n = 0; n < res.size(); ++n)
+			res[n] = 0.0;
+
 	    for (uint32_t i=0; i<n1; ++i)
 		  for (uint32_t j=0; j<n2; ++j)
 			res[i*n2+j] = v1[i]+v2[j];
@@ -172,6 +176,8 @@ namespace qx
 // #ifdef __BUILTIN_LINALG__
 	    uint32_t n = v.size();
 	    cvector_t r(n);
+
+#pragma omp parallel for
 	    for (uint32_t i=0; i<n; ++i)
 	    {
 	       complex_t c(0.0, 0.0);
@@ -179,6 +185,7 @@ namespace qx
 		  c += m(i,j)*v[j];
 	       r[i] = c;
 	    }
+
 	    return r;
 // #else
 // 	    return ublas::prec_prod(m,v);
