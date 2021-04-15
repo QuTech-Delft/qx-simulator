@@ -3059,7 +3059,8 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
             uint64_t n = (1 << size);
             cvector_t& data = qreg.get_data();
             double length = 0;
-            if (1)//size > 64)
+            // if (1)//size > 64)
+            if (size > 64)
             {
                // #define PARALLEL_MEASUREMENT
                // #ifdef PARALLEL_MEASUREMENT
