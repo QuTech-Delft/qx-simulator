@@ -2742,10 +2742,13 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
   
    
 
-   double p1_worker(uint64_t cs, uint64_t ce, uint64_t s, /*double * p1,*/ uint64_t qubit, /*xpu::lockable * l,*/ cvector_t * p_data)
+   double p1_worker(uint64_t cs, uint64_t ce, uint64_t s, uint64_t qubit, cvector_t * p_data)
    {
+      // cvector_t& data = qreg.get_data();
       cvector_t &data = * p_data;
       double local_p1 = 0;
+      // uint64_t size = qreg.size(); 
+      // uint64_t n = (1 << size);
       uint64_t pos = 1<<qubit;
 
       for (uint64_t i=cs; i<ce; ++i)
@@ -2753,6 +2756,10 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
          // ((x) | (1<<(pos)))
          // i = __bit_set(i,qubit);
          i = i | pos;
+         // if (qubit == 9) {
+         //    std::cout << qubit << " " << i << " " << pos << "\n";
+         //    std::cin.get();
+         // }
          if (i<ce)
             local_p1 += data[i].re * data[i].re + data[i].im * data[i].im;
             // local_p1 += data[i].norm(); //std::norm(data[i]);
@@ -2760,11 +2767,11 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
          // local_p1 += std::norm(data[i]);
       }
 
-      //l->lock();
-      // println("l_p1 [" << cs << ".." << ce << "]: " << local_p1);
-      //*p1 += local_p1;
-      //l->unlock();
-      //return 0;
+      // //l->lock();
+      // // println("l_p1 [" << cs << ".." << ce << "]: " << local_p1);
+      // //*p1 += local_p1;
+      // //l->unlock();
+      // //return 0;
       return local_p1;
    }
 
@@ -3059,24 +3066,47 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
             uint64_t n = (1 << size);
             cvector_t& data = qreg.get_data();
             double length = 0;
-            // if (1)//size > 64)
-            if (size > 64)
+            
+            // Basically, this "if" operator determines what to do if we have more than 64 qubits.
+            // It also determines whether to invoke parallel or sequential computations. As of now,
+            // we set parallel execution as the default one.
+            if (1)//size > 64)
+            // if (size > 64)
             {
                // #define PARALLEL_MEASUREMENT
                // #ifdef PARALLEL_MEASUREMENT
-
+               
                /*xpu::lockable * l = new xpu::core::os::mutex();
                xpu::task p1_worker_t(p1_worker, (uint64_t)0, n, (uint64_t)1, &p, qubit, l, &data); 
                xpu::parallel_for parallel_p1( (uint64_t)0, n, (uint64_t)1, &p1_worker_t);
                parallel_p1.run();*/
                static const uint64_t SIZE = 1000;
-#ifdef USE_OPENMP
-#pragma omp parallel for reduction(+: p)
-#endif
-               for (uint64_t batch = 0; batch <= n / SIZE; batch++) {
-                   p += p1_worker(batch*SIZE, std::min((batch+1)*SIZE,n), (uint64_t)1, qubit, &data);
-               }
 
+               /* ******************************************************************************* */
+               // The following for-loop is a decimal-based representation of the identical binary-
+               // based for-loop:
+               //  std::bitset<MAX_QB_N> b;
+               //  b.reset();
+               //  b.set(qubit);
+               //  for (uint64_t i = b.to_ulong(); i < n; i=b.to_ulong()) {
+               //        p += data[i].norm();
+               //        b = inc(b);
+               //        b.set(qubit);
+               //  }
+               /* ******************************************************************************* */
+               uint64_t ref = 1<<qubit;
+               uint64_t range = (n>>1);
+               uint64_t to_add = 0;
+#ifdef USE_OPENMP
+#pragma omp parallel for reduction(+: p) shared(to_add)
+#endif
+               // for (uint64_t i = 0; i < range; ++i) {
+               for (uint64_t i = 0; i < range; ++i) {
+                  if (!(i % ref))
+                     to_add = ref + i;
+                  p += data[i + to_add].norm();
+               }
+               /* ******************************************************************************* */
 
                if (f<p) value = 1;
                else value = 0;
@@ -3136,6 +3166,10 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
                {
                   bc =  b.to_ulong();
                   // p += std::norm(data[bc]);
+                  if (qubit == 10) {
+                     std::cout << qubit << " " << b << " " << bc << "\n";
+                     std::cin.get();
+                  }
                   p += data[bc].norm();
                   b = inc(b);
                   b.set(qubit);  
