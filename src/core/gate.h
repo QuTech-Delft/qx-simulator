@@ -2835,7 +2835,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
          // ((x) & (1<<(pos)))
          if (i & pos)
             data[i] = 0.0;
-         if (i+1 & pos)
+         if ((i+1) & pos)
             data[i+1] = 0.0;
       }
 
@@ -2853,7 +2853,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
          if (!(i & pos)) {
             data[i] = 0.0;
          }
-         if (!(i+1 & pos))
+         if (!((i+1) & pos))
             data[i+1] = 0.0;
       }
 
@@ -2971,7 +2971,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
             double p = 0;
             int64_t value;
             uint64_t size = qreg.size(); 
-            uint64_t n = (1 << size);
+            uint64_t n = (1UL << size);
             cvector_t& data = qreg.get_data();
             double length = 0;
             
@@ -2990,8 +2990,8 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
                parallel_p1.run();*/
                static const uint64_t SIZE = 1000;
 
-               uint64_t ref = 1<<qubit;
-               uint64_t range = (n>>1);
+               uint64_t ref = 1UL << qubit;
+               uint64_t range = (n >> 1);
 #ifdef USE_OPENMP
 #pragma omp parallel for reduction(+: p)
 #endif

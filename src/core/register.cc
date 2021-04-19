@@ -88,6 +88,7 @@ qx::qu_register::qu_register(uint64_t n_qubits) : data(1ULL << n_qubits), aux(1U
    }
 
    uint64_t num_elts = (1ULL << n_qubits);
+
 #ifdef USE_OPENMP
 #pragma omp parallel for
 #endif
@@ -116,7 +117,8 @@ qx::qu_register::qu_register(uint64_t n_qubits) : data(1ULL << n_qubits), aux(1U
  */
 void qx::qu_register::reset()
 {
-   uint64_t num_elts = (1 << n_qubits);
+   uint64_t num_elts = (1ULL << n_qubits);
+
 #ifdef USE_OPENMP
 #pragma omp parallel for
 #endif
@@ -170,7 +172,7 @@ uint64_t qx::qu_register::size()
  */
 uint64_t qx::qu_register::states()
 {
-   return (1 << n_qubits);
+   return (1ULL << n_qubits);
 }
 
 
