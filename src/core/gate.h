@@ -26,6 +26,8 @@
 #include <core/binary_counter.h>
 #include <core/kronecker.h>
 
+#include <chrono>
+
 #ifdef USE_OPENMP
 #include <omp.h>
 #endif
@@ -2742,69 +2744,43 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
   
    
 
-   double p1_worker(uint64_t cs, uint64_t ce, uint64_t s, uint64_t qubit, cvector_t * p_data)
+   double p1_worker(uint64_t cs, uint64_t ce, uint64_t qubit, cvector_t * p_data)
    {
-      // cvector_t& data = qreg.get_data();
       cvector_t &data = * p_data;
       double local_p1 = 0;
+      uint64_t ref = 1 << qubit;
+      uint64_t offset = 0;
+
+      // We need to calculate the "offset_start" in order to maintain the 
+      // correctness of the index calculation in the parallel region
+      uint64_t reminder = cs % ref;
+      uint64_t factor = std::floor((cs - reminder) / ref);
+      uint64_t offset_start = factor * ref;
+
+      offset = offset_start;
+
+      /* ******************************************************************************* */
+      // The following for-loop is a decimal-based representation of the identical binary-
+      // based for-loop:
       // uint64_t size = qreg.size(); 
       // uint64_t n = (1 << size);
-      uint64_t pos = 1<<qubit;
-
-      for (uint64_t i=cs; i<ce; ++i)
-      {
-         // ((x) | (1<<(pos)))
-         // i = __bit_set(i,qubit);
-         i = i | pos;
-         // if (qubit == 9) {
-         //    std::cout << qubit << " " << i << " " << pos << "\n";
-         //    std::cin.get();
-         // }
-         if (i<ce)
-            local_p1 += data[i].re * data[i].re + data[i].im * data[i].im;
-            // local_p1 += data[i].norm(); //std::norm(data[i]);
-         // if (__bit_test(i,qubit))
-         // local_p1 += std::norm(data[i]);
+      //  std::bitset<MAX_QB_N> b;
+      //  b.reset();
+      //  b.set(qubit);
+      //  for (uint64_t i = b.to_ulong(); i < n; i=b.to_ulong()) {
+      //        p += data[i].norm();
+      //        b = inc(b);
+      //        b.set(qubit);
+      //  }
+      /* ******************************************************************************* */
+      for (uint64_t i = cs; i < ce; ++i) {
+         if (!(i % ref))
+            offset = ref + i;
+         local_p1 += data[i + offset].norm();
       }
 
-      // //l->lock();
-      // // println("l_p1 [" << cs << ".." << ce << "]: " << local_p1);
-      // //*p1 += local_p1;
-      // //l->unlock();
-      // //return 0;
       return local_p1;
    }
-
-
-   // double zero_worker(uint64_t cs, uint64_t ce, uint64_t s, int64_t m, /*double * length,*/ uint64_t qubit, /*xpu::lockable * l, */cvector_t * p_data)
-   // {
-   //    cvector_t &data = * p_data;
-   //    double local_length = 0;
-   //    uint64_t       size = data.size(); 
-   //    if (m)
-   //    {
-   //       for (uint64_t i=cs; i<ce; ++i)
-   //       {
-   //          if (!__bit_test(i,qubit))
-   //             data[i] = 0;
-   //          local_length += data[i].norm(); //std::norm(data[i]);
-   //       }
-   //    }
-   //    else
-   //    {
-   //       for (uint64_t i=cs; i<ce; ++i)
-   //       {
-   //          if (__bit_test(i,qubit))
-   //             data[i] = 0;
-   //          local_length += data[i].norm(); //std::norm(data[i]);
-   //       }
-   //    }
-   //    //l->lock();
-   //    //*length += local_length;
-   //    //l->unlock();
-   //    //return 0;
-   //    return local_length;
-   // }
 
    inline double zero_worker_norm(uint64_t cs, uint64_t ce, cvector_t * p_data)
    {
@@ -2893,32 +2869,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
       uint64_t tile_size = std::min(num_elts, 16UL);
       complex_t * vd = p_data->data();
 
-#ifdef USE_OPENMP
-      uint32_t nthreads = omp_get_max_threads();
-#else
-      uint32_t nthreads = 1;
-#endif
-
 #ifdef __AVX512F__
-//       uint64_t num_elts = ce - cs;
-//       uint64_t offset = ROUND_DOWN(num_elts / nthreads, nthreads);
-//       if (IS_ODD(offset)) --offset;
-//       complex_t * vd = p_data->data();
-// #ifdef USE_OPENMP
-// #pragma omp parallel for num_threads(nthreads)
-// #endif
-//       for(uint32_t thr = 0; thr < nthreads; ++thr) {
-//          __m512d vl = _mm512_set1_pd(l);
-//          uint64_t start = cs + thr * offset;
-//          uint64_t end  = cs + (thr + 1) * offset;
-//          for(uint64_t i = start; i < end; i+=4) {
-//             double * pvd = (double*)&vd[i];
-//             _mm512_store_pd(pvd, _mm512_div_pd(_mm512_load_pd(pvd), vl));
-//          }
-//       }
-//       for(uint64_t i = cs + nthreads * offset; i < ce; ++i) {
-//          data[i] /= l;
-//       }
       __m512d vl = _mm512_set1_pd(l_rec);
 #ifdef USE_OPENMP
 #pragma omp parallel for
@@ -2932,25 +2883,6 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
          }
       }
 #elif defined(__AVX__)
-//       uint64_t num_elts = ce - cs;
-//       uint64_t offset = ROUND_DOWN(num_elts / nthreads, nthreads);
-//       if (IS_ODD(offset)) --offset;
-//       complex_t * vd = p_data->data();
-// #ifdef USE_OPENMP
-// #pragma omp parallel for num_threads(nthreads)
-// #endif
-//       for(uint32_t thr = 0; thr < nthreads; ++thr) {
-//          __m256d vl = _mm256_set1_pd(l);
-//          uint64_t start = cs + thr * offset;
-//          uint64_t end  = cs + (thr + 1) * offset;
-//          for(uint64_t i = start; i < end; i+=2) {
-//             double * pvd = (double*)&vd[i];
-//             _mm256_store_pd(pvd, _mm256_div_pd(_mm256_load_pd(pvd), vl));
-//          }
-//       }
-//       for(uint64_t i = cs + nthreads * offset; i < ce; ++i) {
-//          data[i] /= l;
-//       }
       __m256d vl = _mm256_set1_pd(l_rec);
 #ifdef USE_OPENMP
 #pragma omp parallel for
@@ -2964,25 +2896,6 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
          }
       }
 #elif defined(__SSE__)
-//       uint64_t num_elts = ce - cs;
-//       uint64_t offset = ROUND_DOWN(num_elts / nthreads, nthreads);
-//       if (IS_ODD(offset)) --offset;
-//       complex_t * vd = p_data->data();
-// #ifdef USE_OPENMP
-// #pragma omp parallel for num_threads(nthreads)
-// #endif
-//       for(uint32_t thr = 0; thr < nthreads; ++thr) {
-//          __m128d vl = _mm_set1_pd(l);
-//          uint64_t start = cs + thr * offset;
-//          uint64_t end  = cs + (thr + 1) * offset;
-//          for(uint64_t i = start; i < end; ++i) {
-//             double * pvd = (double*)&vd[i];
-//             _mm_store_pd(pvd, _mm_div_pd(_mm_load_pd(pvd), vl));
-//          }
-//       }
-//       for(uint64_t i = cs + nthreads * offset; i < ce; ++i) {
-//          data[i] /= l;
-//       }
       __m128d vl = _mm_set1_pd(l_rec);
 #ifdef USE_OPENMP
 #pragma omp parallel for
@@ -2996,11 +2909,6 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
          }
       }
 #else
-// #ifdef USE_OPENMP
-// #pragma omp parallel for num_threads(nthreads)
-// #endif
-//       for (uint64_t i=cs; i<ce; ++i)
-//          data[i] /= l;
 #ifdef USE_OPENMP
 #pragma omp parallel for
 #endif
@@ -3082,42 +2990,18 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
                parallel_p1.run();*/
                static const uint64_t SIZE = 1000;
 
-               /* ******************************************************************************* */
-               // The following for-loop is a decimal-based representation of the identical binary-
-               // based for-loop:
-               //  std::bitset<MAX_QB_N> b;
-               //  b.reset();
-               //  b.set(qubit);
-               //  for (uint64_t i = b.to_ulong(); i < n; i=b.to_ulong()) {
-               //        p += data[i].norm();
-               //        b = inc(b);
-               //        b.set(qubit);
-               //  }
-               /* ******************************************************************************* */
                uint64_t ref = 1<<qubit;
                uint64_t range = (n>>1);
-               uint64_t to_add = 0;
 #ifdef USE_OPENMP
-#pragma omp parallel for reduction(+: p) shared(to_add)
+#pragma omp parallel for reduction(+: p)
 #endif
-               // for (uint64_t i = 0; i < range; ++i) {
-               for (uint64_t i = 0; i < range; ++i) {
-                  if (!(i % ref))
-                     to_add = ref + i;
-                  p += data[i + to_add].norm();
+               for (uint64_t batch = 0; batch <= range / SIZE; batch++) {
+                  p += p1_worker(batch*SIZE, std::min((batch+1)*SIZE, range), qubit, &data);
                }
-               /* ******************************************************************************* */
 
                if (f<p) value = 1;
                else value = 0;
 
-               /*xpu::task zero_worker_t(zero_worker,(uint64_t)0, n, (uint64_t)1, value, &length, qubit, l, &data);
-               xpu::parallel_for parallel_zero( (uint64_t)0, n, (uint64_t)1, &zero_worker_t);
-               parallel_zero.run();*/
-               // #pragma omp parallel for reduction(+: length)
-               // for (uint64_t batch = 0; batch <= n / SIZE; batch++) {
-               //    length += zero_worker(batch*SIZE, std::min((batch+1)*SIZE,n), (uint64_t)1, value, qubit, &data);
-               // }
 #ifdef USE_OPENMP
 #pragma omp parallel
 {
@@ -3144,9 +3028,6 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
 
                length = std::sqrt(length);
 
-               /*xpu::task renorm_worker_t(renorm_worker, (uint64_t)0, n, (uint64_t)1, &length, &data);
-               xpu::parallel_for parallel_renorm( (uint64_t)0, n, (uint64_t)1, &renorm_worker_t);
-               parallel_renorm.run();*/
                renorm_worker((uint64_t)0, n, (uint64_t)1, &length, &data);
             }
             else 
@@ -3165,11 +3046,6 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
                while (bc < n)
                {
                   bc =  b.to_ulong();
-                  // p += std::norm(data[bc]);
-                  if (qubit == 10) {
-                     std::cout << qubit << " " << b << " " << bc << "\n";
-                     std::cin.get();
-                  }
                   p += data[bc].norm();
                   b = inc(b);
                   b.set(qubit);  
