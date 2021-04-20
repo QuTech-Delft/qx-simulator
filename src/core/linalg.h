@@ -234,8 +234,8 @@ namespace qx
 	    if (m1.size2() != m2.size2())
 		  return false;
 
-	    for (int i=0; i<m1.size1(); ++i)
-		  for (int j=0; j<m1.size2(); ++j) 
+	    for (std::size_t i=0; i<m1.size1(); ++i)
+		  for (std::size_t j=0; j<m1.size2(); ++j)
 		  {
 			// double d = std::abs(std::norm(m1(i,j))-std::norm(m2(i,j)));
 			double d = m1(i,j).norm()-m2(i,j).norm();
