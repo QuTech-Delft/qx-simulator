@@ -2455,7 +2455,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
                                                                            target_qubit(target_qubit),
                                                                            z(0.0, 0.0)
          {
-            phase = 2*M_PI/(1 << (ctrl_qubit - target_qubit));
+            phase = 2*M_PI/(1UL << (ctrl_qubit - target_qubit));
             build_operator();
          }
 
@@ -2466,7 +2466,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
          ctrl_phase_shift(uint64_t ctrl_qubit, uint64_t target_qubit, size_t k) : ctrl_qubit(ctrl_qubit), 
                                                                                     target_qubit(target_qubit)  
          {               
-            phase = 2*M_PI/(1 << k);
+            phase = 2*M_PI/(1UL << k);
             build_operator();
          }
 
@@ -2492,15 +2492,15 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
             if (c > t)
                __apply_cm(qreg.get_data().data(),          
                      m,                                    
-                     0, (1 << n), 1l << (c+1l),            
-                     1l << c, 1l << (c+1l), 1l << (t+1l),  
-                     0l,    1l << t,    1l << t);          
+                     0UL, (1UL << n), 1UL << (c+1l),            
+                     1UL << c, 1UL << (c+1UL), 1UL << (t+1UL),  
+                     0UL,    1UL << t,    1UL << t);          
             else
                __apply_cm(qreg.get_data().data(),
                      m,                          
-                     0, (1 << n), 1l << (t+1l),     
-                     0l,    1l << t,    1l << (c+1l),
-                     1l << c, 1l<< (c+1l), 1l << t);
+                     0UL, (1UL << n), 1UL << (t+1UL),     
+                     0UL,    1UL << t,    1UL << (c+1l),
+                     1UL << c, 1UL<< (c+1UL), 1UL << t);
 
 
 
