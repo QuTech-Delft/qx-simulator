@@ -271,7 +271,7 @@ namespace qx
             std::stringstream ss;
             ss << std::fixed;
             ss << "START\n";
-            for (std::size_t i=0; i<data.size(); ++i)
+            for (int i=0; i<data.size(); ++i)
             {
                if (data[i] != complex_t(0,0)) 
                {
@@ -310,7 +310,7 @@ namespace qx
             ss << "START\n";
             //for (int i=binary.size()-1; i>=0; --i)
             //ss << " | " << __format_bin(binary[i]); 
-            for (std::size_t i=measurement_prediction.size()-1; i>=0; --i)
+            for (int i=measurement_prediction.size()-1; i>=0; --i)
                ss << " | " << __format_bin(measurement_register[i]); 
             // ss << " | " << __format_bin(measurement_prediction[i]); 
             ss << " | \n";
