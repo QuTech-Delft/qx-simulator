@@ -231,7 +231,7 @@ int64_t qx::qu_register::measure()
    //double r = drand48();
    double r = this->rand();
    
-   for (std::size_t i=0; i<data.size(); ++i)
+   for (int i=0; i<data.size(); ++i)
    {
       // r -= std::norm(data[i]);
       r -= data[i].norm();
@@ -277,7 +277,7 @@ void qx::qu_register::dump(bool only_binary=false)
         println("------------------------------------------- ");
         print("[>>] measurement averaging (ground state) :");
         print(" ");
-        for (std::size_t i=measurement_averaging.size()-1; i>=0; --i)
+        for (int i=measurement_averaging.size()-1; i>=0; --i)
         {
             double gs = measurement_averaging[i].ground_states;
             double es = measurement_averaging[i].exited_states;
@@ -289,13 +289,13 @@ void qx::qu_register::dump(bool only_binary=false)
     println("------------------------------------------- ");
     print("[>>] measurement prediction               :");
     print(" ");
-    for (std::size_t i=measurement_prediction.size()-1; i>=0; --i)
+    for (int i=measurement_prediction.size()-1; i>=0; --i)
         print(" | " <<  std::setw(9) << __format_bin(measurement_prediction[i]));  
     println(" |");
     println("------------------------------------------- ");
     print("[>>] measurement register                 :");
     print(" ");
-    for (std::size_t i=measurement_register.size()-1; i>=0; --i)
+    for (int i=measurement_register.size()-1; i>=0; --i)
         print(" | " <<  std::setw(9) << (measurement_register[i] ? '1' : '0'));  
     println(" |");
     println("------------------------------------------- ");
@@ -310,7 +310,7 @@ std::string qx::qu_register::get_state(bool only_binary=false)
    if (!only_binary)
    {
       std::cout << std::fixed;
-      for (std::size_t i=0; i<data.size(); ++i)
+      for (int i=0; i<data.size(); ++i)
       {
          if (data[i] != complex_t(0,0)) 
          {
@@ -429,7 +429,7 @@ double fidelity(qu_register& s1, qu_register& s2)
    }
 
    double f = 0;  
-   for (std::size_t i=0; i<s1.states(); ++i)
+   for (int i=0; i<s1.states(); ++i)
       // f += sqrt(std::norm(s1[i])*std::norm(s2[i]));
       f += sqrt(s1[i].norm()*s2[i].norm());
    
