@@ -687,7 +687,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
             size_t qs = qureg.states();
             complex_t * data = qureg.get_data().data();
             // sqg_apply(m,qubit,qureg);
-            __apply_h(0, qs, qubit, data, 0, (1 << qubit), hadamard_c);
+            __apply_h(0, qs, qubit, data, 0, (1UL << qubit), hadamard_c);
             // __apply_m(0, qs, qubit, data, 0, (1 << qubit), hadamard_c);
             //__apply_h_old(0, qs, qubit, data, 0, (1 << qubit), hadamard_c);
 
@@ -991,7 +991,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
 	   {
 	      // println("bit=" << bit);
 	      // println("ctrl=" << ctrl);
-	      for (size_t i=__bit_set(0,bit); i<(1<<size); i += (1 << (bit+1)))
+	      for (size_t i=__bit_set(0,bit); i<(1UL<<size); i += (1UL << (bit+1)))
 		 for (size_t j=0; j<(1<<bit); j++)
 		 {
 		    size_t v = i+j+offset; 
@@ -1330,7 +1330,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
             uint64_t     n  = qreg.size();
             complex_t *  s  = qreg.get_data().data();
             // cm.dump();
-            __apply_m(0, (1 << n), qubit, s, 0, (1 << qubit), m.m);
+            __apply_m(0, (1UL << n), qubit, s, 0, (1UL << qubit), m.m);
             // sqg_apply(m,qubit,qreg);
 #endif // FAST_FLIP
 
@@ -2135,7 +2135,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
       size_t bit2 = qubit;
       for (size_t j=qubit+1; j<n; ++j)
       {
-         complex_t  p(cos(M_PI/(1 << (j-qubit))), sin(M_PI/(1 << (j- qubit))));
+         complex_t  p(cos(M_PI/(1UL << (j-qubit))), sin(M_PI/(1UL << (j- qubit))));
          size_t bit1 = j;
          size_t step=(1UL << (bit1+1));
          size_t offset = __bit_set(0,bit1);
@@ -2199,7 +2199,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
       size_t bit2 = qubit;
       for (size_t j=qubit+1; j<n; ++j)
       {
-         complex_t  p(cos(M_PI/(1 << (j-qubit))), sin(M_PI/(1 << (j-qubit))));
+         complex_t  p(cos(M_PI/(1UL << (j-qubit))), sin(M_PI/(1UL << (j-qubit))));
          size_t bit1 = j;
          size_t step=(1UL << (bit1+1));
          size_t offset = __bit_set(0,bit1);
@@ -2247,9 +2247,9 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
       size_t bit2 = qubit;
       for (size_t j=qubit+1; j<n; ++j)
       {
-         complex_t  p(cos(M_PI/(1 << (j-qubit))), sin(M_PI/(1 << (j- qubit))));
+         complex_t  p(cos(M_PI/(1UL << (j-qubit))), sin(M_PI/(1UL << (j- qubit))));
          size_t bit1 = j;
-         size_t step=(1 << (bit1+1));
+         size_t step=(1UL << (bit1+1));
          size_t offset = __bit_set(0,bit1);
          for (size_t i=b; i<e; i++)
          {
@@ -2274,9 +2274,9 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
       size_t bit2 = qubit;
       for (size_t j=qubit+1; j<n; ++j)
       {
-         complex_t  p(cos(M_PI/(1 << (j-qubit))), sin(M_PI/(1 << (j- qubit))));
+         complex_t  p(cos(M_PI/(1UL << (j-qubit))), sin(M_PI/(1UL << (j- qubit))));
          size_t bit1 = j;
-         size_t step=(1 << (bit1+1));
+         size_t step=(1UL << (bit1+1));
          size_t offset = __bit_set(0,bit1);
          for (size_t i=b; i<e; i++)
          {
@@ -2317,7 +2317,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
             {
                size_t q = qubit[i];
                // kronecker_iui kiui(hm, 2, (1 << (n-q-1)), (1 << (q)));
-               kronecker_iui kiui(hadamard_c, 2, (1 << (n-q-1)), (1 << (q)));
+               kronecker_iui kiui(hadamard_c, 2, (1UL << (n-q-1)), (1UL << (q)));
                qft_nth_fold(n, 0, kiui, in, out);
             }
             in.swap(out);
@@ -2330,11 +2330,11 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
             for (size_t i=1; i<qubit.size(); ++i)
             {
                size_t q = qubit[i];
-               kronecker_iui k(m, 2, (1 << (n-q-1)), (1 << (q)));
+               kronecker_iui k(m, 2, (1UL << (n-q-1)), (1UL << (q)));
                qft_worker(0, qreg.states(), 1, qreg.size(), (qreg.get_data()), (qreg.get_aux()), k, q);
             }
             // last fold
-            kronecker_iu k(m,2,(1 << (n-1)));
+            kronecker_iu k(m,2,(1UL << (n-1)));
             sparse_mulmv(n,qubit[n-1],k,qreg.get_data(),qreg.get_aux());
             in.swap(out);
             return 0;
@@ -2748,7 +2748,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
    {
       cvector_t &data = * p_data;
       double local_p1 = 0;
-      uint64_t ref = 1 << qubit;
+      uint64_t ref = 1UL << qubit;
       uint64_t offset = 0;
 
       // We need to calculate the "offset_start" in order to maintain the 
@@ -2828,7 +2828,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
    inline double zero_worker_true(uint64_t cs, uint64_t ce, uint64_t s, /*double * length,*/ uint64_t qubit, /*xpu::lockable * l, */cvector_t * p_data)
    {
       cvector_t &data = * p_data;
-      uint64_t pos = 1 << qubit;
+      uint64_t pos = 1UL << qubit;
 
       for (uint64_t i=cs; i<ce; i+=2)
       {
@@ -2845,7 +2845,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
    inline double zero_worker_false(uint64_t cs, uint64_t ce, uint64_t s, /*double * length,*/ uint64_t qubit, /*xpu::lockable * l, */cvector_t * p_data)
    {
       cvector_t &data = * p_data;
-      uint64_t pos = 1 << qubit;
+      uint64_t pos = 1UL << qubit;
 
       for (uint64_t i=cs; i<ce; i+=2)
       {
