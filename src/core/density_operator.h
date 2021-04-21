@@ -82,7 +82,7 @@ namespace qx
 	{
 	   assert(r < state_dim);
 	   assert(c < state_dim);
-	   complex_t res = 0;
+	   complex_t res = 0.0;
 	   for (size_t i=0; i<states.size(); ++i)
 	   {
 	      cvector_t& state = states[i]->get_data();
@@ -106,8 +106,8 @@ namespace qx
 	      double             pi = probabilities[i];
 	      for (size_t j=0; j<states.size(); ++j)
 	      {
-		 complex_t ip = 0;
-		 complex_t g  = 0;
+		 complex_t ip = 0.0;
+		 complex_t g  = 0.0;
 		 linalg::cvector_t& vj = states[j]->get_data();
 		 double             pj = probabilities[j];
 
