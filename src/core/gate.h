@@ -752,14 +752,14 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
       complex_t * p = amp.data();
       size_t incrementer = 1UL << (bit+1);
 
-      if ((1<<bit) == 1) {
-         for (size_t i=__bit_set(0,bit), end=(1<<size); i<end; i+=incrementer) {
+      if ((1UL<<bit) == 1) {
+         for (size_t i=__bit_set(0,bit), end=(1UL<<size); i<end; i+=incrementer) {
             size_t v = i+offset;
             std::swap(amp[v], amp[__bit_reset(v,trg)]);
          }
       }
       else {
-         for (size_t i=__bit_set(0,bit), end=(1<<size); i<end; i+=incrementer) {
+         for (size_t i=__bit_set(0,bit), end=(1UL<<size); i<end; i+=incrementer) {
             size_t v = i+offset;
             for (size_t j=0; j<(1UL<<bit); j++)
             {
