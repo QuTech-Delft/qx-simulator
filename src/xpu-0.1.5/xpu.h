@@ -36,9 +36,11 @@
 */
 #include <unistd.h>
 #include <xpu/types.h>
+
+#if 0
 #include <xpu/core/generic_worker.h>
 
-namespace  xpu 
+namespace  xpu
 {
    
    /**
@@ -190,8 +192,8 @@ u_int32_t xpu::init()
    // exlore hardware architecture and capabilities
    xpu::core::system::explore();
 
-   xpu::core::workers_count      = xpu::core::system::processor::logical_processor_count * 2;
-   xpu::core::lasy_workers_count = xpu::core::system::processor::logical_processor_count;
+   xpu::core::workers_count      = 1;//xpu::core::system::processor::logical_processor_count * 2;
+   xpu::core::lasy_workers_count = 0;//xpu::core::system::processor::logical_processor_count;
    xpu::core::workers      = new xpu::core::generic_worker * [core::workers_count];
    xpu::core::lasy_workers = new xpu::core::generic_worker * [core::lasy_workers_count];
 
@@ -290,6 +292,6 @@ u_int32_t xpu::clean()
 #include <xpu/sequential_tasks.h>
 #include <xpu/pipeline.h>
 #include <xpu/parallel_for.h>
-
+#endif
 
 #endif // __XPU_MAIN__

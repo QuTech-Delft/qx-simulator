@@ -7,8 +7,8 @@
 
 #include <iostream>
 
-#include <xpu.h>
-#include <xpu/runtime>
+//#include <xpu.h>
+//#include <xpu/runtime>
 
 #include <core/circuit.h>
 #include <qcode/quantum_code_loader.h>
@@ -43,13 +43,13 @@ int main(int argc, char **argv)
    {
       size_t ncpu = atoi(argv[2]);
       ncpu = ((ncpu < 128) ? ncpu : 0);
-      if (ncpu)
+     /* if (ncpu)
 	 xpu::init(ncpu);
       else
-	 xpu::init();
+	 xpu::init();*/
    }
-   else
-      xpu::init();
+   /*else
+      xpu::init();*/
 
    std::string file_name = argv[1];
 
@@ -67,11 +67,11 @@ int main(int argc, char **argv)
 	   reg = new qx::qu_register(qcp.qubits());
    } catch(std::bad_alloc& exception) {
 	   println("[!] not enough memory, aborting");
-	   xpu::clean();
+	   //xpu::clean();
 	   return -1;
    } catch(std::exception& exception) {
 	   println("[!] unexpected exception (" << exception.what() << "), aborting");
-	   xpu::clean();
+	   //xpu::clean();
 	   return -1;
    }
 
@@ -119,7 +119,7 @@ int main(int argc, char **argv)
    for (uint32_t i=0; i<circuits.size(); i++)
       circuits[i]->execute(*reg);
   
-   xpu::clean();
+   //xpu::clean();
 
    return 0;
 }

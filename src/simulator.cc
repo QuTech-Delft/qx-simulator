@@ -6,12 +6,12 @@
  */
 
 
-#include <xpu.h>
-#include <xpu/runtime>
 #include <qx_representation.h>
 #include <libqasm_interface.h>
 #include <qasm_semantic.hpp>
-
+#ifdef USE_GPERFTOOLS
+#include <gperftools/profiler.h>
+#endif
 
 #include <iostream>
 
@@ -52,8 +52,8 @@ int main(int argc, char **argv)
    file_path = argv[1];
    if (argc > 2) navg = (atoi(argv[2]));
    if (argc > 3) ncpu = (atoi(argv[3]));
-   if (ncpu && ncpu < 128) xpu::init(ncpu);
-   else xpu::init();
+   //if (ncpu && ncpu < 128) xpu::init(ncpu);
+   //else xpu::init();
 
    // parse file and create abstract syntax tree
    println("[+] loading circuit from '" << file_path << "' ...");
@@ -61,7 +61,7 @@ int main(int argc, char **argv)
    if (!qasm_file)
    {
       std::cerr << "[x] error: could not open " << file_path << std::endl;
-      xpu::clean();
+      //xpu::clean();
       return -1;
    }
 
@@ -77,7 +77,7 @@ int main(int argc, char **argv)
    {
       std::cerr << "error while parsing file " << file_path << ": " << std::endl;
       std::cerr << e.what() << std::endl;
-      xpu::clean();
+      //xpu::clean();
       return -1;
    }
 
@@ -98,11 +98,11 @@ int main(int argc, char **argv)
       reg = new qx::qu_register(qubits);
    } catch(std::bad_alloc& exception) {
       std::cerr << "[x] not enough memory, aborting" << std::endl;
-      xpu::clean();
+      //xpu::clean();
       return -1;
    } catch(std::exception& exception) {
       std::cerr << "[x] unexpected exception (" << exception.what() << "), aborting" << std::endl;
-      xpu::clean();
+      //xpu::clean();
       return -1;
    }
 
@@ -119,7 +119,7 @@ int main(int argc, char **argv)
       catch (std::string type)
       {
          std::cerr << "[x] encountered unsuported gate: " << type << std::endl;
-         xpu::clean();
+         //xpu::clean();
          return -1;
       }
    }
@@ -136,6 +136,9 @@ int main(int argc, char **argv)
    // measurement averaging
    if (navg)
    {
+#ifdef USE_GPERFTOOLS
+      ProfilerStart("profile.log");
+#endif
       if (error_model == qx::__depolarizing_channel__)
       {
          qx::measure m;
@@ -170,7 +173,9 @@ int main(int argc, char **argv)
             m.apply(*reg);
          }
       }
-      
+#ifdef USE_GPERFTOOLS
+      ProfilerStop();
+#endif
       println("[+] average measurement after " << navg << " shots:");
       reg->dump(true);
    }
@@ -207,7 +212,7 @@ int main(int argc, char **argv)
    }
 
    // exit(0);
-   xpu::clean();
+   //xpu::clean();
 
    return 0;
 }

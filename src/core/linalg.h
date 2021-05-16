@@ -99,6 +99,10 @@ namespace qx
 	    uint32_t n2 = v2.size();
 	    cvector_t res(n1*n2);
 
+#pragma omp parallel for
+		for(uint32_t n = 0; n < res.size(); ++n)
+			res[n] = 0.0;
+
 	    for (uint32_t i=0; i<n1; ++i)
 		  for (uint32_t j=0; j<n2; ++j)
 			res[i*n2+j] = v1[i]+v2[j];
@@ -118,7 +122,7 @@ namespace qx
 
 	    uint32_t rows = rows_1*rows_2;
 	    uint32_t cols = cols_1*cols_2;
-	    complex_t z;
+	    complex_t z(0.0, 0.0);
 	    qx::linalg::matrix<complex_t> m(rows,cols,z);
 
 	    for (uint32_t i=0; i<rows; ++i)
@@ -172,13 +176,16 @@ namespace qx
 // #ifdef __BUILTIN_LINALG__
 	    uint32_t n = v.size();
 	    cvector_t r(n);
+
+#pragma omp parallel for
 	    for (uint32_t i=0; i<n; ++i)
 	    {
-	       complex_t c;
+	       complex_t c(0.0, 0.0);
 	       for (uint32_t j=0; j<n; ++j)
 		  c += m(i,j)*v[j];
 	       r[i] = c;
 	    }
+
 	    return r;
 // #else
 // 	    return ublas::prec_prod(m,v);
@@ -191,7 +198,7 @@ namespace qx
 	 qx::linalg::matrix<complex_t> mxm(qx::linalg::matrix<complex_t> m1, qx::linalg::matrix<complex_t> m2)
 	 {
 // #ifdef __BUILTIN_LINALG__
-	    complex_t z;
+	    complex_t z(0.0, 0.0);
 	    qx::linalg::matrix<complex_t> r(m1.size1(), m2.size2(),z);
 	    qx::linalg::mul(m1,m2,r);
 	    return r;
@@ -206,7 +213,7 @@ namespace qx
 	 cmatrix_t mxm(cmatrix_t m1, cmatrix_t m2)
 	 {
 // #ifdef __BUILTIN_LINALG__
-	    complex_t z;
+	    complex_t z(0.0, 0.0);
 	    cmatrix_t r;
 	    qx::linalg::mul(m1,m2,r);
 	    return r;
@@ -227,8 +234,8 @@ namespace qx
 	    if (m1.size2() != m2.size2())
 		  return false;
 
-	    for (int i=0; i<m1.size1(); ++i)
-		  for (int j=0; j<m1.size2(); ++j) 
+	    for (std::size_t i=0; i<m1.size1(); ++i)
+		  for (std::size_t j=0; j<m1.size2(); ++j)
 		  {
 			// double d = std::abs(std::norm(m1(i,j))-std::norm(m2(i,j)));
 			double d = m1(i,j).norm()-m2(i,j).norm();

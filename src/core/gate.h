@@ -17,12 +17,20 @@
 #include <immintrin.h> // avx
 #include <emmintrin.h> // sse
 
+#include <algorithm>
+
 #include <core/hash_set.h>
 #include <core/linalg.h>
 #include <core/register.h>
 
 #include <core/binary_counter.h>
 #include <core/kronecker.h>
+
+#include <chrono>
+
+#ifdef USE_OPENMP
+#include <omp.h>
+#endif
 
 // #ifndef __BUILTIN_LINALG__
 // #include <boost/numeric/ublas/matrix.hpp>
@@ -41,6 +49,9 @@
 
 //#define SQRT_2   (1.41421356237309504880f)
 //#define R_SQRT_2 (0.70710678118654752440f)
+
+#define ROUND_DOWN(x, s) ((x) & ~((s)-1))
+#define IS_ODD(x) (x & 1)
 
 namespace qx
 {
@@ -182,8 +193,8 @@ namespace qx
       // assert(n==2); 
       // TO DO : remove the n parameter
       cmatrix_t m; // (n,n);
-      for (int i=0; i<n; i++)
-         for (int j=0; j<n; j++) 
+      for (std::size_t i=0; i<n; i++)
+         for (std::size_t j=0; j<n; j++)
             m(i,j) = c[i*n+j];
       return m;
    }
@@ -204,7 +215,7 @@ namespace qx
 
       if (qubit == 0)
       {
-         identity       id(1 << (n-1));
+         identity       id(1UL << (n-1));
          unitary_matrix um(cm.size1(),m);
          kronecker      k(&id, &um);
          cvector_t      r(qureg.get_data());
@@ -213,7 +224,7 @@ namespace qx
       }
       else if (qubit == n-1)
       {
-         identity       id(1 << (n-1));
+         identity       id(1UL << (n-1));
          unitary_matrix um(cm.size1(),m);
          kronecker      k(&um, &id);
          cvector_t      r(qureg.get_data());
@@ -222,8 +233,8 @@ namespace qx
       }
       else
       {
-         identity       id1(1 << (qubit));
-         identity       id2(1 << (n-qubit-1));
+         identity       id1(1UL << (qubit));
+         identity       id2(1UL << (n-qubit-1));
          unitary_matrix um(cm.size1(),m);
          kronecker      k(&id2, &um, &id1);
          cvector_t      r(qureg.get_data());
@@ -243,7 +254,7 @@ namespace qx
    // #elif QX_SPARSE_MV_MUL
    #else // QX_SPARSE_MV_MUL
    
-   uint64_t rw_process(int is, int ie, int s, uint64_t n, uint64_t qubit, const kronecker * m, cvector_t * v, cvector_t * res)
+   uint64_t rw_process(uint64_t is, uint64_t ie, uint64_t s, uint64_t n, uint64_t qubit, const kronecker * m, cvector_t * v, cvector_t * res)
    {
       uint64_t k = n-qubit;
       // println("run : " << is << " .. " << ie);
@@ -267,13 +278,13 @@ namespace qx
    void sparse_mulmv(uint64_t n, uint64_t qubit, const kronecker& m, cvector_t& v, cvector_t& res)
    {
       uint64_t k = n-qubit;
-      uint64_t rows = (1 << n);
-      uint64_t z = 0;
+      uint64_t rows = (1UL << n);
+      uint64_t z = 0UL;
 
-      xpu::task rw_t(rw_process,0,0,0,n,qubit,&m,&v,&res);
+      /*xpu::task rw_t(rw_process,0,0,0,n,qubit,&m,&v,&res);
       xpu::parallel_for process(z,rows,1,&rw_t);
-
-      process.run();
+      process.run();*/
+      rw_process(z,rows,0UL,n,qubit,&m,&v,&res);
 
    }
 
@@ -296,8 +307,8 @@ namespace qx
 #ifdef USE_OPENMP
 #pragma omp parallel for // shared(m00,m01,m10,m11)
 #endif
-      for(size_t offset = start; offset < end; offset += (1L << (qubit + 1L)))
-         for(size_t i = offset; i < offset + (1L << qubit); i++)
+      for(size_t offset = start; offset < end; offset += (1UL << (qubit + 1)))
+         for(size_t i = offset; i < offset + (1UL << qubit); i++)
          {
             size_t i0 = i + stride0;
             size_t i1 = i + stride1;
@@ -322,8 +333,8 @@ namespace qx
 #ifdef USE_OPENMP
 #pragma omp parallel for // private(m00,r00,neg)    
 #endif
-      for(size_t offset = start; offset < end; offset += (1L << (qubit + 1L)))
-         for(size_t i = offset; i < offset + (1L << qubit); i++)
+      for(size_t offset = start; offset < end; offset += (1UL << (qubit + 1UL)))
+         for(size_t i = offset; i < offset + (1UL << qubit); i++)
          {
             size_t i0 = i + stride0;
             size_t i1 = i + stride1;
@@ -355,8 +366,8 @@ namespace qx
 #ifdef USE_OPENMP
 #pragma omp parallel for // private(m00,r00,neg)    
 #endif
-      for(size_t offset = start; offset < end; offset += (1L << (qubit + 1L)))
-         for(size_t i = offset; i < offset + (1L << qubit); i++)
+      for(size_t offset = start; offset < end; offset += (1UL << (qubit + 1UL)))
+         for(size_t i = offset; i < offset + (1UL << qubit); i++)
          {
             size_t i0 = i + stride0;
             size_t i1 = i + stride1;
@@ -392,7 +403,7 @@ namespace qx
 #error "SSE not available !"
 #endif // SSE
 
-   uint64_t rw_process_ui(int is, int ie, int s, uint64_t n, uint64_t qubit, kronecker_ui m, cvector_t * v, cvector_t * res)
+   uint64_t rw_process_ui(uint64_t is, uint64_t ie, uint64_t s, uint64_t n, uint64_t qubit, kronecker_ui m, cvector_t * v, cvector_t * res)
    {
       uint64_t k = n-qubit;
       // println("run : " << is << " .. " << ie);
@@ -436,19 +447,20 @@ namespace qx
    void sparse_mulmv(uint64_t n, uint64_t qubit, kronecker_ui m, cvector_t& v, cvector_t& res)
    {
       uint64_t k = n-qubit;
-      uint64_t rows = (1 << n);
+      uint64_t rows = (1UL << n);
       uint64_t z = 0;
 
 #ifdef SEQUENTIAL
       rw_process_ui(z,rows,1,n,qubit,m,&v,&res);
 #else
-      xpu::task rw_t(rw_process_ui,0,0,0,n,qubit,m,&v,&res);
+      /*xpu::task rw_t(rw_process_ui,0,0,0,n,qubit,m,&v,&res);
       xpu::parallel_for process(z,rows,1,&rw_t);
-      process.run();
+      process.run();*/
+      rw_process_ui(z,rows,0,n,qubit,m,&v,&res);
 #endif
    }
 
-   uint64_t rw_process_iu(int is, int ie, int s, uint64_t n, uint64_t qubit, kronecker_iu m, cvector_t * v, cvector_t * res)
+   uint64_t rw_process_iu(uint64_t is, uint64_t ie, uint64_t s, uint64_t n, uint64_t qubit, kronecker_iu m, cvector_t * v, cvector_t * res)
    {
       uint64_t k = n-qubit;
       // println("run : " << is << " .. " << ie);
@@ -492,21 +504,22 @@ namespace qx
    void sparse_mulmv(uint64_t n, uint64_t qubit, kronecker_iu m, cvector_t& v, cvector_t& res)
    {
       uint64_t k = n-qubit;
-      uint64_t rows = (1 << n);
+      uint64_t rows = (1UL << n);
       uint64_t z = 0;
 
 #ifdef SEQUENTIAL
       rw_process_iu(z,rows,1,n,qubit,m,&v,&res);
 #else
-      xpu::task rw_t(rw_process_iu,0,0,0,n,qubit,m,&v,&res);
+      /*xpu::task rw_t(rw_process_iu,0,0,0,n,qubit,m,&v,&res);
       xpu::parallel_for process(z,rows,1,&rw_t);
-      process.run();
+      process.run();*/
+      rw_process_iu(z,rows,0,n,qubit,m,&v,&res);
 #endif
    }
    
    // static xpu::core::os::mutex mtx;
 
-   uint64_t rw_process_iui(int is, int ie, int s, uint64_t n, uint64_t qubit, kronecker_iui m, cvector_t * v, cvector_t * res)
+   uint64_t rw_process_iui(uint64_t is, uint64_t ie, uint64_t s, uint64_t n, uint64_t qubit, kronecker_iui m, cvector_t * v, cvector_t * res)
    {
       uint64_t k = n-qubit;
       // println("run : " << is << " .. " << ie);
@@ -604,15 +617,15 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
    void sparse_mulmv(uint64_t n, uint64_t qubit, kronecker_iui m, cvector_t& v, cvector_t& res)
    {
       uint64_t k = n-qubit;
-      uint64_t rows = (1 << n);
+      uint64_t rows = (1UL << n);
       uint64_t z = 0;
 
 #ifdef SEQUENTIAL
       rw_process_iui(z,rows,1,n,qubit,m,&v,&res);
 #else
-      xpu::task rw_t(rw_process_iui,0,0,0,n,qubit,m,&v,&res);
+      /*xpu::task rw_t(rw_process_iui,0,0,0,n,qubit,m,&v,&res);
       xpu::parallel_for process(z,rows,1,&rw_t);
-      process.run();
+      process.run();*/
 #endif
    }
 
@@ -623,7 +636,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
 	 uint64_t     n  = qureg.size();
 	 complex_t *  s  = qureg.get_data().data();
 	 // cm.dump();
-	 __apply_m(0, (1 << n), qubit, s, 0, (1 << qubit), cm.m);
+	 __apply_m(0, (1UL << n), qubit, s, 0, (1UL << qubit), cm.m);
 	 return;
 
    }
@@ -674,7 +687,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
             size_t qs = qureg.states();
             complex_t * data = qureg.get_data().data();
             // sqg_apply(m,qubit,qureg);
-            __apply_h(0, qs, qubit, data, 0, (1 << qubit), hadamard_c);
+            __apply_h(0, qs, qubit, data, 0, (1UL << qubit), hadamard_c);
             // __apply_m(0, qs, qubit, data, 0, (1 << qubit), hadamard_c);
             //__apply_h_old(0, qs, qubit, data, 0, (1 << qubit), hadamard_c);
 
@@ -732,42 +745,57 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
 
    };
 
-   void __swap(cvector_t& amp, size_t size, size_t bit, size_t trg, size_t ctrl, size_t offset=0)
+   inline void __swap(cvector_t& amp, size_t size, size_t bit, size_t trg, size_t ctrl, size_t offset=0)
    {
       // println("bit=" << bit);
       // println("ctrl=" << ctrl);
       complex_t * p = amp.data();
-      for (size_t i=__bit_set(0,bit); i<(1<<size); i += (1 << (bit+1)))
-         for (size_t j=0; j<(1<<bit); j++)
-         {
-            size_t v = i+j+offset; 
-            /*
-               #ifdef __SSE__
-               __m128d x = _mm_load_pd((const double *)&p[v]);
-               __m128d y = _mm_load_pd((const double *)&p[__bit_reset(v,trg)]);
-               _mm_store_pd((double *)&p[__bit_reset(v,trg)],x);
-               _mm_store_pd((double *)&p[v],y);
-               #else
-             */
+      size_t incrementer = 1UL << (bit+1);
+
+      if ((1UL<<bit) == 1) {
+         for (size_t i=__bit_set(0,bit), end=(1UL<<size); i<end; i+=incrementer) {
+            size_t v = i+offset;
             std::swap(amp[v], amp[__bit_reset(v,trg)]);
-            // println("swap("<<v<<","<<__bit_reset(v,trg)<<")");
-            // #endif
          }
+      }
+      else {
+         for (size_t i=__bit_set(0,bit), end=(1UL<<size); i<end; i+=incrementer) {
+            size_t v = i+offset;
+            for (size_t j=0; j<(1UL<<bit); j++)
+            {
+               // v += j;
+               /*
+                  #ifdef __SSE__
+                  __m128d x = _mm_load_pd((const double *)&p[v]);
+                  __m128d y = _mm_load_pd((const double *)&p[__bit_reset(v,trg)]);
+                  _mm_store_pd((double *)&p[__bit_reset(v,trg)],x);
+                  _mm_store_pd((double *)&p[v],y);
+                  #else
+               */
+               std::swap(amp[v], amp[__bit_reset(v,trg)]);
+               ++v;
+               // println("swap("<<v<<","<<__bit_reset(v,trg)<<")");
+               // #endif
+            }
+         }
+      }
    }
 
 
-   int cx_worker(int cs, int ce, int s, cvector_t * p_amp, size_t bit1, size_t bit2, size_t trg, size_t ctrl)
+   inline int cx_worker(uint64_t cs, uint64_t ce, uint64_t s, cvector_t * p_amp, size_t bit1, size_t bit2, size_t trg, size_t ctrl)
    {
       cvector_t &amp = * p_amp;
       // xpu::parallel_for fswp(__bit_set(0,b1), (1 << qn), (1 << (b1+1)), &t);
-      size_t step=(1 << (bit1+1));
-      size_t b   = cs;
-      size_t e   = ce;
+      size_t step=(1UL << (bit1+1));
+      // size_t b   = cs;
+      // size_t e   = ce;
       size_t offset = __bit_set(0,bit1);
 
       //for (size_t i=__bit_set(0,bit1); i<(1<<size); i += (1 << (bit1+1)))
       //__swap(amp,bit1,bit2,trg,ctrl,i);
-      for (size_t i=b; i<e; i++)
+      // for (size_t i=b; i<e; i++)
+      //    __swap(amp,bit1,bit2,trg,ctrl,offset+(i*step));
+      for (size_t i=cs; i<ce; i++)
          __swap(amp,bit1,bit2,trg,ctrl,offset+(i*step));
       return 0;
    }
@@ -846,7 +874,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
             size_t b2 = std::min(cq,tq);
 
 
-            size_t steps = ((1 << qn)-(__bit_set(0,b1)))/(1 << (b1+1))+1;
+            size_t steps = ((1UL << qn)-(__bit_set(0,b1)))/(1UL << (b1+1))+1;
             /*
                println("from=" << (__bit_set(0,b1)));
                println("to=" << (1 << qn));
@@ -858,11 +886,14 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
             else
             {
 #ifdef USE_OPENMP
-#pragma omp parallel for
+#pragma omp parallel
+{
+#pragma omp for simd
                for (size_t i=0; i<steps; ++i)
-                  cx_worker(i,i+1,1,&amp,b1,b2,(size_t)tq,(size_t)cq);
+                  cx_worker(i,i+1,1UL,&amp,b1,b2,(size_t)tq,(size_t)cq);
+}
 #else
-               xpu::task t(cx_worker,0,0,0,&amp,b1,b2,(size_t)tq,(size_t)cq);
+               xpu::task t(cx_worker,0UL,0UL,0UL,&amp,b1,b2,(size_t)tq,(size_t)cq);
                xpu::parallel_for fswp(0, steps, 1, &t);
                fswp.run();
 #endif
@@ -874,8 +905,8 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
             uint64_t j = control_qubit+1;
             uint64_t k = target_qubit+1;
 
-            uint64_t k2 = (1 << (k-1));
-            uint64_t j2 = (1 << (j-1));
+            uint64_t k2 = (1UL << (k-1));
+            uint64_t j2 = (1UL << (j-1));
 
             uint64_t r_size = qreg.states(); 
 
@@ -893,7 +924,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
 
             int64_t t2;
             cvector_t& amp = qreg.get_data();
-            complex_t c1, c2;
+            complex_t c1(0., 0.), c2(0., 0.);
 
             for (xpu::container::hash_set<uint64_t>::iterator t = swap_set.begin(); t != swap_set.end(); ++t) 
             {
@@ -960,7 +991,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
 	   {
 	      // println("bit=" << bit);
 	      // println("ctrl=" << ctrl);
-	      for (size_t i=__bit_set(0,bit); i<(1<<size); i += (1 << (bit+1)))
+	      for (size_t i=__bit_set(0,bit); i<(1UL<<size); i += (1UL << (bit+1)))
 		 for (size_t j=0; j<(1<<bit); j++)
 		 {
 		    size_t v = i+j+offset; 
@@ -978,7 +1009,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
             println("to=" << (1 << size));
             println("s=" << (1 << (bit1+1)));
           */
-         for (size_t i=__bit_set(0,bit1); i<(1<<size); i += (1 << (bit1+1)))
+         for (size_t i=__bit_set(0,bit1); i<(1UL<<size); i += (1UL << (bit1+1)))
             __swap(amp,bit1,bit2,trg,ctrl,i);
       }
 
@@ -1051,10 +1082,10 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
 #ifdef USE_OPENMP
 #pragma omp parallel for
 #endif
-            for (size_t i=__bit_set(__bit_set(__bit_set(0,c1),c2),c3); i<(1<<size); i += (1 << (c3+1)))
-               for (size_t j=i; j<(i+(1<<c3)); j += (1 << (c2+1)))
-                  for (size_t k=j; k<(j+(1<<c2)); k+=(1 << (c1+1)))
-                     for (size_t l=k; l<(k+(1<<(c1))); l++)
+            for (size_t i=__bit_set(__bit_set(__bit_set(0,c1),c2),c3); i<(1UL<<size); i += (1UL << (c3+1)))
+               for (size_t j=i; j<(i+(1UL<<c3)); j += (1UL << (c2+1)))
+                  for (size_t k=j; k<(j+(1UL<<c2)); k+=(1UL << (c1+1)))
+                     for (size_t l=k; l<(k+(1UL<<(c1))); l++)
                      {
                         std::swap(amp[__bit_set(l,t)],amp[__bit_reset(l,t)]);
                         // println("swap : " << __bit_set(l,t) << "," << __bit_reset(l,t));
@@ -1155,8 +1186,8 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
 #ifdef USE_OPENMP
 #pragma omp parallel for 
 #endif 
-      for (size_t i=0; i<(1 << n); i+=(1 << (q+1)))
-         for (size_t j=i; j<(i+(1 << q)); j++) 
+      for (size_t i=0; i<(1UL << n); i+=(1UL << (q+1)))
+         for (size_t j=i; j<(i+(1UL << q)); j++)
             //__swap_xmm(x[j].xmm,x[__bit_flip(j,q)].xmm);
             std::swap(x[j].xmm,x[__bit_flip(j,q)].xmm);
    }
@@ -1164,7 +1195,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
 
    void flip(uint64_t q, uint64_t n, cvector_t& amp)
    {
-      uint64_t nn = (1 << n);
+      uint64_t nn = (1UL << n);
       uint64_t p1, p2;
       std::bitset<MAX_QB_N> b;
       // perm_t res;
@@ -1299,7 +1330,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
             uint64_t     n  = qreg.size();
             complex_t *  s  = qreg.get_data().data();
             // cm.dump();
-            __apply_m(0, (1 << n), qubit, s, 0, (1 << qubit), m.m);
+            __apply_m(0, (1UL << n), qubit, s, 0, (1UL << qubit), m.m);
             // sqg_apply(m,qubit,qreg);
 #endif // FAST_FLIP
 
@@ -2029,8 +2060,8 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
       // println("ctrl=" << ctrl);
       complex_t * x = amp.data();
       // println(">>>> " << p);
-      for (size_t i=__bit_set(0,bit); i<(1<<size); i += (1 << (bit+1)))
-         for (size_t j=0; j<(1<<bit); j++)
+      for (size_t i=__bit_set(0,bit); i<(1UL<<size); i += (1UL << (bit+1)))
+         for (size_t j=0; j<(1UL<<bit); j++)
          {
             size_t v = i+j+offset; 
             // amp[v] *= p;
@@ -2045,8 +2076,8 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
    {
       // println("bit=" << bit);
       // println("ctrl=" << ctrl);
-      for (size_t i=__bit_set(0,bit); i<(1<<size); i += (1 << (bit+1)))
-         for (size_t j=0; j<(1<<bit); j++)
+      for (size_t i=__bit_set(0,bit); i<(1UL<<size); i += (1UL << (bit+1)))
+         for (size_t j=0; j<(1UL<<bit); j++)
          {
             size_t v = i+j+offset; 
             // amp[v] *= p;
@@ -2062,7 +2093,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
    {
       cvector_t &amp = * p_amp;
       // xpu::parallel_for fswp(__bit_set(0,b1), (1 << qn), (1 << (b1+1)), &t);
-      size_t step=(1 << (bit1+1));
+      size_t step=(1UL << (bit1+1));
       size_t b   = cs;
       size_t e   = ce;
 
@@ -2076,7 +2107,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
    }
 
 
-   uint64_t qft_1st_fold_worker(int is, int ie, int s, uint64_t n, uint64_t qubit, kronecker_ui m, cvector_t * v, cvector_t * res)
+   uint64_t qft_1st_fold_worker(uint64_t is, uint64_t ie, uint64_t s, uint64_t n, uint64_t qubit, kronecker_ui m, cvector_t * v, cvector_t * res)
    {
       uint64_t k = n-qubit;
       // println("run : " << is << " .. " << ie);
@@ -2104,9 +2135,9 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
       size_t bit2 = qubit;
       for (size_t j=qubit+1; j<n; ++j)
       {
-         complex_t  p(cos(M_PI/(1 << (j-qubit))), sin(M_PI/(1 << (j- qubit))));
+         complex_t  p(cos(M_PI/(1UL << (j-qubit))), sin(M_PI/(1UL << (j- qubit))));
          size_t bit1 = j;
-         size_t step=(1 << (bit1+1));
+         size_t step=(1UL << (bit1+1));
          size_t offset = __bit_set(0,bit1);
          for (size_t i=is; i<ie; i++)
          {
@@ -2122,19 +2153,25 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
    void qft_1st_fold(uint64_t n, uint64_t qubit, kronecker_ui m, cvector_t& v, cvector_t& res)
    {
       uint64_t k = n-qubit;
-      uint64_t rows = (1 << n);
+      uint64_t rows = (1UL << n);
       uint64_t z = 0;
 
       //xpu::task qf_t(qft_fold_worker,0,0,0,n,qubit,m,&v,&res);
       //xpu::parallel_for process(z,rows,1,&qf_t);
       //process.run();
 
-      qft_1st_fold_worker(0,rows,1,n,qubit,m,&v,&res);
+      static const uint64_t SIZE = 1000;
+#ifdef USE_OPENMP
+#pragma omp parallel for
+#endif
+      for (uint64_t batch = 0; batch <= rows / SIZE; batch++) {
+        qft_1st_fold_worker(batch*SIZE,std::min((batch+1)*SIZE,rows),1,n,qubit,m,&v,&res);
+      }
 
    }
 
 
-   uint64_t qft_nth_fold_worker(int is, int ie, int s, uint64_t n, uint64_t qubit, kronecker_iui m, cvector_t * v, cvector_t * res)
+   uint64_t qft_nth_fold_worker(uint64_t is, uint64_t ie, uint64_t s, uint64_t n, uint64_t qubit, kronecker_iui m, cvector_t * v, cvector_t * res)
    {
       uint64_t k = n-qubit;
       // println("run : " << is << " .. " << ie);
@@ -2162,9 +2199,9 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
       size_t bit2 = qubit;
       for (size_t j=qubit+1; j<n; ++j)
       {
-         complex_t  p(cos(M_PI/(1 << (j-qubit))), sin(M_PI/(1 << (j-qubit))));
+         complex_t  p(cos(M_PI/(1UL << (j-qubit))), sin(M_PI/(1UL << (j-qubit))));
          size_t bit1 = j;
-         size_t step=(1 << (bit1+1));
+         size_t step=(1UL << (bit1+1));
          size_t offset = __bit_set(0,bit1);
          for (size_t i=is; i<ie; i++)
          {
@@ -2178,14 +2215,20 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
    void qft_nth_fold(uint64_t n, uint64_t qubit, kronecker_iui m, cvector_t& v, cvector_t& res)
    {
       uint64_t k = n-qubit;
-      uint64_t rows = (1 << n);
+      uint64_t rows = (1UL << n);
       uint64_t z = 0;
 
       //xpu::task qf_t(qft_fold_worker,0,0,0,n,qubit,m,&v,&res);
       //xpu::parallel_for process(z,rows,1,&qf_t);
       //process.run();
 
-      qft_nth_fold_worker(0,rows,1,n,qubit,m,&v,&res);
+      static const uint64_t SIZE = 1000;
+#ifdef USE_OPENMP
+#pragma omp parallel for
+#endif
+      for (uint64_t batch = 0; batch <= rows / SIZE; batch++) {
+        qft_nth_fold_worker(batch*SIZE,std::min((batch+1)*SIZE,rows),1,n,qubit,m,&v,&res);
+      }
 
    }
 
@@ -2204,9 +2247,9 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
       size_t bit2 = qubit;
       for (size_t j=qubit+1; j<n; ++j)
       {
-         complex_t  p(cos(M_PI/(1 << (j-qubit))), sin(M_PI/(1 << (j- qubit))));
+         complex_t  p(cos(M_PI/(1UL << (j-qubit))), sin(M_PI/(1UL << (j- qubit))));
          size_t bit1 = j;
-         size_t step=(1 << (bit1+1));
+         size_t step=(1UL << (bit1+1));
          size_t offset = __bit_set(0,bit1);
          for (size_t i=b; i<e; i++)
          {
@@ -2231,9 +2274,9 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
       size_t bit2 = qubit;
       for (size_t j=qubit+1; j<n; ++j)
       {
-         complex_t  p(cos(M_PI/(1 << (j-qubit))), sin(M_PI/(1 << (j- qubit))));
+         complex_t  p(cos(M_PI/(1UL << (j-qubit))), sin(M_PI/(1UL << (j- qubit))));
          size_t bit1 = j;
-         size_t step=(1 << (bit1+1));
+         size_t step=(1UL << (bit1+1));
          size_t offset = __bit_set(0,bit1);
          for (size_t i=b; i<e; i++)
          {
@@ -2274,7 +2317,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
             {
                size_t q = qubit[i];
                // kronecker_iui kiui(hm, 2, (1 << (n-q-1)), (1 << (q)));
-               kronecker_iui kiui(hadamard_c, 2, (1 << (n-q-1)), (1 << (q)));
+               kronecker_iui kiui(hadamard_c, 2, (1UL << (n-q-1)), (1UL << (q)));
                qft_nth_fold(n, 0, kiui, in, out);
             }
             in.swap(out);
@@ -2287,11 +2330,11 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
             for (size_t i=1; i<qubit.size(); ++i)
             {
                size_t q = qubit[i];
-               kronecker_iui k(m, 2, (1 << (n-q-1)), (1 << (q)));
+               kronecker_iui k(m, 2, (1UL << (n-q-1)), (1UL << (q)));
                qft_worker(0, qreg.states(), 1, qreg.size(), (qreg.get_data()), (qreg.get_aux()), k, q);
             }
             // last fold
-            kronecker_iu k(m,2,(1 << (n-1)));
+            kronecker_iu k(m,2,(1UL << (n-1)));
             sparse_mulmv(n,qubit[n-1],k,qreg.get_data(),qreg.get_aux());
             in.swap(out);
             return 0;
@@ -2378,8 +2421,8 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
 
          void build_operator()
          {
-            m[0][0] = complex_t(cos(-phase/2), sin(-phase/2));   m[0][1] = 0;
-            m[1][0] = 0;                                         m[1][1] =  complex_t(cos(phase/2), sin(phase/2));
+            m[0][0] = complex_t(cos(-phase/2), sin(-phase/2));   m[0][1] = 0.0;
+            m[1][0] = 0.0;                                       m[1][1] =  complex_t(cos(phase/2), sin(phase/2));
 
             double n = m[0][0].norm();
             if (n > 10e-9)
@@ -2409,9 +2452,10 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
           * ctor (q)
           */
          ctrl_phase_shift(uint64_t ctrl_qubit, uint64_t target_qubit) :    ctrl_qubit(ctrl_qubit), 
-                                                                           target_qubit(target_qubit)  
+                                                                           target_qubit(target_qubit),
+                                                                           z(0.0, 0.0)
          {
-            phase = 2*M_PI/(1 << (ctrl_qubit - target_qubit));
+            phase = 2*M_PI/(1UL << (ctrl_qubit - target_qubit));
             build_operator();
          }
 
@@ -2422,7 +2466,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
          ctrl_phase_shift(uint64_t ctrl_qubit, uint64_t target_qubit, size_t k) : ctrl_qubit(ctrl_qubit), 
                                                                                     target_qubit(target_qubit)  
          {               
-            phase = 2*M_PI/(1 << k);
+            phase = 2*M_PI/(1UL << k);
             build_operator();
          }
 
@@ -2448,15 +2492,15 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
             if (c > t)
                __apply_cm(qreg.get_data().data(),          
                      m,                                    
-                     0, (1 << n), 1l << (c+1l),            
-                     1l << c, 1l << (c+1l), 1l << (t+1l),  
-                     0l,    1l << t,    1l << t);          
+                     0UL, (1UL << n), 1UL << (c+1l),            
+                     1UL << c, 1UL << (c+1UL), 1UL << (t+1UL),  
+                     0UL,    1UL << t,    1UL << t);          
             else
                __apply_cm(qreg.get_data().data(),
                      m,                          
-                     0, (1 << n), 1l << (t+1l),     
-                     0l,    1l << t,    1l << (c+1l),
-                     1l << c, 1l<< (c+1l), 1l << t);
+                     0UL, (1UL << n), 1UL << (t+1UL),     
+                     0UL,    1UL << t,    1UL << (c+1l),
+                     1UL << c, 1UL<< (c+1UL), 1UL << t);
 
 
 
@@ -2700,86 +2744,192 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
   
    
 
-   int p1_worker(uint64_t cs, uint64_t ce, uint64_t s, double * p1, uint64_t qubit, xpu::lockable * l, cvector_t * p_data)
+   double p1_worker(uint64_t cs, uint64_t ce, uint64_t qubit, cvector_t * p_data)
    {
       cvector_t &data = * p_data;
       double local_p1 = 0;
-      for (uint64_t i=cs; i<ce; ++i)
-      {
-         i = __bit_set(i,qubit);
-         if (i<ce)
-            local_p1 += data[i].norm(); //std::norm(data[i]);
-         // if (__bit_test(i,qubit))
-         // local_p1 += std::norm(data[i]);
+      uint64_t ref = 1UL << qubit;
+      uint64_t offset = 0;
+
+      // We need to calculate the "offset_start" in order to maintain the 
+      // correctness of the index calculation in the parallel region
+      uint64_t reminder = cs % ref;
+      uint64_t factor = std::floor((cs - reminder) / ref);
+      uint64_t offset_start = factor * ref;
+
+      offset = offset_start;
+
+      /* ******************************************************************************* */
+      // The following for-loop is a decimal-based representation of the identical binary-
+      // based for-loop:
+      // uint64_t size = qreg.size(); 
+      // uint64_t n = (1 << size);
+      //  std::bitset<MAX_QB_N> b;
+      //  b.reset();
+      //  b.set(qubit);
+      //  for (uint64_t i = b.to_ulong(); i < n; i=b.to_ulong()) {
+      //        p += data[i].norm();
+      //        b = inc(b);
+      //        b.set(qubit);
+      //  }
+      /* ******************************************************************************* */
+      for (uint64_t i = cs; i < ce; ++i) {
+         if (!(i % ref))
+            offset = ref + i;
+         local_p1 += data[i + offset].norm();
       }
 
-      l->lock();
-      // println("l_p1 [" << cs << ".." << ce << "]: " << local_p1);
-      *p1 += local_p1;
-      l->unlock();
-      return 0;
+      return local_p1;
    }
 
+   inline double zero_worker_norm(uint64_t cs, uint64_t ce, cvector_t * p_data)
+   {
+      uint64_t num_elts = ce - cs;
+      uint64_t tile_size = std::min(num_elts, 32UL);
+      complex_t * vd = p_data->data();
+      double local_length = 0.;
 
-   int zero_worker(uint64_t cs, uint64_t ce, uint64_t s, int64_t m, double * length, uint64_t qubit, xpu::lockable * l, cvector_t * p_data)
+#if defined(__AVX__)
+      __m256d sum = _mm256_set1_pd(0.0);
+      for (uint64_t i=cs; i<ce; i+=tile_size)
+      {
+         for (uint64_t j=i, end=std::min(ce,tile_size+i); j<end; j+=2)
+         {
+            double * pvd = (double*)&vd[j];
+            sum = _mm256_add_pd(sum, _mm256_mul_pd(_mm256_load_pd(pvd), _mm256_load_pd(pvd)));
+         }
+      }
+      __m256d r2 = _mm256_hadd_pd(sum, sum);
+      local_length = _mm_cvtsd_f64(_mm_add_pd(_mm256_extractf128_pd(r2, 1),
+                                              _mm256_castpd256_pd128(r2)));
+#elif defined(__SSE__)
+      __m128d sum = _mm_set1_pd(0.0);
+      for (uint64_t i=cs; i<ce; i+=tile_size)
+      {
+         for (uint64_t j=i, end=std::min(ce,tile_size+i); j<end; ++j)
+         {
+            double * pvd = (double*)&vd[j];
+            sum = _mm_add_pd(sum, _mm_mul_pd(_mm_load_pd(pvd), _mm_load_pd(pvd)));
+         }
+      }
+      local_length = _mm_cvtsd_f64(_mm_hadd_pd(sum, sum));
+#else
+      for (uint64_t i=cs; i<ce; i+=tile_size)
+      {
+         for (uint64_t j=i, end=std::min(ce,tile_size+i); j<end; j+=2) 
+         {
+            local_length += data[j].norm() + data[j+1].norm();
+         }
+      }
+#endif
+      return local_length;
+   }
+
+   inline double zero_worker_true(uint64_t cs, uint64_t ce, uint64_t s, /*double * length,*/ uint64_t qubit, /*xpu::lockable * l, */cvector_t * p_data)
    {
       cvector_t &data = * p_data;
-      double local_length = 0;
-      uint64_t       size = data.size(); 
-      if (m)
+      uint64_t pos = 1UL << qubit;
+
+      for (uint64_t i=cs; i<ce; i+=2)
       {
-         for (uint64_t i=cs; i<ce; ++i)
-         {
-            if (!__bit_test(i,qubit))
-               data[i] = 0;
-            local_length += data[i].norm(); //std::norm(data[i]);
-         }
+         // ((x) & (1<<(pos)))
+         if (i & pos)
+            data[i] = 0.0;
+         if ((i+1) & pos)
+            data[i+1] = 0.0;
       }
-      else
+
+      return zero_worker_norm(cs, ce, p_data);
+   }
+
+   inline double zero_worker_false(uint64_t cs, uint64_t ce, uint64_t s, /*double * length,*/ uint64_t qubit, /*xpu::lockable * l, */cvector_t * p_data)
+   {
+      cvector_t &data = * p_data;
+      uint64_t pos = 1UL << qubit;
+
+      for (uint64_t i=cs; i<ce; i+=2)
       {
-         for (uint64_t i=cs; i<ce; ++i)
-         {
-            if (__bit_test(i,qubit))
-               data[i] = 0;
-            local_length += data[i].norm(); //std::norm(data[i]);
+         // ((x) & (1<<(pos)))
+         if (!(i & pos)) {
+            data[i] = 0.0;
          }
+         if (!((i+1) & pos))
+            data[i+1] = 0.0;
       }
-      l->lock();
-      *length += local_length;
-      l->unlock();
-      return 0;
+
+      return zero_worker_norm(cs, ce, p_data);
    }
 
    int renorm_worker(uint64_t cs, uint64_t ce, uint64_t s, double * length, cvector_t * p_data)
    {
       cvector_t &data = * p_data;
       double l = *length;
-#ifdef __AVX__
-      // println("avx");
+      double l_rec = 1./l;
+      uint64_t num_elts = ce - cs;
+      uint64_t tile_size = std::min(num_elts, 16UL);
       complex_t * vd = p_data->data();
-      __m256d vl = _mm256_set1_pd(l);
-      for (uint64_t i=cs; i<ce; i+=2)
+
+#ifdef __AVX512F__
+      __m512d vl = _mm512_set1_pd(l_rec);
+#ifdef USE_OPENMP
+#pragma omp parallel for
+#endif
+      for (uint64_t i=cs; i<ce; i+=tile_size)
       {
-         double * pvd = (double*)&vd[i];
-         __m256d va = _mm256_load_pd(pvd); 
-         __m256d vr = _mm256_div_pd(va, vl);
-         _mm256_store_pd(pvd,vr);
+         for (uint64_t j=i, end=std::min(ce,tile_size+i); j<end; j+=4)
+         {
+            double * pvd = (double*)&vd[j];
+            _mm512_store_pd(pvd, _mm512_mul_pd(_mm512_load_pd(pvd), vl));
+         }
+      }
+#elif defined(__AVX__)
+      __m256d vl = _mm256_set1_pd(l_rec);
+#ifdef USE_OPENMP
+#pragma omp parallel for
+#endif
+      for (uint64_t i=cs; i<ce; i+=tile_size)
+      {
+         for (uint64_t j=i, end=std::min(ce,tile_size+i); j<end; j+=2)
+         {
+            double * pvd = (double*)&vd[j];
+            _mm256_store_pd(pvd, _mm256_mul_pd(_mm256_load_pd(pvd), vl));
+         }
       }
 #elif defined(__SSE__)
-      // println("sse");
-      complex_t * vd = p_data->data();
-      __m128d vl = _mm_set1_pd(l);
-      for (uint64_t i=cs; i<ce; ++i)
+      __m128d vl = _mm_set1_pd(l_rec);
+#ifdef USE_OPENMP
+#pragma omp parallel for
+#endif
+      for (uint64_t i=cs; i<ce; i+=tile_size)
       {
-         double * pvd = (double*)&vd[i];
-         __m128d va = _mm_load_pd(pvd); 
-         __m128d vr = _mm_div_pd(va, vl);
-         _mm_store_pd(pvd,vr);
+         for (uint64_t j=i, end=std::min(ce,tile_size+i); j<end; ++j)
+         {
+            double * pvd = (double*)&vd[j];
+            _mm_store_pd(pvd, _mm_mul_pd(_mm_load_pd(pvd), vl));
+         }
       }
 #else
-      for (uint64_t i=cs; i<ce; ++i)
-         data[i] /= l;
-#endif // __SSE__
+#ifdef USE_OPENMP
+#pragma omp parallel for
+#endif
+      for (uint64_t i=cs; i<ce; i+=tile_size)
+      {
+         for (uint64_t j=i, end=std::min(ce,tile_size+i); j<end; ++j)
+         {
+            data[j] *= l_rec;
+         }
+      }
+#endif
+
+      // // Update the remaining elements if there are any
+      // uint64_t reminder = num_elts % tile_size;
+      // if (reminder) {
+      //    for (uint64_t i=ce-reminder; i<ce; ++i)
+      //    {
+      //       data[i] *= l_rec;
+      //    }
+      // }
+
       return 0;
    }
 
@@ -2821,31 +2971,64 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
             double p = 0;
             int64_t value;
             uint64_t size = qreg.size(); 
-            uint64_t n = (1 << size);
+            uint64_t n = (1UL << size);
             cvector_t& data = qreg.get_data();
             double length = 0;
-            if (size > 64)
+            
+            // Basically, this "if" operator determines what to do if we have more than 64 qubits.
+            // It also determines whether to invoke parallel or sequential computations. As of now,
+            // we set parallel execution as the default one.
+            if (1)//size > 64)
+            // if (size > 64)
             {
                // #define PARALLEL_MEASUREMENT
                // #ifdef PARALLEL_MEASUREMENT
-
-               xpu::lockable * l = new xpu::core::os::mutex();
+               
+               /*xpu::lockable * l = new xpu::core::os::mutex();
                xpu::task p1_worker_t(p1_worker, (uint64_t)0, n, (uint64_t)1, &p, qubit, l, &data); 
                xpu::parallel_for parallel_p1( (uint64_t)0, n, (uint64_t)1, &p1_worker_t);
-               parallel_p1.run();
+               parallel_p1.run();*/
+               static const uint64_t SIZE = 1000;
+
+               uint64_t ref = 1UL << qubit;
+               uint64_t range = (n >> 1);
+#ifdef USE_OPENMP
+#pragma omp parallel for reduction(+: p)
+#endif
+               for (uint64_t batch = 0; batch <= range / SIZE; batch++) {
+                  p += p1_worker(batch*SIZE, std::min((batch+1)*SIZE, range), qubit, &data);
+               }
 
                if (f<p) value = 1;
                else value = 0;
 
-               xpu::task zero_worker_t(zero_worker,(uint64_t)0, n, (uint64_t)1, value, &length, qubit, l, &data); 
-               xpu::parallel_for parallel_zero( (uint64_t)0, n, (uint64_t)1, &zero_worker_t);
-               parallel_zero.run();
+#ifdef USE_OPENMP
+#pragma omp parallel
+{
+#endif
+               if (value) {
+#ifdef USE_OPENMP
+#pragma omp for reduction(+: length)
+#endif
+                  for (uint64_t batch = 0; batch <= n / SIZE; batch++) {
+                     length += zero_worker_false(batch*SIZE, std::min((batch+1)*SIZE,n), (uint64_t)1, qubit, &data);
+                  }
+               }
+               else {
+#ifdef USE_OPENMP
+#pragma omp for reduction(+: length)
+#endif
+                  for (uint64_t batch = 0; batch <= n / SIZE; batch++) {
+                     length += zero_worker_true(batch*SIZE, std::min((batch+1)*SIZE,n), (uint64_t)1, qubit, &data);
+                  }
+               }
+#ifdef USE_OPENMP
+}
+#endif
 
                length = std::sqrt(length);
 
-               xpu::task renorm_worker_t(renorm_worker, (uint64_t)0, n, (uint64_t)1, &length, &data); 
-               xpu::parallel_for parallel_renorm( (uint64_t)0, n, (uint64_t)1, &renorm_worker_t);
-               parallel_renorm.run();
+               renorm_worker((uint64_t)0, n, (uint64_t)1, &length, &data);
             }
             else 
             {
@@ -2863,7 +3046,6 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
                while (bc < n)
                {
                   bc =  b.to_ulong();
-                  // p += std::norm(data[bc]);
                   p += data[bc].norm();
                   b = inc(b);
                   b.set(qubit);  
@@ -2875,27 +3057,27 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
 
                if (value)   // 1
                {  // reset all states where the qubit is 0
-                  for (uint64_t i=0; i<(1 << size); ++i)
+                  for (uint64_t i=0; i<(1UL << size); ++i)
                   {
                      if (!__bit_test(i,qubit))
-                        data[i] = 0;
+                        data[i] = 0.0;
                   }
                }
                else
                {
-                  for (uint64_t i=0; i<(1 << size); ++i)
+                  for (uint64_t i=0; i<(1UL << size); ++i)
                   {
                      if (__bit_test(i,qubit))
-                        data[i] = 0;
+                        data[i] = 0.0;
                   }
                }
 
-               for (uint64_t k = 0; k < (1 << size); k++) 
+               for (uint64_t k = 0; k < (1UL << size); k++)
                   length += data[k].norm(); //std::norm(data[k]);
 
                length = std::sqrt(length);
 
-               for (uint64_t k = 0; k < (1 << size); k++) 
+               for (uint64_t k = 0; k < (1UL << size); k++)
                   data[k] /= length;
 
                // #endif // PARALLEL_MEASUREMENT

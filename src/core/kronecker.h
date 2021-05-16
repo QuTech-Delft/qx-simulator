@@ -149,7 +149,7 @@ namespace qx
       /**
        * const
        */
-      const static complex_t __c_zero__;
+      const static complex_t __c_zero__ = 0.0;
       const static complex_t __c_one__ = 1.0f;
       const static complex_t i_diag[] = { 0.0, 1.0 };
 #if 0
@@ -426,7 +426,7 @@ namespace qx
       void printv(cvector_t& v)
       {
 	 print("[ ");
-	 for (int i=0; i<v.size(); ++i)
+	 for (std::size_t i=0; i<v.size(); ++i)
 	    print(v[i].re << ", ");
 	    //print(v[i].real() << ", ");
 	 println(" ]");
@@ -437,10 +437,10 @@ namespace qx
       void mulmv(kronecker& k, cvector_t& v, cvector_t& r)
       {
 	 #pragma omp parallel for schedule(static)
-	 for (int i=0; i<v.size(); i++)
+	 for (std::size_t i=0; i<v.size(); i++)
 	 {
-	    complex_t s; // = 0;
-	    for (int j=0; j<v.size(); j++)
+	    complex_t s = 0.0;
+	    for (std::size_t j=0; j<v.size(); j++)
 	       s += v[j]*(k.get(i,j));
 	    r[i] = s;
 	 }
@@ -451,13 +451,13 @@ namespace qx
        */
       void mulmv_(kronecker& k, cvector_t& v, cvector_t& r)
       {
-	 complex_t s; // = 0;
-	 complex_t x; // = 0;
+	 complex_t s = 0.;
+	 complex_t x = 0.;
 	 #pragma omp parallel for private(s,x) schedule(static)
-	 for (int i=0; i<v.size(); i++)
+	 for (std::size_t i=0; i<v.size(); i++)
 	 {
 	    s = 0;
-	    for (int j=0; j<v.size(); j++)
+	    for (std::size_t j=0; j<v.size(); j++)
 	    {
 	       x = k.get(i,j);
 	       //if ((x.real() != 0) || (x.imag() != 0))
@@ -471,10 +471,10 @@ namespace qx
 
       void mulmv(kronecker& k, cvector_t& v, cvector_t& r, size_t block_ib, size_t block_ie, size_t block_jb, size_t block_je)
       {
-	 for (int i=block_ib; i<block_ie; i++)
+	 for (std::size_t i=block_ib; i<block_ie; i++)
 	 {
 	    complex_t s = r[i];
-	    for (int j=block_jb; j<block_je; j++)
+	    for (std::size_t j=block_jb; j<block_je; j++)
 	       s += v[j]*(k.get(i,j));
 	    r[i] = s;
 	 }

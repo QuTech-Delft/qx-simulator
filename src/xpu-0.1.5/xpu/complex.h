@@ -113,12 +113,13 @@ namespace xpu
 
 	 complex_d ( ) 
 	 { 
-#ifdef  __SSE__
-	    xmm = _mm_set1_pd(0); 
-#else
-	    re = 0;
-	    im = 0;
-#endif
+		 // Do not initialize as it may corrupt the `first touch`
+// #ifdef  __SSE__
+// 	    xmm = _mm_set1_pd(0); 
+// #else
+// 	    re = 0;
+// 	    im = 0;
+// #endif
 	 }
 
 	 complex_d (double v) 
@@ -151,7 +152,7 @@ namespace xpu
 #endif
 	 }
 
-	 void operator = (const complex_d& v)
+	 inline void operator = (const complex_d& v)
 	 {
 #ifdef __SSE__
 	    xmm = v.xmm;
@@ -162,7 +163,7 @@ namespace xpu
 	 }
 
 
-	 void operator = (const double *v)
+	 inline void operator = (const double *v)
 	 {
 #ifdef __SSE__
 	    xmm = _mm_loadu_pd(v);
@@ -172,33 +173,33 @@ namespace xpu
 #endif
 	 }
 
-	 void operator = (const double v)
+	 inline void operator = (const double v)
 	 {
 #ifdef __SSE__
 	    // xmm = _mm_set1_pd(v);
 	    this->re = v;
-	    this->im = 0; //(double)v;
+	    this->im = 0.; //(double)v;
 #else
 	    this->re = v;
-	    this->im = 0; //(double)v;
+	    this->im = 0.; //(double)v;
 #endif
 	 }
 
 
-	 void operator = (const int v)
+	 inline void operator = (const int v)
 	 {
 #ifdef __SSE__
 	    // xmm = _mm_set1_pd((double)v);
 	    this->re = (double)v;
-	    this->im = 0; //(double)v;
+	    this->im = 0.; //(double)v;
 #else
 	    this->re = (double)v;
-	    this->im = 0; //(double)v;
+	    this->im = 0.; //(double)v;
 #endif
 	 }
 
 
-	 complex_d operator* (const complex_d &v) const
+	 inline complex_d operator* (const complex_d &v) const
 	 { 
 	    #ifdef __SSE__
 	    /*
@@ -249,7 +250,7 @@ namespace xpu
 	    #endif
 	 }
 
-	 complex_d operator+ (const complex_d &v) const
+	 inline complex_d operator+ (const complex_d &v) const
 	 { 
 #ifdef __SSE__
 	    return complex_d(_mm_add_pd(xmm, v.xmm)); 
@@ -258,7 +259,7 @@ namespace xpu
 #endif
 	 }
 
-	 complex_d operator- (const complex_d &v) const
+	 inline complex_d operator- (const complex_d &v) const
 	 { 
 #ifdef __SSE__
 	    return complex_d(_mm_sub_pd(xmm, v.xmm)); 
@@ -267,7 +268,7 @@ namespace xpu
 #endif
 	 }
 
-	 complex_d operator/ (const double &v) const
+	 inline complex_d operator/ (const double &v) const
 	 { 
 	    #ifdef __SSE__
 	    __m128d d = _mm_set1_pd(v);
@@ -277,7 +278,7 @@ namespace xpu
 	    #endif
 	 }
 
-	 void operator*= (const complex_d &v)
+	 inline void operator*= (const complex_d &v)
 	 { 
 	    #ifdef __SSE__DISABLE
 	    /*
@@ -320,7 +321,7 @@ namespace xpu
 	    #endif
 	 }
 
-	 void operator+= (const complex_d &v)
+	 inline void operator+= (const complex_d &v)
 	 { 
 	    #ifdef __SSE__
 	    xmm = _mm_add_pd(xmm, v.xmm); 
@@ -330,7 +331,7 @@ namespace xpu
 	    #endif
 	 }
 
-	 void operator-= (const complex_d &v)
+	 inline void operator-= (const complex_d &v)
 	 { 
 	    #ifdef __SSE__
 	    xmm = _mm_sub_pd(xmm, v.xmm); 
@@ -340,7 +341,7 @@ namespace xpu
 	    #endif
 	 }
 
-	 void operator/= (const double &v)
+	 inline void operator/= (const double &v)
 	 { 	    
 	    #ifdef __SSE__
 	    __m128d d = _mm_set1_pd(v);
@@ -351,7 +352,7 @@ namespace xpu
 	    #endif
 	 }
 
-	 void operator/= (const complex_d &v)
+	 inline void operator/= (const complex_d &v)
 	 { 	    
 	    // #ifdef __SSE__
 	    // __m128d d = _mm_set1_pd(v);
@@ -374,14 +375,17 @@ namespace xpu
 	    #endif
 	 }
 	
-	 double norm()
+	 inline double norm()
 	 {
-	    __m128d c = xmm; 
-	    c = _mm_mul_pd(c,c);
-	    c = _mm_hadd_pd(c,c);
-	    __v2d x; 
-	    x.xmm = c;
-	    return x.d1;
+		__m128d c = xmm; 
+ 	    c = _mm_mul_pd(c,c);
+ 	    c = _mm_hadd_pd(c,c);
+ 	    __v2d x; 
+ 	    x.xmm = c;
+ 	    return x.d1;
+		// return _mm_cvtsd_f64(_mm_hadd_pd(_mm_mul_pd(xmm,xmm),_mm_set1_pd(0.)));
+		// __m128d tmp = _mm_mul_pd(xmm,xmm);
+		// return _mm_cvtsd_f64(_mm_hadd_pd(tmp, tmp));
 	 }
 
 	 friend std::ostream &operator<<(std::ostream &os, const complex_d& c)
