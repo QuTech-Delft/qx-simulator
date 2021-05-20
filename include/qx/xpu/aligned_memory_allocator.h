@@ -2,7 +2,17 @@
 #define XPU_ALIGNED_MEMORY_ALLOCATOR_H
 
 #include <cstdlib>
+#include <string>
+
+#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
 #include <mm_malloc.h>
+#define QX_ALIGNED_MEMORY_MALLOC _mm_malloc
+#define QX_ALIGNED_MEMORY_FREE _mm_free
+#else
+#define QX_ALIGNED_MEMORY_MALLOC _aligned_malloc
+#define QX_ALIGNED_MEMORY_FREE _aligned_free
+#endif
+
 #include <new>
 
 namespace xpu
@@ -38,7 +48,7 @@ namespace xpu
 	    }
 
 	    inline pointer allocate (size_type n) {
-	       pointer rv = (pointer)_mm_malloc(n*sizeof(value_type), N);
+	       pointer rv = (pointer)QX_ALIGNED_MEMORY_MALLOC(n*sizeof(value_type), N);
 	       if(NULL==rv) {
              throw std::bad_alloc();
 	       }
@@ -46,7 +56,7 @@ namespace xpu
 	    }
 
 	    inline void deallocate (pointer p, size_type) {
-	       _mm_free (p);
+	       QX_ALIGNED_MEMORY_FREE(p);
 	    }
 
 	    inline void construct (pointer p, const value_type & wert) {
