@@ -24,3 +24,10 @@
 #undef max
 #endif
 #endif
+
+// srand48 doesn't exist on Windows.
+#ifdef _MSC_VER
+#define QX_SRAND srand
+#else
+#define QX_SRAND srand48
+#endif

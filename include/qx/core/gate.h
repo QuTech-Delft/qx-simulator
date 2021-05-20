@@ -2890,9 +2890,9 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
 #ifdef USE_OPENMP
 #pragma omp parallel for
 #endif
-      for (uint64_t i=cs; i<ce; i+=tile_size)
+      for (int64_t i=cs; i<(int64_t)ce; i+=tile_size)
       {
-         for (uint64_t j=i, end=std::min(ce,tile_size+i); j<end; j+=2)
+         for (uint64_t j=(uint64_t)i, end=std::min(ce,tile_size+(uint64_t)i); j<end; j+=2)
          {
             double * pvd = (double*)&vd[j];
             _mm256_store_pd(pvd, _mm256_mul_pd(_mm256_load_pd(pvd), vl));
@@ -2903,9 +2903,9 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
 #ifdef USE_OPENMP
 #pragma omp parallel for
 #endif
-      for (uint64_t i=cs; i<ce; i+=tile_size)
+      for (int64_t i=cs; i<(int64_t)ce; i+=tile_size)
       {
-         for (uint64_t j=i, end=std::min(ce,tile_size+i); j<end; ++j)
+         for (uint64_t j=(uint64_t)i, end=std::min(ce,tile_size+(uint64_t)i); j<end; ++j)
          {
             double * pvd = (double*)&vd[j];
             _mm_store_pd(pvd, _mm_mul_pd(_mm_load_pd(pvd), vl));
@@ -2915,9 +2915,9 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
 #ifdef USE_OPENMP
 #pragma omp parallel for
 #endif
-      for (uint64_t i=cs; i<ce; i+=tile_size)
+      for (int64_t i=cs; i<(int64_t)ce; i+=tile_size)
       {
-         for (uint64_t j=i, end=std::min(ce,tile_size+i); j<end; ++j)
+         for (uint64_t j=(uint64_t)i, end=std::min(ce,tile_size+(uint64_t)i); j<end; ++j)
          {
             data[j] *= l_rec;
          }
@@ -2998,8 +2998,8 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
 #ifdef USE_OPENMP
 #pragma omp parallel for reduction(+: p)
 #endif
-               for (uint64_t batch = 0; batch <= range / SIZE; batch++) {
-                  p += p1_worker(batch*SIZE, std::min((batch+1)*SIZE, range), qubit, &data);
+               for (int64_t batch = 0; batch <= (int64_t)range / SIZE; batch++) {
+                  p += p1_worker(batch*SIZE, std::min<uint64_t>((batch+1)*SIZE, range), qubit, &data);
                }
 
                if (f<p) value = 1;
@@ -3013,16 +3013,16 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
 #ifdef USE_OPENMP
 #pragma omp for reduction(+: length)
 #endif
-                  for (uint64_t batch = 0; batch <= n / SIZE; batch++) {
-                     length += zero_worker_false(batch*SIZE, std::min((batch+1)*SIZE,n), (uint64_t)1, qubit, &data);
+                  for (int64_t batch = 0; batch <= (int64_t)n / SIZE; batch++) {
+                     length += zero_worker_false(batch*SIZE, std::min<uint64_t>((batch+1)*SIZE,n), (uint64_t)1, qubit, &data);
                   }
                }
                else {
 #ifdef USE_OPENMP
 #pragma omp for reduction(+: length)
 #endif
-                  for (uint64_t batch = 0; batch <= n / SIZE; batch++) {
-                     length += zero_worker_true(batch*SIZE, std::min((batch+1)*SIZE,n), (uint64_t)1, qubit, &data);
+                  for (int64_t batch = 0; batch <= (int64_t)n / SIZE; batch++) {
+                     length += zero_worker_true(batch*SIZE, std::min<uint64_t>((batch+1)*SIZE,n), (uint64_t)1, qubit, &data);
                   }
                }
 #ifdef USE_OPENMP
