@@ -1,6 +1,7 @@
 #ifndef LIBQASM_INTERFACE_H
 #define LIBQASM_INTERFACE_H
 
+#include "qx/compat.h"
 #include "qx/core/circuit.h"
 #include <qasm_ast.hpp>
 
@@ -296,7 +297,7 @@ qx::gate *gateLookup(compiler::Operation &operation)
    /////////////// x90 //////////////////
    if (type == "x90")
    {
-      double angle = M_PI/2;
+      double angle = QX_PI/2;
       if (!pg)
          if (!bc)
             return new qx::rx(sqid(operation), angle);
@@ -315,7 +316,7 @@ qx::gate *gateLookup(compiler::Operation &operation)
    }
    if (type == "mx90")
    {
-      double angle = -M_PI/2;
+      double angle = -QX_PI/2;
       if (!pg)
          if (!bc)
             return new qx::rx(sqid(operation), angle);
@@ -334,7 +335,7 @@ qx::gate *gateLookup(compiler::Operation &operation)
    }
    if (type == "y90")
    {
-      double angle = M_PI/2;
+      double angle = QX_PI/2;
       if (!pg)
          if (!bc)
             return new qx::ry(sqid(operation), angle);
@@ -353,7 +354,7 @@ qx::gate *gateLookup(compiler::Operation &operation)
    }
    if (type == "my90")
    {
-      double angle = -M_PI/2;
+      double angle = -QX_PI/2;
       if (!pg)
          if (!bc)
             return new qx::ry(sqid(operation), angle);

@@ -114,8 +114,8 @@ namespace qx
    QX_ALIGNED(64) const complex_t pauli_z_c  [] = { complex_t(1.0, 0.0) , complex_t(0.0, 0.0), complex_t(0.0, 0.0) , complex_t(-1.0,0.0) };          /* Z */
    QX_ALIGNED(64) const complex_t phase_c    [] = { complex_t(1.0, 0.0) , complex_t(0.0, 0.0), complex_t(0.0, 0.0) , complex_t(0.0, 1.0) };          /* S */
    QX_ALIGNED(64) const complex_t sdag_gate_c[] = { complex_t(1.0, 0.0) , complex_t(0.0, 0.0), complex_t(0.0, 0.0) , complex_t(0.0, -1.0) };        /* S_dag */   
-   QX_ALIGNED(64) const complex_t t_gate_c   [] = { complex_t(1.0, 0.0) , complex_t(0.0, 0.0), complex_t(0.0, 0.0) , complex_t(cos(M_PI/4),sin(M_PI/4)) };         /* T */
-   QX_ALIGNED(64) const complex_t tdag_gate_c[] = { complex_t(1.0, 0.0) , complex_t(0.0, 0.0), complex_t(0.0, 0.0) , complex_t(cos(M_PI/4),-sin(M_PI/4)) };        /* T_dag */
+   QX_ALIGNED(64) const complex_t t_gate_c   [] = { complex_t(1.0, 0.0) , complex_t(0.0, 0.0), complex_t(0.0, 0.0) , complex_t(cos(QX_PI/4),sin(QX_PI/4)) };         /* T */
+   QX_ALIGNED(64) const complex_t tdag_gate_c[] = { complex_t(1.0, 0.0) , complex_t(0.0, 0.0), complex_t(0.0, 0.0) , complex_t(cos(QX_PI/4),-sin(QX_PI/4)) };        /* T_dag */
    QX_ALIGNED(64) const complex_t hadamard_c []  = { R_SQRT_2,  R_SQRT_2, R_SQRT_2, -R_SQRT_2 };  /* H */
 
    #define __rc(r,c,s) (r*s+c)
@@ -177,10 +177,10 @@ namespace qx
    cmatrix_t noisy_hadamard(double epsilon1=0, double epsilon2=0)
    {
 #ifdef __BUILTIN_LINALG__
-      return mxm(rotation(M_PI/4 + epsilon1), phase(M_PI + epsilon2));
+      return mxm(rotation(QX_PI/4 + epsilon1), phase(QX_PI + epsilon2));
 #else
-      cmatrix_t rz = rotation(M_PI/4 + epsilon1);
-      cmatrix_t p  = phase(M_PI + epsilon2);
+      cmatrix_t rz = rotation(QX_PI/4 + epsilon1);
+      cmatrix_t p  = phase(QX_PI + epsilon2);
       return mxm(rz,p);
 #endif 
    }
@@ -308,8 +308,8 @@ namespace qx
 #ifdef USE_OPENMP
 #pragma omp parallel for // shared(m00,m01,m10,m11)
 #endif
-      for(size_t offset = start; offset < end; offset += (1UL << (qubit + 1)))
-         for(size_t i = offset; i < offset + (1UL << qubit); i++)
+      for(int64_t offset = start; offset < (int64_t)end; offset += (1UL << (qubit + 1)))
+         for(size_t i = (size_t)offset; i < (size_t)offset + (1UL << qubit); i++)
          {
             size_t i0 = i + stride0;
             size_t i1 = i + stride1;
@@ -334,8 +334,8 @@ namespace qx
 #ifdef USE_OPENMP
 #pragma omp parallel for // private(m00,r00,neg)    
 #endif
-      for(size_t offset = start; offset < end; offset += (1UL << (qubit + 1UL)))
-         for(size_t i = offset; i < offset + (1UL << qubit); i++)
+      for(int64_t offset = start; offset < (int64_t)end; offset += (1UL << (qubit + 1UL)))
+         for(size_t i = (size_t)offset; i < (size_t)offset + (1UL << qubit); i++)
          {
             size_t i0 = i + stride0;
             size_t i1 = i + stride1;
@@ -367,8 +367,8 @@ namespace qx
 #ifdef USE_OPENMP
 #pragma omp parallel for // private(m00,r00,neg)    
 #endif
-      for(size_t offset = start; offset < end; offset += (1UL << (qubit + 1UL)))
-         for(size_t i = offset; i < offset + (1UL << qubit); i++)
+      for(int64_t offset = start; offset < (int64_t)end; offset += (1UL << (qubit + 1UL)))
+         for(size_t i = (size_t)offset; i < (size_t)offset + (1UL << qubit); i++)
          {
             size_t i0 = i + stride0;
             size_t i1 = i + stride1;
@@ -420,8 +420,8 @@ namespace qx
          c2 = __bit_set(bc,nk);
          bc++;
 #ifdef __OP_PREFETCH__
-         _mm_prefetch((void*)&pv[__bit_reset(bc,nk)],_MM_HINT_T0);
-         _mm_prefetch((void*)&pv[__bit_set(bc,nk)],_MM_HINT_T0);
+         _mm_prefetch((char*)&pv[__bit_reset(bc,nk)],_MM_HINT_T0);
+         _mm_prefetch((char*)&pv[__bit_set(bc,nk)],_MM_HINT_T0);
 #endif // __OP_PREFETCH__
 #ifdef __AVX__ 
          // cxc
@@ -477,8 +477,8 @@ namespace qx
          c2 = __bit_set(bc,nk);
          bc++;
 #ifdef __OP_PREFETCH__
-         _mm_prefetch((void*)&pv[__bit_reset(bc,nk)],_MM_HINT_T0);
-         _mm_prefetch((void*)&pv[__bit_set(bc,nk)],_MM_HINT_T0);
+         _mm_prefetch((char*)&pv[__bit_reset(bc,nk)],_MM_HINT_T0);
+         _mm_prefetch((char*)&pv[__bit_set(bc,nk)],_MM_HINT_T0);
 #endif // __OP_PREFETCH__
 #ifdef __AVX__ 
          // cxc
@@ -537,8 +537,8 @@ namespace qx
          c2 = __bit_set(bc,nk);
          bc++;
 #ifdef __OP_PREFETCH__
-         _mm_prefetch((void*)&pv[__bit_reset(bc,nk)],_MM_HINT_T0);
-         _mm_prefetch((void*)&pv[__bit_set(bc,nk)],_MM_HINT_T0);
+         _mm_prefetch((char*)&pv[__bit_reset(bc,nk)],_MM_HINT_T0);
+         _mm_prefetch((char*)&pv[__bit_set(bc,nk)],_MM_HINT_T0);
 #endif // __OP_PREFETCH__
 #ifdef __AVX__ 
          // mtx.lock();
@@ -889,7 +889,9 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
 #ifdef USE_OPENMP
 #pragma omp parallel
 {
+#ifndef _MSC_VER
 #pragma omp for simd
+#endif
                for (size_t i=0; i<steps; ++i)
                   cx_worker(i,i+1,1UL,&amp,b1,b2,(size_t)tq,(size_t)cq);
 }
@@ -1083,8 +1085,8 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
 #ifdef USE_OPENMP
 #pragma omp parallel for
 #endif
-            for (size_t i=__bit_set(__bit_set(__bit_set(0,c1),c2),c3); i<(1UL<<size); i += (1UL << (c3+1)))
-               for (size_t j=i; j<(i+(1UL<<c3)); j += (1UL << (c2+1)))
+            for (int64_t i=__bit_set(__bit_set(__bit_set(0,c1),c2),c3); i<(int64_t)(1UL<<size); i += (1UL << (c3+1)))
+               for (size_t j=(size_t)i; j<((size_t)i+(1UL<<c3)); j += (1UL << (c2+1)))
                   for (size_t k=j; k<(j+(1UL<<c2)); k+=(1UL << (c1+1)))
                      for (size_t l=k; l<(k+(1UL<<(c1))); l++)
                      {
@@ -1187,8 +1189,8 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
 #ifdef USE_OPENMP
 #pragma omp parallel for 
 #endif 
-      for (size_t i=0; i<(1UL << n); i+=(1UL << (q+1)))
-         for (size_t j=i; j<(i+(1UL << q)); j++)
+      for (int64_t i=0; i<(int64_t)(1UL << n); i+=(1UL << (q+1)))
+         for (size_t j=(size_t)i; j<((size_t)i+(1UL << q)); j++)
             //__swap_xmm(x[j].xmm,x[__bit_flip(j,q)].xmm);
             std::swap(x[j].xmm,x[__bit_flip(j,q)].xmm);
    }
@@ -2122,8 +2124,8 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
          c1 = __bit_reset(bc,n-k);
          c2 = __bit_set(bc,n-k);
 #ifdef __OP_PREFETCH__
-         _mm_prefetch((void*)&pv[__bit_reset((bc+1),n-k)],_MM_HINT_T0);
-         _mm_prefetch((void*)&pv[__bit_set((bc+1),n-k)],_MM_HINT_T0);
+         _mm_prefetch((char*)&pv[__bit_reset((bc+1),n-k)],_MM_HINT_T0);
+         _mm_prefetch((char*)&pv[__bit_set((bc+1),n-k)],_MM_HINT_T0);
 #endif // __OP_PREFETCH__
 #ifdef __AVX__ //NO 
          xpu::_mm_cmul_add_pd(pv[c1], pv[c2], m.get(r,c1), m.get(r,c2),pr[r]);
@@ -2136,7 +2138,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
       size_t bit2 = qubit;
       for (size_t j=qubit+1; j<n; ++j)
       {
-         complex_t  p(cos(M_PI/(1UL << (j-qubit))), sin(M_PI/(1UL << (j- qubit))));
+         complex_t  p(cos(QX_PI/(1UL << (j-qubit))), sin(QX_PI/(1UL << (j- qubit))));
          size_t bit1 = j;
          size_t step=(1UL << (bit1+1));
          size_t offset = __bit_set(0,bit1);
@@ -2165,8 +2167,8 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
 #ifdef USE_OPENMP
 #pragma omp parallel for
 #endif
-      for (uint64_t batch = 0; batch <= rows / SIZE; batch++) {
-        qft_1st_fold_worker(batch*SIZE,std::min((batch+1)*SIZE,rows),1,n,qubit,m,&v,&res);
+      for (int64_t batch = 0; batch <= rows / SIZE; batch++) {
+        qft_1st_fold_worker(batch*SIZE,std::min<uint64_t>((batch+1)*SIZE,rows),1,n,qubit,m,&v,&res);
       }
 
    }
@@ -2186,8 +2188,8 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
          c1 = __bit_reset(bc,n-k);
          c2 = __bit_set(bc,n-k);
 #ifdef __OP_PREFETCH__
-         _mm_prefetch((void*)&pv[__bit_reset((bc+1),n-k)],_MM_HINT_T0);
-         _mm_prefetch((void*)&pv[__bit_set((bc+1),n-k)],_MM_HINT_T0);
+         _mm_prefetch((char*)&pv[__bit_reset((bc+1),n-k)],_MM_HINT_T0);
+         _mm_prefetch((char*)&pv[__bit_set((bc+1),n-k)],_MM_HINT_T0);
 #endif // __OP_PREFETCH__
 #ifdef __AVX__ //NO 
          xpu::_mm_cmul_add_pd(pv[c1], pv[c2], m.get(r,c1), m.get(r,c2),pr[r]);
@@ -2200,7 +2202,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
       size_t bit2 = qubit;
       for (size_t j=qubit+1; j<n; ++j)
       {
-         complex_t  p(cos(M_PI/(1UL << (j-qubit))), sin(M_PI/(1UL << (j-qubit))));
+         complex_t  p(cos(QX_PI/(1UL << (j-qubit))), sin(QX_PI/(1UL << (j-qubit))));
          size_t bit1 = j;
          size_t step=(1UL << (bit1+1));
          size_t offset = __bit_set(0,bit1);
@@ -2227,8 +2229,8 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
 #ifdef USE_OPENMP
 #pragma omp parallel for
 #endif
-      for (uint64_t batch = 0; batch <= rows / SIZE; batch++) {
-        qft_nth_fold_worker(batch*SIZE,std::min((batch+1)*SIZE,rows),1,n,qubit,m,&v,&res);
+      for (int64_t batch = 0; batch <= rows / SIZE; batch++) {
+        qft_nth_fold_worker(batch*SIZE,std::min<uint64_t>((batch+1)*SIZE,rows),1,n,qubit,m,&v,&res);
       }
 
    }
@@ -2248,7 +2250,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
       size_t bit2 = qubit;
       for (size_t j=qubit+1; j<n; ++j)
       {
-         complex_t  p(cos(M_PI/(1UL << (j-qubit))), sin(M_PI/(1UL << (j- qubit))));
+         complex_t  p(cos(QX_PI/(1UL << (j-qubit))), sin(QX_PI/(1UL << (j- qubit))));
          size_t bit1 = j;
          size_t step=(1UL << (bit1+1));
          size_t offset = __bit_set(0,bit1);
@@ -2275,7 +2277,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
       size_t bit2 = qubit;
       for (size_t j=qubit+1; j<n; ++j)
       {
-         complex_t  p(cos(M_PI/(1UL << (j-qubit))), sin(M_PI/(1UL << (j- qubit))));
+         complex_t  p(cos(QX_PI/(1UL << (j-qubit))), sin(QX_PI/(1UL << (j- qubit))));
          size_t bit1 = j;
          size_t step=(1UL << (bit1+1));
          size_t offset = __bit_set(0,bit1);
@@ -2456,7 +2458,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
                                                                            target_qubit(target_qubit),
                                                                            z(0.0, 0.0)
          {
-            phase = 2*M_PI/(1UL << (ctrl_qubit - target_qubit));
+            phase = 2*QX_PI/(1UL << (ctrl_qubit - target_qubit));
             build_operator();
          }
 
@@ -2467,7 +2469,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
          ctrl_phase_shift(uint64_t ctrl_qubit, uint64_t target_qubit, size_t k) : ctrl_qubit(ctrl_qubit), 
                                                                                     target_qubit(target_qubit)  
          {               
-            phase = 2*M_PI/(1UL << k);
+            phase = 2*QX_PI/(1UL << k);
             build_operator();
          }
 

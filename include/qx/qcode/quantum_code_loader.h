@@ -19,6 +19,7 @@
 
 #include <stdint.h>
 
+#include "qx/compat.h"
 #include "qx/qcode/qx_strings.h"
 #include "qx/qcode/quantum_state_loader.h"
 #include "qx/core/circuit.h"
@@ -533,9 +534,9 @@ namespace qx
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => hadamard gate on: " << q);
 	    if (pg) 
-	       pg->add(new qx::rx(q,M_PI/2));
+	       pg->add(new qx::rx(q,QX_PI/2));
 	    else
-	       current_sub_circuit(qubits_count)->add(new qx::rx(q,M_PI/2));
+	       current_sub_circuit(qubits_count)->add(new qx::rx(q,QX_PI/2));
 	 }
 	 else if (words[0] == "mrx90")    // mrx90 
 	 {
@@ -544,9 +545,9 @@ namespace qx
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => hadamard gate on: " << q);
 	    if (pg) 
-	       pg->add(new qx::rx(q,-M_PI/2));
+	       pg->add(new qx::rx(q,-QX_PI/2));
 	    else
-	       current_sub_circuit(qubits_count)->add(new qx::rx(q,-M_PI/2));
+	       current_sub_circuit(qubits_count)->add(new qx::rx(q,-QX_PI/2));
 	 }
 	 else if (words[0] == "rx180")    // rx90 
 	 {
@@ -555,9 +556,9 @@ namespace qx
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => hadamard gate on: " << q);
 	    if (pg) 
-	       pg->add(new qx::rx(q,M_PI));
+	       pg->add(new qx::rx(q,QX_PI));
 	    else
-	       current_sub_circuit(qubits_count)->add(new qx::rx(q,M_PI));
+	       current_sub_circuit(qubits_count)->add(new qx::rx(q,QX_PI));
 	 }
 	 else if (words[0] == "ry90")    // rx90 
 	 {
@@ -566,9 +567,9 @@ namespace qx
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => hadamard gate on: " << q);
 	    if (pg) 
-	       pg->add(new qx::ry(q,M_PI/2));
+	       pg->add(new qx::ry(q,QX_PI/2));
 	    else
-	       current_sub_circuit(qubits_count)->add(new qx::ry(q,M_PI/2));
+	       current_sub_circuit(qubits_count)->add(new qx::ry(q,QX_PI/2));
 	 }
 	 else if (words[0] == "mry90")    // rx90 
 	 {
@@ -577,9 +578,9 @@ namespace qx
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => hadamard gate on: " << q);
 	    if (pg) 
-	       pg->add(new qx::ry(q,-M_PI/2));
+	       pg->add(new qx::ry(q,-QX_PI/2));
 	    else
-	       current_sub_circuit(qubits_count)->add(new qx::ry(q,-M_PI/2));
+	       current_sub_circuit(qubits_count)->add(new qx::ry(q,-QX_PI/2));
 	 }
 	 else if (words[0] == "ry180")    // rx90 
 	 {
@@ -588,9 +589,9 @@ namespace qx
 	       print_semantic_error(" target qubit out of range !");
 	    // println(" => hadamard gate on: " << q);
 	    if (pg) 
-	       pg->add(new qx::ry(q,M_PI));
+	       pg->add(new qx::ry(q,QX_PI));
 	    else
-	       current_sub_circuit(qubits_count)->add(new qx::ry(q,M_PI));
+	       current_sub_circuit(qubits_count)->add(new qx::ry(q,QX_PI));
 	 }
 
 	 else if (words[0] == "cnot") // cnot gate
