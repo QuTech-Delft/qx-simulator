@@ -1,4 +1,0 @@
-[submodule "src/parser/libqasm"]
-	path = src/parser/libqasm
-	url = https://github.com/QE-Lab/libqasm.git
-	branch = develop
