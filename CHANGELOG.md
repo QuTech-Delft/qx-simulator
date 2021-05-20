@@ -2,6 +2,36 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [ 0.4.1 ] - [ 2021-05-20 ]
+### Added
+- Continuous integration for as far as automated tests exist
+- Automated release build and distribution logic for PyPI
+- Installation logic in build system
+
+### Changed
+- Replaced XPU-based threading with OpenMP
+
+### Removed
+-
+
+### Fixed
+- Build on MacOS
+- Build on Windows using MSVC
+- Python build process on various platforms
+
+## [ 0.4.0 ] - [ 2021-05-20 ]
+### Added
+-
+
+### Changed
+- Replaced XPU-based threading with OpenMP
+
+### Removed
+-
+
+### Fixed
+- Various bugs and inefficiencies related to multithreading
+
 ## [ 0.3.0 ] - [ 2019-05-01 ]
 ### Added
 - qxelerator to support cqasm v1.0

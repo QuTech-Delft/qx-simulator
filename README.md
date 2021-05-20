@@ -67,7 +67,7 @@ Alternatively, you can build and install from source using
 
     python3 -m pip install -v -e .
 
-# Licensing
+## Licensing
 
 QX is licensed under the Apache License, Version 2.0. See
 [LICENSE](https://github.com/QE-Lab/qx-simulator/blob/master/LICENSE) for the full
