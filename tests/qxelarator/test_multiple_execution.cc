@@ -5,7 +5,8 @@ int main() {
 
     qx::simulator sim;
     sim.set("basic.qasm");
-    for (int i = 0; i < 10; i++) {
+    // FIXME: should be way more iterations, but this causes CI problems
+    for (int i = 0; i < 1; i++) {
         sim.execute(0);
         auto c0 = sim.move(0);
         auto c1 = sim.move(1);
