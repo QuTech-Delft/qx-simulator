@@ -437,7 +437,7 @@ namespace qx
       void mulmv(kronecker& k, cvector_t& v, cvector_t& r)
       {
 	 #pragma omp parallel for schedule(static)
-	 for (std::size_t i=0; i<v.size(); i++)
+	 for (int64_t i=0; i<(int64_t)v.size(); i++)
 	 {
 	    complex_t s = 0.0;
 	    for (std::size_t j=0; j<v.size(); j++)
@@ -454,7 +454,7 @@ namespace qx
 	 complex_t s = 0.;
 	 complex_t x = 0.;
 	 #pragma omp parallel for private(s,x) schedule(static)
-	 for (std::size_t i=0; i<v.size(); i++)
+	 for (int64_t i=0; i<(int64_t)v.size(); i++)
 	 {
 	    s = 0;
 	    for (std::size_t j=0; j<v.size(); j++)

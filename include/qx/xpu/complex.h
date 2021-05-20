@@ -30,6 +30,8 @@
 
 #include <iostream>
 
+#include <qx/compat.h>
+
 #ifdef __AVX__
 #include <immintrin.h> // avx
 #endif
@@ -59,7 +61,7 @@ namespace xpu
 	 __m128d xmm;
 #endif 
       };
-   } __v2d __attribute__ ((aligned (16)));
+   } __v2d QX_ALIGNED(16);
 
 
 
@@ -81,7 +83,7 @@ namespace xpu
 	 __m256d m;
 #endif
       };
-   } __v4d __attribute__ ((aligned (32)));
+   } __v4d QX_ALIGNED(32);
 
 
 #ifdef __AVX__

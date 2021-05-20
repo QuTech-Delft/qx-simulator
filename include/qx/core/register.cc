@@ -38,7 +38,7 @@ uint64_t qx::qu_register::collapse(uint64_t entry)
 #ifdef USE_OPENMP
 #pragma omp parallel for
 #endif
-   for (uint64_t i=0; i<data.size(); ++i)
+   for (int64_t i=0; i<(int64_t)data.size(); ++i)
    {
       data[i] = 0.0;
    }
@@ -92,7 +92,7 @@ qx::qu_register::qu_register(uint64_t n_qubits) : data(1ULL << n_qubits), aux(1U
 #ifdef USE_OPENMP
 #pragma omp parallel for
 #endif
-   for (uint64_t i=0; i<num_elts; ++i) {
+   for (int64_t i=0; i<(int64_t)num_elts; ++i) {
       data[i] = 0.0;
       aux[i] = 0.0;
    }
@@ -122,7 +122,7 @@ void qx::qu_register::reset()
 #ifdef USE_OPENMP
 #pragma omp parallel for
 #endif
-   for (uint64_t i=0; i<num_elts; ++i) {
+   for (int64_t i=0; i<(int64_t)num_elts; ++i) {
       data[i] = 0.0;
    }
    data[0] = complex_t(1,0);
@@ -209,7 +209,7 @@ bool qx::qu_register::check()
 #ifdef USE_OPENMP
 #pragma omp parallel for reduction(+:sum)
 #endif
-   for (std::size_t i=0; i<data.size(); ++i)
+   for (int64_t i=0; i<(int64_t)data.size(); ++i)
       sum += data[i].norm();
       // sum += std::norm(data[i]);
    println("[+] register validity check : " << sum) ;

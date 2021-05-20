@@ -100,7 +100,7 @@ namespace qx
 	    cvector_t res(n1*n2);
 
 #pragma omp parallel for
-		for(uint32_t n = 0; n < res.size(); ++n)
+		for(int64_t n = 0; n < (int64_t)res.size(); ++n)
 			res[n] = 0.0;
 
 	    for (uint32_t i=0; i<n1; ++i)
@@ -178,7 +178,7 @@ namespace qx
 	    cvector_t r(n);
 
 #pragma omp parallel for
-	    for (uint32_t i=0; i<n; ++i)
+	    for (int64_t i=0; i<(int64_t)n; ++i)
 	    {
 	       complex_t c(0.0, 0.0);
 	       for (uint32_t j=0; j<n; ++j)

@@ -12,6 +12,7 @@
 #include <stdint.h>
 
 #include "qx/xpu/aligned_memory_allocator.h"
+#include "qx/compat.h"
 
 namespace qx
 {
@@ -129,7 +130,7 @@ namespace qx
 
 	    public:
 	    
-	    __T m[__N * __N] __attribute__((aligned(16))); 
+	    __T m[__N * __N] QX_ALIGNED(16); 
 
 	    tiny_matrix() 
 	    {
