@@ -52,7 +52,7 @@ namespace xpu
 {
    // typedef
 
-   typedef struct _v2d
+   typedef QX_ALIGNED(16) struct _v2d
    {	 
       union 
       {
@@ -61,7 +61,7 @@ namespace xpu
 	 __m128d xmm;
 #endif 
       };
-   } __v2d QX_ALIGNED(16);
+   } __v2d;
 
 
 
@@ -74,7 +74,7 @@ namespace xpu
    }
 #endif
 
-   typedef struct _v4d
+   typedef QX_ALIGNED(32) struct _v4d
    {	 
       union 
       {
@@ -83,7 +83,7 @@ namespace xpu
 	 __m256d m;
 #endif
       };
-   } __v4d QX_ALIGNED(32);
+   } __v4d;
 
 
 #ifdef __AVX__

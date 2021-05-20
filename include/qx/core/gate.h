@@ -106,17 +106,17 @@ namespace qx
    /**
     * gates coeffecients
     */
-   const complex_t cnot_c     [] QX_ALIGNED(64) = { complex_t(1.0), complex_t(0.0), complex_t(0.0), complex_t(0.0), complex_t(0.0), complex_t(1.0), complex_t(0.0), complex_t(0.0), complex_t(0.0), complex_t(0.0), complex_t(0.0), complex_t(1.0), complex_t(0.0), complex_t(0.0), complex_t(1.0), complex_t(0.0) };  /* CNOT */
-   const complex_t swap_c     [] QX_ALIGNED(64) = { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 };  /* SWAP */
-   const complex_t identity_c [] QX_ALIGNED(64) = { complex_t(1.0), complex_t(0.0), complex_t(0.0), complex_t(1.0) };                                /* I */
-   const complex_t pauli_x_c  [] QX_ALIGNED(64) = { complex_t(0.0, 0.0) , complex_t(1.0, 0.0), complex_t(1.0, 0.0) , complex_t(0.0, 0.0) };          /* X */
-   const complex_t pauli_y_c  [] QX_ALIGNED(64) = { complex_t(0.0, 0.0) , complex_t(0.0,-1.0), complex_t(0.0, 1.0) , complex_t(0.0, 0.0) };          /* Y */
-   const complex_t pauli_z_c  [] QX_ALIGNED(64) = { complex_t(1.0, 0.0) , complex_t(0.0, 0.0), complex_t(0.0, 0.0) , complex_t(-1.0,0.0) };          /* Z */
-   const complex_t phase_c    [] QX_ALIGNED(64) = { complex_t(1.0, 0.0) , complex_t(0.0, 0.0), complex_t(0.0, 0.0) , complex_t(0.0, 1.0) };          /* S */
-   const complex_t sdag_gate_c[] QX_ALIGNED(64) = { complex_t(1.0, 0.0) , complex_t(0.0, 0.0), complex_t(0.0, 0.0) , complex_t(0.0, -1.0) };        /* S_dag */   
-   const complex_t t_gate_c   [] QX_ALIGNED(64) = { complex_t(1.0, 0.0) , complex_t(0.0, 0.0), complex_t(0.0, 0.0) , complex_t(cos(M_PI/4),sin(M_PI/4)) };         /* T */
-   const complex_t tdag_gate_c[] QX_ALIGNED(64) = { complex_t(1.0, 0.0) , complex_t(0.0, 0.0), complex_t(0.0, 0.0) , complex_t(cos(M_PI/4),-sin(M_PI/4)) };        /* T_dag */
-   const complex_t hadamard_c [] QX_ALIGNED(64)  = { R_SQRT_2,  R_SQRT_2, R_SQRT_2, -R_SQRT_2 };  /* H */
+   QX_ALIGNED(64) const complex_t cnot_c     [] = { complex_t(1.0), complex_t(0.0), complex_t(0.0), complex_t(0.0), complex_t(0.0), complex_t(1.0), complex_t(0.0), complex_t(0.0), complex_t(0.0), complex_t(0.0), complex_t(0.0), complex_t(1.0), complex_t(0.0), complex_t(0.0), complex_t(1.0), complex_t(0.0) };  /* CNOT */
+   QX_ALIGNED(64) const complex_t swap_c     [] = { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0 };  /* SWAP */
+   QX_ALIGNED(64) const complex_t identity_c [] = { complex_t(1.0), complex_t(0.0), complex_t(0.0), complex_t(1.0) };                                /* I */
+   QX_ALIGNED(64) const complex_t pauli_x_c  [] = { complex_t(0.0, 0.0) , complex_t(1.0, 0.0), complex_t(1.0, 0.0) , complex_t(0.0, 0.0) };          /* X */
+   QX_ALIGNED(64) const complex_t pauli_y_c  [] = { complex_t(0.0, 0.0) , complex_t(0.0,-1.0), complex_t(0.0, 1.0) , complex_t(0.0, 0.0) };          /* Y */
+   QX_ALIGNED(64) const complex_t pauli_z_c  [] = { complex_t(1.0, 0.0) , complex_t(0.0, 0.0), complex_t(0.0, 0.0) , complex_t(-1.0,0.0) };          /* Z */
+   QX_ALIGNED(64) const complex_t phase_c    [] = { complex_t(1.0, 0.0) , complex_t(0.0, 0.0), complex_t(0.0, 0.0) , complex_t(0.0, 1.0) };          /* S */
+   QX_ALIGNED(64) const complex_t sdag_gate_c[] = { complex_t(1.0, 0.0) , complex_t(0.0, 0.0), complex_t(0.0, 0.0) , complex_t(0.0, -1.0) };        /* S_dag */   
+   QX_ALIGNED(64) const complex_t t_gate_c   [] = { complex_t(1.0, 0.0) , complex_t(0.0, 0.0), complex_t(0.0, 0.0) , complex_t(cos(M_PI/4),sin(M_PI/4)) };         /* T */
+   QX_ALIGNED(64) const complex_t tdag_gate_c[] = { complex_t(1.0, 0.0) , complex_t(0.0, 0.0), complex_t(0.0, 0.0) , complex_t(cos(M_PI/4),-sin(M_PI/4)) };        /* T_dag */
+   QX_ALIGNED(64) const complex_t hadamard_c []  = { R_SQRT_2,  R_SQRT_2, R_SQRT_2, -R_SQRT_2 };  /* H */
 
    #define __rc(r,c,s) (r*s+c)
 

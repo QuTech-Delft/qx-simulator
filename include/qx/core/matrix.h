@@ -130,7 +130,7 @@ namespace qx
 
 	    public:
 	    
-	    __T m[__N * __N] QX_ALIGNED(16); 
+	    QX_ALIGNED(16) __T m[__N * __N]; 
 
 	    tiny_matrix() 
 	    {
