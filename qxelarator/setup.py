@@ -79,7 +79,7 @@ except ImportError:
 
 
 setup(name='qxelarator',
-      version='0.3.0',
+      version='0.4.0',
       description='qxelarator Python Package',
       # long_description=read('README.md'),
       author='Imran Ashraf',
