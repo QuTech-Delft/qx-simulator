@@ -13,3 +13,6 @@ def test_ch():
     c1 = qx.get_measurement_outcome(1)
 
     print('{} {}'.format(c0,c1))
+
+if __name__ == '__main__':
+    test_ch()

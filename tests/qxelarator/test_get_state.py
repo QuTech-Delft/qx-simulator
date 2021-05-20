@@ -10,3 +10,6 @@ def test_get_state():
     qx.execute()
 
     print( qx.get_state() )
+
+if __name__ == '__main__':
+    test_get_state()

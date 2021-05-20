@@ -19,3 +19,6 @@ def test_control():
 
 
     print('{} {} {} {} {} {}'.format(c0,c1,c2,c3,c4,c5))
+
+if __name__ == '__main__':
+    test_control()

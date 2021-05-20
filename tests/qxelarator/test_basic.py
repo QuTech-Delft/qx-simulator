@@ -15,3 +15,6 @@ def test_basic():
     print('{} {}'.format(c0,c1) )
 
     print('quantum state: \n'+qx.get_state())
+
+if __name__ == '__main__':
+    test_basic()

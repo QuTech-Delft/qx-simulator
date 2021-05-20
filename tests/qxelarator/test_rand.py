@@ -10,3 +10,6 @@ def test_rand():
     NTests = 100
     qx.execute(NTests)
     res = qx.get_measurement_outcome(0)
+
+if __name__ == '__main__':
+    test_rand()
