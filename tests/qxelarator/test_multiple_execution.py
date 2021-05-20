@@ -8,7 +8,7 @@ def test_multiple_execution():
 
     qx.set(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'basic.qasm'))
 
-    shots = 100
+    shots = 10
 
     for i in range(shots):
         print('shot {}'.format(i))
