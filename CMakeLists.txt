@@ -183,6 +183,11 @@ option(LIBQASM_COMPAT "" ON)
 add_subdirectory(deps/libqasm)
 target_link_libraries(qx PUBLIC cqasm)
 
+# winsock
+if(WIN32)
+    target_link_libraries(qx PUBLIC wsock32 ws2_32)
+endif()
+
 
 #=============================================================================#
 # Executables                                                                 #
