@@ -1,17 +1,21 @@
-import qxelarator
+import unittest
+import os
 
-qx = qxelarator.QX()
+def test_control():
+    import qxelarator
 
-qx.set('control.qasm')
+    qx = qxelarator.QX()
 
-qx.execute()
+    qx.set(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'control.qasm'))
 
-c0 = qx.get_measurement_outcome(0)
-c1 = qx.get_measurement_outcome(1)
-c2 = qx.get_measurement_outcome(2)
-c3 = qx.get_measurement_outcome(3)
-c4 = qx.get_measurement_outcome(4)
-c5 = qx.get_measurement_outcome(5)
+    qx.execute()
+
+    c0 = qx.get_measurement_outcome(0)
+    c1 = qx.get_measurement_outcome(1)
+    c2 = qx.get_measurement_outcome(2)
+    c3 = qx.get_measurement_outcome(3)
+    c4 = qx.get_measurement_outcome(4)
+    c5 = qx.get_measurement_outcome(5)
 
 
-print('{} {} {} {} {} {}'.format(c0,c1,c2,c3,c4,c5))
+    print('{} {} {} {} {} {}'.format(c0,c1,c2,c3,c4,c5))

@@ -1,0 +1,6 @@
+cbuild/
+dist/
+libqasmbuild/
+qxelarator/
+qxelarator.egg-info/
+__pycache__/

@@ -1,11 +1,15 @@
-import qxelarator
+import unittest
+import os
 
-qx = qxelarator.QX()
+def test_ch():
+    import qxelarator
 
-qx.set('ch.qasm')
-qx.execute()
+    qx = qxelarator.QX()
 
-c0 = qx.get_measurement_outcome(0)
-c1 = qx.get_measurement_outcome(1)
+    qx.set(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'ch.qasm'))
+    qx.execute()
 
-print('{} {}'.format(c0,c1))
+    c0 = qx.get_measurement_outcome(0)
+    c1 = qx.get_measurement_outcome(1)
+
+    print('{} {}'.format(c0,c1))

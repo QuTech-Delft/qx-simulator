@@ -1,8 +1,12 @@
-import qxelarator
+import unittest
+import os
 
-qx = qxelarator.QX()
-qx.set('rand.qasm')
+def test_rand():
+    import qxelarator
 
-NTests = 100
-qx.execute(NTests)
-res = qx.get_measurement_outcome(0)
+    qx = qxelarator.QX()
+    qx.set(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'rand.qasm'))
+
+    NTests = 100
+    qx.execute(NTests)
+    res = qx.get_measurement_outcome(0)

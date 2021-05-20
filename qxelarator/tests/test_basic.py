@@ -1,13 +1,17 @@
-import qxelarator
+import unittest
+import os
 
-qx = qxelarator.QX()
+def test_basic():
+    import qxelarator
 
-qx.set('basic.qasm')
-qx.execute()
+    qx = qxelarator.QX()
 
-c0 = qx.get_measurement_outcome(0)
-c1 = qx.get_measurement_outcome(1)
+    qx.set(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'basic.qasm'))
+    qx.execute()
 
-print('{} {}'.format(c0,c1) )
+    c0 = qx.get_measurement_outcome(0)
+    c1 = qx.get_measurement_outcome(1)
 
-print('quantum state: \n'+qx.get_state())
+    print('{} {}'.format(c0,c1) )
+
+    print('quantum state: \n'+qx.get_state())

@@ -1,15 +1,19 @@
-import qxelarator
+import unittest
+import os
 
-qx = qxelarator.QX()
+def test_multiple_execution():
+    import qxelarator
 
-qx.set('basic.qasm')
+    qx = qxelarator.QX()
 
-shots = 100
+    qx.set(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'basic.qasm'))
 
-for i in range(shots):
-	qx.execute()
-	c0 = qx.get_measurement_outcome(0)
-	c1 = qx.get_measurement_outcome(1)
-	print('{} {}'.format(c0,c1) )
+    shots = 100
 
-print('quantum state: \n'+qx.get_state())
+    for i in range(shots):
+        qx.execute()
+        c0 = qx.get_measurement_outcome(0)
+        c1 = qx.get_measurement_outcome(1)
+        print('{} {}'.format(c0,c1) )
+
+    print('quantum state: \n'+qx.get_state())

@@ -1,8 +1,12 @@
-import qxelarator
+import unittest
+import os
 
-qx = qxelarator.QX()
+def test_get_state():
+    import qxelarator
 
-qx.set('basic.qasm')
-qx.execute()
+    qx = qxelarator.QX()
 
-print( qx.get_state() )
+    qx.set(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'basic.qasm'))
+    qx.execute()
+
+    print( qx.get_state() )

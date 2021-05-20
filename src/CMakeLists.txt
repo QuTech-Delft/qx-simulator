@@ -20,4 +20,4 @@ else()
   message("-- Compiling with gperftools: no")
 endif()
 
-TARGET_LINK_LIBRARIES(qx-simulator lexgram)
+TARGET_LINK_LIBRARIES(qx-simulator lexgramstatic)
