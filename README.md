@@ -2,56 +2,70 @@
 
 A universal quantum computer simulator.
 
+## Dependencies
 
-# Supported Patforms
+QX should work on the following platforms.
 
-* Linux
-* Windows
-* OSX
+ - Linux
+ - Windows
+ - MacOS
 
-# QXelerator Installation
+For compilation, you need the following things.
 
-QXelerator is the python interface to QX simulator, which is perhaps the most easiest way to start simulating quantum circuits. Python binary wheels are available which can be used to setup QXelerator by following the instructions in [README.md](qxelarator/README.md) available in the qxelerator directory.
+ - A C++ compiler with C++11 and OpenMP support (GCC for Linux, LLVM/clang for
+   MacOS, MSVC 2015 with update 3 or above for Windows)
+ - cmake (>= 3.13)
+ - flex (>= 2.6.1)
+ - bison (>= 3.0)
 
+For the QXelarator Python module, you also need the following.
 
-# Required Packages
+ - swig (Linux/MacOS >= 3.0.12; Windows >= 4.0.0)
+ - python (>= 3.5) [for python interface to QX]
 
-The following packges are required if you are not using pre-built conda packages:
-
-* g++ compiler with C++11 support (Linux)
-* MSVC 2015 with update 3 or above (Windows)
-* cmake (>= 3.0)
-* swig
-* python (>= 3.5) [for python interface to QX]
-
-
-# Installation
+## Installation
 
 To build run the following in the current directory:
-```sh
-mkdir build && cd build && cmake ../ && make
-```
-
-This creates a bin folder containing subfolders:
--  /bin/qx-server
--  /bin/qx-simulator
-
-Each containing its respective executable
-
-To install you can further run:
-```sh
-make install
-```
-
-which installs the two executables under the default bin directory, usually:
-  /usr/local/bin
-
-To change this, cmake can be ran with the following prefix:
 
 ```sh
-cmake -DCMAKE_INSTALL_PREFIX=<desired_absolute_path>
+mkdir build
+cd build
+cmake .. -DCMAKE_INSTALL_PREFIX=<desired_install_path>
+cmake --build .
+cmake --target install # Linux/MacOS
+cmake --target INSTALL # Windows
 ```
 
+`<desired_install_path>` must be an absolute path to where you want to install
+QX.
+
+
+## QXelarator: QX as a Quantum Accelerator
+
+QXelarator (note the typo; sorry) is the python interface to QX simulator,
+which is perhaps the easiest way to start simulating quantum circuits.
+
+### API
+
+`qxelarator` mainly provides the following API calls:
+
+    qx.set('basic.qasm')            # set the required qasm to be executed on qx
+    qx.execute()                    # execute
+    qx.get_measurement_outcome(0)   # get measurement results from qubit 'n' as bool
+    get_state()                     # get quantum register state as string
+
+
+### Installation
+
+The easiest way to get QXelarator running on your machine is to use a pre-built
+wheel. These are available for 64-bit Windows, Linux and OSX, for all currently
+active Python versions. You can install them as follows.
+
+    python3 -m pip install qxelarator --user
+
+Alternatively, you can build and install from source using
+
+    python3 -m pip install -v -e .
 
 # Licensing
 

@@ -1,9 +1,10 @@
-*~
-*.o
-*.swp
-*.swo
-*.swn
-lab/
-bin/
-build/
-release/
+# Build files
+build
+cbuild
+pybuild
+*.pyc
+__pycache__
+
+# CLion files
+/.idea
+/cmake-build-*
