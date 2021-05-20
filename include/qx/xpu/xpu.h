@@ -34,7 +34,7 @@
 #error "xpu : platform not supported !"
 #endif
 */
-#include <unistd.h>
+//#include <unistd.h>
 #include "qx/xpu/types.h"
 
 #if 0

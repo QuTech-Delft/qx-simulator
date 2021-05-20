@@ -1,152 +1,79 @@
 /**
- * @file		timer.h
- * @author	Nader KHAMMASSI - nader.khammassi@gmail.com 
- * @date		29-10-11
- * @brief	     accurate timer
- *
- * @copyright
- *
- * Copyright (C) 2014 Nader Khammassi, All Rights Reserved.
- *
- * This file is part of XPU and has been downloaded from 
- * http://www.xpu-project.net/.
- *
- * XPU is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * any later version.
- *
- * XPU is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * @brief 
- *
+ * @file    timer.h
+ * @author  Jeroen van Straten
+ * @date    20-05-2021
+ * @brief   Cross-platform C++11 replacement for xpu/timer
  */
 
-#ifndef __XPU_TIMER_H__
-#define __XPU_TIMER_H__
+#pragma once
 
-#include <time.h>
+#include <chrono>
 
-#ifdef __MACH__
-#include <mach/clock.h>
-#include <mach/mach.h>
-#endif
+namespace xpu {
 
-/**
-#ifdef __MACH__
-#include <sys/time.h>
-//clock_gettime is not implemented on OSX
-int clock_gettime(int clk_id, struct timespec* t) {
-   struct timeval now;
-   int rv = gettimeofday(&now, NULL);
-   if (rv) return rv;
-   t->tv_sec  = now.tv_sec;
-   t->tv_nsec = now.tv_usec * 1000;
-   return 0;
-}
-#endif
-*/
+class timer {
+private:
 
-namespace xpu 
-{
-   class timer
-   {
-    public:
+    /**
+     * The clock source to use.
+     */
+    using Clock = std::chrono::high_resolution_clock;
 
-	 timer():__elapsed(0)
-	 { 
-	   __start_t.tv_nsec = 0; 
-	   __start_t.tv_sec = 0;
-	   __end_t.tv_nsec = 0;  
-	   __end_t.tv_sec = 0;
-	 }
-    
-	 inline void start()
-	 {
-	  __elapsed = 0;
-#ifdef __MACH__ // OS X does not have clock_gettime, use clock_get_time
-	  clock_serv_t cclock;
-	  mach_timespec_t mts;
-	  host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &cclock);
-	  clock_get_time(cclock, &mts);
-	  mach_port_deallocate(mach_task_self(), cclock);
-	  __start_t.tv_sec  = mts.tv_sec;
-	  __start_t.tv_nsec = mts.tv_nsec;
-#else
-	  clock_gettime(CLOCK_REALTIME, &__start_t);
-#endif
-	 }
+    /**
+     * Time points for the clock source.
+     */
+    using TimePoint = Clock::time_point;
 
-	 inline void stop()
-	 {
-#ifdef __MACH__ // OS X does not have clock_gettime, use clock_get_time
-	  clock_serv_t cclock;
-	  mach_timespec_t mts;
-	  host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &cclock);
-	  clock_get_time(cclock, &mts);
-	  mach_port_deallocate(mach_task_self(), cclock);
-	  __end_t.tv_sec  = mts.tv_sec;
-	  __end_t.tv_nsec = mts.tv_nsec;
-#else
-	  clock_gettime(CLOCK_REALTIME, &__end_t);
-#endif
-	  __elapsed =   difftime( __end_t.tv_sec,   __start_t.tv_sec)  
-				+ (double)((__end_t.tv_nsec - __start_t.tv_nsec)*1e-9);
-	 }
-	
-	 inline double 
-	 elapsed() { return __elapsed; };
-	 
-	 inline 
-	 double current() // current tine in seconds
-	 { 
-	    struct timespec t;
-#ifdef __MACH__ // OS X does not have clock_gettime, use clock_get_time
-	  clock_serv_t cclock;
-	  mach_timespec_t mts;
-	  host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &cclock);
-	  clock_get_time(cclock, &mts);
-	  mach_port_deallocate(mach_task_self(), cclock);
-	  t.tv_sec  = mts.tv_sec;
-	  t.tv_nsec = mts.tv_nsec;
-#else
-	    clock_gettime(CLOCK_REALTIME, &t);
-#endif
-	    return  ( t.tv_sec + (double)((t.tv_nsec)*1e-9)); 
-	 }
-	 
-    private:
+    /**
+     * Start time.
+     */
+    TimePoint start_time;
 
-	 struct timespec __start_t;
-	 struct timespec __end_t;
-	 double          __elapsed;
-   };
+    /**
+     * Stop time.
+     */
+    TimePoint stop_time;
 
-   // #include "timer.cc"
-}
+    /**
+     * Elapsed time in seconds.
+     */
+    double elapsed_time = 0.0;
 
-#endif // __XPU_TIMER_H__
+public:
 
-   /*
-	 CLOCK_REALTIME   	
-	 CLOCK_MONOTONIC  
-	 CLOCK_PROCESS_CPUTIME_ID
-	 CLOCK_THREAD_CPUTIME_ID
-   */
+    /**
+     * Starts the timer, clearing the current elapsed time.
+     */
+    inline void start() {
+        start_time = Clock::now();
+        elapsed_time = 0.0;
+    }
 
-   /*
-   int main(int argc, char **argv)
-   {
-    #define size 1024*20
-    long int v[size];
-    timer t;
-    t.start();
-    //usleep(1000);
-    for (int i=0;i<size;++i) v[i] = i;
-    t.stop();
-    cout << "time: " <<  t.elapsed() << endl;
-   };
-   */
+    /**
+     * Stops the timer, setting the elapsed time to the time since start() was
+     * called.
+     */
+    inline void stop() {
+        stop_time = Clock::now();
+        elapsed_time = std::chrono::duration_cast<std::chrono::nanoseconds>(stop_time - start_time).count() * 1e-9;
+    }
+
+    /**
+     * Returns the elapsed time.
+     */
+    inline double elapsed() {
+        return elapsed_time;
+    }
+
+    /**
+     * Returns the current time in seconds.
+     */
+    inline double current() {
+        auto now = std::chrono::system_clock::now().time_since_epoch();
+        auto nanos = std::chrono::duration_cast<std::chrono::nanoseconds>(now).count();
+        return (double)nanos * 1e-9;
+    }
+
+};
+
+} // namespace xpu

@@ -2785,7 +2785,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
    inline double zero_worker_norm(uint64_t cs, uint64_t ce, cvector_t * p_data)
    {
       uint64_t num_elts = ce - cs;
-      uint64_t tile_size = std::min(num_elts, 32UL);
+      uint64_t tile_size = std::min<uint64_t>(num_elts, 32UL);
       complex_t * vd = p_data->data();
       double local_length = 0.;
 
