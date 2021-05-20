@@ -199,18 +199,26 @@ class build_ext(_build_ext):
                 build_cmd['--target']['INSTALL'] & FG
 
             # Update data_files for the installed files.
+            file_dict = {}
             for directory in ('bin', 'include', 'lib', 'lib64'):
-                path = os.path.join(prefix_dir, directory)
-                files = []
-                if os.path.isdir(path):
-                    files = [os.path.join(dp, f) for dp, dn, filenames in os.walk(path) for f in filenames]
-                    files = list(filter(lambda f: os.path.isfile(f) and not os.path.islink(f), files))
-                if files:
+                real_directory = os.path.join(prefix_dir, directory)
+                if not os.path.isdir(real_directory):
+                    continue
+                file_list = [os.path.join(path, name) for path, _, filenames in os.walk(real_directory) for name in filenames]
+                file_list = filter(lambda f: os.path.isfile(f) and not os.path.islink(f), file_list)
+                file_list = list(map(lambda f: os.path.relpath(f, real_directory), file_list))
+                if file_list:
                     install_directories = [directory]
                     if directory.startswith('lib'):
                         install_directories = ['lib', 'lib64']
                     for install_directory in install_directories:
-                        self.distribution.data_files.append((install_directory, files))
+                        for filename in file_list:
+                            install_path = os.path.join(install_directory, os.path.dirname(filename))
+                            if install_path not in file_dict:
+                                file_dict[install_path] = []
+                            file_dict[install_path].append(os.path.join(real_directory, filename))
+            for install_path, files in file_dict.items():
+                self.distribution.data_files.append((install_path, files))
 
 
 class build(_build):
