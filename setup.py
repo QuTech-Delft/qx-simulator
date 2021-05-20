@@ -75,7 +75,7 @@ class build_ext(_build_ext):
                     line = line.split('#')[0].strip()
                     if not line:
                         continue
-                    if line.startswith('OpenQL_BINARY_DIR:STATIC'): # TODO
+                    if line.startswith('QX_BINARY_DIR:STATIC'):
                         config_dir = line.split('=', maxsplit=1)[1]
                         if os.path.realpath(config_dir) != os.path.realpath(cbuild_dir):
                             print('removing pybuild/cbuild to avoid CMakeCache error')
@@ -210,7 +210,10 @@ class build_ext(_build_ext):
                 if file_list:
                     install_directories = [directory]
                     if directory.startswith('lib'):
-                        install_directories = ['lib', 'lib64']
+                        if sys.platform == 'linux' or sys.platform == 'linux2':
+                            install_directories = ['lib', 'lib64']
+                        else:
+                            install_directories = ['lib']
                     for install_directory in install_directories:
                         for filename in file_list:
                             install_path = os.path.join(install_directory, os.path.dirname(filename))
