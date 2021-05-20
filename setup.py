@@ -204,6 +204,7 @@ class build_ext(_build_ext):
                 files = []
                 if os.path.isdir(path):
                     files = [os.path.join(dp, f) for dp, dn, filenames in os.walk(path) for f in filenames]
+                    files = list(filter(lambda f: os.path.isfile(f) and not os.path.islink(f), files))
                 if files:
                     install_directories = [directory]
                     if directory.startswith('lib'):

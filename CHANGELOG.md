@@ -7,9 +7,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Continuous integration for as far as automated tests exist
 - Automated release build and distribution logic for PyPI
 - Installation logic in build system
+- qxelarator wheels include qx-simulator binary (and friends)
 
 ### Changed
-- Replaced XPU-based threading with OpenMP
+-
 
 ### Removed
 -
