@@ -163,6 +163,10 @@ elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel")
     target_compile_options(qx PUBLIC -ipo -xHost -no-prec-div)
 elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     target_compile_options(qx PUBLIC -msse4.2)
+elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
+    target_compile_options(qx PUBLIC /arch:AVX)
+else()
+    message(SEND_ERROR "Unsupported compiler: ${CMAKE_CXX_COMPILER_ID}")
 endif()
 
 
