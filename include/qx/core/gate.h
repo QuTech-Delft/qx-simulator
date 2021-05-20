@@ -11,8 +11,7 @@
 #define QX_GATE_H
 
 #include <map>
-
-#include "qx/xpu/xpu.h"
+#include <inttypes.h>
 
 #include <immintrin.h> // avx
 #include <emmintrin.h> // sse
@@ -2866,7 +2865,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
       double l = *length;
       double l_rec = 1./l;
       uint64_t num_elts = ce - cs;
-      uint64_t tile_size = std::min(num_elts, 16UL);
+      uint64_t tile_size = std::min<uint64_t>(num_elts, 16UL);
       complex_t * vd = p_data->data();
 
 #ifdef __AVX512F__
