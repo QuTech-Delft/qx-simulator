@@ -198,6 +198,20 @@ class build_ext(_build_ext):
                 # install target for MSVC
                 build_cmd['--target']['INSTALL'] & FG
 
+            # Update data_files for the installed files.
+            for directory in ('bin', 'include', 'lib', 'lib64'):
+                path = os.path.join(prefix_dir, directory)
+                files = []
+                if os.path.isdir(path):
+                    files = [os.path.join(dp, f) for dp, dn, filenames in os.walk(path) for f in filenames]
+                if files:
+                    install_directories = [directory]
+                    if directory.startswith('lib'):
+                        install_directories = ['lib', 'lib64']
+                    for install_directory in install_directories:
+                        self.distribution.data_files.append((install_directory, files))
+
+
 class build(_build):
     def initialize_options(self):
         _build.initialize_options(self)
@@ -270,6 +284,9 @@ setup(
 
     packages = ['qxelarator'],
     package_dir = {'': 'pybuild'},
+
+    # This will be populated during the build.
+    data_files=[],
 
     # NOTE: the library build process is completely overridden to let CMake
     # handle it; setuptools' implementation is horribly broken. This is here

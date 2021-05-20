@@ -62,7 +62,7 @@ jobs:
       FLEX_VERSION: '2.6.4'
       BISON_VERSION: '3.0.4-2.el7'
       SWIG_VERSION: '3.0.12-17.el7'
-      CMAKE_VERSION: '3.13'
+      CMAKE_VERSION: '3.13.0'
     strategy:
       matrix:
         manylinux:
