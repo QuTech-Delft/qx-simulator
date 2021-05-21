@@ -164,3 +164,23 @@ jobs:
         asset_path: pybuild/dist/${{ steps.wheel.outputs.wheel }}
         asset_name: ${{ steps.wheel.outputs.wheel }}
         asset_content_type: application/zip
+
+  publish:
+    name: Publish
+    if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
+    needs:
+    - macos
+    - manylinux
+    - windows
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v2
+      id: download
+    - name: Publish to PyPI
+      uses: pypa/gh-action-pypi-publish@v1.3.1
+      with:
+        user: __token__
+        password: ${{ secrets.PYPI_TOKEN }}
+        packages_dir: ${{ steps.download.outputs.download-path }}/pypi-*
+
