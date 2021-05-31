@@ -67,6 +67,10 @@ Alternatively, you can build and install from source using
 
     python3 -m pip install -v -e .
 
+The latter might run faster on your machine, as it allows the compiler to
+optimize for your particular CPU. The PyPI binaries assume that only SSE3 is
+available.
+
 ## Licensing
 
 QX is licensed under the Apache License, Version 2.0. See
