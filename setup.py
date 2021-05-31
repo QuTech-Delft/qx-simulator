@@ -169,6 +169,10 @@ class build_ext(_build_ext):
             if 'QX_BUILD_TESTS' in os.environ:
                 cmd = cmd['-DQX_BUILD_TESTS=ON']
 
+            # Enable CPU extension compatibility mode when requested.
+            if 'QX_CPU_COMPATIBILITY_MODE' in os.environ:
+                cmd = cmd['-DQX_CPU_COMPATIBILITY_MODE=ON']
+
             # Run cmake configuration.
             cmd & FG
 

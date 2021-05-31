@@ -39,6 +39,14 @@ if(NOT CMAKE_BUILD_TYPE)
     )
 endif()
 
+# Compatibility mode for building binaries that should work on basically any
+# CPU, rather than trying to optimize for the host architecture.
+option(
+    QX_CPU_COMPATIBILITY_MODE
+    "Don't assume availability of instruction set extensions beyond SSE3."
+    OFF
+)
+
 # Whether tests should be built.
 option(
     QX_BUILD_TESTS
@@ -157,16 +165,35 @@ if(NOT MSVC AND "${CMAKE_BUILD_TYPE}" STREQUAL "Release")
 endif()
 
 # Compiler-specific and architectural optimizations.
-if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
-    target_compile_options(qx PUBLIC -march=native)
-elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel")
-    target_compile_options(qx PUBLIC -ipo -xHost -no-prec-div)
-elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    target_compile_options(qx PUBLIC -msse4.2)
-elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
-    target_compile_options(qx PUBLIC /arch:AVX)
+if(${QX_CPU_COMPATIBILITY_MODE})
+
+    # Only assume x86-64, which has at least SSE3.
+    if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
+        target_compile_options(qx PUBLIC -march=nocona)
+    elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+        target_compile_options(qx PUBLIC -march=nocona)
+    elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
+        target_compile_options(qx PUBLIC /arch:SSE3)
+    else()
+        message(SEND_ERROR "Unsupported compiler: ${CMAKE_CXX_COMPILER_ID}")
+    endif()
+
 else()
-    message(SEND_ERROR "Unsupported compiler: ${CMAKE_CXX_COMPILER_ID}")
+
+    # Use newer instruction set extensions when supported.
+    if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
+        target_compile_options(qx PUBLIC -march=native -mtune=native)
+    elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel")
+        target_compile_options(qx PUBLIC -ipo -xHost -no-prec-div)
+    elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+        target_compile_options(qx PUBLIC -march=native -mtune=native)
+    elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
+        # NOTE: this is making assumptions about what the host can do...
+        target_compile_options(qx PUBLIC /arch:AVX)
+    else()
+        message(SEND_ERROR "Unsupported compiler: ${CMAKE_CXX_COMPILER_ID}")
+    endif()
+
 endif()
 
 
