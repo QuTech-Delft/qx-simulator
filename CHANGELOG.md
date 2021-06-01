@@ -2,6 +2,19 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [ 0.4.2 ] - [ 2021-06-01 ]
+### Added
+-
+
+### Changed
+-
+
+### Removed
+-
+
+### Fixed
+- Wheels no longer require exotic CPU extensions to work
+
 ## [ 0.4.1 ] - [ 2021-05-20 ]
 ### Added
 - Continuous integration for as far as automated tests exist
