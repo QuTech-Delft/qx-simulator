@@ -32,6 +32,8 @@ jobs:
         echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
         echo "/usr/local/opt/flex/bin" >> $GITHUB_PATH
         python -m pip install --upgrade pip setuptools wheel
+    - name: Enable CPU compatibility mode
+      run: echo "QX_CPU_COMPATIBILITY_MODE=ON" >> $GITHUB_ENV
     - name: Build wheel
       env:
         NPROCS: 5
@@ -90,6 +92,8 @@ jobs:
         make install
     - name: Install cmake
       run: curl -L https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION-Linux-x86_64.tar.gz | tar xz --strip-components=1 -C /usr
+    - name: Enable CPU compatibility mode
+      run: echo "QX_CPU_COMPATIBILITY_MODE=ON" >> $GITHUB_ENV
     - name: Build wheel
       env:
         NPROCS: 5
@@ -143,6 +147,8 @@ jobs:
         python -m pip install --upgrade pip setuptools wheel
         choco install winflexbison3 --version 2.5.18.20190508
         choco install swig --version 4.0.1
+    - name: Enable CPU compatibility mode
+      run: echo "QX_CPU_COMPATIBILITY_MODE=ON" >> $GITHUB_ENV
     - name: Build wheel
       env:
         NPROCS: 5

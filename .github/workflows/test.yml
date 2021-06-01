@@ -95,10 +95,14 @@ jobs:
     - name: Select build type
       if: matrix.os == 'windows-latest'
       shell: powershell
-      run: echo "QX_BUILD_TYPE=Release" >> $GITHUB_ENV
+      run: |
+        echo "QX_BUILD_TYPE=Release" >> $GITHUB_ENV
+        echo "QX_CPU_COMPATIBILITY_MODE=ON" >> $GITHUB_ENV
     - name: Select build type
       if: matrix.os != 'windows-latest'
-      run: echo "QX_BUILD_TYPE=Debug" >> $GITHUB_ENV
+      run: |
+        echo "QX_BUILD_TYPE=Debug" >> $GITHUB_ENV
+        echo "QX_CPU_COMPATIBILITY_MODE=ON" >> $GITHUB_ENV
     - name: Build
       env:
         NPROCS: 5
