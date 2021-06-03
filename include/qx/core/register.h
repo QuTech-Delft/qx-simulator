@@ -32,7 +32,7 @@ using namespace qx::linalg;
 #define __cpl_format(x) __flt_format(x.real()) << ", " << __flt_format(x.imag()) 
 #define __format_bin(x) (x == __state_0__ ? '0' : (x == __state_1__ ? '1' : 'X')) 
 
-char bin_state_lt [] = { '0', '1', 'X' };
+static const char bin_state_lt [] = { '0', '1', 'X' };
 
 namespace qx
 {

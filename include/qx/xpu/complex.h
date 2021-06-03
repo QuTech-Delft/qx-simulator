@@ -66,7 +66,7 @@ namespace xpu
 
 
 #ifdef __SSE__
-   void dump_m128d(__m128d x)
+   inline void dump_m128d(__m128d x)
    {
       __v2d xx;
       xx.xmm = x;
@@ -599,7 +599,7 @@ namespace xpu
    } __m256c;
 
    // mul
-   __m256c _mm256_mul_pc(__m256c a, __m256c b)
+   inline __m256c _mm256_mul_pc(__m256c a, __m256c b)
    {
       __m256c vec;
       __m256d t1 = _mm256_mul_pd(a.real, b.real);
@@ -621,7 +621,7 @@ namespace xpu
    } __m128c;
 
    // mul
-   __m128c _mm128_mul_pc(__m128c a, __m128c b)
+   inline __m128c _mm128_mul_pc(__m128c a, __m128c b)
    {
       __m128c vec;
       __m128d t1 = _mm_mul_pd(a.real, b.real);

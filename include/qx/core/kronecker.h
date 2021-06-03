@@ -423,7 +423,7 @@ namespace qx
 
 
 
-      void printv(cvector_t& v)
+      inline void printv(cvector_t& v)
       {
 	 print("[ ");
 	 for (std::size_t i=0; i<v.size(); ++i)
@@ -434,7 +434,7 @@ namespace qx
       }
 
 
-      void mulmv(kronecker& k, cvector_t& v, cvector_t& r)
+      inline void mulmv(kronecker& k, cvector_t& v, cvector_t& r)
       {
 	 #pragma omp parallel for schedule(static)
 	 for (int64_t i=0; i<(int64_t)v.size(); i++)
@@ -449,7 +449,7 @@ namespace qx
       /**
        * to be tested for correctness
        */
-      void mulmv_(kronecker& k, cvector_t& v, cvector_t& r)
+      inline void mulmv_(kronecker& k, cvector_t& v, cvector_t& r)
       {
 	 complex_t s = 0.;
 	 complex_t x = 0.;
@@ -469,7 +469,7 @@ namespace qx
       }
 
 
-      void mulmv(kronecker& k, cvector_t& v, cvector_t& r, size_t block_ib, size_t block_ie, size_t block_jb, size_t block_je)
+      inline void mulmv(kronecker& k, cvector_t& v, cvector_t& r, size_t block_ib, size_t block_ie, size_t block_jb, size_t block_je)
       {
 	 for (std::size_t i=block_ib; i<block_ie; i++)
 	 {

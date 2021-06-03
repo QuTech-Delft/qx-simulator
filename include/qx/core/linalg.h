@@ -60,7 +60,7 @@ namespace qx
 	 typedef std::vector<std::pair<uint32_t,uint32_t> > perm_t;
 
 #ifdef __SSE__
-	 void cmul(complex_t * x, complex_t * y, complex_t * z)
+	 inline void cmul(complex_t * x, complex_t * y, complex_t * z)
 	 {
 	    __m128d mx, my, xr_xi, yr_yr, xi_yi, yi_xr;
 	    __m128d a,b;
@@ -93,7 +93,7 @@ namespace qx
 	 /**
 	  * \brief tensor product of vectors
 	  */
-	 cvector_t tensor(cvector_t v1, cvector_t v2)
+	 inline cvector_t tensor(cvector_t v1, cvector_t v2)
 	 {
 	    uint32_t n1 = v1.size();
 	    uint32_t n2 = v2.size();
@@ -113,7 +113,7 @@ namespace qx
 	 /**
 	  * \brief tensor product of matrices
 	  */
-	 qx::linalg::matrix<complex_t> tensor(qx::linalg::matrix<complex_t> m1, qx::linalg::matrix<complex_t> m2)
+	 inline qx::linalg::matrix<complex_t> tensor(qx::linalg::matrix<complex_t> m1, qx::linalg::matrix<complex_t> m2)
 	 {
 	    uint32_t rows_1 = m1.size1();
 	    uint32_t cols_1 = m1.size2();
@@ -134,7 +134,7 @@ namespace qx
 	 /**
 	  * \brief tensor product of matrices (result in m)
 	  */
-	 uint32_t tensor(qx::linalg::matrix<complex_t>& m1, qx::linalg::matrix<complex_t>& m2, qx::linalg::matrix<complex_t>& m)
+	 inline uint32_t tensor(qx::linalg::matrix<complex_t>& m1, qx::linalg::matrix<complex_t>& m2, qx::linalg::matrix<complex_t>& m)
 	 {
 	    uint32_t rows_1 = m1.size1();
 	    uint32_t cols_1 = m1.size2();
@@ -171,7 +171,7 @@ namespace qx
 	 /**
 	  * \brief matrix vector product
 	  */
-	 cvector_t mxv(qx::linalg::matrix<complex_t> m, cvector_t v)
+	 inline cvector_t mxv(qx::linalg::matrix<complex_t> m, cvector_t v)
 	 {
 // #ifdef __BUILTIN_LINALG__
 	    uint32_t n = v.size();
@@ -195,7 +195,7 @@ namespace qx
 	 /**
 	  * \brief matrix matrix product
 	  */
-	 qx::linalg::matrix<complex_t> mxm(qx::linalg::matrix<complex_t> m1, qx::linalg::matrix<complex_t> m2)
+	 inline qx::linalg::matrix<complex_t> mxm(qx::linalg::matrix<complex_t> m1, qx::linalg::matrix<complex_t> m2)
 	 {
 // #ifdef __BUILTIN_LINALG__
 	    complex_t z(0.0, 0.0);
@@ -210,7 +210,7 @@ namespace qx
 	 /**
 	  * \brief matrix matrix product
 	  */
-	 cmatrix_t mxm(cmatrix_t m1, cmatrix_t m2)
+	 inline cmatrix_t mxm(cmatrix_t m1, cmatrix_t m2)
 	 {
 // #ifdef __BUILTIN_LINALG__
 	    complex_t z(0.0, 0.0);
@@ -226,7 +226,7 @@ namespace qx
 	 /**
 	  * \brief verify if the matrices m1 and m2 are equals
 	  */
-	 bool equals(qx::linalg::matrix<complex_t>& m1, qx::linalg::matrix<complex_t>& m2, double epsilon=10e-14)
+	 inline bool equals(qx::linalg::matrix<complex_t>& m1, qx::linalg::matrix<complex_t>& m2, double epsilon=10e-14)
 	 {
 	    if (m1.size1() != m2.size1())
 		  return false;
@@ -253,7 +253,7 @@ namespace qx
 	 /**
 	  * inc
 	  */
-	 std::bitset<MAX_QB_N> inc(std::bitset<MAX_QB_N> in) 
+	 inline std::bitset<MAX_QB_N> inc(std::bitset<MAX_QB_N> in)
 	 {
 	    for (size_t i=0; i<MAX_QB_N; ++i) 
 	    {
@@ -272,7 +272,7 @@ namespace qx
 	  * perms
 	  */
 	 // std::vector<std::pair<uint32_t,uint32_t> > 
-	 perm_t perms(uint32_t n, uint32_t c, uint32_t t)
+	 inline perm_t perms(uint32_t n, uint32_t c, uint32_t t)
 	 {
 	    uint32_t nn = (1 << n);
 	    uint32_t p1, p2;
@@ -304,7 +304,7 @@ namespace qx
 	 }
 
 
-	 void perms(uint32_t n, uint32_t c, uint32_t t, cvector_t& amp)
+	 inline void perms(uint32_t n, uint32_t c, uint32_t t, cvector_t& amp)
 	 {
 	    uint32_t nn = (1 << n);
 	    uint32_t p1, p2;
@@ -337,7 +337,7 @@ namespace qx
 
 	 
 	 
-	 perm_t perms(uint32_t n, uint32_t c1, uint32_t c2, uint32_t t)
+	 inline perm_t perms(uint32_t n, uint32_t c1, uint32_t c2, uint32_t t)
 	 {
 	    uint32_t nn = (1 << n);
 	    uint32_t p1, p2;
@@ -374,7 +374,7 @@ namespace qx
 	 /**
 	  * dump matrix
 	  */
-	 void dump_matrix(cmatrix_t& m, bool complex_format=false)
+	 inline void dump_matrix(cmatrix_t& m, bool complex_format=false)
 	 {
 	    for (uint32_t i=0; i<m.size1(); ++i)
 	    {

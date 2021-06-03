@@ -174,7 +174,7 @@ namespace qx
    /**
     * \brief generate noisy hadamard gate
     */
-   cmatrix_t noisy_hadamard(double epsilon1=0, double epsilon2=0)
+   inline cmatrix_t noisy_hadamard(double epsilon1=0, double epsilon2=0)
    {
 #ifdef __BUILTIN_LINALG__
       return mxm(rotation(QX_PI/4 + epsilon1), phase(QX_PI + epsilon2));
@@ -189,7 +189,7 @@ namespace qx
    /**
     * \brief build n x n matrix from an array
     */
-   cmatrix_t build_matrix(const complex_t * c, uint64_t n)
+   inline cmatrix_t build_matrix(const complex_t * c, uint64_t n)
    {
       // assert(n==2); 
       // TO DO : remove the n parameter
@@ -255,7 +255,7 @@ namespace qx
    // #elif QX_SPARSE_MV_MUL
    #else // QX_SPARSE_MV_MUL
    
-   uint64_t rw_process(uint64_t is, uint64_t ie, uint64_t s, uint64_t n, uint64_t qubit, const kronecker * m, cvector_t * v, cvector_t * res)
+   inline uint64_t rw_process(uint64_t is, uint64_t ie, uint64_t s, uint64_t n, uint64_t qubit, const kronecker * m, cvector_t * v, cvector_t * res)
    {
       uint64_t k = n-qubit;
       // println("run : " << is << " .. " << ie);
@@ -276,7 +276,7 @@ namespace qx
    }
       
 
-   void sparse_mulmv(uint64_t n, uint64_t qubit, const kronecker& m, cvector_t& v, cvector_t& res)
+   inline void sparse_mulmv(uint64_t n, uint64_t qubit, const kronecker& m, cvector_t& v, cvector_t& res)
    {
       uint64_t k = n-qubit;
       uint64_t rows = (1UL << n);
@@ -289,7 +289,7 @@ namespace qx
 
    }
 
-   void __apply_m(std::size_t start, std::size_t end, const std::size_t qubit, complex_t * state, const std::size_t stride0, const std::size_t stride1, const complex_t * matrix)
+   inline void __apply_m(std::size_t start, std::size_t end, const std::size_t qubit, complex_t * state, const std::size_t stride0, const std::size_t stride1, const complex_t * matrix)
    {
 
 #if 0
@@ -329,7 +329,7 @@ namespace qx
 
 #ifdef __SSE__
 // #ifdef __FMA__
-   void __apply_x(std::size_t start, std::size_t end, const std::size_t qubit, complex_t * state, const std::size_t stride0, const std::size_t stride1, const complex_t * matrix)
+   inline void __apply_x(std::size_t start, std::size_t end, const std::size_t qubit, complex_t * state, const std::size_t stride0, const std::size_t stride1, const complex_t * matrix)
    {
 #ifdef USE_OPENMP
 #pragma omp parallel for // private(m00,r00,neg)    
@@ -358,7 +358,7 @@ namespace qx
 
 #ifdef __SSE__
 // #ifdef __FMA__
-   void __apply_h(std::size_t start, std::size_t end, const std::size_t qubit, complex_t * state, const std::size_t stride0, const std::size_t stride1, const complex_t * matrix)
+   inline void __apply_h(std::size_t start, std::size_t end, const std::size_t qubit, complex_t * state, const std::size_t stride0, const std::size_t stride1, const complex_t * matrix)
    {
       __m128d   m00 = matrix[0].xmm;
       __m128d   r00 = _mm_shuffle_pd(m00,m00,3);         // 1 cyc
@@ -404,7 +404,7 @@ namespace qx
 #error "SSE not available !"
 #endif // SSE
 
-   uint64_t rw_process_ui(uint64_t is, uint64_t ie, uint64_t s, uint64_t n, uint64_t qubit, kronecker_ui m, cvector_t * v, cvector_t * res)
+   inline uint64_t rw_process_ui(uint64_t is, uint64_t ie, uint64_t s, uint64_t n, uint64_t qubit, kronecker_ui m, cvector_t * v, cvector_t * res)
    {
       uint64_t k = n-qubit;
       // println("run : " << is << " .. " << ie);
@@ -445,7 +445,7 @@ namespace qx
    }
  
 
-   void sparse_mulmv(uint64_t n, uint64_t qubit, kronecker_ui m, cvector_t& v, cvector_t& res)
+   inline void sparse_mulmv(uint64_t n, uint64_t qubit, kronecker_ui m, cvector_t& v, cvector_t& res)
    {
       uint64_t k = n-qubit;
       uint64_t rows = (1UL << n);
@@ -461,7 +461,7 @@ namespace qx
 #endif
    }
 
-   uint64_t rw_process_iu(uint64_t is, uint64_t ie, uint64_t s, uint64_t n, uint64_t qubit, kronecker_iu m, cvector_t * v, cvector_t * res)
+   inline uint64_t rw_process_iu(uint64_t is, uint64_t ie, uint64_t s, uint64_t n, uint64_t qubit, kronecker_iu m, cvector_t * v, cvector_t * res)
    {
       uint64_t k = n-qubit;
       // println("run : " << is << " .. " << ie);
@@ -502,7 +502,7 @@ namespace qx
    }
  
 
-   void sparse_mulmv(uint64_t n, uint64_t qubit, kronecker_iu m, cvector_t& v, cvector_t& res)
+   inline void sparse_mulmv(uint64_t n, uint64_t qubit, kronecker_iu m, cvector_t& v, cvector_t& res)
    {
       uint64_t k = n-qubit;
       uint64_t rows = (1UL << n);
@@ -520,7 +520,7 @@ namespace qx
    
    // static xpu::core::os::mutex mtx;
 
-   uint64_t rw_process_iui(uint64_t is, uint64_t ie, uint64_t s, uint64_t n, uint64_t qubit, kronecker_iui m, cvector_t * v, cvector_t * res)
+   inline uint64_t rw_process_iui(uint64_t is, uint64_t ie, uint64_t s, uint64_t n, uint64_t qubit, kronecker_iui m, cvector_t * v, cvector_t * res)
    {
       uint64_t k = n-qubit;
       // println("run : " << is << " .. " << ie);
@@ -615,7 +615,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
    }
  
 
-   void sparse_mulmv(uint64_t n, uint64_t qubit, kronecker_iui m, cvector_t& v, cvector_t& res)
+   inline void sparse_mulmv(uint64_t n, uint64_t qubit, kronecker_iui m, cvector_t& v, cvector_t& res)
    {
       uint64_t k = n-qubit;
       uint64_t rows = (1UL << n);
@@ -1170,7 +1170,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
    };
 
 
-   int fliper(int cs, int ce, int s, uint64_t q, cvector_t * p_amp)
+   inline int fliper(int cs, int ce, int s, uint64_t q, cvector_t * p_amp)
    {
       cvector_t &amp = * p_amp;
       for (int i=cs; i<ce; ++i)
@@ -1183,7 +1183,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
 
    #define __swap_xmm(x,y) { x = _mm_xor_pd(x,y); y = _mm_xor_pd(y,x); x = _mm_xor_pd(x,y); }
 
-   void fast_flip(uint64_t q, uint64_t n, cvector_t& amp)
+   inline void fast_flip(uint64_t q, uint64_t n, cvector_t& amp)
    {
       complex_t * x = amp.data();
 #ifdef USE_OPENMP
@@ -1196,7 +1196,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
    }
 
 
-   void flip(uint64_t q, uint64_t n, cvector_t& amp)
+   inline void flip(uint64_t q, uint64_t n, cvector_t& amp)
    {
       uint64_t nn = (1UL << n);
       uint64_t p1, p2;
@@ -1777,7 +1777,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
    /**
     * phase factoring
     */
-   void reset_gphase(cmatrix_t& m)
+   inline void reset_gphase(cmatrix_t& m)
    {
       double n = m(0,0).norm();
 
@@ -2057,7 +2057,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
          }
    };
 
-   void __shift(cvector_t& amp, size_t size, size_t bit, complex_t p, size_t offset=0)
+   inline void __shift(cvector_t& amp, size_t size, size_t bit, complex_t p, size_t offset=0)
    {
       // println("bit=" << bit);
       // println("ctrl=" << ctrl);
@@ -2075,7 +2075,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
          }
    }
 
-   void __shift(complex_t * x, size_t size, size_t bit, complex_t p, size_t offset=0)
+   inline void __shift(complex_t * x, size_t size, size_t bit, complex_t p, size_t offset=0)
    {
       // println("bit=" << bit);
       // println("ctrl=" << ctrl);
@@ -2092,7 +2092,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
 
 
 
-   int shift_worker(int cs, int ce, int s, cvector_t * p_amp, size_t bit1, size_t bit2, complex_t p)
+   inline int shift_worker(int cs, int ce, int s, cvector_t * p_amp, size_t bit1, size_t bit2, complex_t p)
    {
       cvector_t &amp = * p_amp;
       // xpu::parallel_for fswp(__bit_set(0,b1), (1 << qn), (1 << (b1+1)), &t);
@@ -2110,7 +2110,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
    }
 
 
-   uint64_t qft_1st_fold_worker(uint64_t is, uint64_t ie, uint64_t s, uint64_t n, uint64_t qubit, kronecker_ui m, cvector_t * v, cvector_t * res)
+   inline uint64_t qft_1st_fold_worker(uint64_t is, uint64_t ie, uint64_t s, uint64_t n, uint64_t qubit, kronecker_ui m, cvector_t * v, cvector_t * res)
    {
       uint64_t k = n-qubit;
       // println("run : " << is << " .. " << ie);
@@ -2153,7 +2153,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
    }
 
 
-   void qft_1st_fold(uint64_t n, uint64_t qubit, kronecker_ui m, cvector_t& v, cvector_t& res)
+   inline void qft_1st_fold(uint64_t n, uint64_t qubit, kronecker_ui m, cvector_t& v, cvector_t& res)
    {
       uint64_t k = n-qubit;
       uint64_t rows = (1UL << n);
@@ -2174,7 +2174,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
    }
 
 
-   uint64_t qft_nth_fold_worker(uint64_t is, uint64_t ie, uint64_t s, uint64_t n, uint64_t qubit, kronecker_iui m, cvector_t * v, cvector_t * res)
+   inline uint64_t qft_nth_fold_worker(uint64_t is, uint64_t ie, uint64_t s, uint64_t n, uint64_t qubit, kronecker_iui m, cvector_t * v, cvector_t * res)
    {
       uint64_t k = n-qubit;
       // println("run : " << is << " .. " << ie);
@@ -2215,7 +2215,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
       return 0;
    }
 
-   void qft_nth_fold(uint64_t n, uint64_t qubit, kronecker_iui m, cvector_t& v, cvector_t& res)
+   inline void qft_nth_fold(uint64_t n, uint64_t qubit, kronecker_iui m, cvector_t& v, cvector_t& res)
    {
       uint64_t k = n-qubit;
       uint64_t rows = (1UL << n);
@@ -2236,7 +2236,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
    }
 
 
-   int qft_worker(int cs, int ce, int s, size_t n, cvector_t& p_in, cvector_t& p_out, kronecker_ui kr, size_t qubit)
+   inline int qft_worker(int cs, int ce, int s, size_t n, cvector_t& p_in, cvector_t& p_out, kronecker_ui kr, size_t qubit)
    {
       complex_t * in  = p_in.data();
       complex_t * out = p_out.data();
@@ -2264,7 +2264,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
    }
 
 
-   int qft_worker(int cs, int ce, int s, size_t n, cvector_t& p_in, cvector_t& p_out, kronecker_iui kr, size_t qubit)
+   inline int qft_worker(int cs, int ce, int s, size_t n, cvector_t& p_in, cvector_t& p_out, kronecker_iui kr, size_t qubit)
    {
       complex_t * in  = p_in.data();
       complex_t * out = p_out.data();
@@ -2376,7 +2376,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
    /**
     * phase shifter
     */
-   void __apply_cm(complex_t * state, 
+   inline void __apply_cm(complex_t * state,
          complex_t m[2][2],
          std::size_t i11, std::size_t i12, std::size_t i13,
          std::size_t i21, std::size_t i22, std::size_t i23,
@@ -2747,7 +2747,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
   
    
 
-   double p1_worker(uint64_t cs, uint64_t ce, uint64_t qubit, cvector_t * p_data)
+   inline double p1_worker(uint64_t cs, uint64_t ce, uint64_t qubit, cvector_t * p_data)
    {
       cvector_t &data = * p_data;
       double local_p1 = 0;
@@ -2863,7 +2863,7 @@ pr[bc] = (pv[c1]*(m.get(bc,c1))) + (pv[c2]*(m.get(bc,c2)));
       return zero_worker_norm(cs, ce, p_data);
    }
 
-   int renorm_worker(uint64_t cs, uint64_t ce, uint64_t s, double * length, cvector_t * p_data)
+   inline int renorm_worker(uint64_t cs, uint64_t ce, uint64_t s, double * length, cvector_t * p_data)
    {
       cvector_t &data = * p_data;
       double l = *length;

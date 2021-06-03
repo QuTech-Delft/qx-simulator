@@ -3,7 +3,7 @@
  * socket_exception implementation
  */
 
-socket_exception::socket_exception(const std::string &message, 
+inline socket_exception::socket_exception(const std::string &message,
                                    bool system_message)
                                    throw() : user_message(message) 
 {
@@ -15,11 +15,11 @@ socket_exception::socket_exception(const std::string &message,
 }
 
 
-socket_exception::~socket_exception() throw() 
+inline socket_exception::~socket_exception() throw()
 {
 }
 
-const char *socket_exception::what() const throw() 
+inline const char *socket_exception::what() const throw()
 {
   return user_message.c_str();
 }

@@ -17,7 +17,7 @@ namespace qx
    } error_model_t;
 
 
-   qx::circuit * noisy_dep_ch(qx::circuit * c, double p, size_t& total_errors)
+   inline qx::circuit * noisy_dep_ch(qx::circuit * c, double p, size_t& total_errors)
    {
       if (c)
       {

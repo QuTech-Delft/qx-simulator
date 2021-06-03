@@ -80,7 +80,7 @@
 }\
 
 
-int sqid(compiler::Operation &operation)
+inline int sqid(compiler::Operation &operation)
 {
   return operation
     .getQubitsInvolved()
@@ -88,7 +88,7 @@ int sqid(compiler::Operation &operation)
     .getIndices()[0];
 }
 
-int qid(compiler::Operation &operation, int id)
+inline int qid(compiler::Operation &operation, int id)
 {
   return operation
     .getQubitsInvolved(id)
@@ -96,7 +96,7 @@ int qid(compiler::Operation &operation, int id)
     .getIndices()[0];
 }
 
-int bid(compiler::Operation &operation)
+inline int bid(compiler::Operation &operation)
 {
   return operation
     .getControlBits()
@@ -104,7 +104,7 @@ int bid(compiler::Operation &operation)
     .getIndices()[0];
 }
 
-qx::gate *gateLookup(compiler::Operation &operation)
+inline qx::gate *gateLookup(compiler::Operation &operation)
 {
    // operation.printOperation();
    bool  bc = false;
@@ -440,7 +440,7 @@ qx::gate *gateLookup(compiler::Operation &operation)
    return NULL;
 }
 
-qx::circuit * load_cqasm_code(uint64_t qubits_count, compiler::SubCircuit &subcircuit)
+inline qx::circuit * load_cqasm_code(uint64_t qubits_count, compiler::SubCircuit &subcircuit)
 {
   uint64_t iterations = subcircuit.numberIterations();
   std::string name = subcircuit.nameSubCircuit();

@@ -4,7 +4,7 @@
  * set_binary
  */
 // void qx::qu_register::set_binary(uint64_t state, uint64_t nq)
-void qx::qu_register::set_measurement_prediction(uint64_t state, uint64_t nq)
+inline void qx::qu_register::set_measurement_prediction(uint64_t state, uint64_t nq)
 {
    //uint64_t k=0;
    uint64_t k=nq-1;
@@ -19,7 +19,7 @@ void qx::qu_register::set_measurement_prediction(uint64_t state, uint64_t nq)
 /**
  * \brief set measurement outcome
  */
-void qx::qu_register::set_measurement(uint64_t state, uint64_t nq)
+inline void qx::qu_register::set_measurement(uint64_t state, uint64_t nq)
 {
    //uint64_t k=0;
    uint64_t k=nq-1;
@@ -33,7 +33,7 @@ void qx::qu_register::set_measurement(uint64_t state, uint64_t nq)
 /**
  * collapse state
  */
-uint64_t qx::qu_register::collapse(uint64_t entry)
+inline uint64_t qx::qu_register::collapse(uint64_t entry)
 {
 #ifdef USE_OPENMP
 #pragma omp parallel for
@@ -53,7 +53,7 @@ uint64_t qx::qu_register::collapse(uint64_t entry)
 /**
  * to binary
  */
-void qx::qu_register::to_binary(uint64_t state, uint64_t nq)
+inline void qx::qu_register::to_binary(uint64_t state, uint64_t nq)
 {
    uint64_t k=0;
    while (nq--)
@@ -63,7 +63,7 @@ void qx::qu_register::to_binary(uint64_t state, uint64_t nq)
 /**
  * to binary string
  */
-std::string  qx::qu_register::to_binary_string(uint64_t state, uint64_t nq)
+inline std::string  qx::qu_register::to_binary_string(uint64_t state, uint64_t nq)
 {
    std::string s(nq,'0');
    uint64_t k=0;
@@ -81,7 +81,7 @@ std::string  qx::qu_register::to_binary_string(uint64_t state, uint64_t nq)
  */
 // qx::qu_register::qu_register(uint64_t n_qubits) : data(1 << n_qubits), binary(n_qubits), n_qubits(n_qubits), rgenerator(xpu::timer().current()*10e5), udistribution(.0,1)
 //qx::qu_register::qu_register(uint64_t n_qubits) : data(1 << n_qubits), measurement_prediction(n_qubits), measurement_register(n_qubits), n_qubits(n_qubits), rgenerator(xpu::timer().current()*10e5), udistribution(.0,1)
-qx::qu_register::qu_register(uint64_t n_qubits) : data(1ULL << n_qubits), aux(1ULL << n_qubits), measurement_prediction(n_qubits), measurement_register(n_qubits), n_qubits(n_qubits), rgenerator(xpu::timer().current()*10e5), udistribution(.0,1), measurement_averaging_enabled(true), measurement_averaging(n_qubits)
+inline qx::qu_register::qu_register(uint64_t n_qubits) : data(1ULL << n_qubits), aux(1ULL << n_qubits), measurement_prediction(n_qubits), measurement_register(n_qubits), n_qubits(n_qubits), rgenerator(xpu::timer().current()*10e5), udistribution(.0,1), measurement_averaging_enabled(true), measurement_averaging(n_qubits)
 {
    if(n_qubits>63) {
 	   throw std::invalid_argument("hard limit of 63 qubits exceeded");
@@ -115,7 +115,7 @@ qx::qu_register::qu_register(uint64_t n_qubits) : data(1ULL << n_qubits), aux(1U
 /**
  * reset
  */
-void qx::qu_register::reset()
+inline void qx::qu_register::reset()
 {
    uint64_t num_elts = (1ULL << n_qubits);
 
@@ -139,12 +139,12 @@ void qx::qu_register::reset()
 /**
  * \brief data getter
  */
-cvector_t& qx::qu_register::get_data()
+inline cvector_t& qx::qu_register::get_data()
 {
    return data;
 }
 
-cvector_t& qx::qu_register::get_aux()
+inline cvector_t& qx::qu_register::get_aux()
 {
    return aux;
 }
@@ -152,7 +152,7 @@ cvector_t& qx::qu_register::get_aux()
 /**
  * \brief data setter
  */
-void qx::qu_register::set_data(cvector_t d)
+inline void qx::qu_register::set_data(cvector_t d)
 {
    data = d;
 }
@@ -161,7 +161,7 @@ void qx::qu_register::set_data(cvector_t d)
 /**
  * \brief size getter
  */
-uint64_t qx::qu_register::size()
+inline uint64_t qx::qu_register::size()
 {
    return n_qubits;
 }
@@ -170,7 +170,7 @@ uint64_t qx::qu_register::size()
 /**
  * \brief get states
  */
-uint64_t qx::qu_register::states()
+inline uint64_t qx::qu_register::states()
 {
    return (1ULL << n_qubits);
 }
@@ -179,7 +179,7 @@ uint64_t qx::qu_register::states()
 /**
  * \brief assign operator
  */
-cvector_t & qx::qu_register::operator=(cvector_t d)
+inline cvector_t & qx::qu_register::operator=(cvector_t d)
 { 
    assert(d.size() == data.size());
    data.resize(d.size());
@@ -192,7 +192,7 @@ cvector_t & qx::qu_register::operator=(cvector_t d)
 /**
  * \brief return ith amplitude
  */
-complex_t& qx::qu_register::operator[](uint64_t i)
+inline complex_t& qx::qu_register::operator[](uint64_t i)
 {
    return data[i];
 }
@@ -203,7 +203,7 @@ complex_t& qx::qu_register::operator[](uint64_t i)
  *   moduls squared of qubit entries must equal 1.
  *
  */
-bool qx::qu_register::check()
+inline bool qx::qu_register::check()
 {
    double sum=0;
 #ifdef USE_OPENMP
@@ -220,7 +220,7 @@ bool qx::qu_register::check()
 /**
  * \brief measures one qubit
  */
-int64_t qx::qu_register::measure()
+inline int64_t qx::qu_register::measure()
 {
 #ifdef SAFE_MODE
    if (!check())
@@ -249,7 +249,7 @@ int64_t qx::qu_register::measure()
 /**
  * \brief dump
  */
-void qx::qu_register::dump(bool only_binary=false)
+inline void qx::qu_register::dump(bool only_binary=false)
 {
     if (!only_binary)
     {
@@ -304,7 +304,7 @@ void qx::qu_register::dump(bool only_binary=false)
 /**
  * \brief return the quantum state as string
  */
-std::string qx::qu_register::get_state(bool only_binary=false)
+inline std::string qx::qu_register::get_state(bool only_binary=false)
 {
    std::stringstream ss;
    if (!only_binary)
@@ -326,7 +326,7 @@ std::string qx::qu_register::get_state(bool only_binary=false)
 /**
  * set_binary
  */
-void qx::qu_register::set_measurement_prediction(uint64_t state)
+inline void qx::qu_register::set_measurement_prediction(uint64_t state)
 {
    // print("  [-] set binary register to state : ");
    to_binary(state,n_qubits);
@@ -344,7 +344,7 @@ void qx::qu_register::set_measurement_prediction(uint64_t state)
  * \brief setter
  * set bit <q>  to the state <s>
  */
-void qx::qu_register::set_measurement_prediction(uint64_t q, state_t s)
+inline void qx::qu_register::set_measurement_prediction(uint64_t q, state_t s)
 {
    assert(q<n_qubits);
    // binary[q] = s;
@@ -355,7 +355,7 @@ void qx::qu_register::set_measurement_prediction(uint64_t q, state_t s)
  * \brief setter
  * set measurement outcome of <q>  to the state <s>
  */
-void qx::qu_register::set_measurement(uint64_t q, bool m)
+inline void qx::qu_register::set_measurement(uint64_t q, bool m)
 {
    assert(q<n_qubits);
    // binary[q] = s;
@@ -367,14 +367,14 @@ void qx::qu_register::set_measurement(uint64_t q, bool m)
  * \brief getter
  * \return the state of bit <q> 
  */
-state_t qx::qu_register::get_measurement_prediction(uint64_t q)
+inline state_t qx::qu_register::get_measurement_prediction(uint64_t q)
 {
    assert(q<n_qubits);
    return measurement_prediction[q];
 }
 
 
-bool qx::qu_register::get_measurement(uint64_t q)
+inline bool qx::qu_register::get_measurement(uint64_t q)
 {
    assert(q<n_qubits);
    return measurement_register[q];
@@ -385,7 +385,7 @@ bool qx::qu_register::get_measurement(uint64_t q)
  * \brief test bit <q> of the binary register
  * \return true if bit <q> is 1
  */
-bool qx::qu_register::test(uint64_t q) // throw (qubit_not_measured_exception)  // trow exception if qubit value is unknown (never measured) !!!!
+inline bool qx::qu_register::test(uint64_t q) // throw (qubit_not_measured_exception)  // trow exception if qubit value is unknown (never measured) !!!!
 {
    assert(q<n_qubits);
    return (measurement_register[q]);
@@ -396,7 +396,7 @@ bool qx::qu_register::test(uint64_t q) // throw (qubit_not_measured_exception)  
 /**
  * \brief
  */
-void qx::qu_register::flip_binary(uint64_t q)
+inline void qx::qu_register::flip_binary(uint64_t q)
 {
    assert(q<n_qubits);
    // state_t s = binary[q];
@@ -408,7 +408,7 @@ void qx::qu_register::flip_binary(uint64_t q)
 /**
  * \brief
  */
-void qx::qu_register::flip_measurement(uint64_t q)
+inline void qx::qu_register::flip_measurement(uint64_t q)
 {
    assert(q<n_qubits);
    measurement_register[q] = !measurement_register[q];
@@ -420,7 +420,7 @@ void qx::qu_register::flip_measurement(uint64_t q)
 /**
  * fidelity
  */
-double fidelity(qu_register& s1, qu_register& s2)
+inline double fidelity(qu_register& s1, qu_register& s2)
 {
    if (s1.size() != s2.size())
    {

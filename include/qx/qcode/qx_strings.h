@@ -212,7 +212,7 @@ namespace str
    /**
     * int to string
     */
-   std::string int_to_str(int i)
+   inline std::string int_to_str(int i)
    {
       std::stringstream strm;
       std::string num;

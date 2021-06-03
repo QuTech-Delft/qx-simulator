@@ -1,16 +1,16 @@
 
-active_socket::active_socket(int type, int protocol)  
+inline active_socket::active_socket(int type, int protocol)
                              throw (socket_exception) : basic_socket(type, protocol) 
 {
 }
 
-active_socket::active_socket(int new_conn_sd) : basic_socket(new_conn_sd) 
+inline active_socket::active_socket(int new_conn_sd) : basic_socket(new_conn_sd)
 {
 }
 
 
 
-void active_socket::connect(const std::string &foreign_address,
+inline void active_socket::connect(const std::string &foreign_address,
                             unsigned short foreign_port) throw (socket_exception) 
 {
   // get the address of the requested host
@@ -25,7 +25,7 @@ void active_socket::connect(const std::string &foreign_address,
 
 
 
-void active_socket::send(const void *buffer, int buffer_len) throw (socket_exception) 
+inline void active_socket::send(const void *buffer, int buffer_len) throw (socket_exception)
 {
   if (::send(sock_desc, (raw_type *) buffer, buffer_len, 0) < 0) 
   {
@@ -35,7 +35,7 @@ void active_socket::send(const void *buffer, int buffer_len) throw (socket_excep
 
 
 
-int active_socket::recv(void *buffer, int buffer_len) throw (socket_exception) 
+inline int active_socket::recv(void *buffer, int buffer_len) throw (socket_exception)
 {
   int rtn;
   if ((rtn = ::recv(sock_desc, (raw_type *) buffer, buffer_len, 0)) < 0) 
@@ -46,7 +46,7 @@ int active_socket::recv(void *buffer, int buffer_len) throw (socket_exception)
   return rtn;
 }
 
-std::string active_socket::get_foreign_address() throw (socket_exception) 
+inline std::string active_socket::get_foreign_address() throw (socket_exception)
 {
   sockaddr_in addr;
   unsigned int addr_len = sizeof(addr);
@@ -58,7 +58,7 @@ std::string active_socket::get_foreign_address() throw (socket_exception)
   return inet_ntoa(addr.sin_addr);
 }
 
-unsigned short active_socket::get_foreign_port() throw (socket_exception) 
+inline unsigned short active_socket::get_foreign_port() throw (socket_exception)
 {
   sockaddr_in addr;
   unsigned int addr_len = sizeof(addr);

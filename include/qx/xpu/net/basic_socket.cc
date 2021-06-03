@@ -19,7 +19,7 @@ inline static void fill_addr(const std::string &address, unsigned short port,
 
 // socket code
 
-basic_socket::basic_socket(int type, 
+inline basic_socket::basic_socket(int type,
                            int protocol) throw(socket_exception) 
 {
   #ifdef WIN32
@@ -42,13 +42,13 @@ basic_socket::basic_socket(int type,
 }
 
 
-basic_socket::basic_socket(int sock_desc) 
+inline basic_socket::basic_socket(int sock_desc)
 {
   this->sock_desc = sock_desc;
 }
 
 
-basic_socket::~basic_socket() 
+inline basic_socket::~basic_socket()
 {
   #ifdef WIN32
     ::closesocket(sock_desc);
@@ -60,7 +60,7 @@ basic_socket::~basic_socket()
 
 
 
-std::string basic_socket::get_local_address() throw (socket_exception) 
+inline std::string basic_socket::get_local_address() throw (socket_exception)
 {
   sockaddr_in addr;
   unsigned int addr_len = sizeof(addr);
@@ -73,7 +73,7 @@ std::string basic_socket::get_local_address() throw (socket_exception)
 
 
 
-unsigned short basic_socket::get_local_port() throw(socket_exception) 
+inline unsigned short basic_socket::get_local_port() throw(socket_exception)
 {
   sockaddr_in addr;
   unsigned int addr_len = sizeof(addr);
@@ -85,7 +85,7 @@ unsigned short basic_socket::get_local_port() throw(socket_exception)
   return ntohs(addr.sin_port);
 }
 
-void basic_socket::set_local_port(unsigned short local_port) throw(socket_exception) 
+inline void basic_socket::set_local_port(unsigned short local_port) throw(socket_exception)
 {
   // bind the socket to its port
   sockaddr_in local_addr;
@@ -99,7 +99,7 @@ void basic_socket::set_local_port(unsigned short local_port) throw(socket_except
   }
 }
 
-void basic_socket::set_local_address_and_port(const std::string &local_address,
+inline void basic_socket::set_local_address_and_port(const std::string &local_address,
                                               unsigned short local_port) throw(socket_exception) 
 {
   // Get the address of the requested host
@@ -111,7 +111,7 @@ void basic_socket::set_local_address_and_port(const std::string &local_address,
   }
 }
 
-void basic_socket::cleanup() throw(socket_exception) 
+inline void basic_socket::cleanup() throw(socket_exception)
 {
   #ifdef WIN32
     if (WSACleanup() != 0) {
@@ -120,7 +120,7 @@ void basic_socket::cleanup() throw(socket_exception)
   #endif
 }
 
-unsigned short basic_socket::resolve_service(const std::string &service,
+inline unsigned short basic_socket::resolve_service(const std::string &service,
                                              const std::string &protocol) 
 {
   struct servent *serv;        /* structure containing service information */
