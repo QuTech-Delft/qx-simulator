@@ -460,6 +460,13 @@ qx::circuit * load_cqasm_code(uint64_t qubits_count, compiler::SubCircuit &subci
        qx::gate * g;
        try
        {
+          if (
+             (*p_operation)->getType() == "barrier" ||
+             (*p_operation)->getType() == "skip" ||
+             (*p_operation)->getType() == "wait"
+          ) {
+             continue;
+          }
           g = gateLookup(**p_operation);
        }
        catch (const char * error)
