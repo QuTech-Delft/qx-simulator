@@ -61,6 +61,7 @@ public:
         try
         {
             parser = new compiler::QasmSemanticChecker(qasm_file);
+            fclose (qasm_file);
             ast = parser->getQasmRepresentation();
         }
         catch (std::exception &e)
