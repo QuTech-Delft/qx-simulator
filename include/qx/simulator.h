@@ -43,12 +43,18 @@ class simulator
 protected:
     qx::qu_register * reg;
     compiler::QasmRepresentation ast;
+    std::string file_path;
 
 public:
     simulator() : reg(nullptr) { /*xpu::init();*/ }
     ~simulator() { /*xpu::clean();*/ }
 
-    void set(std::string file_path)
+    void set(std::string fp)
+    {
+        file_path = fp;
+    }
+
+    void parse_file() // private
     {
         FILE * qasm_file = fopen(file_path.c_str(), "r");
         if (!qasm_file)
@@ -77,6 +83,9 @@ public:
      */
     void execute(size_t navg)
     {
+        // parsing used to be done when set(*) was called
+        // instead it is now the first thing for execute()
+        parse_file();
         // quantum state and circuits
         size_t                     qubits = ast.numQubits();
         std::vector<qx::circuit*>  circuits;
