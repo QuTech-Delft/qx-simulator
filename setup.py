@@ -280,7 +280,7 @@ setup(
     long_description=read('README.md'),
     long_description_content_type = 'text/markdown',
     author='QuTech, TU Delft',
-    url='https://github.com/QE-Lab/qx-simulator',
+    url='https://github.com/QuTech-Delft/qx-simulator',
 
     classifiers = [
         'License :: OSI Approved :: Apache Software License',
