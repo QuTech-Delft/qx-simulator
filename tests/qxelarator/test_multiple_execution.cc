@@ -1,5 +1,5 @@
-#include <iostream>
 #include "qx/simulator.h"
+#include <iostream>
 
 int main() {
 
