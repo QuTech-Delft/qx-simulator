@@ -19,6 +19,7 @@
  * simulator
  */
 int main(int argc, char **argv) {
+// clang-format off
     println("");
     println("  =================================================================================================== "); 
     println("        _______                                                                                       ");
@@ -30,6 +31,7 @@ int main(int argc, char **argv) {
     println("     version " << QX_VERSION << " - QuTech - " << QX_RELEASE_YEAR << " - report bugs and suggestions to: nader.khammassi@gmail.com");
     println("  =================================================================================================== ");
     println("");
+// clang-format on
 
     if ((argc != 2) && (argc != 3)) {
         println("error : you must specify a circuit file !");

@@ -17,6 +17,7 @@
 #include "qx/version.h"
 
 void print_banner() {
+// clang-format off
     println("");
     println("  =================================================================================================== "); 
     println("        _______                                                                                       ");
@@ -28,6 +29,7 @@ void print_banner() {
     println("     version " << QX_VERSION << " - QuTech - " << QX_RELEASE_YEAR << " - report bugs and suggestions to: nader.khammassi@gmail.com");
     println("  =================================================================================================== ");
     println("");
+// clang-format on
 }
 
 /**
