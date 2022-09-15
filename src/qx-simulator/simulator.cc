@@ -109,12 +109,12 @@ int main(int argc, char **argv)
    // convert libqasm ast to qx internal representation
    // qx::QxRepresentation qxr = qx::QxRepresentation(qubits);
    std::vector<compiler::SubCircuit> subcircuits = ast.getSubCircuits().getAllSubCircuits();
-   __for_in(subcircuit, subcircuits)
+   for(auto& subcircuit: subcircuits)
    {
       try
       {
          // qxr.circuits().push_back(load_cqasm_code(qubits, *subcircuit));
-         perfect_circuits.push_back(load_cqasm_code(qubits, * subcircuit));
+         perfect_circuits.push_back(load_cqasm_code(qubits, subcircuit));
       }
       catch (std::string type)
       {
