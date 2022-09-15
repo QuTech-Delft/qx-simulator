@@ -1,56 +1,54 @@
 /**
  * @file		stress_test.cc
- * @author	Nader KHAMMASSI - nader.khammassi@gmail.com 
+ * @author	Nader KHAMMASSI - nader.khammassi@gmail.com
  * @date		14-10-15
- * @brief		
+ * @brief
  */
 
 {
-   uint32_t n = 8;
+    uint32_t n = 8;
 
-   if (argc == 2)
-      n = std::abs(atoi(argv[1]));
-   n = ((n>1 && n<40) ? n : 8);
-   
-   println("[+] creating " << n << " qubits ...");
+    if (argc == 2)
+        n = std::abs(atoi(argv[1]));
+    n = ((n > 1 && n < 40) ? n : 8);
 
-   qx::qu_register reg(n);
+    println("[+] creating " << n << " qubits ...");
 
-   /*
-   // hadamard
-   cmatrix_t h  = build_matrix(hadamard_c,2);
-   // nth kronecker
-   cmatrix_t hn = tensor(h, 1 << n);
+    qx::qu_register reg(n);
 
-   println("reg    dim : " << reg.states());
-   println("matrix sz1 : " << hn.size1());
-   println("matrix sz2 : " << hn.size2());
+    /*
+    // hadamard
+    cmatrix_t h  = build_matrix(hadamard_c,2);
+    // nth kronecker
+    cmatrix_t hn = tensor(h, 1 << n);
 
-   reg = mxv(hn,reg.get_data());
-   */
+    println("reg    dim : " << reg.states());
+    println("matrix sz1 : " << hn.size1());
+    println("matrix sz2 : " << hn.size2());
 
-   qx::circuit c(n);
+    reg = mxv(hn,reg.get_data());
+    */
 
-   println("[+] building quantum circuit...");
+    qx::circuit c(n);
 
-   //for (uint32_t i=0; i<n; i++)
-   //   c.add(new hadamard(i));
-   for (uint32_t i=0; i<n-1; i++)
-   {
-      c.add(new pauli_x(i+1));
-      c.add(new hadamard(i));
-      c.add(new cnot(i,i+1));
-      c.add(new pauli_y(i));
-   }
-   
-   println("[+] executing quantum  circuit...");
-      
-   c.execute(reg, true);
-   
-   println("[+] execution done.");
+    println("[+] building quantum circuit...");
 
-   // reg.dump();
+    // for (uint32_t i=0; i<n; i++)
+    //    c.add(new hadamard(i));
+    for (uint32_t i = 0; i < n - 1; i++) {
+        c.add(new pauli_x(i + 1));
+        c.add(new hadamard(i));
+        c.add(new cnot(i, i + 1));
+        c.add(new pauli_y(i));
+    }
 
-   // reg.check();
+    println("[+] executing quantum  circuit...");
 
+    c.execute(reg, true);
+
+    println("[+] execution done.");
+
+    // reg.dump();
+
+    // reg.check();
 }
