@@ -13,7 +13,6 @@ namespace xpu {
 
 class timer {
 private:
-
     /**
      * The clock source to use.
      */
@@ -40,7 +39,6 @@ private:
     double elapsed_time = 0.0;
 
 public:
-
     /**
      * Starts the timer, clearing the current elapsed time.
      */
@@ -55,25 +53,26 @@ public:
      */
     inline void stop() {
         stop_time = Clock::now();
-        elapsed_time = std::chrono::duration_cast<std::chrono::nanoseconds>(stop_time - start_time).count() * 1e-9;
+        elapsed_time = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                           stop_time - start_time)
+                           .count() *
+                       1e-9;
     }
 
     /**
      * Returns the elapsed time.
      */
-    inline double elapsed() {
-        return elapsed_time;
-    }
+    inline double elapsed() { return elapsed_time; }
 
     /**
      * Returns the current time in seconds.
      */
     inline double current() {
         auto now = std::chrono::system_clock::now().time_since_epoch();
-        auto nanos = std::chrono::duration_cast<std::chrono::nanoseconds>(now).count();
+        auto nanos =
+            std::chrono::duration_cast<std::chrono::nanoseconds>(now).count();
         return (double)nanos * 1e-9;
     }
-
 };
 
 } // namespace xpu

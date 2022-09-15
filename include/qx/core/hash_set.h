@@ -1,137 +1,95 @@
 #ifndef XPU_HASH_SET_H
 #define XPU_HASH_SET_H
 
-
 #include "qx/core/hash_table.h"
 
 namespace xpu {
-    namespace container
-    {
+namespace container {
 
-        template <class __key, class __hasher = __hash_t<__key>, class __equalizer = equal_to<__key> >
-                                                                                     class hash_set {
+template <class __key, class __hasher = __hash_t<__key>,
+          class __equalizer = equal_to<__key>>
+class hash_set {
 
-                                                                                     public:
+public:
+    // Types
+    typedef __hasher hasher;
+    typedef __equalizer equal_key;
+    typedef __key key_type;
+    typedef __key value_type;
+    typedef size_t size_type;
 
-            // Types
-            typedef __hasher hasher;
-            typedef __equalizer equal_key;
-            typedef __key key_type;
-            typedef __key value_type;
-            typedef size_t size_type;
+    // A key extraction object
+    struct identity {
+        const key_type &operator()(const value_type &value) const {
+            return value;
+        }
+    };
 
-            // A key extraction object
-            struct identity {
-                const key_type& operator()(const value_type& value) const {
-                    return value;
-                }
-            };
+private:
+    // Most implementation is in terms of a HashTable
+    typedef hash_table<key_type, value_type, identity, hasher, equal_key>
+        hash_table_t;
 
-                                                                                     private:
+    // The HashTable
+    hash_table_t ht;
 
-            // Most implementation is in terms of a HashTable
-            typedef hash_table<key_type, value_type, identity, hasher, equal_key> hash_table_t;
+public:
+    // Iterator class is just an interator into the elements list
+    typedef typename hash_table_t::iterator iterator;
+    typedef typename hash_table_t::const_iterator const_iterator;
 
-            // The HashTable
-            hash_table_t ht;
+    // Constructors
 
-                                                                                     public:
+    hash_set() {}
 
-            // Iterator class is just an interator into the elements list
-            typedef typename hash_table_t::iterator iterator;
-            typedef typename hash_table_t::const_iterator const_iterator;
+    hash_set(size_type n) : ht(n) {}
 
-            // Constructors
+    hash_set(size_type n, const __hasher &hasher_) : ht(n, hasher_) {}
 
-            hash_set() { }
+    hash_set(size_type n, const __hasher &hasher_,
+             const __equalizer &equalizer_)
+        : ht(n, hasher_, equalizer_) {}
 
-            hash_set(size_type n) : ht(n) { }
+    // Member functions
 
-            hash_set(size_type n, const __hasher& hasher_) : ht(n, hasher_) { }
+    iterator begin() { return ht.begin(); }
 
-            hash_set(size_type n, const __hasher& hasher_, const __equalizer& equalizer_) : ht(n, hasher_, equalizer_) { }
+    iterator end() { return ht.end(); }
 
-            // Member functions
+    const_iterator begin() const { return ht.begin(); }
 
-            iterator begin() {
-                return ht.begin();
-            }
+    const_iterator end() const { return ht.end(); }
 
-            iterator end() {
-                return ht.end();
-            }
+    size_type size() const { return ht.size(); }
 
-            const_iterator begin() const {
-                return ht.begin();
-            }
+    size_type max_size() const { return ht.max_size(); }
 
-            const_iterator end() const {
-                return ht.end();
-            }
+    size_type bucket_count() const { return ht.bucket_count(); }
 
-            size_type size() const {
-                return ht.size();
-            }
+    bool empty() const { return ht.empty(); }
 
-            size_type max_size() const {
-                return ht.max_size();
-            }
+    hasher hash_funct() const { return ht.hash_funct(); }
 
-            size_type bucket_count() const {
-                return ht.bucket_count();
-            }
+    equal_key key_eq() const { return ht.key_eq(); }
 
-            bool empty() const {
-                return ht.empty();
-            }
+    void resize(size_type n) { ht.resize(n); }
 
-            hasher hash_funct() const {
-                return ht.hash_funct();
-            }
+    pair<iterator, bool> insert(const value_type &x) { return ht.insert(x); }
 
-            equal_key key_eq() const {
-                return ht.key_eq();
-            }
+    void clear() { ht.clear(); }
 
-            void resize(size_type n) {
-                ht.resize(n);
-            }
+    iterator find(const key_type &k) { return ht.find(k); }
 
-            pair<iterator,bool> insert(const value_type& x) {
-                return ht.insert(x);
-            }
+    const_iterator find(const key_type &k) const { return ht.find(k); }
 
-            void clear() {
-                ht.clear();
-            }
+    size_type count(const key_type &k) const { return ht.count(k); }
 
-            iterator find(const key_type& k) {
-                return ht.find(k);
-            }
+    void erase(iterator pos) { ht.erase(pos); }
 
-            const_iterator find(const key_type& k) const {
-                return ht.find(k);
-            }
+    size_type erase(const key_type &k) { return ht.erase(k); }
+};
 
-            size_type count(const key_type& k) const {
-                return ht.count(k);
-            }
-
-            void erase(iterator pos) {
-                ht.erase(pos);
-            }
-
-            size_type erase(const key_type& k) {
-                return ht.erase(k);
-            }
-        };
-
-
-    } // namespace container
-} // xpu
+} // namespace container
+} // namespace xpu
 
 #endif
-
-
-
-

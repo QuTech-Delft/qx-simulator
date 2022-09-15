@@ -1,6 +1,6 @@
 /**
  * @file		qasm.h
- * @author	Nader KHAMMASSI - nader.khammassi@gmail.com 
+ * @author	Nader KHAMMASSI - nader.khammassi@gmail.com
  * @date		02-10-15
  * @copyright  none - confidential
  * @brief		qasm loader
@@ -10,21 +10,15 @@
 
 #include <circuit.h>
 
-namespace qx
-{
-   class qasm_loader
-   {
-	 public:
+namespace qx {
+class qasm_loader {
+public:
+    circuit load(std::string &filename) {
+        qx::circuit c;
 
-	   circuit load(std::string& filename)
-	   {
-		 qx::circuit c;
-
-		 // load circuit from qasm file
-
-	   }
-   };
-}
+        // load circuit from qasm file
+    }
+};
+} // namespace qx
 
 #endif // QX_QASM_LOADER_H
-
