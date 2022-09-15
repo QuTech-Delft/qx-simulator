@@ -5,8 +5,6 @@
 #include "qx/core/circuit.h"
 #include <qasm_ast.hpp>
 
-#define __for_in(e, l) for (auto e = l.begin(); e != l.end(); e++)
-
 #define __ret_gate_1(__g) \
 {\
    if (!pg)\
@@ -152,28 +150,28 @@ qx::gate *gateLookup(compiler::Operation &operation)
 
    ///////// common sq gates //////
    if (type == "i")
-      __ret_gate_1(qx::identity)
+      __ret_gate_1(qx::identity);
    if (type == "x")
-      __ret_gate_1(qx::pauli_x)
+      __ret_gate_1(qx::pauli_x);
    if (type == "y")
-      __ret_gate_1(qx::pauli_y)
+      __ret_gate_1(qx::pauli_y);
    if (type == "z")
-      __ret_gate_1(qx::pauli_z)
+      __ret_gate_1(qx::pauli_z);
    if (type == "h")
-      __ret_gate_1(qx::hadamard)
+      __ret_gate_1(qx::hadamard);
    if (type == "s")
-      __ret_gate_1(qx::phase_shift)
+      __ret_gate_1(qx::phase_shift);
    if (type == "sdag")
-      __ret_gate_1(qx::s_dag_gate)
+      __ret_gate_1(qx::s_dag_gate);
    if (type == "t")
-      __ret_gate_1(qx::t_gate)
+      __ret_gate_1(qx::t_gate);
    if (type == "tdag")
-      __ret_gate_1(qx::t_dag_gate)
+      __ret_gate_1(qx::t_dag_gate);
 
    /////////// classical /////////
 
    if (type == "not")
-      __ret_bin_gate(qx::classical_not)
+      __ret_bin_gate(qx::classical_not);
 
    /////////// rotations /////////
    if (type == "rx")
@@ -236,19 +234,19 @@ qx::gate *gateLookup(compiler::Operation &operation)
 
    //////////// two qubits gates //////////////
    if (type == "cnot")
-      __ret_gate_2(qx::cnot)
+      __ret_gate_2(qx::cnot);
    if (type == "cz")
-      __ret_gate_2(qx::cphase)
+      __ret_gate_2(qx::cphase);
    if (type == "swap")
-      __ret_gate_2(qx::swap)
+      __ret_gate_2(qx::swap);
    
    ///////////// prep gates //////////////////
    if (type == "prep_z")
-      __ret_gate_1(qx::prepz)
+      __ret_gate_1(qx::prepz);
    if (type == "prep_y")
-      __ret_gate_1(qx::prepy)
+      __ret_gate_1(qx::prepy);
    if (type == "prep_x")
-      __ret_gate_1(qx::prepx)
+      __ret_gate_1(qx::prepx);
    
    ////////// measurements //////////////////
    if (type == "measure" || type == "measure_z")
@@ -451,23 +449,23 @@ qx::circuit * load_cqasm_code(uint64_t qubits_count, compiler::SubCircuit &subci
   const std::vector<compiler::OperationsCluster*>& clusters
     = subcircuit.getOperationsCluster();
 
-  __for_in(p_cluster, clusters)
+  for(auto p_cluster: clusters)
   {
     const std::vector<compiler::Operation*> operations
-      = (*p_cluster)->getOperations();
-    __for_in(p_operation, operations)
+      = p_cluster->getOperations();
+    for(auto p_operation: operations)
     {
        qx::gate * g;
        try
        {
           if (
-             (*p_operation)->getType() == "barrier" ||
-             (*p_operation)->getType() == "skip" ||
-             (*p_operation)->getType() == "wait"
+             p_operation->getType() == "barrier" ||
+             p_operation->getType() == "skip" ||
+             p_operation->getType() == "wait"
           ) {
              continue;
           }
-          g = gateLookup(**p_operation);
+          g = gateLookup(*p_operation);
        }
        catch (const char * error)
        {
@@ -476,7 +474,7 @@ qx::circuit * load_cqasm_code(uint64_t qubits_count, compiler::SubCircuit &subci
        }
        if (!g)
        {
-          throw (*p_operation)->getType();
+          throw p_operation->getType();
        }
        else
        {
