@@ -16,9 +16,6 @@
 #include <libdivide.h>
 #endif
 
-//#define println(x) std::cout << x << std::endl
-//#define print(x) std::cout << x
-
 /**
  * type definition
  */
@@ -89,9 +86,9 @@ public:
             size_t n2 = m2->size();
             complex_t c1 = m1->get(i / n2, j / n2);
             complex_t c2 = m2->get(i % n2, j % n2);
-            // usleep((i+1)*500+(j+i)*500);  println("k.get(" << i << "," << j
-            // << ") : " << c1 << " * " << c2 << "(n1=" << n1 << ", n2=" << n2
-            // << ")");
+            // usleep((i+1)*500+(j+i)*500);  println("k.get(" , i , "," , j
+            // , ") : " , c1 , " * " , c2 , "(n1=" , n1 , ", n2=" , n2
+            // , ")");
             return (c1 * c2);
         } else {
             size_t n1 = m1->size();
@@ -168,7 +165,7 @@ const static complex_t i_diag[] = {0.0, 1.0};
 	       return m(i/ni,j/ni);
 	       /*
 	       complex_t& c1 = m(i/ni,j/ni);  // U
-	       // usleep((i+1)*500+(j+i)*500);  println("k_ui.get(" << i << "," << j << ") : " << c1 << " * " << c2 << "(nm=" << nm << ", ni=" << ni << ")");
+	       // usleep((i+1)*500+(j+i)*500);  println("k_ui.get(" , i , "," , j , ") : " , c1 , " * " , c2 , "(nm=" << nm << ", ni=" << ni << ")");
 	       return ((i%nm) == (j%nm) ? c1 : __c_zero__);
 	       */
 	    }
@@ -376,8 +373,8 @@ private:
 void printv(cvector_t &v) {
     print("[ ");
     for (std::size_t i = 0; i < v.size(); ++i)
-        print(v[i].re << ", ");
-    // print(v[i].real() << ", ");
+        print(v[i].re, ", ");
+    // print(v[i].real() , ", ");
     println(" ]");
 }
 

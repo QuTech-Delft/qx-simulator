@@ -55,8 +55,8 @@ public:
             double p = probabilities[i];
             for (size_t j = 0; j < state_dim; ++j)
                 for (size_t k = 0; k < state_dim; ++k) {
-                    // println("[" << j << "," << k << "] -> " << "[" <<
-                    // state[j] << " x " << std::conj(state[k]) << "]" << (p *
+                    // println("[", j, ",", k, "] -> ", "[",
+                    // state[j], " x ", std::conj(state[k]), "]", (p *
                     // state[j] * std::conj(state[k])));
                     rdm(j, k) += p * state[j] * std::conj(state[k]);
                 }

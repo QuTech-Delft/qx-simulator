@@ -28,12 +28,25 @@
  * i/o helpers
  */
 
-#define println(x)                                                             \
-    std::cout << "[QXELERATOR]" << __FILE__ << ":" << __LINE__ << " " << x     \
-              << std::endl
-#define error(x)                                                               \
-    std::cerr << "[QXELERATOR]" << __FILE__ << ":" << __LINE__                 \
-              << " Error:" << x << std::endl
+template <typename... Args> constexpr void printImpl(Args... x) {
+    (void)int[]{0, (std::cout << x, 0)...};
+}
+
+template <typename... Args> constexpr void println(Args... x) {
+    std::cout << "[QXELERATOR]" << __FILE__ << ":" << __LINE__ << " ";
+
+    printImpl(x...);
+
+    std::cout << std::endl;
+}
+
+template <typename... Args> constexpr void error(Args... x) {
+    std::cerr << "[QXELERATOR]" << __FILE__ << ":" << __LINE__ << " Error:";
+
+    printImpl(x...);
+
+    std::cout << std::endl;
+}
 
 namespace qx {
 
@@ -84,7 +97,7 @@ public:
         qx::error_model_t error_model = qx::__unknown_error_model__;
 
         // create the quantum state
-        println("Creating quantum register of " << qubits << " qubits... ");
+        println("Creating quantum register of ", qubits, " qubits... ");
         try {
             reg = new qx::qu_register(qubits);
         } catch (std::bad_alloc &exception) {
@@ -109,7 +122,7 @@ public:
             }
         }
 
-        println("Loaded " << perfect_circuits.size() << " circuits.");
+        println("Loaded ", perfect_circuits.size(), " circuits.");
 
         // check whether an error model is specified
         if (ast.getErrorModelType() == "depolarizing_channel") {
@@ -152,17 +165,17 @@ public:
                 }
             }
 
-            println("Average measurement after " << navg << " shots:");
+            println("Average measurement after ", navg, " shots:");
             reg->dump(true);
         } else {
             if (error_model == qx::__depolarizing_channel__) {
-                // println("[+] generating noisy circuits (p=" <<
-                // qxr.getErrorProbability() << ")...");
+                // println("[+] generating noisy circuits (p=",
+                // qxr.getErrorProbability(), ")...");
                 for (size_t i = 0; i < perfect_circuits.size(); i++) {
                     if (perfect_circuits[i]->size() == 0)
                         continue;
-                    // println("[>] processing circuit '" <<
-                    // perfect_circuits[i]->id() << "'...");
+                    // println("[>] processing circuit '",
+                    // perfect_circuits[i]->id(), "'...");
                     size_t iterations = perfect_circuits[i]->get_iterations();
                     if (iterations > 1) {
                         for (size_t it = 0; it < iterations; ++it)
@@ -175,7 +188,7 @@ public:
                                                             total_errors));
                     }
                 }
-                // println("[+] total errors injected in all circuits : " <<
+                // println("[+] total errors injected in all circuits : ",
                 // total_errors);
             } else
                 circuits = perfect_circuits; // qxr.circuits();

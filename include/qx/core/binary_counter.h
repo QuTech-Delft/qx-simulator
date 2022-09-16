@@ -4,12 +4,7 @@
 #include <bitset>
 #include <cassert>
 #include <iostream>
-#include <stdint.h>
-
-#ifndef println
-#define println(x) std::cout << x << std::endl
-#define print(x) std::cout << x
-#endif // println
+#include <cstdint>
 
 namespace qx {
 
@@ -41,7 +36,7 @@ public:
         print("[ ");
         for (uint32_t i = __num; i > 0; i--)
             print((test(i - 1) ? '1' : '0'));
-        println(" : " << __val << "]");
+        println(" : ", __val, "]");
     }
 
     binary_counter &operator=(uint64_t v) {

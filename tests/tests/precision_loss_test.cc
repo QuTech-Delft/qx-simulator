@@ -20,35 +20,35 @@
     for (int j = 0; j < 1000; ++j)
         reg = mxv(hh, reg.get_data());
     reg.dump();
-    println("[+] Fidelity : " << fidelity(reg, ref));
+    println("[+] Fidelity : ", fidelity(reg, ref));
 
     println(" |- state after 10000 hadamard gates: ");
     for (int j = 0; j < 9900; ++j)
         reg = mxv(hh, reg.get_data());
     reg.dump();
-    println("[+] Fidelity : " << fidelity(reg, ref));
+    println("[+] Fidelity : ", fidelity(reg, ref));
 
     println(" |- state after 100000 hadamard gates: ");
     for (int j = 0; j < 90000; ++j)
         reg = mxv(hh, reg.get_data());
     reg.dump();
-    println("[+] Fidelity : " << fidelity(reg, ref));
+    println("[+] Fidelity : ", fidelity(reg, ref));
 
     println(" |- state after 1000000 hadamard gates: ");
     for (int j = 0; j < 900000; ++j)
         reg = mxv(hh, reg.get_data());
     reg.dump();
-    println("[+] Fidelity : " << fidelity(reg, ref));
+    println("[+] Fidelity : ", fidelity(reg, ref));
 
     println(" |- state after 10000000 hadamard gates: ");
     for (int j = 0; j < 9000000; ++j)
         reg = mxv(hh, reg.get_data());
     reg.dump();
-    println("[+] Fidelity : " << fidelity(reg, ref));
+    println("[+] Fidelity : ", fidelity(reg, ref));
 
     println(" |- state after 100000000 hadamard gates: ");
     for (int j = 0; j < 90000000; ++j)
         reg = mxv(hh, reg.get_data());
     reg.dump();
-    println("[+] Fidelity : " << fidelity(reg, ref));
+    println("[+] Fidelity : ", fidelity(reg, ref));
 }

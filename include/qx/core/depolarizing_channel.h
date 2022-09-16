@@ -111,12 +111,12 @@ public:
             return;
         println("[x] injected errors report : ");
         for (size_t i = 0; i < errors.size(); ++i) {
-            println("     " << error_location[i] << " : "
-                            << error_type[errors[i].first] << " on qubit "
-                            << errors[i].second);
+            println("     ", error_location[i], " : ",
+                    error_type[errors[i].first], " on qubit ",
+                    errors[i].second);
         }
-        println("[+] stats : " << x_errors << " x | " << z_errors << " z | "
-                               << y_errors << " y ");
+        println("[+] stats : ", x_errors, " x | ", z_errors, " z | ", y_errors,
+                " y ");
     }
 
 #define __verbose__ if (verbose)
@@ -131,8 +131,8 @@ public:
         y_errors = 0;
 
         __verbose__ println(
-            "    [e] depolarizing_channel : injecting errors in circuit '"
-            << c->id() << "'...");
+            "    [e] depolarizing_channel : injecting errors in circuit '",
+            c->id(), "'...");
         size_t steps = c->size();
         qx::circuit *noisy_c = new qx::circuit(nq, c->id() + "(noisy)");
 
@@ -140,7 +140,7 @@ public:
         error_location.clear();
         total_errors = 0;
 
-        __verbose__ println("    [+] circuit steps : " << steps);
+        __verbose__ println("    [+] circuit steps : ", steps);
         for (size_t p = 0; p < steps; ++p) {
             qx::gate_type_t gt = c->get(p)->type();
             if ((gt == qx::__display__) || (gt == qx::__display_binary__)) {
@@ -166,9 +166,9 @@ public:
                 total_errors += affected_qubits;
                 error_histogram[affected_qubits]++;
 
-                __verbose__ println("    [>>>] error injection step "
-                                    << p << " : number of affected qubits: "
-                                    << affected_qubits);
+                __verbose__ println(
+                    "    [>>>] error injection step ", p,
+                    " : number of affected qubits: ", affected_qubits);
                 if (error_recording) {
                     for (size_t e = 0; e < affected_qubits; ++e)
                         error_location.push_back(p);
@@ -179,13 +179,12 @@ public:
                     size_t q = rand() % nq;
 
                     if (is_measurement(c->get(p), q)) {
-                        __verbose__ print("      |--> error on qubit "
-                                          << q
-                                          << " (potential measurement error) ");
+                        __verbose__ print("      |--> error on qubit ", q,
+                                          " (potential measurement error) ");
                         noisy_c->add(measurement_error(q, verbose));
                         noisy_c->add(c->get(p));
                     } else {
-                        __verbose__ print("      |--> error on qubit  " << q);
+                        __verbose__ print("      |--> error on qubit  ", q);
                         noisy_c->add(c->get(p));
                         noisy_c->add(single_qubit_error(q, verbose));
                     }
@@ -205,17 +204,16 @@ public:
 
                         if (is_measurement(c->get(p), q))
                             measurement = true;
-                        __verbose__ print(
-                            "      |--> error on qubit  "
-                            << q
-                            << (measurement ? "(potential measurement error)"
-                                            : ""));
+                        __verbose__ print("      |--> error on qubit  ", q,
+                                          (measurement
+                                               ? "(potential measurement error)"
+                                               : ""));
                         g->add(single_qubit_error(q, verbose));
                     }
 
                     if (measurement) {
                         //__verbose__  println("      |--> (!) potential
-                        //measurement error.");
+                        // measurement error.");
                         noisy_c->add(g);
                         noisy_c->add(c->get(p));
                     } else {
@@ -227,8 +225,8 @@ public:
                 noisy_c->add(c->get(p));
             }
         }
-        __verbose__ println("    [+] total injected errors in circuit '"
-                            << c->id() << "': " << total_errors);
+        __verbose__ println("    [+] total injected errors in circuit '",
+                            c->id(), "': ", total_errors);
 
         return noisy_c;
     }
@@ -249,17 +247,17 @@ public:
      */
     void dump() {
         println("   [+] depolarizing channel :");
-        println("   [-] single qubit error probability : " << pe);
+        println("   [-] single qubit error probability : ", pe);
         for (size_t i = 1; i < (nq + 1); ++i) {
             double pp = error_probability(nq, i, pe);
-            println("   [i] simultaneous error(s) probability of "
-                    << i << " qubits out of " << nq << " : " << pp);
+            println("   [i] simultaneous error(s) probability of ", i,
+                    " qubits out of ", nq, " : ", pp);
         }
-        println("   [-] overall probability of errors: "
-                << overall_error_probability);
-        println("   [-] probability of (x) errors: " << xp);
-        println("   [-] probability of (z) errors: " << yp);
-        println("   [-] probability of (y) errors: " << zp);
+        println("   [-] overall probability of errors: ",
+                overall_error_probability);
+        println("   [-] probability of (x) errors: ", xp);
+        println("   [-] probability of (z) errors: ", yp);
+        println("   [-] probability of (y) errors: ", zp);
     }
 
 private:

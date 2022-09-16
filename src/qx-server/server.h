@@ -77,11 +77,10 @@ public:
     void start() {
         char buf[__buf_size];
         xpu::tcp_server_socket server(port);
-        println("[+] server listening on port " << port << "...");
+        println("[+] server listening on port ", port, "...");
         sock = server.accept();
-        println("[+] client connected : " << sock->get_foreign_address() << ":"
-                                          << sock->get_foreign_port()
-                                          << std::endl);
+        println("[+] client connected : ", sock->get_foreign_address(), ":",
+                sock->get_foreign_port());
         // sock->send("welcom to server !", 19);
         bool stop = false;
         while (!stop) {
@@ -154,8 +153,8 @@ public:
                     double gs = r.measurement_averaging[q].ground_states;
                     double es = r.measurement_averaging[q].exited_states;
                     double avg = ((es + gs) != 0. ? (gs / (es + gs)) : 0.);
-                    println("[+] measurement averaging of qubit " << q << " : "
-                                                                  << avg);
+                    println("[+] measurement averaging of qubit ", q, " : ",
+                            avg);
                     std::stringstream ss;
                     ss << std::fixed << std::setw(7) << avg;
                     ss << '\n';
@@ -176,7 +175,7 @@ public:
                     sock->send(error_code.c_str(), error_code.length() + 1);
                 } else {
                     qx::circuit *c = 0;
-                    println("[+] trying to execute '" << words[1] << "'");
+                    println("[+] trying to execute '", words[1], "'");
                     for (int i = 0; i < circuits.size(); ++i) {
                         if (words[1] == circuits[i]->id())
                             c = circuits[i];
@@ -226,15 +225,14 @@ public:
                                        error_code.length() + 1);
                         } else {
                             double error_probability = atof(words[3].c_str());
-                            println(
-                                "[+] executing '"
-                                << words[1] << "' (" << iterations
-                                << " iterations) under depolarizing noise...");
+                            println("[+] executing '", words[1], "' (",
+                                    iterations,
+                                    " iterations) under depolarizing noise...");
                             qx::qu_register &r = *reg;
                             qx::depolarizing_channel dch(c, r.size(),
                                                          error_probability);
                             while (iterations--) {
-                                // println("[+] execution of '" << words[1] <<
+                                // println("[+] execution of '" , words[1] ,
                                 // "' under depolarizing noise...");
                                 qx::circuit *nc = dch.inject(false);
                                 nc->execute(r);
@@ -259,11 +257,11 @@ public:
                 format_line(pg_line);
                 replace_all(pg_line, "{", "");
                 replace_all(pg_line, "}", "");
-                // println("pg_line : " << pg_line);
+                // println("pg_line : " , pg_line);
                 strings gates = word_list(pg_line, "|");
                 qx::parallel_gates *_pgs = new qx::parallel_gates();
                 for (size_t i = 0; i < gates.size(); ++i) {
-                    // println("processing '" << gates[i] << "'...");
+                    // println("processing '" , gates[i] , "'...");
                     process_line(gates[i], _pgs);
                 }
                 current_sub_circuit(qubits_count)->add(_pgs);
@@ -783,15 +781,14 @@ private:
                         break;
                     }
                 }
-                // println("[!] warning : circuit '" << name << "' already exist
+                // println("[!] warning : circuit '" , name , "' already exist
                 // ! Old circuit and its gates will be deleted !");
                 if (exist) {
                     delete circuits[index];
                     circuits.erase(circuits.begin() + index);
                 }
-                println("[!] warning : circuit '" << name
-                                                  << "' reinitialized !");
-                // println("label : new circuit '" << line << "' created.");
+                println("[!] warning : circuit '", name, "' reinitialized !");
+                // println("label : new circuit '" , line , "' created.");
                 circuits.push_back(
                     new qx::circuit(qubits_count, line.substr(1)));
                 return 0;
@@ -845,7 +842,7 @@ private:
 
             if ((qubits_count > 0) && (qubits_count < MAX_QUBITS)) {
                 reg = new qx::qu_register(qubits_count);
-                // println(" => qubits number: " << qubits_count);
+                // println(" => qubits number: " , qubits_count);
             } else
                 print_syntax_error(" too many qubits (" << qubits_count
                                                         << ") !",
@@ -1196,8 +1193,8 @@ private:
             if (q2 > (qubits_count - 1))
                 print_semantic_error(" target qubit out of range !",
                                      QX_ERROR_QUBIT_OUT_OF_RANGE);
-            // println(" => toffoli gate on " << process_qubit(params[2]) << "
-            // (ctrl_q1=" << params[0] << ", ctrl_q2=" << params[1] << ")");
+            // println(" => toffoli gate on " << process_qubit(params[2]) , "
+            // (ctrl_q1=" , params[0] , ", ctrl_q2=" , params[1] , ")");
             current_sub_circuit(qubits_count)->add(new qx::toffoli(q0, q1, q2));
         }
         /**
@@ -1214,9 +1211,8 @@ private:
             if (params[0] == "depolarizing_channel") {
                 error_model = __depolarizing_channel__;
                 error_probability = atof(params[1].c_str());
-                println(" => error model:  (name=" << params[0].c_str()
-                                                   << ", error_probability="
-                                                   << error_probability << ")");
+                println(" => error model:  (name=", params[0].c_str(),
+                        ", error_probability=", error_probability, ")");
             } else
                 print_semantic_error(" unknown error model !",
                                      QX_ERROR_INVALID_ERROR_MODEL);
@@ -1228,14 +1224,14 @@ private:
         else if (words[0] == "noise") // operational errors
         {
             strings params = word_list(words[1], ",");
-            println(" => noise (theta=" << params[0].c_str() << ", phi="
-                                        << params[1].c_str() << ")");
+            println(" => noise (theta=", params[0].c_str(),
+                    ", phi=", params[1].c_str(), ")");
         } else if (words[0] == "decoherence") // decoherence
         {
-            println(" => decoherence (dt=" << words[1] << ")");
+            println(" => decoherence (dt=", words[1], ")");
         } else if (words[0] == "qec") // decoherence
         {
-            println(" => quantum error correction scheme = " << words[1]);
+            println(" => quantum error correction scheme = ", words[1]);
         } else
             print_syntax_error(" unknown gate or command !",
                                QX_ERROR_UNKNOWN_COMMAND);

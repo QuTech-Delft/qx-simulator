@@ -179,7 +179,7 @@ bool qx::qu_register::check() {
     for (int64_t i = 0; i < (int64_t)data.size(); ++i)
         sum += data[i].norm();
     // sum += std::norm(data[i]);
-    println("[+] register validity check : " << sum);
+    println("[+] register validity check : ", sum);
     return (std::fabs(sum - 1) < QUBIT_ERROR_THRESHOLD);
 }
 
@@ -222,8 +222,8 @@ void qx::qu_register::dump(bool only_binary = false) {
         for (std::size_t i = 0; i < data.size(); ++i) {
             if ((std::abs(data[i].re) > __amp_epsilon__) ||
                 (std::abs(data[i].im) > __amp_epsilon__)) {
-                print("  [p = " << std::showpos << data[i].norm() << "]");
-                print("  " << std::showpos << data[i] << " |");
+                print("  [p = ", std::showpos, data[i].norm(), "]");
+                print("  ", std::showpos, data[i], " |");
                 to_binary(i, n_qubits);
                 println("> +");
             }
@@ -239,7 +239,7 @@ void qx::qu_register::dump(bool only_binary = false) {
             double gs = measurement_averaging[i].ground_states;
             double es = measurement_averaging[i].exited_states;
             double av = ((es + gs) != 0. ? (gs / (es + gs)) : 0.);
-            print(" | " << std::setw(9) << av);
+            print(" | ", std::setw(9), av);
         }
         println(" |");
     }
@@ -247,13 +247,13 @@ void qx::qu_register::dump(bool only_binary = false) {
     print("[>>] measurement prediction               :");
     print(" ");
     for (int i = measurement_prediction.size() - 1; i >= 0; --i)
-        print(" | " << std::setw(9) << __format_bin(measurement_prediction[i]));
+        print(" | ", std::setw(9), __format_bin(measurement_prediction[i]));
     println(" |");
     println("------------------------------------------- ");
     print("[>>] measurement register                 :");
     print(" ");
     for (int i = measurement_register.size() - 1; i >= 0; --i)
-        print(" | " << std::setw(9) << (measurement_register[i] ? '1' : '0'));
+        print(" | ", std::setw(9), (measurement_register[i] ? '1' : '0'));
     println(" |");
     println("------------------------------------------- ");
 }

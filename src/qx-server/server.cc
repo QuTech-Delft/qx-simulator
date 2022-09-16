@@ -8,7 +8,7 @@
 #include "qx/version.h"
 
 int main(int argc, char **argv) {
-// clang-format off
+    // clang-format off
     println("");
     println("  =================================================================================================== "); 
     println("        _______                                                                                       ");
@@ -17,10 +17,10 @@ int main(int argc, char **argv) {
     println("     /  /___/  /  _>  <      _\\ \\   _/ /   / /|_/ / / /_/ /  / /__ / __ | / /   / /_/ / / , _/        ");
     println("     \\______/\\__\\ /_/|_|    /___/  /___/  /_/  /_/  \\____/  /____//_/ |_|/_/    \\____/ /_/|_|         ");
     println("                                                                                                      ");
-    println("     version " << QX_VERSION << " - QuTech - " << QX_RELEASE_YEAR << " - report bugs and suggestions to: nader.khammassi@gmail.com");
+    println("     version " , QX_VERSION , " - QuTech - " , QX_RELEASE_YEAR , " - report bugs and suggestions to: nader.khammassi@gmail.com");
     println("  =================================================================================================== ");
     println("");
-// clang-format on
+    // clang-format on
 
     size_t port = 5555;
 

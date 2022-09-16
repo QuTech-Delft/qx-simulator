@@ -25,8 +25,17 @@
 using namespace str;
 using namespace qx::linalg;
 
-// #define println(x) std::cout << x << std::endl;
-#define error(x) std::cout << "[x] error : " << x << std::endl;
+template <typename... Args> constexpr void printImpl(Args... x) {
+    (void)(int[]){0, (std::cout << x, 0)...};
+}
+
+template <typename... Args> constexpr void error(Args... x) {
+    std::cerr << "[x] error :";
+
+    printImpl(x...);
+
+    std::cout << std::endl;
+}
 
 #define MAX_QUBITS 32
 
@@ -49,7 +58,7 @@ public:
         // open file
         line_index = 0;
         syntax_error = false;
-        println("[-] loading quantum_state file '" << file_name << "'...");
+        println("[-] loading quantum_state file '", file_name, "'...");
         std::ifstream stream(file_name.c_str());
         if (stream) {
             char buf[2048];
@@ -68,8 +77,8 @@ public:
             println("[+] code loaded successfully. ");
             return 0;
         } else {
-            error("cannot open file "
-                  << file_name << ", the specified file does not exist !");
+            error("cannot open file ", file_name,
+                  ", the specified file does not exist !");
             exit(-1);
             return -1;
         }
@@ -83,9 +92,9 @@ public:
         replace_all(s, "|", "");
         replace_all(s, ">", "");
         if (s.length() != qubits_count) {
-            error(" in '" << file_name << "' at line " << line_index
-                          << " : qubits number of the state basis does not "
-                             "match the defined qubits number ! ");
+            error(" in '", file_name, "' at line ", line_index,
+                  " : qubits number of the state basis does not "
+                  "match the defined qubits number ! ");
             exit(-1);
         }
         return std::bitset<MAX_QUBITS>(s).to_ulong();
@@ -111,7 +120,7 @@ public:
         double img = parse_double(words[1]);
         basis_state_t st = parse_basis_state(words[2]);
         complex_t c(real, img);
-        // println("[#] [ " << c << " -> " << st << " ]");
+        // println("[#] [ ", c, " -> ", st, " ]");
         quantum_state_t &rstate = *state;
         rstate[st] = c;
         return 0;

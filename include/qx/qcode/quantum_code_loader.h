@@ -30,8 +30,9 @@
 
 using namespace str;
 
-// #define println(x) std::cout << x << std::endl;
-#define error(x) std::cout << "[x] error : " << x << std::endl;
+template <typename X> constexpr void error(X const &x) {
+    std::cout << "[x] error : " << x << std::endl;
+}
 
 #define MAX_QUBITS 32
 
@@ -100,7 +101,7 @@ public:
     int parse(bool exit_on_error = true) {
         line_index = 0;
         syntax_error = false;
-        println("[-] loading quantum_code file '" << file_name << "'...");
+        println("[-] loading quantum_code file '", file_name, "'...");
         std::ifstream stream(file_name.c_str());
         if (stream) {
             char buf[2048];
@@ -126,7 +127,7 @@ public:
             println("[+] code loaded successfully. ");
             return 0;
         } else {
-            error("cannot open file " << file_name);
+            error("cannot open file ", file_name);
             if (exit_on_error)
                 exit(-1);
             else
@@ -164,9 +165,8 @@ public:
             return;
         }
         if (address > circuits.size()) {
-            println("[x] invalid circuit pointer ("
-                    << address << ") , there is only " << circuits.size()
-                    << " sub-circuits !");
+            println("[x] invalid circuit pointer (", address,
+                    ") , there is only ", circuits.size(), " sub-circuits !");
             return;
         }
         for (size_t i = address; i < circuits.size(); ++i)
@@ -429,9 +429,9 @@ private:
             if (params[0] == "depolarizing_channel") {
                 error_model = __depolarizing_channel__;
                 error_probability = atof(params[1].c_str());
-                println("[!] noise simulation enabled : error model ="
-                        << params[0].c_str()
-                        << ", error probability =" << error_probability << ")");
+                println("[!] noise simulation enabled : error model =",
+                        params[0].c_str(),
+                        ", error probability =", error_probability, ")");
             } else
                 print_semantic_error(" unknown error model !");
         }
@@ -441,14 +441,14 @@ private:
         else if (words[0] == "noise") // operational errors
         {
             strings params = word_list(words[1], ",");
-            println(" => noise (theta=" << params[0].c_str() << ", phi="
-                                        << params[1].c_str() << ")");
+            println(" => noise (theta=", params[0].c_str(),
+                    ", phi=", params[1].c_str(), ")");
         } else if (words[0] == "decoherence") // decoherence
         {
-            println(" => decoherence (dt=" << words[1] << ")");
+            println(" => decoherence (dt=", words[1], ")");
         } else if (words[0] == "qec") // decoherence
         {
-            println(" => quantum error correction scheme = " << words[1]);
+            println(" => quantum error correction scheme = ", words[1]);
         }
         /**
          * parallel gates
@@ -473,7 +473,7 @@ private:
             size_t q = qubit_id(words[1]); // atoi(words[1].c_str());
             if (q > (qubits_count - 1))
                 print_semantic_error(" target qubit out of range !");
-            // println(" => hadamard gate on: " << q);
+            // println(" => hadamard gate on: " , q);
             if (pg)
                 pg->add(new qx::hadamard(q));
             else
@@ -483,7 +483,7 @@ private:
             size_t q = qubit_id(words[1]); // atoi(words[1].c_str());
             if (q > (qubits_count - 1))
                 print_semantic_error(" target qubit out of range !");
-            // println(" => hadamard gate on: " << q);
+            // println(" => hadamard gate on: " , q);
             if (pg)
                 pg->add(new qx::rx(q, QX_PI / 2));
             else
@@ -494,7 +494,7 @@ private:
             size_t q = qubit_id(words[1]); // atoi(words[1].c_str());
             if (q > (qubits_count - 1))
                 print_semantic_error(" target qubit out of range !");
-            // println(" => hadamard gate on: " << q);
+            // println(" => hadamard gate on: " , q);
             if (pg)
                 pg->add(new qx::rx(q, -QX_PI / 2));
             else
@@ -505,7 +505,7 @@ private:
             size_t q = qubit_id(words[1]); // atoi(words[1].c_str());
             if (q > (qubits_count - 1))
                 print_semantic_error(" target qubit out of range !");
-            // println(" => hadamard gate on: " << q);
+            // println(" => hadamard gate on: " , q);
             if (pg)
                 pg->add(new qx::rx(q, QX_PI));
             else
@@ -515,7 +515,7 @@ private:
             size_t q = qubit_id(words[1]); // atoi(words[1].c_str());
             if (q > (qubits_count - 1))
                 print_semantic_error(" target qubit out of range !");
-            // println(" => hadamard gate on: " << q);
+            // println(" => hadamard gate on: " , q);
             if (pg)
                 pg->add(new qx::ry(q, QX_PI / 2));
             else
@@ -526,7 +526,7 @@ private:
             size_t q = qubit_id(words[1]); // atoi(words[1].c_str());
             if (q > (qubits_count - 1))
                 print_semantic_error(" target qubit out of range !");
-            // println(" => hadamard gate on: " << q);
+            // println(" => hadamard gate on: " , q);
             if (pg)
                 pg->add(new qx::ry(q, -QX_PI / 2));
             else
@@ -537,7 +537,7 @@ private:
             size_t q = qubit_id(words[1]); // atoi(words[1].c_str());
             if (q > (qubits_count - 1))
                 print_semantic_error(" target qubit out of range !");
-            // println(" => hadamard gate on: " << q);
+            // println(" => hadamard gate on: " , q);
             if (pg)
                 pg->add(new qx::ry(q, QX_PI));
             else
@@ -553,8 +553,8 @@ private:
                 print_semantic_error(" control qubit out of range !");
             if (tq > (qubits_count - 1))
                 print_semantic_error(" target qubit out of range !");
-            // println(" => cnot gate : ctrl_qubit=" << cq << ", target_qubit="
-            // << tq);
+            // println(" => cnot gate : ctrl_qubit=" , cq , ", target_qubit="
+            // , tq);
             if (pg)
                 pg->add(new qx::cnot(cq, tq));
             else
@@ -566,7 +566,7 @@ private:
             size_t q2 = qubit_id(params[1]);
             if ((q1 > (qubits_count - 1)) || (q1 > (qubits_count - 1)))
                 print_semantic_error(" target qubit out of range !");
-            // println(" => swap gate : qubit_1=" << q1 << ", qubit_2=" << q2);
+            // println(" => swap gate : qubit_1=" , q1 , ", qubit_2=" , q2);
             if (pg)
                 pg->add(new qx::swap(q1, q2));
             else
@@ -582,8 +582,8 @@ private:
             size_t q2 = qubit_id(params[1]);
             if ((q1 > (qubits_count - 1)) || (q1 > (qubits_count - 1)))
                 print_semantic_error(" target qubit out of range !");
-            // println(" => controlled phase shift gate : ctrl_qubit=" << q1 <<
-            // ", target_qubit=" << q2);
+            // println(" => controlled phase shift gate : ctrl_qubit=" , q1 ,
+            // ", target_qubit=" , q2);
             if (pg)
                 pg->add(new qx::ctrl_phase_shift(q1, q2));
             else
@@ -599,8 +599,8 @@ private:
             size_t q2 = qubit_id(params[1]);
             if ((q1 > (qubits_count - 1)) || (q1 > (qubits_count - 1)))
                 print_semantic_error(" target qubit out of range !");
-            // println(" => controlled phase shift gate : ctrl_qubit=" << q1 <<
-            // ", target_qubit=" << q2);
+            // println(" => controlled phase shift gate : ctrl_qubit=" , q1 ,
+            // ", target_qubit=" , q2);
             if (pg)
                 pg->add(new qx::cphase(q1, q2));
             else
@@ -615,7 +615,7 @@ private:
             size_t q = qubit_id(words[1]);
             if (q > (qubits_count - 1))
                 print_semantic_error(" target qubit out of range !");
-            // println(" => pauli x gate on: " << q);
+            // println(" => pauli x gate on: " , q);
             if (pg)
                 pg->add(new qx::pauli_x(q));
             else
@@ -633,16 +633,16 @@ private:
             if (target > (qubits_count - 1))
                 print_semantic_error(" target qubit out of range !");
             if (bit) {
-                // println(" => binary controlled pauli_x gate (ctrl=" << ctrl
-                // << ", target=" << target << ")");
+                // println(" => binary controlled pauli_x gate (ctrl=" , ctrl
+                // , ", target=" , target , ")");
                 if (pg)
                     pg->add(new qx::bin_ctrl(ctrl, new qx::pauli_x(target)));
                 else
                     current_sub_circuit(qubits_count)
                         ->add(new qx::bin_ctrl(ctrl, new qx::pauli_x(target)));
             } else {
-                // println(" => controlled pauli_x gate (ctrl=" << ctrl << ",
-                // target=" << target << ")");
+                // println(" => controlled pauli_x gate (ctrl=" , ctrl , ",
+                // target=" , target , ")");
                 if (pg)
                     pg->add(new qx::cnot(ctrl, target));
                 else
@@ -677,7 +677,7 @@ private:
             size_t q = qubit_id(words[1]);
             if (q > (qubits_count - 1))
                 print_semantic_error(" target qubit out of range !");
-            // println(" => pauli y gate on: " << atoi(words[1].c_str()));
+            // println(" => pauli y gate on: " , atoi(words[1].c_str()));
             qx::gate *g = new qx::pauli_y(q);
             if (pg)
                 pg->add(g);
@@ -710,7 +710,7 @@ private:
             size_t q = qubit_id(words[1]);
             if (q > (qubits_count - 1))
                 print_semantic_error(" target qubit out of range !");
-            // println(" => pauli z gate on: " << atoi(words[1].c_str()));
+            // println(" => pauli z gate on: " , atoi(words[1].c_str()));
             if (pg)
                 pg->add(new qx::pauli_z(q));
             else
@@ -728,8 +728,8 @@ private:
             if (target > (qubits_count - 1))
                 print_semantic_error(" target qubit out of range !");
             if (bit) {
-                // println(" => binary controlled pauli_z gate (ctrl=" << ctrl
-                // << ", target=" << target << ")");
+                // println(" => binary controlled pauli_z gate (ctrl=" , ctrl
+                // , ", target=" , target , ")");
                 if (pg)
                     pg->add(new qx::bin_ctrl(ctrl, new qx::pauli_z(target)));
                 else
@@ -741,8 +741,8 @@ private:
                 else
                     current_sub_circuit(qubits_count)
                         ->add(new qx::cphase(ctrl, target));
-                // println(" => controlled pauli_z gate (ctrl=" << ctrl << ",
-                // target=" << target << ")"); println("quantum controlled-z not
+                // println(" => controlled pauli_z gate (ctrl=" , ctrl , ",
+                // target=" , target , ")"); println("quantum controlled-z not
                 // implemented yet !");
             }
         } else if (words[0] == "c-z") // c-z gate
@@ -777,7 +777,7 @@ private:
             size_t q = qubit_id(words[1]);
             if (q > (qubits_count - 1))
                 print_semantic_error(" target qubit out of range !");
-            // println(" => t gate on: " << q);
+            // println(" => t gate on: " , q);
             if (pg)
                 pg->add(new qx::t_gate(q));
             else
@@ -791,7 +791,7 @@ private:
             size_t q = qubit_id(words[1]);
             if (q > (qubits_count - 1))
                 print_semantic_error(" target qubit out of range !");
-            // println(" => t gate on: " << q);
+            // println(" => t gate on: " , q);
             if (pg)
                 pg->add(new qx::t_dag_gate(q));
             else
@@ -806,7 +806,7 @@ private:
             size_t q = qubit_id(words[1]);
             if (q > (qubits_count - 1))
                 print_semantic_error(" target qubit out of range !");
-            // println(" => t gate on: " << q);
+            // println(" => t gate on: " , q);
             if (pg) {
                 // pg->add(new qx::measure(q));
                 // pg->add(new qx::bin_ctrl(q,new qx::pauli_x(q)));
@@ -824,8 +824,8 @@ private:
             size_t q = qubit_id(params[0]);
             if (q > (qubits_count - 1))
                 print_semantic_error(" target qubit out of range !");
-            // println(" => rx gate on " << process_qubit(params[0]) << "
-            // (angle=" << params[1] << ")");
+            // println(" => rx gate on " , process_qubit(params[0]) , "
+            // (angle=" , params[1] , ")");
             if (pg)
                 pg->add(new qx::rx(q, atof(params[1].c_str())));
             else
@@ -837,8 +837,8 @@ private:
             size_t q = qubit_id(params[0]);
             if (q > (qubits_count - 1))
                 print_semantic_error(" target qubit out of range !");
-            // println(" => ry gate on " << process_qubit(params[0]) << "
-            // (angle=" << params[1] << ")");
+            // println(" => ry gate on " , process_qubit(params[0]) , "
+            // (angle=" , params[1] , ")");
             if (pg)
                 pg->add(new qx::ry(q, atof(params[1].c_str())));
             else
@@ -850,8 +850,8 @@ private:
             size_t q = qubit_id(params[0]);
             if (q > (qubits_count - 1))
                 print_semantic_error(" target qubit out of range !");
-            // println(" => rz gate on " << process_qubit(params[0]) << "
-            // (angle=" << params[1] << ")");
+            // println(" => rz gate on " , process_qubit(params[0]) , "
+            // (angle=" , params[1] , ")");
             if (pg)
                 pg->add(new qx::rz(q, atof(params[1].c_str())));
             else
@@ -868,7 +868,7 @@ private:
             size_t q = qubit_id(words[1]);
             if (q > (qubits_count - 1))
                 print_semantic_error(" target qubit out of range !");
-            // println(" => phase gate on " << process_qubit(words[1]));
+            // println(" => phase gate on " , process_qubit(words[1]));
             if (pg)
                 pg->add(new qx::phase_shift(q));
             else
@@ -879,7 +879,7 @@ private:
             size_t q = qubit_id(words[1]);
             if (q > (qubits_count - 1))
                 print_semantic_error(" target qubit out of range !");
-            // println(" => phase gate on " << process_qubit(words[1]));
+            // println(" => phase gate on " , process_qubit(words[1]));
             if (pg)
                 pg->add(new qx::phase_shift(q));
             else
@@ -889,7 +889,7 @@ private:
             size_t q = qubit_id(words[1]);
             if (q > (qubits_count - 1))
                 print_semantic_error(" target qubit out of range !");
-            // println(" => sdag gate on: " << q);
+            // println(" => sdag gate on: " , q);
             if (pg)
                 pg->add(new qx::s_dag_gate(q));
             else
@@ -917,8 +917,8 @@ private:
             size_t q = qubit_id(words[1]);
             if (q > (qubits_count - 1))
                 print_semantic_error(" target qubit out of range !");
-            // println(" => measure qubit " << atoi(words[1].c_str()));
-            // println(" => measure qubit " << q);
+            // println(" => measure qubit " , atoi(words[1].c_str()));
+            // println(" => measure qubit " , q);
             if (pg)
                 pg->add(new qx::measure(q));
             else
@@ -941,8 +941,8 @@ private:
                 print_semantic_error(" scond control qubit out of range !");
             if (q2 > (qubits_count - 1))
                 print_semantic_error(" target qubit out of range !");
-            // println(" => toffoli gate on " << process_qubit(params[2]) << "
-            // (ctrl_q1=" << params[0] << ", ctrl_q2=" << params[1] << ")");
+            // println(" => toffoli gate on " , process_qubit(params[2]) , "
+            // (ctrl_q1=" , params[0] , ", ctrl_q2=" , params[1] , ")");
             if (pg)
                 pg->add(new qx::toffoli(q0, q1, q2));
             else
@@ -962,7 +962,7 @@ private:
                                      "should start and end with '\"' !");
             param = param.substr(is + 1, ie - is - 1);
             // format_line(param);
-            // println("param : " << param);
+            // println("param : " , param);
             if (pg)
                 pg->add(new qx::print_str(param));
             else
@@ -978,7 +978,7 @@ private:
              size_t qubit_id(std::string& str)
              {
              std::string id = str.substr(1);
-             println("id=" << id);
+             println("id=" , id);
              return atoi(id.c_str());
              }
            */
