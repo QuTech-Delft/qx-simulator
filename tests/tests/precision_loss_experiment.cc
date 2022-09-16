@@ -22,25 +22,25 @@
     /*
        for (uint32_t i=0; i<ng; i++)
        {
-          //p.add(new qx::rx(0,0.12345));
-          //p.add(new qx::rz(0,0.12345));
-          //p.add(new qx::rz(0,-0.12345));
-          //p.add(new qx::rx(0,-0.12345));
-          //p.add(new qx::phase_shift(i%n)); // fidelity 1
-          //p.add(new qx::pauli_x(i%n));     // fidelity 1
-          //p.add(new qx::pauli_y(i%n));     // fidelity 1
-          p.add(new qx::hadamard(0));   // fidelity f(n_gates)
-          //p.add(new qx::hadamard(i%n));   // fidelity f(n_gates)
+          //p.add(std::make_shared<qx::rx>(0,0.12345));
+          //p.add(std::make_shared<qx::rz>(0,0.12345));
+          //p.add(std::make_shared<qx::rz>(0,-0.12345));
+          //p.add(std::make_shared<qx::rx>(0,-0.12345));
+          //p.add(std::make_shared<qx::phase_shift>(i%n)); // fidelity 1
+          //p.add(std::make_shared<qx::pauli_x>(i%n));     // fidelity 1
+          //p.add(std::make_shared<qx::pauli_y>(i%n));     // fidelity 1
+          p.add(std::make_shared<qx::hadamard>(0));   // fidelity f(n_gates)
+          //p.add(std::make_shared<qx::hadamard>(i%n));   // fidelity f(n_gates)
        }
        //   for (uint32_t j=0; j<n; j++)
-            // p.add(new qx::hadamard(j));
+            // p.add(std::make_shared<qx::hadamard>(j));
     */
 
     for (uint32_t i = 0; i < 200; i++) {
         for (uint32_t j = 0; j < 5000; j++) {
-            p.add(new qx::hadamard(0)); // fidelity f(n_gates)
-            p.add(new qx::pauli_x(0));  // fidelity 1
-            // p.add(new qx::pauli_y(i%n));     // fidelity 1
+            p.add(std::make_shared<qx::hadamard>(0)); // fidelity f(n_gates)
+            p.add(std::make_shared<qx::pauli_x>(0));  // fidelity 1
+            // p.add(std::make_shared<qx::pauli_y>(i%n));     // fidelity 1
         }
 
         // double   predicted_fidelity = 1-0.000035*(ng/2048);

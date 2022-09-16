@@ -12,7 +12,7 @@ namespace qx {
  */
 class error_injector {
 public:
-    virtual qx::circuit *inject(bool) = 0;
+    virtual std::shared_ptr<qx::circuit> inject(bool) = 0;
     virtual ~error_injector(){};
     virtual void dump() = 0;
 };

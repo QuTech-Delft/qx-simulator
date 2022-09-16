@@ -17,6 +17,7 @@
 #include <immintrin.h> // avx
 
 #include <algorithm>
+#include <memory>
 
 #include "qx/core/hash_set.h"
 #include "qx/core/linalg.h"
@@ -157,10 +158,10 @@ const complex_t hadamard_c[] = {R_SQRT_2, R_SQRT_2, R_SQRT_2,
 class gate {
 public:
     virtual int64_t apply(qu_register &qureg) = 0;
-    virtual std::vector<uint64_t> qubits() = 0;
+    virtual std::vector<uint64_t> qubits() const = 0;
     virtual std::vector<uint64_t> control_qubits() = 0;
     virtual std::vector<uint64_t> target_qubits() = 0;
-    virtual gate_type_t type() = 0;
+    virtual gate_type_t type() const = 0;
     virtual std::string micro_code() {
         return "# unsupported operation : qubit out of range";
     }
@@ -745,7 +746,7 @@ public:
         return uc.str();
     }
 
-    std::vector<uint64_t> qubits() override {
+    std::vector<uint64_t> qubits() const override {
         std::vector<uint64_t> r{};
         r.push_back(qubit);
         return r;
@@ -762,7 +763,7 @@ public:
         return r;
     }
 
-    gate_type_t type() override { return __hadamard_gate__; }
+    gate_type_t type() const override { return __hadamard_gate__; }
 
     void dump() override { println("  [-] hadamard(q=", qubit, ")"); }
 };
@@ -969,7 +970,7 @@ public:
         return 0;
     }
 
-    std::vector<uint64_t> qubits() override {
+    std::vector<uint64_t> qubits() const override {
         std::vector<uint64_t> r{};
         r.push_back(control_qubit);
         r.push_back(target_qubit);
@@ -988,7 +989,7 @@ public:
         return r;
     }
 
-    gate_type_t type() override { return __cnot_gate__; }
+    gate_type_t type() const override { return __cnot_gate__; }
 
     void dump() override {
         println("  [-] cnot(ctrl_qubit=", control_qubit,
@@ -1124,7 +1125,7 @@ public:
         return 0;
     }
 
-    std::vector<uint64_t> qubits() override {
+    std::vector<uint64_t> qubits() const override {
         std::vector<uint64_t> r{};
         r.push_back(control_qubit_1);
         r.push_back(control_qubit_2);
@@ -1145,7 +1146,7 @@ public:
         return r;
     }
 
-    gate_type_t type() override { return __toffoli_gate__; }
+    gate_type_t type() const override { return __toffoli_gate__; }
 
     void dump() override {
         println("  [-] toffoli(ctrl_qubit_1=", control_qubit_1,
@@ -1235,7 +1236,7 @@ public:
 
     void dump() override { println("  [-] identity(qubit=", qubit, ")"); }
 
-    std::vector<uint64_t> qubits() override {
+    std::vector<uint64_t> qubits() const override {
         std::vector<uint64_t> r{};
         r.push_back(qubit);
         return r;
@@ -1252,7 +1253,7 @@ public:
         return r;
     }
 
-    gate_type_t type() override { return __identity_gate__; }
+    gate_type_t type() const override { return __identity_gate__; }
 };
 
 /**
@@ -1310,7 +1311,7 @@ public:
 
     void dump() override { println("  [-] pauli-x(qubit=", qubit, ")"); }
 
-    std::vector<uint64_t> qubits() override {
+    std::vector<uint64_t> qubits() const override {
         std::vector<uint64_t> r{};
         r.push_back(qubit);
         return r;
@@ -1327,7 +1328,7 @@ public:
         return r;
     }
 
-    gate_type_t type() override { return __pauli_x_gate__; }
+    gate_type_t type() const override { return __pauli_x_gate__; }
 };
 
 /**
@@ -1365,7 +1366,7 @@ public:
 
     void dump() override { println("  [-] pauli-y(qubit=", qubit, ")"); }
 
-    std::vector<uint64_t> qubits() override {
+    std::vector<uint64_t> qubits() const override {
         std::vector<uint64_t> r{};
         r.push_back(qubit);
         return r;
@@ -1382,7 +1383,7 @@ public:
         return r;
     }
 
-    gate_type_t type() override { return __pauli_y_gate__; }
+    gate_type_t type() const override { return __pauli_y_gate__; }
 };
 
 /**
@@ -1421,7 +1422,7 @@ public:
 
     void dump() override { println("  [-] pauli-z(qubit=", qubit, ")"); }
 
-    std::vector<uint64_t> qubits() override {
+    std::vector<uint64_t> qubits() const override {
         std::vector<uint64_t> r{};
         r.push_back(qubit);
         return r;
@@ -1438,7 +1439,7 @@ public:
         return r;
     }
 
-    gate_type_t type() override { return __pauli_z_gate__; }
+    gate_type_t type() const override { return __pauli_z_gate__; }
 };
 
 /**
@@ -1475,7 +1476,7 @@ public:
 
     void dump() override { println("  [-] phase(qubit=", qubit, ")"); }
 
-    std::vector<uint64_t> qubits() override {
+    std::vector<uint64_t> qubits() const override {
         std::vector<uint64_t> r{};
         r.push_back(qubit);
         return r;
@@ -1492,7 +1493,7 @@ public:
         return r;
     }
 
-    gate_type_t type() override { return __phase_gate__; }
+    gate_type_t type() const override { return __phase_gate__; }
 };
 
 /**
@@ -1515,7 +1516,7 @@ public:
 
     void dump() override { println("  [-] s_dag_gate(qubit=", qubit, ")"); }
 
-    std::vector<uint64_t> qubits() override {
+    std::vector<uint64_t> qubits() const override {
         std::vector<uint64_t> r{};
         r.push_back(qubit);
         return r;
@@ -1532,7 +1533,7 @@ public:
         return r;
     }
 
-    gate_type_t type() override { return __sdag_gate__; }
+    gate_type_t type() const override { return __sdag_gate__; }
 };
 
 /**
@@ -1553,7 +1554,7 @@ public:
 
     void dump() override { println("  [-] t_gate(qubit=", qubit, ")"); }
 
-    std::vector<uint64_t> qubits() override {
+    std::vector<uint64_t> qubits() const override {
         std::vector<uint64_t> r{};
         r.push_back(qubit);
         return r;
@@ -1570,7 +1571,7 @@ public:
         return r;
     }
 
-    gate_type_t type() override { return __t_gate__; }
+    gate_type_t type() const override { return __t_gate__; }
 };
 
 /**
@@ -1593,7 +1594,7 @@ public:
 
     void dump() override { println("  [-] t_dag_gate(qubit=", qubit, ")"); }
 
-    std::vector<uint64_t> qubits() override {
+    std::vector<uint64_t> qubits() const override {
         std::vector<uint64_t> r{};
         r.push_back(qubit);
         return r;
@@ -1610,7 +1611,7 @@ public:
         return r;
     }
 
-    gate_type_t type() override { return __tdag_gate__; }
+    gate_type_t type() const override { return __tdag_gate__; }
 };
 
 /**
@@ -1678,7 +1679,7 @@ public:
         println("  [-] unitary(qubit=", qubit, ", angle=", angle, ")");
     }
 
-    std::vector<uint64_t> qubits() override {
+    std::vector<uint64_t> qubits() const override {
         std::vector<uint64_t> r{};
         r.push_back(qubit);
         return r;
@@ -1695,7 +1696,7 @@ public:
         return r;
     }
 
-    gate_type_t type() override { return __unitary_gate__; }
+    gate_type_t type() const override { return __unitary_gate__; }
 };
 
 /**
@@ -1728,7 +1729,7 @@ public:
         println("  [-] rx(qubit=", qubit, ", angle=", angle, ")");
     }
 
-    std::vector<uint64_t> qubits() override {
+    std::vector<uint64_t> qubits() const override {
         std::vector<uint64_t> r{};
         r.push_back(qubit);
         return r;
@@ -1745,7 +1746,7 @@ public:
         return r;
     }
 
-    gate_type_t type() override { return __rx_gate__; }
+    gate_type_t type() const override { return __rx_gate__; }
 };
 
 /**
@@ -1778,7 +1779,7 @@ public:
         println("  [-] ry(qubit=", qubit, ", angle=", angle, ")");
     }
 
-    std::vector<uint64_t> qubits() override {
+    std::vector<uint64_t> qubits() const override {
         std::vector<uint64_t> r{};
         r.push_back(qubit);
         return r;
@@ -1795,7 +1796,7 @@ public:
         return r;
     }
 
-    gate_type_t type() override { return __ry_gate__; }
+    gate_type_t type() const override { return __ry_gate__; }
 };
 
 /**
@@ -1828,7 +1829,7 @@ public:
         println("  [-] rz(qubit=", qubit, ", angle=", angle, ")");
     }
 
-    std::vector<uint64_t> qubits() override {
+    std::vector<uint64_t> qubits() const override {
         std::vector<uint64_t> r{};
         r.push_back(qubit);
         return r;
@@ -1845,7 +1846,7 @@ public:
         return r;
     }
 
-    gate_type_t type() override { return __rz_gate__; }
+    gate_type_t type() const override { return __rz_gate__; }
 };
 
 void __shift(cvector_t &amp, size_t size, size_t bit, complex_t p,
@@ -2131,13 +2132,13 @@ public:
         println("q", qubit[qubit.size() - 1], ")");
     }
 
-    std::vector<uint64_t> qubits() override { return qubit; }
+    std::vector<uint64_t> qubits() const override { return qubit; }
 
     std::vector<uint64_t> control_qubits() override { return qubit; }
 
     std::vector<uint64_t> target_qubits() override { return qubit; }
 
-    gate_type_t type() override { return __qft_gate__; }
+    gate_type_t type() const override { return __qft_gate__; }
 };
 
 /**
@@ -2252,7 +2253,7 @@ public:
                 z.im, ") )");
     }
 
-    std::vector<uint64_t> qubits() override {
+    std::vector<uint64_t> qubits() const override {
         std::vector<uint64_t> r{};
         r.push_back(ctrl_qubit);
         r.push_back(target_qubit);
@@ -2271,7 +2272,7 @@ public:
         return r;
     }
 
-    gate_type_t type() override { return __ctrl_phase_shift_gate__; }
+    gate_type_t type() const override { return __ctrl_phase_shift_gate__; }
 };
 
 /**
@@ -2305,7 +2306,7 @@ public:
         println("  [-] swap(q1=", qubit1, ", q2=", qubit2, ")");
     }
 
-    std::vector<uint64_t> qubits() override {
+    std::vector<uint64_t> qubits() const override {
         std::vector<uint64_t> r{};
         r.push_back(qubit1);
         r.push_back(qubit2);
@@ -2324,7 +2325,7 @@ public:
         return r;
     }
 
-    gate_type_t type() override { return __swap_gate__; }
+    gate_type_t type() const override { return __swap_gate__; }
 };
 
 /**
@@ -2351,7 +2352,7 @@ public:
                 ", target_qubit=", target_qubit, ")");
     }
 
-    std::vector<uint64_t> qubits() override {
+    std::vector<uint64_t> qubits() const override {
         std::vector<uint64_t> r{};
         r.push_back(ctrl_qubit);
         r.push_back(target_qubit);
@@ -2370,7 +2371,7 @@ public:
         return r;
     }
 
-    gate_type_t type() override { return __cphase_gate__; }
+    gate_type_t type() const override { return __cphase_gate__; }
 };
 
 /**
@@ -2440,7 +2441,7 @@ public:
     /**
      * type
      */
-    gate_type_t type() override { return __custom_gate__; }
+    gate_type_t type() const override { return __custom_gate__; }
 };
 
 double p1_worker(uint64_t cs, uint64_t ce, uint64_t qubit, cvector_t *p_data) {
@@ -2802,7 +2803,7 @@ public:
             println("  [-] measure(qubit=", qubit, ")");
     }
 
-    std::vector<uint64_t> qubits() override {
+    std::vector<uint64_t> qubits() const override {
         std::vector<uint64_t> r{};
         if (!measure_all)
             r.push_back(qubit);
@@ -2822,7 +2823,7 @@ public:
 
     std::vector<uint64_t> target_qubits() override { return qubits(); }
 
-    gate_type_t type() override {
+    gate_type_t type() const override {
         if (measure_all)
             return __measure_reg_gate__;
         else
@@ -2875,7 +2876,7 @@ public:
             println("  [-] measure_x(qubit=", qubit, ")");
     }
 
-    std::vector<uint64_t> qubits() override {
+    std::vector<uint64_t> qubits() const override {
         std::vector<uint64_t> r{};
         if (!measure_all)
             r.push_back(qubit);
@@ -2895,7 +2896,7 @@ public:
 
     std::vector<uint64_t> target_qubits() override { return qubits(); }
 
-    gate_type_t type() override {
+    gate_type_t type() const override {
         if (measure_all)
             return __measure_x_reg_gate__;
         else
@@ -2958,7 +2959,7 @@ public:
             println("  [-] measure_y(qubit=", qubit, ")");
     }
 
-    std::vector<uint64_t> qubits() override {
+    std::vector<uint64_t> qubits() const override {
         std::vector<uint64_t> r{};
         if (!measure_all)
             r.push_back(qubit);
@@ -2978,7 +2979,7 @@ public:
 
     std::vector<uint64_t> target_qubits() override { return qubits(); }
 
-    gate_type_t type() override {
+    gate_type_t type() const override {
         if (measure_all)
             return __measure_y_reg_gate__;
         else
@@ -2993,12 +2994,15 @@ class bin_ctrl final : public gate {
 private:
     // uint64_t bit;
     std::vector<size_t> bits{};
-    gate *g;
+    std::shared_ptr<gate> g;
 
 public:
-    bin_ctrl(size_t bit, gate *g) : g(g) { bits.push_back(bit); }
+    bin_ctrl(size_t bit, std::shared_ptr<gate> g) : g(std::move(g)) {
+        bits.push_back(bit);
+    }
 
-    bin_ctrl(std::vector<size_t> bit, gate *g) : g(g) {
+    bin_ctrl(std::vector<size_t> bit, std::shared_ptr<gate> g)
+        : g(std::move(g)) {
         for (auto b : bit)
             bits.push_back(b);
     }
@@ -3013,7 +3017,7 @@ public:
         return 0;
     }
 
-    gate *get_gate() { return g; }
+    std::shared_ptr<gate> get_gate() { return g; }
 
     std::vector<size_t> get_bits() { return bits; }
 
@@ -3022,7 +3026,7 @@ public:
         g->dump();
     }
 
-    std::vector<uint64_t> qubits() override { return g->qubits(); }
+    std::vector<uint64_t> qubits() const override { return g->qubits(); }
 
     std::vector<uint64_t> control_qubits() override {
         return g->control_qubits();
@@ -3032,12 +3036,12 @@ public:
         return g->target_qubits();
     }
 
-    gate_type_t type() override { return __bin_ctrl_gate__; }
+    gate_type_t type() const override { return __bin_ctrl_gate__; }
 };
 
-#define bin_ctrl_pauli_x(b, q) bin_ctrl(b, new pauli_x(q))
-#define bin_ctrl_pauli_y(b, q) bin_ctrl(b, new pauli_y(q))
-#define bin_ctrl_pauli_z(b, q) bin_ctrl(b, new pauli_z(q))
+#define bin_ctrl_pauli_x(b, q) bin_ctrl(b, std::make_shared<pauli_x>(q))
+#define bin_ctrl_pauli_y(b, q) bin_ctrl(b, std::make_shared<pauli_y>(q))
+#define bin_ctrl_pauli_z(b, q) bin_ctrl(b, std::make_shared<pauli_z>(q))
 
 /**
  * \brief classical binary not gate
@@ -3061,7 +3065,9 @@ public:
         println("  [-] not ", bit);
     }
 
-    std::vector<uint64_t> qubits() override { return std::vector<uint64_t>(); }
+    std::vector<uint64_t> qubits() const override {
+        return std::vector<uint64_t>();
+    }
 
     std::vector<uint64_t> control_qubits() override {
         return std::vector<uint64_t>();
@@ -3071,7 +3077,7 @@ public:
         return std::vector<uint64_t>();
     }
 
-    gate_type_t type() override { return __classical_not_gate__; }
+    gate_type_t type() const override { return __classical_not_gate__; }
 };
 
 /**
@@ -3094,7 +3100,7 @@ public:
 
     void dump() override { println("  [-] prepz(qubit=", qubit, ")"); }
 
-    std::vector<uint64_t> qubits() override {
+    std::vector<uint64_t> qubits() const override {
         std::vector<uint64_t> r{};
         r.push_back(qubit);
         return r;
@@ -3107,7 +3113,7 @@ public:
 
     std::vector<uint64_t> target_qubits() override { return qubits(); }
 
-    gate_type_t type() override { return __prepz_gate__; }
+    gate_type_t type() const override { return __prepz_gate__; }
 };
 
 /**
@@ -3132,7 +3138,7 @@ public:
 
     void dump() override { println("  [-] prepx(qubit=", qubit, ")"); }
 
-    std::vector<uint64_t> qubits() override {
+    std::vector<uint64_t> qubits() const override {
         std::vector<uint64_t> r{};
         r.push_back(qubit);
         return r;
@@ -3145,7 +3151,7 @@ public:
 
     std::vector<uint64_t> target_qubits() override { return qubits(); }
 
-    gate_type_t type() override { return __prepx_gate__; }
+    gate_type_t type() const override { return __prepx_gate__; }
 };
 
 /**
@@ -3169,7 +3175,7 @@ public:
 
     void dump() override { println("  [-] prepy(qubit=", qubit, ")"); }
 
-    std::vector<uint64_t> qubits() override {
+    std::vector<uint64_t> qubits() const override {
         std::vector<uint64_t> r{};
         r.push_back(qubit);
         return r;
@@ -3182,13 +3188,13 @@ public:
 
     std::vector<uint64_t> target_qubits() override { return qubits(); }
 
-    gate_type_t type() override { return __prepy_gate__; }
+    gate_type_t type() const override { return __prepy_gate__; }
 };
 
 class lookup_gate_table final : public gate {
 private:
     std::vector<uint64_t> ctrl_bits;
-    std::map<uint64_t, gate *> gates;
+    std::map<uint64_t, std::shared_ptr<gate>> gates;
 
 public:
     lookup_gate_table(uint64_t b0) { ctrl_bits.push_back(b0); }
@@ -3206,7 +3212,7 @@ public:
 
     lookup_gate_table(std::vector<uint64_t> ctrl_bits) : ctrl_bits(ctrl_bits) {}
 
-    void add_gate(uint64_t cond, gate *g) {
+    void add_gate(uint64_t cond, std::shared_ptr<gate> g) {
         assert(cond < (1 << ctrl_bits.size()));
         gates[cond] = g;
     }
@@ -3232,7 +3238,7 @@ public:
         return 0;
     }
 
-    std::vector<uint64_t> qubits() override {
+    std::vector<uint64_t> qubits() const override {
         std::vector<uint64_t> r{};
         // to do
         for (auto ig = gates.begin(); ig != gates.end(); ++ig) {
@@ -3266,7 +3272,7 @@ public:
 
     void dump() override { println("  [-] lookup gate table : "); }
 
-    gate_type_t type() override { return __lookup_table__; }
+    gate_type_t type() const override { return __lookup_table__; }
 };
 
 /**
@@ -3290,7 +3296,7 @@ public:
         println("  [-] display(only_binary=", only_binary, ")");
     }
 
-    std::vector<uint64_t> qubits() override {
+    std::vector<uint64_t> qubits() const override {
         std::vector<uint64_t> r{};
         return r;
     }
@@ -3305,7 +3311,7 @@ public:
         return r;
     }
 
-    gate_type_t type() override {
+    gate_type_t type() const override {
         if (only_binary)
             return __display_binary__;
         else
@@ -3326,14 +3332,21 @@ public:
         return 0;
     }
 
-    uint64_t add(gate *g) {
-        gates.push_back(g);
+    uint64_t add(std::shared_ptr<gate> gate) {
+        gates.push_back(std::move(gate));
         return gates.size();
     }
 
-    std::vector<gate *> get_gates() { return gates; }
+    bool has(std::function<bool(gate const *)> predicate) {
+        for (auto const &gate : gates) {
+            if (predicate(gate.get())) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-    std::vector<uint64_t> qubits() override {
+    std::vector<uint64_t> qubits() const override {
         std::vector<uint64_t> r{};
         for (uint64_t i = 0; i < gates.size(); i++) {
             std::vector<uint64_t> q = gates[i]->qubits();
@@ -3366,10 +3379,10 @@ public:
             gates[i]->dump();
     }
 
-    gate_type_t type() override { return __parallel_gate__; }
+    gate_type_t type() const override { return __parallel_gate__; }
 
 private:
-    std::vector<gate *> gates; // list of the parallel gates
+    std::vector<std::shared_ptr<gate>> gates; // list of the parallel gates
 };
 
 /**
@@ -3416,7 +3429,7 @@ public:
         println("  [-] prepare (quantum_state=", state, ")");
     }
 
-    std::vector<uint64_t> qubits() override {
+    std::vector<uint64_t> qubits() const override {
         std::vector<uint64_t> r{};
         // this is a dirty hack, itshould be fixed later (unknown qubit number
         // !)
@@ -3432,7 +3445,7 @@ public:
 
     std::vector<uint64_t> target_qubits() override { return qubits(); }
 
-    gate_type_t type() override { return __prepare_gate__; }
+    gate_type_t type() const override { return __prepare_gate__; }
 };
 
 /**
@@ -3453,13 +3466,13 @@ public:
 
     void dump() override { println(" print ", str, "\""); }
 
-    std::vector<uint64_t> qubits() override { return {}; }
+    std::vector<uint64_t> qubits() const override { return {}; }
 
     std::vector<uint64_t> control_qubits() override { return {}; }
 
     std::vector<uint64_t> target_qubits() override { return {}; }
 
-    gate_type_t type() override { return __print_str__; }
+    gate_type_t type() const override { return __print_str__; }
 };
 
 } // namespace qx

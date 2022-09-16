@@ -55,7 +55,7 @@ namespace qx {
  */
 class simulator {
 protected:
-    qx::qu_register *reg;
+    std::unique_ptr<qx::qu_register> reg;
     compiler::QasmRepresentation ast;
 
 public:
@@ -87,9 +87,9 @@ public:
     void execute(size_t navg) {
         // quantum state and circuits
         size_t qubits = ast.numQubits();
-        std::vector<qx::circuit *> circuits;
-        std::vector<qx::circuit *> noisy_circuits;
-        std::vector<qx::circuit *> perfect_circuits;
+        std::vector<std::shared_ptr<qx::circuit>> circuits;
+        std::vector<std::shared_ptr<qx::circuit>> noisy_circuits;
+        std::vector<std::shared_ptr<qx::circuit>> perfect_circuits;
 
         // error model parameters
         size_t total_errors = 0;
@@ -99,7 +99,7 @@ public:
         // create the quantum state
         println("Creating quantum register of ", qubits, " qubits... ");
         try {
-            reg = new qx::qu_register(qubits);
+            reg = std::make_unique<qx::qu_register>(qubits);
         } catch (std::bad_alloc &exception) {
             std::cerr << "Not enough memory, aborting" << std::endl;
             // xpu::clean();

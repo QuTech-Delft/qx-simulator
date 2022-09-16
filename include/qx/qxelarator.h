@@ -12,18 +12,16 @@
 
 class QX {
 public:
-    qx::simulator *qx_sim;
+    std::unique_ptr<qx::simulator> qx_sim;
 
     QX() {
         try {
-            qx_sim = new qx::simulator();
+            qx_sim = std::make_unique<qx::simulator>();
         } catch (std::exception &e) {
             std::cerr << "error creating qx::simulator " << std::endl;
             std::cerr << e.what() << std::endl;
         }
     }
-    ~QX() { delete (qx_sim); }
-
     void set(std::string qasm_file_name) { qx_sim->set(qasm_file_name); }
 
     void execute(size_t navg = 0) { qx_sim->execute(navg); }

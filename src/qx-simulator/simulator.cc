@@ -80,10 +80,10 @@ int main(int argc, char **argv) {
 
     // quantum state and circuits
     size_t qubits = ast.numQubits();
-    std::unique_ptr<qx::qu_register> reg;
-    std::vector<qx::circuit *> circuits;
-    std::vector<qx::circuit *> noisy_circuits;
-    std::vector<qx::circuit *> perfect_circuits;
+    std::shared_ptr<qx::qu_register> reg;
+    std::vector<std::shared_ptr<qx::circuit>> circuits;
+    std::vector<std::shared_ptr<qx::circuit>> noisy_circuits;
+    std::vector<std::shared_ptr<qx::circuit>> perfect_circuits;
     // error model parameters
     size_t total_errors = 0;
     double error_probability = 0;
@@ -92,7 +92,7 @@ int main(int argc, char **argv) {
     // create the quantum state
     println("[+] creating quantum register of ", qubits, " qubits... ");
     try {
-        reg = std::make_unique<qx::qu_register>(qubits);
+        reg = std::make_shared<qx::qu_register>(qubits);
     } catch (std::bad_alloc &exception) {
         std::cerr << "[x] not enough memory, aborting" << std::endl;
         // xpu::clean();

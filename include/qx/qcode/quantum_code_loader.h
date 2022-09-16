@@ -39,7 +39,7 @@ template <typename X> constexpr void error(X const &x) {
 namespace qx {
 
 typedef std::map<std::string, std::string> map_t;
-typedef std::vector<qx::circuit *> circuits_t;
+typedef std::vector<std::shared_ptr<qx::circuit>> circuits_t;
 typedef std::vector<qx::quantum_state_t *> quantum_states_t;
 
 /**
@@ -61,7 +61,7 @@ private:
 
     // circuits
     size_t qubits_count;
-    std::vector<qx::circuit *> circuits;
+    std::vector<std::shared_ptr<qx::circuit>> circuits;
 
     quantum_states_t quantum_states;
     str::strings quantum_state_files;
@@ -289,11 +289,12 @@ private:
      * \return
      *    a pointer to the current sub-circuit
      */
-    qx::circuit *current_sub_circuit(size_t qubits_count) {
+    std::shared_ptr<qx::circuit> current_sub_circuit(size_t qubits_count) {
         if (circuits.size()) {
             return circuits.back();
         }
-        circuits.push_back(new qx::circuit(qubits_count, "default"));
+        circuits.push_back(
+            std::make_shared<qx::circuit>(qubits_count, "default"));
         return circuits.back();
     }
 
@@ -346,9 +347,9 @@ private:
                 print_semantic_error(" qubits number must be defined first !");
             } else {
                 // println("label : new circuit '" << line << "' created.");
-                // circuits.push_back(new qx::circuit(qubits_count,
+                // circuits.push_back(std::make_shared<qx::circuit>(qubits_count,
                 // line.substr(1)));
-                circuits.push_back(new qx::circuit(
+                circuits.push_back(std::make_shared<qx::circuit>(
                     qubits_count, circuit_name(line), iterations(line)));
                 return 0;
             }
@@ -358,11 +359,14 @@ private:
         // process display commands
         if (words.size() == 1) {
             if (words[0] == "display")
-                current_sub_circuit(qubits_count)->add(new qx::display());
+                current_sub_circuit(qubits_count)
+                    ->add(std::make_shared<qx::display>());
             else if (words[0] == "display_binary")
-                current_sub_circuit(qubits_count)->add(new qx::display(true));
+                current_sub_circuit(qubits_count)
+                    ->add(std::make_shared<qx::display>(true));
             else if (words[0] == "measure")
-                current_sub_circuit(qubits_count)->add(new qx::measure());
+                current_sub_circuit(qubits_count)
+                    ->add(std::make_shared<qx::measure>());
             else
                 print_syntax_error("unknown commad !");
             return 0;
@@ -414,7 +418,7 @@ private:
             quantum_state_files.push_back(file);
             quantum_states.push_back(qsl.get_quantum_state());
             current_sub_circuit(qubits_count)
-                ->add(new qx::prepare(qsl.get_quantum_state()));
+                ->add(std::make_shared<qx::prepare>(qsl.get_quantum_state()));
         }
         /**
          * error model
@@ -458,10 +462,10 @@ private:
             replace_all(pg_line, "{", "");
             replace_all(pg_line, "}", "");
             strings gates = word_list(pg_line, "|");
-            qx::parallel_gates *_pgs = new qx::parallel_gates();
+            auto _pgs = std::make_shared<qx::parallel_gates>();
             for (size_t i = 0; i < gates.size(); ++i) {
                 // println(gates[i]);
-                process_line(gates[i], _pgs);
+                process_line(gates[i], _pgs.get());
             }
             current_sub_circuit(qubits_count)->add(_pgs);
         }
@@ -475,9 +479,10 @@ private:
                 print_semantic_error(" target qubit out of range !");
             // println(" => hadamard gate on: " , q);
             if (pg)
-                pg->add(new qx::hadamard(q));
+                pg->add(std::make_shared<qx::hadamard>(q));
             else
-                current_sub_circuit(qubits_count)->add(new qx::hadamard(q));
+                current_sub_circuit(qubits_count)
+                    ->add(std::make_shared<qx::hadamard>(q));
         } else if (words[0] == "rx90") // rx90
         {
             size_t q = qubit_id(words[1]); // atoi(words[1].c_str());
@@ -485,10 +490,10 @@ private:
                 print_semantic_error(" target qubit out of range !");
             // println(" => hadamard gate on: " , q);
             if (pg)
-                pg->add(new qx::rx(q, QX_PI / 2));
+                pg->add(std::make_shared<qx::rx>(q, QX_PI / 2));
             else
                 current_sub_circuit(qubits_count)
-                    ->add(new qx::rx(q, QX_PI / 2));
+                    ->add(std::make_shared<qx::rx>(q, QX_PI / 2));
         } else if (words[0] == "mrx90") // mrx90
         {
             size_t q = qubit_id(words[1]); // atoi(words[1].c_str());
@@ -496,10 +501,10 @@ private:
                 print_semantic_error(" target qubit out of range !");
             // println(" => hadamard gate on: " , q);
             if (pg)
-                pg->add(new qx::rx(q, -QX_PI / 2));
+                pg->add(std::make_shared<qx::rx>(q, -QX_PI / 2));
             else
                 current_sub_circuit(qubits_count)
-                    ->add(new qx::rx(q, -QX_PI / 2));
+                    ->add(std::make_shared<qx::rx>(q, -QX_PI / 2));
         } else if (words[0] == "rx180") // rx90
         {
             size_t q = qubit_id(words[1]); // atoi(words[1].c_str());
@@ -507,9 +512,10 @@ private:
                 print_semantic_error(" target qubit out of range !");
             // println(" => hadamard gate on: " , q);
             if (pg)
-                pg->add(new qx::rx(q, QX_PI));
+                pg->add(std::make_shared<qx::rx>(q, QX_PI));
             else
-                current_sub_circuit(qubits_count)->add(new qx::rx(q, QX_PI));
+                current_sub_circuit(qubits_count)
+                    ->add(std::make_shared<qx::rx>(q, QX_PI));
         } else if (words[0] == "ry90") // rx90
         {
             size_t q = qubit_id(words[1]); // atoi(words[1].c_str());
@@ -517,10 +523,10 @@ private:
                 print_semantic_error(" target qubit out of range !");
             // println(" => hadamard gate on: " , q);
             if (pg)
-                pg->add(new qx::ry(q, QX_PI / 2));
+                pg->add(std::make_shared<qx::ry>(q, QX_PI / 2));
             else
                 current_sub_circuit(qubits_count)
-                    ->add(new qx::ry(q, QX_PI / 2));
+                    ->add(std::make_shared<qx::ry>(q, QX_PI / 2));
         } else if (words[0] == "mry90") // rx90
         {
             size_t q = qubit_id(words[1]); // atoi(words[1].c_str());
@@ -528,10 +534,10 @@ private:
                 print_semantic_error(" target qubit out of range !");
             // println(" => hadamard gate on: " , q);
             if (pg)
-                pg->add(new qx::ry(q, -QX_PI / 2));
+                pg->add(std::make_shared<qx::ry>(q, -QX_PI / 2));
             else
                 current_sub_circuit(qubits_count)
-                    ->add(new qx::ry(q, -QX_PI / 2));
+                    ->add(std::make_shared<qx::ry>(q, -QX_PI / 2));
         } else if (words[0] == "ry180") // rx90
         {
             size_t q = qubit_id(words[1]); // atoi(words[1].c_str());
@@ -539,9 +545,10 @@ private:
                 print_semantic_error(" target qubit out of range !");
             // println(" => hadamard gate on: " , q);
             if (pg)
-                pg->add(new qx::ry(q, QX_PI));
+                pg->add(std::make_shared<qx::ry>(q, QX_PI));
             else
-                current_sub_circuit(qubits_count)->add(new qx::ry(q, QX_PI));
+                current_sub_circuit(qubits_count)
+                    ->add(std::make_shared<qx::ry>(q, QX_PI));
         }
 
         else if (words[0] == "cnot") // cnot gate
@@ -556,9 +563,10 @@ private:
             // println(" => cnot gate : ctrl_qubit=" , cq , ", target_qubit="
             // , tq);
             if (pg)
-                pg->add(new qx::cnot(cq, tq));
+                pg->add(std::make_shared<qx::cnot>(cq, tq));
             else
-                current_sub_circuit(qubits_count)->add(new qx::cnot(cq, tq));
+                current_sub_circuit(qubits_count)
+                    ->add(std::make_shared<qx::cnot>(cq, tq));
         } else if (words[0] == "swap") // cnot gate
         {
             strings params = word_list(words[1], ",");
@@ -568,9 +576,10 @@ private:
                 print_semantic_error(" target qubit out of range !");
             // println(" => swap gate : qubit_1=" , q1 , ", qubit_2=" , q2);
             if (pg)
-                pg->add(new qx::swap(q1, q2));
+                pg->add(std::make_shared<qx::swap>(q1, q2));
             else
-                current_sub_circuit(qubits_count)->add(new qx::swap(q1, q2));
+                current_sub_circuit(qubits_count)
+                    ->add(std::make_shared<qx::swap>(q1, q2));
         }
 
         /**
@@ -585,10 +594,10 @@ private:
             // println(" => controlled phase shift gate : ctrl_qubit=" , q1 ,
             // ", target_qubit=" , q2);
             if (pg)
-                pg->add(new qx::ctrl_phase_shift(q1, q2));
+                pg->add(std::make_shared<qx::ctrl_phase_shift>(q1, q2));
             else
                 current_sub_circuit(qubits_count)
-                    ->add(new qx::ctrl_phase_shift(q1, q2));
+                    ->add(std::make_shared<qx::ctrl_phase_shift>(q1, q2));
         }
         /**
          * cphase
@@ -602,9 +611,10 @@ private:
             // println(" => controlled phase shift gate : ctrl_qubit=" , q1 ,
             // ", target_qubit=" , q2);
             if (pg)
-                pg->add(new qx::cphase(q1, q2));
+                pg->add(std::make_shared<qx::cphase>(q1, q2));
             else
-                current_sub_circuit(qubits_count)->add(new qx::cphase(q1, q2));
+                current_sub_circuit(qubits_count)
+                    ->add(std::make_shared<qx::cphase>(q1, q2));
         }
 
         /**
@@ -617,9 +627,10 @@ private:
                 print_semantic_error(" target qubit out of range !");
             // println(" => pauli x gate on: " , q);
             if (pg)
-                pg->add(new qx::pauli_x(q));
+                pg->add(std::make_shared<qx::pauli_x>(q));
             else
-                current_sub_circuit(qubits_count)->add(new qx::pauli_x(q));
+                current_sub_circuit(qubits_count)
+                    ->add(std::make_shared<qx::pauli_x>(q));
         } else if (words[0] == "cx") // x gate
         {
             strings params = word_list(words[1], ",");
@@ -636,18 +647,20 @@ private:
                 // println(" => binary controlled pauli_x gate (ctrl=" , ctrl
                 // , ", target=" , target , ")");
                 if (pg)
-                    pg->add(new qx::bin_ctrl(ctrl, new qx::pauli_x(target)));
+                    pg->add(std::make_shared<qx::bin_ctrl>(
+                        ctrl, std::make_shared<qx::pauli_x>(target)));
                 else
                     current_sub_circuit(qubits_count)
-                        ->add(new qx::bin_ctrl(ctrl, new qx::pauli_x(target)));
+                        ->add(std::make_shared<qx::bin_ctrl>(
+                            ctrl, std::make_shared<qx::pauli_x>(target)));
             } else {
                 // println(" => controlled pauli_x gate (ctrl=" , ctrl , ",
                 // target=" , target , ")");
                 if (pg)
-                    pg->add(new qx::cnot(ctrl, target));
+                    pg->add(std::make_shared<qx::cnot>(ctrl, target));
                 else
                     current_sub_circuit(qubits_count)
-                        ->add(new qx::cnot(ctrl, target));
+                        ->add(std::make_shared<qx::cnot>(ctrl, target));
             }
         } else if (words[0] == "c-x") // c-x gate
         {
@@ -658,7 +671,7 @@ private:
             size_t target = qubit_id(params[params.size() - 1]);
             if (target > (qubits_count - 1))
                 print_semantic_error(" target qubit out of range !");
-            qx::gate *g = new qx::pauli_x(target);
+            std::shared_ptr<gate> g = std::make_shared<qx::pauli_x>(target);
             // control bit(s) processing
             for (size_t i = 0; i < params.size() - 1; ++i) {
                 if (!is_bit(params[i]))
@@ -666,7 +679,7 @@ private:
                 size_t ctrl = bit_id(params[i]);
                 if (ctrl > (qubits_count - 1))
                     print_semantic_error(" ctrl bit out of range !");
-                g = new qx::bin_ctrl(ctrl, g);
+                g = std::make_shared<qx::bin_ctrl>(ctrl, g);
             }
             if (pg)
                 pg->add(g);
@@ -678,7 +691,7 @@ private:
             if (q > (qubits_count - 1))
                 print_semantic_error(" target qubit out of range !");
             // println(" => pauli y gate on: " , atoi(words[1].c_str()));
-            qx::gate *g = new qx::pauli_y(q);
+            auto g = std::make_shared<qx::pauli_y>(q);
             if (pg)
                 pg->add(g);
             else
@@ -691,7 +704,7 @@ private:
             size_t target = qubit_id(params[params.size() - 1]);
             if (target > (qubits_count - 1))
                 print_semantic_error(" target qubit out of range !");
-            qx::gate *g = new qx::pauli_y(target);
+            std::shared_ptr<gate> g = std::make_shared<qx::pauli_y>(target);
             // control bit(s) processing
             for (size_t i = 0; i < params.size() - 1; ++i) {
                 if (!is_bit(params[i]))
@@ -699,7 +712,7 @@ private:
                 size_t ctrl = bit_id(params[i]);
                 if (ctrl > (qubits_count - 1))
                     print_semantic_error(" ctrl bit out of range !");
-                g = new qx::bin_ctrl(ctrl, g);
+                g = std::make_shared<qx::bin_ctrl>(ctrl, g);
             }
             if (pg)
                 pg->add(g);
@@ -712,9 +725,10 @@ private:
                 print_semantic_error(" target qubit out of range !");
             // println(" => pauli z gate on: " , atoi(words[1].c_str()));
             if (pg)
-                pg->add(new qx::pauli_z(q));
+                pg->add(std::make_shared<qx::pauli_z>(q));
             else
-                current_sub_circuit(qubits_count)->add(new qx::pauli_z(q));
+                current_sub_circuit(qubits_count)
+                    ->add(std::make_shared<qx::pauli_z>(q));
         } else if (words[0] == "cz") // z gate
         {
             strings params = word_list(words[1], ",");
@@ -731,16 +745,18 @@ private:
                 // println(" => binary controlled pauli_z gate (ctrl=" , ctrl
                 // , ", target=" , target , ")");
                 if (pg)
-                    pg->add(new qx::bin_ctrl(ctrl, new qx::pauli_z(target)));
+                    pg->add(std::make_shared<qx::bin_ctrl>(
+                        ctrl, std::make_shared<qx::pauli_z>(target)));
                 else
                     current_sub_circuit(qubits_count)
-                        ->add(new qx::bin_ctrl(ctrl, new qx::pauli_z(target)));
+                        ->add(std::make_shared<qx::bin_ctrl>(
+                            ctrl, std::make_shared<qx::pauli_z>(target)));
             } else {
                 if (pg)
-                    pg->add(new qx::cphase(ctrl, target));
+                    pg->add(std::make_shared<qx::cphase>(ctrl, target));
                 else
                     current_sub_circuit(qubits_count)
-                        ->add(new qx::cphase(ctrl, target));
+                        ->add(std::make_shared<qx::cphase>(ctrl, target));
                 // println(" => controlled pauli_z gate (ctrl=" , ctrl , ",
                 // target=" , target , ")"); println("quantum controlled-z not
                 // implemented yet !");
@@ -754,7 +770,7 @@ private:
             size_t target = qubit_id(params[params.size() - 1]);
             if (target > (qubits_count - 1))
                 print_semantic_error(" target qubit out of range !");
-            qx::gate *g = new qx::pauli_z(target);
+            std::shared_ptr<gate> g = std::make_shared<qx::pauli_z>(target);
             // control bit(s) processing
             for (size_t i = 0; i < params.size() - 1; ++i) {
                 if (!is_bit(params[i]))
@@ -762,7 +778,7 @@ private:
                 size_t ctrl = bit_id(params[i]);
                 if (ctrl > (qubits_count - 1))
                     print_semantic_error(" ctrl bit out of range !");
-                g = new qx::bin_ctrl(ctrl, g);
+                g = std::make_shared<qx::bin_ctrl>(ctrl, g);
             }
             if (pg)
                 pg->add(g);
@@ -779,9 +795,10 @@ private:
                 print_semantic_error(" target qubit out of range !");
             // println(" => t gate on: " , q);
             if (pg)
-                pg->add(new qx::t_gate(q));
+                pg->add(std::make_shared<qx::t_gate>(q));
             else
-                current_sub_circuit(qubits_count)->add(new qx::t_gate(q));
+                current_sub_circuit(qubits_count)
+                    ->add(std::make_shared<qx::t_gate>(q));
         }
         /**
          * Tdag gate
@@ -793,9 +810,10 @@ private:
                 print_semantic_error(" target qubit out of range !");
             // println(" => t gate on: " , q);
             if (pg)
-                pg->add(new qx::t_dag_gate(q));
+                pg->add(std::make_shared<qx::t_dag_gate>(q));
             else
-                current_sub_circuit(qubits_count)->add(new qx::t_dag_gate(q));
+                current_sub_circuit(qubits_count)
+                    ->add(std::make_shared<qx::t_dag_gate>(q));
         }
 
         /**
@@ -808,11 +826,12 @@ private:
                 print_semantic_error(" target qubit out of range !");
             // println(" => t gate on: " , q);
             if (pg) {
-                // pg->add(new qx::measure(q));
-                // pg->add(new qx::bin_ctrl(q,new qx::pauli_x(q)));
-                pg->add(new qx::prepz(q));
+                // pg->add(std::make_shared<qx::measure>(q));
+                // pg->add(std::make_shared<qx::bin_ctrl>(q,std::make_shared<qx::pauli_x>(q)));
+                pg->add(std::make_shared<qx::prepz>(q));
             } else {
-                current_sub_circuit(qubits_count)->add(new qx::prepz(q));
+                current_sub_circuit(qubits_count)
+                    ->add(std::make_shared<qx::prepz>(q));
             }
         }
         /**
@@ -827,10 +846,10 @@ private:
             // println(" => rx gate on " , process_qubit(params[0]) , "
             // (angle=" , params[1] , ")");
             if (pg)
-                pg->add(new qx::rx(q, atof(params[1].c_str())));
+                pg->add(std::make_shared<qx::rx>(q, atof(params[1].c_str())));
             else
                 current_sub_circuit(qubits_count)
-                    ->add(new qx::rx(q, atof(params[1].c_str())));
+                    ->add(std::make_shared<qx::rx>(q, atof(params[1].c_str())));
         } else if (words[0] == "ry") // ry gate
         {
             strings params = word_list(words[1], ",");
@@ -840,10 +859,10 @@ private:
             // println(" => ry gate on " , process_qubit(params[0]) , "
             // (angle=" , params[1] , ")");
             if (pg)
-                pg->add(new qx::ry(q, atof(params[1].c_str())));
+                pg->add(std::make_shared<qx::ry>(q, atof(params[1].c_str())));
             else
                 current_sub_circuit(qubits_count)
-                    ->add(new qx::ry(q, atof(params[1].c_str())));
+                    ->add(std::make_shared<qx::ry>(q, atof(params[1].c_str())));
         } else if (words[0] == "rz") // rz gate
         {
             strings params = word_list(words[1], ",");
@@ -853,10 +872,10 @@ private:
             // println(" => rz gate on " , process_qubit(params[0]) , "
             // (angle=" , params[1] , ")");
             if (pg)
-                pg->add(new qx::rz(q, atof(params[1].c_str())));
+                pg->add(std::make_shared<qx::rz>(q, atof(params[1].c_str())));
             else
                 current_sub_circuit(qubits_count)
-                    ->add(new qx::rz(q, atof(params[1].c_str())));
+                    ->add(std::make_shared<qx::rz>(q, atof(params[1].c_str())));
         }
 
         /**
@@ -870,9 +889,10 @@ private:
                 print_semantic_error(" target qubit out of range !");
             // println(" => phase gate on " , process_qubit(words[1]));
             if (pg)
-                pg->add(new qx::phase_shift(q));
+                pg->add(std::make_shared<qx::phase_shift>(q));
             else
-                current_sub_circuit(qubits_count)->add(new qx::phase_shift(q));
+                current_sub_circuit(qubits_count)
+                    ->add(std::make_shared<qx::phase_shift>(q));
         } else if (words[0] == "s") // phase shift gate
         {
             // strings params = word_list(words[1],",");
@@ -881,9 +901,10 @@ private:
                 print_semantic_error(" target qubit out of range !");
             // println(" => phase gate on " , process_qubit(words[1]));
             if (pg)
-                pg->add(new qx::phase_shift(q));
+                pg->add(std::make_shared<qx::phase_shift>(q));
             else
-                current_sub_circuit(qubits_count)->add(new qx::phase_shift(q));
+                current_sub_circuit(qubits_count)
+                    ->add(std::make_shared<qx::phase_shift>(q));
         } else if (words[0] == "sdag") // Sdag gate
         {
             size_t q = qubit_id(words[1]);
@@ -891,9 +912,10 @@ private:
                 print_semantic_error(" target qubit out of range !");
             // println(" => sdag gate on: " , q);
             if (pg)
-                pg->add(new qx::s_dag_gate(q));
+                pg->add(std::make_shared<qx::s_dag_gate>(q));
             else
-                current_sub_circuit(qubits_count)->add(new qx::s_dag_gate(q));
+                current_sub_circuit(qubits_count)
+                    ->add(std::make_shared<qx::s_dag_gate>(q));
         } else if (words[0] == "not") // classical not gate
         {
             translate(words[1]);
@@ -902,7 +924,7 @@ private:
             size_t b = bit_id(words[1]);
             if (b > (qubits_count - 1))
                 print_semantic_error(" target bit out of range !");
-            qx::gate *g = new qx::classical_not(b);
+            auto g = std::make_shared<qx::classical_not>(b);
             if (pg)
                 pg->add(g);
             else
@@ -920,9 +942,10 @@ private:
             // println(" => measure qubit " , atoi(words[1].c_str()));
             // println(" => measure qubit " , q);
             if (pg)
-                pg->add(new qx::measure(q));
+                pg->add(std::make_shared<qx::measure>(q));
             else
-                current_sub_circuit(qubits_count)->add(new qx::measure(q));
+                current_sub_circuit(qubits_count)
+                    ->add(std::make_shared<qx::measure>(q));
         }
         /**
          * toffoli
@@ -944,10 +967,10 @@ private:
             // println(" => toffoli gate on " , process_qubit(params[2]) , "
             // (ctrl_q1=" , params[0] , ", ctrl_q2=" , params[1] , ")");
             if (pg)
-                pg->add(new qx::toffoli(q0, q1, q2));
+                pg->add(std::make_shared<qx::toffoli>(q0, q1, q2));
             else
                 current_sub_circuit(qubits_count)
-                    ->add(new qx::toffoli(q0, q1, q2));
+                    ->add(std::make_shared<qx::toffoli>(q0, q1, q2));
         } else if (words[0] == "print") // print
         {
             std::string param = original_line;
@@ -964,10 +987,10 @@ private:
             // format_line(param);
             // println("param : " , param);
             if (pg)
-                pg->add(new qx::print_str(param));
+                pg->add(std::make_shared<qx::print_str>(param));
             else
                 current_sub_circuit(qubits_count)
-                    ->add(new qx::print_str(param));
+                    ->add(std::make_shared<qx::print_str>(param));
         } else
             print_syntax_error(" unknown gate or command !");
 

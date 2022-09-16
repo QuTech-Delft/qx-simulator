@@ -34,12 +34,12 @@
     println("[+] building quantum circuit...");
 
     // for (uint32_t i=0; i<n; i++)
-    //    c.add(new hadamard(i));
+    //    c.add(std::make_shared<hadamard>(i));
     for (uint32_t i = 0; i < n - 1; i++) {
-        c.add(new pauli_x(i + 1));
-        c.add(new hadamard(i));
-        c.add(new cnot(i, i + 1));
-        c.add(new pauli_y(i));
+        c.add(std::make_shared<pauli_x>(i + 1));
+        c.add(std::make_shared<hadamard>(i));
+        c.add(std::make_shared<cnot>(i, i + 1));
+        c.add(std::make_shared<pauli_y>(i));
     }
 
     println("[+] executing quantum  circuit...");

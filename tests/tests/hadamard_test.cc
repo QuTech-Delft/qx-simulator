@@ -17,14 +17,14 @@
 
     qx::circuit c(n);
 
-    c.add(new qx::hadamard(0));
-    c.add(new qx::hadamard(0));
-    c.add(new qx::hadamard(1));
-    c.add(new qx::hadamard(1));
-    c.add(new qx::hadamard(2));
-    c.add(new qx::hadamard(2));
-    c.add(new qx::hadamard(3));
-    c.add(new qx::hadamard(3));
+    c.add(std::make_shared<qx::hadamard>(0));
+    c.add(std::make_shared<qx::hadamard>(0));
+    c.add(std::make_shared<qx::hadamard>(1));
+    c.add(std::make_shared<qx::hadamard>(1));
+    c.add(std::make_shared<qx::hadamard>(2));
+    c.add(std::make_shared<qx::hadamard>(2));
+    c.add(std::make_shared<qx::hadamard>(3));
+    c.add(std::make_shared<qx::hadamard>(3));
 
     c.execute(reg, true);
 
@@ -48,18 +48,18 @@
 
        for (uint32_t i=0; i<ng; i++)
        {
-          //p.add(new qx::rx(0,0.12345));
-          //p.add(new qx::rz(0,0.12345));
-          //p.add(new qx::rz(0,-0.12345));
-          //p.add(new qx::rx(0,-0.12345));
-          //p.add(new qx::phase_shift(i%n)); // fidelity 1
-          //p.add(new qx::pauli_x(i%n));     // fidelity 1
-          //p.add(new qx::pauli_y(i%n));     // fidelity 1
-          p.add(new qx::hadamard(0));   // fidelity f(n_gates)
-          //p.add(new qx::hadamard(i%n));   // fidelity f(n_gates)
+          //p.add(std::make_shared<qx::rx>(0,0.12345));
+          //p.add(std::make_shared<qx::rz>(0,0.12345));
+          //p.add(std::make_shared<qx::rz>(0,-0.12345));
+          //p.add(std::make_shared<qx::rx>(0,-0.12345));
+          //p.add(std::make_shared<qx::phase_shift>(i%n)); // fidelity 1
+          //p.add(std::make_shared<qx::pauli_x>(i%n));     // fidelity 1
+          //p.add(std::make_shared<qx::pauli_y>(i%n));     // fidelity 1
+          p.add(std::make_shared<qx::hadamard>(0));   // fidelity f(n_gates)
+          //p.add(std::make_shared<qx::hadamard>(i%n));   // fidelity f(n_gates)
        }
        //   for (uint32_t j=0; j<n; j++)
-            // p.add(new qx::hadamard(j));
+            // p.add(std::make_shared<qx::hadamard>(j));
 
        p.execute(r);
 

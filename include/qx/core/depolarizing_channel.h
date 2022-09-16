@@ -3,6 +3,7 @@
 
 #include "qx/compat.h"
 #include "qx/core/error_injector.h"
+#include <memory>
 #include <random>
 
 namespace qx {
@@ -19,10 +20,7 @@ typedef std::pair<error_type_t, size_t> error_t;
  */
 class depolarizing_channel : public error_injector {
 public:
-    /**
-     * ctor
-     */
-    depolarizing_channel(qx::circuit *c, size_t nq, double pe)
+    depolarizing_channel(std::shared_ptr<qx::circuit> c, size_t nq, double pe)
         : nrg(0, __third__), c(c), nq(nq), pe(pe), xp(__third__), yp(__third__),
           zp(__third__), overall_error_probability(0), total_errors(0),
           error_histogram(nq + 1, 0), error_recording(false) {
@@ -34,11 +32,8 @@ public:
         QX_SRAND(xpu::timer().current());
     }
 
-    /**
-     * ctor
-     */
-    depolarizing_channel(qx::circuit *c, size_t nq, double pe, double xp,
-                         double yp, double zp)
+    depolarizing_channel(std::shared_ptr<qx::circuit> c, size_t nq, double pe,
+                         double xp, double yp, double zp)
         : nrg(0, __third__), c(c), nq(nq), pe(pe), xp(xp), yp(yp), zp(zp),
           overall_error_probability(0), total_errors(0),
           error_histogram(nq + 1, 0), error_recording(false) {
@@ -72,7 +67,7 @@ public:
         return r;
     }
 
-    bool is_measurement(qx::gate *g, size_t q) {
+    bool is_measurement(qx::gate const *g, size_t q) const {
         if (g->type() == __measure_reg_gate__) {
             return true;
         }
@@ -81,12 +76,9 @@ public:
                 return true;
         }
         if (g->type() == __parallel_gate__) {
-            std::vector<qx::gate *> gates =
-                ((qx::parallel_gates *)g)->get_gates();
-            for (size_t i = 0; i < gates.size(); ++i) {
-                if (is_measurement(gates[i], q))
-                    return true;
-            }
+            return ((qx::parallel_gates *)g)->has([this, q](auto const *gate) {
+                return is_measurement(gate, q);
+            });
         }
         return false;
     }
@@ -125,7 +117,7 @@ public:
      * \brief inject errors
      * \return noisy circuit
      */
-    qx::circuit *inject(bool verbose = false) {
+    std::shared_ptr<qx::circuit> inject(bool verbose = false) {
         x_errors = 0;
         z_errors = 0;
         y_errors = 0;
@@ -134,7 +126,7 @@ public:
             "    [e] depolarizing_channel : injecting errors in circuit '",
             c->id(), "'...");
         size_t steps = c->size();
-        qx::circuit *noisy_c = new qx::circuit(nq, c->id() + "(noisy)");
+        auto noisy_c = std::make_shared<qx::circuit>(nq, c->id() + "(noisy)");
 
         errors.clear();
         error_location.clear();
@@ -178,7 +170,7 @@ public:
                     // size_t q = idle[(rand()%idle_nq)];
                     size_t q = rand() % nq;
 
-                    if (is_measurement(c->get(p), q)) {
+                    if (is_measurement(c->get(p).get(), q)) {
                         __verbose__ print("      |--> error on qubit ", q,
                                           " (potential measurement error) ");
                         noisy_c->add(measurement_error(q, verbose));
@@ -190,7 +182,7 @@ public:
                     }
 
                 } else {
-                    qx::parallel_gates *g = new qx::parallel_gates();
+                    auto g = std::make_shared<qx::parallel_gates>();
                     bool measurement = false;
 
                     std::vector<bool> v(nq, 0);
@@ -202,7 +194,7 @@ public:
                         // q = idle[(rand()%idle_nq)];
                         v[q] = 1;
 
-                        if (is_measurement(c->get(p), q))
+                        if (is_measurement(c->get(p).get(), q))
                             measurement = true;
                         __verbose__ print("      |--> error on qubit  ", q,
                                           (measurement
@@ -228,7 +220,7 @@ public:
         __verbose__ println("    [+] total injected errors in circuit '",
                             c->id(), "': ", total_errors);
 
-        return noisy_c;
+        return std::move(noisy_c);
     }
 
     /**
@@ -278,37 +270,39 @@ private:
     /**
      * single qubit error
      */
-    qx::gate *single_qubit_error(size_t q, bool verbose = false) {
+    std::shared_ptr<qx::gate> single_qubit_error(size_t q,
+                                                 bool verbose = false) {
         double p = uniform_rand();
         if (p < xp) {
             __verbose__ println(" (x error) ");
             if (error_recording)
                 errors.push_back(error_t(__x_error__, q));
             x_errors++;
-            return new qx::pauli_x(q);
+            return std::make_shared<qx::pauli_x>(q);
         } else if (p < (zp + xp)) {
             __verbose__ println(" (z error) ");
             if (error_recording)
                 errors.push_back(error_t(__z_error__, q));
             z_errors++;
-            return new qx::pauli_z(q);
+            return std::make_shared<qx::pauli_z>(q);
         } else {
             __verbose__ println(" (y error) ");
             if (error_recording)
                 errors.push_back(error_t(__y_error__, q));
             y_errors++;
-            return new qx::pauli_y(q);
+            return std::make_shared<qx::pauli_y>(q);
         }
     }
 
     /**
      * measurement error
      */
-    qx::gate *measurement_error(size_t q, bool verbose = false) {
+    std::shared_ptr<qx::gate> measurement_error(size_t q,
+                                                bool verbose = false) {
         __verbose__ println(" (measurement error) ");
         if (error_recording)
             errors.push_back(error_t(__x_error__, q));
-        return new qx::pauli_x(q);
+        return std::make_shared<qx::pauli_x>(q);
     }
 
     /**
@@ -344,8 +338,7 @@ private:
     qx::normal_random_number_generator nrg;
     qx::uniform_random_number_generator urg;
 
-    qx::circuit *c;
-    qx::circuit *noisy_c;
+    std::shared_ptr<qx::circuit> c;
     size_t nq;
 
     double pe;
