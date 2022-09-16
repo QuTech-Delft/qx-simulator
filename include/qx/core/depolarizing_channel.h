@@ -31,12 +31,7 @@ public:
             overall_error_probability += pp;
         }
 
-        x_errors = 0;
-        z_errors = 0;
-        y_errors = 0;
-
         QX_SRAND(xpu::timer().current());
-        qx::circuit *noisy_c = new qx::circuit(nq, c->id() + "(noisy)");
     }
 
     /**
@@ -52,12 +47,7 @@ public:
             overall_error_probability += pp;
         }
 
-        x_errors = 0;
-        z_errors = 0;
-        y_errors = 0;
-
         QX_SRAND(xpu::timer().current());
-        qx::circuit *noisy_c = new qx::circuit(nq, c->id() + "(noisy)");
     }
 
     /**
@@ -372,9 +362,9 @@ private:
     bool error_recording;
     std::vector<error_t> errors;
     std::vector<size_t> error_location;
-    size_t x_errors;
-    size_t z_errors;
-    size_t y_errors;
+    size_t x_errors = 0;
+    size_t y_errors = 0;
+    size_t z_errors = 0;
 };
 } // namespace qx
 

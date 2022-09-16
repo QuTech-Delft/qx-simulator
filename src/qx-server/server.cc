@@ -24,8 +24,9 @@ int main(int argc, char **argv) {
 
     size_t port = 5555;
 
-    if (argc == 2)
+    if (argc == 2) {
         port = atoi(argv[1]);
+    }
 
     qx::qx_server server(port);
     server.start();

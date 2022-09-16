@@ -171,7 +171,7 @@ public:
     virtual uint64_t get_duration() { return duration; }
 
 protected:
-    uint64_t duration;
+    uint64_t duration = 0;
 };
 
 /**
@@ -2387,7 +2387,7 @@ private:
 public:
     // #ifdef __BUILTIN_LINALG__
     //	   custom(std::vector<uint64_t>  qubits, qx::linalg::matrix<complex_t>
-    //m) : qubits(qubits), m(m)
+    // m) : qubits(qubits), m(m)
     // #else
     custom(uint64_t qubit, cmatrix_t m)
         : qubit(qubit), m(m)
@@ -2396,7 +2396,7 @@ public:
         //		 uint64_t size = 1 << qubits.size();
         //		 if (size != m.size1() || size != m.size2())
         //		    println("[x] error: cutom gate : the matrix size do
-        //not match the number of qubits !");
+        // not match the number of qubits !");
         // verify also that the matrix is unitary
         // #ifdef __BUILTIN_LINALG__
         // cmatrix_t ctr(m.size2(),m.size1());
@@ -2417,8 +2417,8 @@ public:
         // #else
         // 		 if (equals(mxctr,id))
         // #endif
-        //		    println("[x] error: custom gate : the specified matrix
-        //is not unitary !");
+        //		    println("[x] error: custom gate : the specified
+        //matrix is not unitary !");
     }
 
     /**
@@ -2635,24 +2635,10 @@ int renorm_worker(uint64_t cs, uint64_t ce, uint64_t s, double *length,
 class measure : public gate {
 private:
     uint64_t qubit;
-    bool measure_all;
-    bool disable_averaging;
+    bool measure_all = false;
+    bool disable_averaging = false;
 
-public:
-    measure(uint64_t qubit, bool disable_averaging = false)
-        : qubit(qubit), measure_all(false),
-          disable_averaging(disable_averaging) {}
-
-    measure() : qubit(0), measure_all(true) {}
-
-    int64_t apply(qu_register &qreg) {
-        if (measure_all) {
-            // qreg.measure();
-            for (size_t q = 0; q < qreg.size(); q++)
-                qx::measure(q).apply(qreg);
-            return 0;
-        }
-
+    static int64_t apply_single(uint64_t qubit, qu_register &qreg, bool disable_averaging = false) {
         double f = qreg.rand();
         double p = 0;
         int64_t value;
@@ -2796,6 +2782,23 @@ public:
         }
 
         return value;
+    }
+
+public:
+    measure(uint64_t qubit, bool disable_averaging = false)
+        : qubit(qubit), disable_averaging(disable_averaging) {}
+
+    measure() : qubit(0), measure_all(true) {}
+
+    int64_t apply(qu_register &qreg) override {
+        if (measure_all) {
+            for (size_t q = 0; q < qreg.size(); q++) {
+                apply_single(q, qreg, disable_averaging);
+            }
+            return 0;
+        }
+
+        return apply_single(qubit, qreg, disable_averaging);
     }
 
     void dump() {

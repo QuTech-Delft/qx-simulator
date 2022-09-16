@@ -18,7 +18,7 @@ inline static void fill_addr(const std::string &address, unsigned short port,
 
 // socket code
 
-basic_socket::basic_socket(int type, int protocol) throw(socket_exception) {
+basic_socket::basic_socket(int type, int protocol) {
 #ifdef WIN32
     if (!initialized) {
         WORD wVersionRequested;
@@ -49,7 +49,7 @@ basic_socket::~basic_socket() {
     sock_desc = -1;
 }
 
-std::string basic_socket::get_local_address() throw(socket_exception) {
+std::string basic_socket::get_local_address() {
     sockaddr_in addr;
     unsigned int addr_len = sizeof(addr);
 
@@ -60,7 +60,7 @@ std::string basic_socket::get_local_address() throw(socket_exception) {
     return inet_ntoa(addr.sin_addr);
 }
 
-unsigned short basic_socket::get_local_port() throw(socket_exception) {
+unsigned short basic_socket::get_local_port() {
     sockaddr_in addr;
     unsigned int addr_len = sizeof(addr);
 
@@ -71,8 +71,7 @@ unsigned short basic_socket::get_local_port() throw(socket_exception) {
     return ntohs(addr.sin_port);
 }
 
-void basic_socket::set_local_port(unsigned short local_port) throw(
-    socket_exception) {
+void basic_socket::set_local_port(unsigned short local_port) {
     // bind the socket to its port
     sockaddr_in local_addr;
     memset(&local_addr, 0, sizeof(local_addr));
@@ -85,9 +84,8 @@ void basic_socket::set_local_port(unsigned short local_port) throw(
     }
 }
 
-void basic_socket::set_local_address_and_port(
-    const std::string &local_address,
-    unsigned short local_port) throw(socket_exception) {
+void basic_socket::set_local_address_and_port(const std::string &local_address,
+                                              unsigned short local_port) {
     // Get the address of the requested host
     sockaddr_in local_addr;
     fill_addr(local_address, local_port, local_addr);
@@ -98,7 +96,7 @@ void basic_socket::set_local_address_and_port(
     }
 }
 
-void basic_socket::cleanup() throw(socket_exception) {
+void basic_socket::cleanup() {
 #ifdef WIN32
     if (WSACleanup() != 0) {
         throw socket_exception("WSACleanup() failed");
