@@ -27,39 +27,39 @@
 
     // initialization circuit
     qx::circuit init(n);
-    init.add(new qx::pauli_x(q0)); // set logical qubit to 1
-    // init.add(new qx::hadamard(q0)); // set logical qubit to 1
+    init.add(std::make_shared<qx::pauli_x>(q0)); // set logical qubit to 1
+    // init.add(std::make_shared<qx::hadamard>(q0)); // set logical qubit to 1
 
     // encoding circuit
     qx::circuit encoding(n);
-    encoding.add(new qx::cnot(q0, q1));
-    encoding.add(new qx::cnot(q0, q2));
+    encoding.add(std::make_shared<qx::cnot>(q0, q1));
+    encoding.add(std::make_shared<qx::cnot>(q0, q2));
 
     // error injection
     qx::circuit error(n);
-    error.add(new qx::pauli_x(q2));
+    error.add(std::make_shared<qx::pauli_x>(q2));
 
     // parity check
     qx::circuit parity_check(n);
-    parity_check.add(new qx::cnot(q0, a0));
-    parity_check.add(new qx::cnot(q1, a0));
-    parity_check.add(new qx::cnot(q0, a1));
-    parity_check.add(new qx::cnot(q2, a1));
-    parity_check.add(new qx::measure(a0));
-    parity_check.add(new qx::measure(a1));
+    parity_check.add(std::make_shared<qx::cnot>(q0, a0));
+    parity_check.add(std::make_shared<qx::cnot>(q1, a0));
+    parity_check.add(std::make_shared<qx::cnot>(q0, a1));
+    parity_check.add(std::make_shared<qx::cnot>(q2, a1));
+    parity_check.add(std::make_shared<qx::measure>(a0));
+    parity_check.add(std::make_shared<qx::measure>(a1));
 
     // decoding circuit
     qx::circuit decoding(n);
-    decoding.add(new qx::cnot(q0, q2));
-    decoding.add(new qx::cnot(q0, q1));
+    decoding.add(std::make_shared<qx::cnot>(q0, q2));
+    decoding.add(std::make_shared<qx::cnot>(q0, q1));
 
     // correction circuit
     qx::circuit correction(n);
-    qx::lookup_gate_table *lt = new qx::lookup_gate_table(a0, a1);
+    qx::lookup_gate_table *lt = std::make_shared<qx::lookup_gate_table>(a0, a1);
 
-    lt->add_gate(B_11, new qx::pauli_x(q0));
-    lt->add_gate(B_10, new qx::pauli_x(q1));
-    lt->add_gate(B_01, new qx::pauli_x(q2));
+    lt->add_gate(B_11, std::make_shared<qx::pauli_x>(q0));
+    lt->add_gate(B_10, std::make_shared<qx::pauli_x>(q1));
+    lt->add_gate(B_01, std::make_shared<qx::pauli_x>(q2));
 
     correction.add(lt);
 

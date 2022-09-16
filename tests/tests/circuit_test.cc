@@ -13,12 +13,12 @@
 
     qx::circuit c(n);
 
-    c.add(new qx::pauli_x(0));
-    c.add(new qx::hadamard(0));
-    c.add(new qx::hadamard(1));
-    c.add(new qx::cnot(1, 0));
-    // c.add(new qx::hadamard(1));
-    c.add(new qx::measure(1));
+    c.add(std::make_shared<qx::pauli_x>(0));
+    c.add(std::make_shared<qx::hadamard>(0));
+    c.add(std::make_shared<qx::hadamard>(1));
+    c.add(std::make_shared<qx::cnot>(1, 0));
+    // c.add(std::make_shared<qx::hadamard>(1));
+    c.add(std::make_shared<qx::measure>(1));
 
     c.execute(reg, true);
     /*

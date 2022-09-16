@@ -3,8 +3,8 @@
 
 #include <bitset>
 #include <cassert>
-#include <iostream>
 #include <cstdint>
+#include <iostream>
 
 namespace qx {
 

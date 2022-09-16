@@ -35,7 +35,7 @@ namespace qx {
 class circuit {
 private:
     size_t n_qubit;
-    std::vector<gate *> gates;
+    std::vector<std::shared_ptr<gate>> gates;
     std::string name;
     size_t iteration;
     double time = 0;
@@ -48,48 +48,33 @@ public:
         : n_qubit(n_qubit), name(std::move(name)), iteration(iteration) {}
 
     /**
-     * \brief destructor
-     */
-    ~circuit() {
-        for (std::vector<gate *>::iterator it = gates.begin();
-             it != gates.end(); it++)
-            delete (*it);
-    }
-
-    /**
      * \brief micro code generator
      */
     std::string micro_code() {
         std::stringstream uc;
         uc << "\n" << name << ": \n";
-        for (std::vector<gate *>::iterator it = gates.begin();
-             it != gates.end(); it++)
-            uc << (*it)->micro_code();
+        for (auto &gate : gates)
+            uc << gate->micro_code();
         return uc.str();
     }
 
     /**
      * \brief destructor
      */
-    void clear() {
-        for (std::vector<gate *>::iterator it = gates.begin();
-             it != gates.end(); it++)
-            delete (*it);
-        gates.clear();
-    }
+    void clear() { gates.clear(); }
 
     /**
      * \brief add gate <g> at the end of the circuit
      */
-    void add(gate *g) {
+    void add(std::shared_ptr<gate> gate) {
         // check gate validity before (target/ctrl qubits < n_qubit)
-        gates.push_back(g);
+        gates.push_back(std::move(gate));
     }
 
     /**
      * \brief return gate <i>
      */
-    qx::gate *operator[](size_t i) {
+    std::shared_ptr<qx::gate> operator[](size_t i) {
         assert(i < gates.size());
         return gates[i];
     }
@@ -107,7 +92,7 @@ public:
     /**
      * \brief return gate <i>
      */
-    qx::gate *get(size_t i) {
+    std::shared_ptr<qx::gate> get(size_t i) {
         assert(i < gates.size());
         return gates[i];
     }
@@ -153,8 +138,8 @@ public:
      * insert a gate at the specified
      * position
      */
-    void insert(size_t pos, qx::gate *g) {
-        gates.insert(gates.begin() + pos, g);
+    void insert(size_t pos, std::shared_ptr<qx::gate> gate) {
+        gates.insert(gates.begin() + pos, gate);
     }
 
     /**

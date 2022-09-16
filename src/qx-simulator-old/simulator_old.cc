@@ -59,11 +59,11 @@ int main(int argc, char **argv) {
     qcp.parse();
     // qcp.dump();
 
-    qx::qu_register *reg = NULL;
+    std::unique_ptr<qx::qu_register> reg;
 
     println("[+] creating quantum register of ", qcp.qubits(), " qubits... ");
     try {
-        reg = new qx::qu_register(qcp.qubits());
+        reg = std::make_unique<qx::qu_register>(qcp.qubits());
     } catch (std::bad_alloc &exception) {
         println("[!] not enough memory, aborting");
         // xpu::clean();
@@ -91,7 +91,7 @@ int main(int argc, char **argv) {
                 for (uint32_t it = 0; it < iterations; ++it) {
                     qx::depolarizing_channel dep_ch(
                         perfect_circuits[i], qcp.qubits(), error_probability);
-                    qx::circuit *noisy_c = dep_ch.inject(true);
+                    auto noisy_c = dep_ch.inject(true);
                     println("[+] noisy circuit : ", std::hex, noisy_c);
                     circuits.push_back(noisy_c);
                     total_errors += dep_ch.get_total_errors();
@@ -99,7 +99,7 @@ int main(int argc, char **argv) {
             } else {
                 qx::depolarizing_channel dep_ch(
                     perfect_circuits[i], qcp.qubits(), error_probability);
-                qx::circuit *noisy_c = dep_ch.inject(true);
+                auto noisy_c = dep_ch.inject(true);
                 circuits.push_back(noisy_c);
                 total_errors += dep_ch.get_total_errors();
             }
