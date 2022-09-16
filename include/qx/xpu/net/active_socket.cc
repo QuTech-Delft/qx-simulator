@@ -3,9 +3,8 @@ active_socket::active_socket(int type, int protocol)
 
 active_socket::active_socket(int new_conn_sd) : basic_socket(new_conn_sd) {}
 
-void active_socket::connect(
-    const std::string &foreign_address,
-    unsigned short foreign_port) {
+void active_socket::connect(const std::string &foreign_address,
+                            unsigned short foreign_port) {
     // get the address of the requested host
     sockaddr_in dest_addr;
     fill_addr(foreign_address, foreign_port, dest_addr);
@@ -16,8 +15,7 @@ void active_socket::connect(
     }
 }
 
-void active_socket::send(const void *buffer,
-                         int buffer_len) {
+void active_socket::send(const void *buffer, int buffer_len) {
     if (::send(sock_desc, (raw_type *)buffer, buffer_len, 0) < 0) {
         throw socket_exception("send failed (send())", true);
     }

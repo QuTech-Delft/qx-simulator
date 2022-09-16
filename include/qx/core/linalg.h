@@ -27,9 +27,6 @@
 #include "qx/xpu/complex.h"
 #include "qx/xpu/vector.h"
 
-#define println(x) std::cout << x << std::endl
-#define print(x) std::cout << x
-
 #define MAX_QB_N 64
 
 // #ifndef __BUILTIN_LINALG__
@@ -354,10 +351,10 @@ void dump_matrix(cmatrix_t &m, bool complex_format = false) {
         println("");
         for (uint32_t j = 0; j < m.size1(); ++j) {
             if (complex_format)
-                print(m(i, j) << "  ");
+                print(m(i, j), "  ");
             else
-                print(m(i, j).re << "  ");
-            // else print(m(i,j).real() << "  ");
+                print(m(i, j).re, "  ");
+            // else print(m(i,j).real(), "  ");
         }
     }
     println("");

@@ -80,23 +80,23 @@ public:
      */
     void print_state() {
         println("[+]--- 17q ninja star state ---");
-        println(" X44 = " << reg->get_binary(0));
-        println(" D1  = " << reg->get_binary(1));
-        println(" D3  = " << reg->get_binary(2));
-        println(" D5  = " << reg->get_binary(3));
-        println(" Z10 = " << reg->get_binary(4));
-        println(" X2  = " << reg->get_binary(5));
-        println(" Z4  = " << reg->get_binary(6));
-        println(" D11 = " << reg->get_binary(7));
-        println(" D13 = " << reg->get_binary(8));
-        println(" D15 = " << reg->get_binary(9));
-        println(" Z12 = " << reg->get_binary(10));
-        println(" X14 = " << reg->get_binary(11));
-        println(" Z16 = " << reg->get_binary(12));
-        println(" D21 = " << reg->get_binary(13));
-        println(" D23 = " << reg->get_binary(14));
-        println(" D25 = " << reg->get_binary(15));
-        println(" X22 = " << reg->get_binary(16));
+        println(" X44 = ", reg->get_binary(0));
+        println(" D1  = ", reg->get_binary(1));
+        println(" D3  = ", reg->get_binary(2));
+        println(" D5  = ", reg->get_binary(3));
+        println(" Z10 = ", reg->get_binary(4));
+        println(" X2  = ", reg->get_binary(5));
+        println(" Z4  = ", reg->get_binary(6));
+        println(" D11 = ", reg->get_binary(7));
+        println(" D13 = ", reg->get_binary(8));
+        println(" D15 = ", reg->get_binary(9));
+        println(" Z12 = ", reg->get_binary(10));
+        println(" X14 = ", reg->get_binary(11));
+        println(" Z16 = ", reg->get_binary(12));
+        println(" D21 = ", reg->get_binary(13));
+        println(" D23 = ", reg->get_binary(14));
+        println(" D25 = ", reg->get_binary(15));
+        println(" X22 = ", reg->get_binary(16));
         println("[+]----------------------------");
     }
 
@@ -220,7 +220,7 @@ public:
         qx::measure(15).apply(reg);
         int32_t m = z_basis(reg.get_binary(1)) * z_basis(reg.get_binary(8)) *
                     z_basis(reg.get_binary(15));
-        println("[>] logical state: " << m);
+        println("[>] logical state: ", m);
         return (m == 1);
     }
 
@@ -247,18 +247,18 @@ public:
         uint32_t X22 = reg->get_binary(16);
 
         println("[+]------- Ninja Star State -------");
-        println("                 " << __state(X44));
-        println("     " << __state(D1) << "       " << __state(D3) << "       "
-                        << __state(D5));
-        println(" " << __state(Z10) << "       " << __state(X2) << "       "
-                    << __state(Z4));
-        println("     " << __state(D11) << "       " << __state(D13)
-                        << "       " << __state(D15));
-        println("         " << __state(Z12) << "       " << __state(X14)
-                            << "       " << __state(Z16));
-        println("     " << __state(D21) << "       " << __state(D23)
-                        << "       " << __state(D25));
-        println("         " << __state(X22));
+        println("                 ", __state(X44));
+        println("     ", __state(D1), "       ", __state(D3), "       ",
+                __state(D5));
+        println(" ", __state(Z10), "       ", __state(X2), "       ",
+                __state(Z4));
+        println("     ", __state(D11), "       ", __state(D13), "       ",
+                __state(D15));
+        println("         ", __state(Z12), "       ", __state(X14), "       ",
+                __state(Z16));
+        println("     ", __state(D21), "       ", __state(D23), "       ",
+                __state(D25));
+        println("         ", __state(X22));
     }
 
     /**

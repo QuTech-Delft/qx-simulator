@@ -12,8 +12,14 @@
 #include <string>
 #include <vector>
 
-#define println(x) std::cout << x << std::endl
-#define print(x) std::cout << x
+template <typename... Args> constexpr void print(Args... x) {
+    (void)(int[]){0, (std::cout << x, 0)...};
+}
+
+template <typename... Args> constexpr void println(Args... x) {
+    print(x...);
+    std::cout << std::endl;
+}
 
 #include "qx/core/gate.h"
 
@@ -32,14 +38,14 @@ private:
     std::vector<gate *> gates;
     std::string name;
     size_t iteration;
-    double time;
+    double time = 0;
 
 public:
     /**
      * \brief circuit constructor
      */
     circuit(size_t n_qubit, std::string name = "", size_t iteration = 1)
-        : n_qubit(n_qubit), name(name), iteration(iteration) {}
+        : n_qubit(n_qubit), name(std::move(name)), iteration(iteration) {}
 
     /**
      * \brief destructor
@@ -113,8 +119,7 @@ public:
 #ifdef XPU_TIMER
         xpu::timer tmr;
         if (!silent) {
-            println("[+] executing circuit '" << name << "' (" << it
-                                              << " iter) ...");
+            println("[+] executing circuit '", name, "' (", it, " iter) ...");
             tmr.start();
         }
 #endif
@@ -124,7 +129,7 @@ public:
                     gates[i]->apply(reg);
             else {
                 for (size_t i = 0; i < gates.size(); ++i) {
-                    println("[-] executing gate " << i << "...");
+                    println("[-] executing gate ", i, "...");
                     gates[i]->dump();
                     gates[i]->apply(reg);
                     reg.dump(only_binary);
@@ -134,7 +139,7 @@ public:
 #ifdef XPU_TIMER
         if (!silent) {
             tmr.stop();
-            println("[+] circuit execution time: " << tmr.elapsed() << " sec.");
+            println("[+] circuit execution time: ", tmr.elapsed(), " sec.");
         }
 #endif // XPU_TIMER
     }
@@ -158,9 +163,9 @@ public:
     std::string id() { return name; }
 
     void dump() {
-        println("[+++] circuit '" << name << "' :");
+        println("[+++] circuit '", name, "' :");
         for (size_t i = 0; i < gates.size(); ++i) {
-            print("  |--" << i << "--");
+            print("  |--", i, "--");
             gates[i]->dump();
         }
     }

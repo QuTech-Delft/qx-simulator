@@ -66,6 +66,7 @@
  * simulator
  */
 int main(int argc, char **argv) {
+    // clang-format off
     println("");
     println("  ======================================================================================================="); 
     println("       _______                                                                                       ");
@@ -79,9 +80,10 @@ int main(int argc, char **argv) {
     println("  [released under Apache License 2.0 terms, license copy at:  http://www.apache.org/licenses/LICENSE-2.0]");
     println("  ======================================================================================================= ");
     println("");
+    // clang-format off
     if (argc != 2) {
         println("error : you must specify a circuit file !");
-        println("usage: \n   " << argv[0] << " file.qc");
+        println("usage: \n   ", argv[0], " file.qc");
         return -1;
     }
 
@@ -89,15 +91,14 @@ int main(int argc, char **argv) {
 
     qx::quantum_code_parser qcp(file_name);
 
-    println("[+] loading circuit from '" << file_name << "' ...");
+    println("[+] loading circuit from '", file_name, "' ...");
 
     qcp.parse();
     // qcp.dump();
 
     xpu::init();
 
-    println("[+] creating quantum register of " << qcp.qubits()
-                                                << " qubits... ");
+    println("[+] creating quantum register of ", qcp.qubits(), " qubits... ");
     qx::qu_register reg(qcp.qubits());
 
     qx::circuits_t circuits;
@@ -108,18 +109,18 @@ int main(int argc, char **argv) {
     if (qcp.get_error_model() == qx::__depolarizing_channel__) {
         println("[+] generating noisy circuits...");
         double error_probability = qcp.get_error_probability();
-      double error_probability = qcp.get_error_probability(); 
+        double error_probability = qcp.get_error_probability();
         double error_probability = qcp.get_error_probability();
         qx::circuits_t perfect_circuits = qcp.get_circuits();
         for (uint32_t i = 0; i < perfect_circuits.size(); i++) {
-            println("[>] processing circuit '" << perfect_circuits[i]->id()
-                                               << "'...");
+            println("[>] processing circuit '", perfect_circuits[i]->id(),
+                    "'...");
             qx::depolarizing_channel dep_ch(perfect_circuits[i], qcp.qubits(),
                                             error_probability);
             circuits.push_back(dep_ch.inject(true));
             total_errors += dep_ch.get_total_errors();
         }
-        println("[+] total errors injected in all circuits : " << total_errors);
+        println("[+] total errors injected in all circuits : ", total_errors);
 
     } else
         circuits = qcp.get_circuits();
@@ -141,7 +142,7 @@ int main(int argc, char **argv) {
           dop.add_state(&env,0.1f);
           qx::linalg::cmatrix_t * dm = dop.density_matrix();
           dm->dump();
-          println("[+] purity : " << dop.purity());
+          println("[+] purity : " , dop.purity());
           delete dm;
        }
     */

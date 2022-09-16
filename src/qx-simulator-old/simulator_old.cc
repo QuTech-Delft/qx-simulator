@@ -19,7 +19,7 @@
  * simulator
  */
 int main(int argc, char **argv) {
-// clang-format off
+    // clang-format off
     println("");
     println("  =================================================================================================== "); 
     println("        _______                                                                                       ");
@@ -28,14 +28,14 @@ int main(int argc, char **argv) {
     println("     /  /___/  /  _>  <      _\\ \\   _/ /   / /|_/ / / /_/ /  / /__ / __ | / /   / /_/ / / , _/        ");
     println("     \\______/\\__\\ /_/|_|    /___/  /___/  /_/  /_/  \\____/  /____//_/ |_|/_/    \\____/ /_/|_|         ");
     println("                                                                                                      ");
-    println("     version " << QX_VERSION << " - QuTech - " << QX_RELEASE_YEAR << " - report bugs and suggestions to: nader.khammassi@gmail.com");
+    println("     version " , QX_VERSION , " - QuTech - " , QX_RELEASE_YEAR , " - report bugs and suggestions to: nader.khammassi@gmail.com");
     println("  =================================================================================================== ");
     println("");
-// clang-format on
+    // clang-format on
 
     if ((argc != 2) && (argc != 3)) {
         println("error : you must specify a circuit file !");
-        println("usage: \n   " << argv[0] << " file.qc");
+        println("usage: \n   ", argv[0], " file.qc");
         return -1;
     }
 
@@ -54,15 +54,14 @@ int main(int argc, char **argv) {
 
     qx::quantum_code_parser qcp(file_name);
 
-    println("[+] loading circuit from '" << file_name << "' ...");
+    println("[+] loading circuit from '", file_name, "' ...");
 
     qcp.parse();
     // qcp.dump();
 
     qx::qu_register *reg = NULL;
 
-    println("[+] creating quantum register of " << qcp.qubits()
-                                                << " qubits... ");
+    println("[+] creating quantum register of ", qcp.qubits(), " qubits... ");
     try {
         reg = new qx::qu_register(qcp.qubits());
     } catch (std::bad_alloc &exception) {
@@ -70,8 +69,7 @@ int main(int argc, char **argv) {
         // xpu::clean();
         return -1;
     } catch (std::exception &exception) {
-        println("[!] unexpected exception (" << exception.what()
-                                             << "), aborting");
+        println("[!] unexpected exception (", exception.what(), "), aborting");
         // xpu::clean();
         return -1;
     }
@@ -86,15 +84,15 @@ int main(int argc, char **argv) {
         double error_probability = qcp.get_error_probability();
         qx::circuits_t perfect_circuits = qcp.get_circuits();
         for (uint32_t i = 0; i < perfect_circuits.size(); i++) {
-            println("[>] processing circuit '" << perfect_circuits[i]->id()
-                                               << "'...");
+            println("[>] processing circuit '", perfect_circuits[i]->id(),
+                    "'...");
             uint32_t iterations = perfect_circuits[i]->get_iterations();
             if (iterations > 1) {
                 for (uint32_t it = 0; it < iterations; ++it) {
                     qx::depolarizing_channel dep_ch(
                         perfect_circuits[i], qcp.qubits(), error_probability);
                     qx::circuit *noisy_c = dep_ch.inject(true);
-                    println("[+] noisy circuit : " << std::hex << noisy_c);
+                    println("[+] noisy circuit : ", std::hex, noisy_c);
                     circuits.push_back(noisy_c);
                     total_errors += dep_ch.get_total_errors();
                 }
@@ -106,7 +104,7 @@ int main(int argc, char **argv) {
                 total_errors += dep_ch.get_total_errors();
             }
         }
-        println("[+] total errors injected in all circuits : " << total_errors);
+        println("[+] total errors injected in all circuits : ", total_errors);
 
     } else
         circuits = qcp.get_circuits();

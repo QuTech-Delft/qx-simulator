@@ -29,14 +29,14 @@
     cmatrix_t swap = build_matrix(swap_c, 4);
 
     // -------- print gates ---------
-    println("hadamard : " << h);
-    println("pauli-x  : " << x);
-    println("pauli-y  : " << y);
-    println("pauli-z  : " << z);
-    println("phase    : " << s);
-    println("identity : " << i);
-    println("cnot     : " << cnot);
-    println("swap     : " << swap);
+    println("hadamard : ", h);
+    println("pauli-x  : ", x);
+    println("pauli-y  : ", y);
+    println("pauli-z  : ", z);
+    println("phase    : ", s);
+    println("identity : ", i);
+    println("cnot     : ", cnot);
+    println("swap     : ", swap);
 
     // ---------- operations ----------
     reg = mxv(tensor(i, x), reg.get_data());

@@ -46,9 +46,9 @@ typedef struct __integration_t {
     size_t exited_states = 0;
 } integration_t;
 
-typedef std::vector<state_t> measurement_prediction_t;
-typedef std::vector<bool> measurement_register_t;
-typedef std::vector<integration_t> measurement_averaging_t;
+using measurement_prediction_t = std::vector<state_t>;
+using measurement_register_t = std::vector<bool>;
+using measurement_averaging_t = std::vector<integration_t>;
 
 /**
  * \brief quantum register implementation.

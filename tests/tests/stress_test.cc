@@ -12,7 +12,7 @@
         n = std::abs(atoi(argv[1]));
     n = ((n > 1 && n < 40) ? n : 8);
 
-    println("[+] creating " << n << " qubits ...");
+    println("[+] creating ", n, " qubits ...");
 
     qx::qu_register reg(n);
 
@@ -22,9 +22,9 @@
     // nth kronecker
     cmatrix_t hn = tensor(h, 1 << n);
 
-    println("reg    dim : " << reg.states());
-    println("matrix sz1 : " << hn.size1());
-    println("matrix sz2 : " << hn.size2());
+    println("reg    dim : " , reg.states());
+    println("matrix sz1 : " , hn.size1());
+    println("matrix sz2 : " , hn.size2());
 
     reg = mxv(hn,reg.get_data());
     */
