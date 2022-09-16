@@ -11,7 +11,7 @@ public:
      *   construct a tcp socket with no connection
      *   @exception socket_exception thrown if unable to create tcp socket
      */
-    tcp_socket() throw(socket_exception);
+    tcp_socket();
 
     /**
      *   construct a tcp socket with a connection to the given foreign address
@@ -20,8 +20,7 @@ public:
      *   @param foreign_port foreign port
      *   @exception SocketException thrown if unable to create tcp socket
      */
-    tcp_socket(const std::string &foreign_address,
-               unsigned short foreign_port) throw(socket_exception);
+    tcp_socket(const std::string &foreign_address, unsigned short foreign_port);
 
 private:
     // access for tcp_server_socket::accept() connection creation

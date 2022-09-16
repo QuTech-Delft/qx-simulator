@@ -1,11 +1,11 @@
-active_socket::active_socket(int type, int protocol) throw(socket_exception)
+active_socket::active_socket(int type, int protocol)
     : basic_socket(type, protocol) {}
 
 active_socket::active_socket(int new_conn_sd) : basic_socket(new_conn_sd) {}
 
 void active_socket::connect(
     const std::string &foreign_address,
-    unsigned short foreign_port) throw(socket_exception) {
+    unsigned short foreign_port) {
     // get the address of the requested host
     sockaddr_in dest_addr;
     fill_addr(foreign_address, foreign_port, dest_addr);
@@ -17,13 +17,13 @@ void active_socket::connect(
 }
 
 void active_socket::send(const void *buffer,
-                         int buffer_len) throw(socket_exception) {
+                         int buffer_len) {
     if (::send(sock_desc, (raw_type *)buffer, buffer_len, 0) < 0) {
         throw socket_exception("send failed (send())", true);
     }
 }
 
-int active_socket::recv(void *buffer, int buffer_len) throw(socket_exception) {
+int active_socket::recv(void *buffer, int buffer_len) {
     int rtn;
     if ((rtn = ::recv(sock_desc, (raw_type *)buffer, buffer_len, 0)) < 0) {
         throw socket_exception("received failed (recv())", true);
@@ -32,7 +32,7 @@ int active_socket::recv(void *buffer, int buffer_len) throw(socket_exception) {
     return rtn;
 }
 
-std::string active_socket::get_foreign_address() throw(socket_exception) {
+std::string active_socket::get_foreign_address() {
     sockaddr_in addr;
     unsigned int addr_len = sizeof(addr);
 
@@ -43,7 +43,7 @@ std::string active_socket::get_foreign_address() throw(socket_exception) {
     return inet_ntoa(addr.sin_addr);
 }
 
-unsigned short active_socket::get_foreign_port() throw(socket_exception) {
+unsigned short active_socket::get_foreign_port() {
     sockaddr_in addr;
     unsigned int addr_len = sizeof(addr);
 

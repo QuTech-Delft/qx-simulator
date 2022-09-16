@@ -20,8 +20,7 @@ public:
      *   @exception socket_exception thrown if unable to create TCP server
      * socket
      */
-    tcp_server_socket(unsigned short local_port,
-                      int queue_len = 5) throw(socket_exception);
+    tcp_server_socket(unsigned short local_port, int queue_len = 5);
 
     /**
      *   construct a TCP socket for use with a server, accepting connections
@@ -34,8 +33,7 @@ public:
      * socket
      */
     tcp_server_socket(const std::string &local_address,
-                      unsigned short local_port,
-                      int queue_len = 5) throw(socket_exception);
+                      unsigned short local_port, int queue_len = 5);
 
     /**
      *   blocks until a new connection is established on this socket or error
@@ -43,10 +41,10 @@ public:
      *   @exception socket_exception thrown if attempt to accept a new
      * connection fails
      */
-    tcp_socket *accept() throw(socket_exception);
+    tcp_socket *accept();
 
 private:
-    void set_listen(int queue_len) throw(socket_exception);
+    void set_listen(int queue_len);
 };
 
 #include "qx/xpu/net/tcp_server_socket.cc"

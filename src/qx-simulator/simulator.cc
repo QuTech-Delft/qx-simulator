@@ -13,6 +13,7 @@
 #endif
 
 #include <iostream>
+#include <memory>
 
 #include "qx/version.h"
 
@@ -37,7 +38,6 @@ void print_banner() {
  */
 int main(int argc, char **argv) {
     std::string file_path;
-    size_t ncpu = 0;
     size_t navg = 0;
     print_banner();
 
@@ -51,8 +51,10 @@ int main(int argc, char **argv) {
     file_path = argv[1];
     if (argc > 2)
         navg = (atoi(argv[2]));
-    if (argc > 3)
-        ncpu = (atoi(argv[3]));
+    
+    // size_t ncpu = 0;
+    // if (argc > 3)
+    //     ncpu = (atoi(argv[3]));
     // if (ncpu && ncpu < 128) xpu::init(ncpu);
     // else xpu::init();
 
@@ -65,12 +67,9 @@ int main(int argc, char **argv) {
         return -1;
     }
 
-    // construct libqasm parser and safely parse input file
-    compiler::QasmSemanticChecker *parser;
     compiler::QasmRepresentation ast;
     try {
-        parser = new compiler::QasmSemanticChecker(qasm_file);
-        ast = parser->getQasmRepresentation();
+        ast = compiler::QasmSemanticChecker(qasm_file).getQasmRepresentation();
     } catch (std::exception &e) {
         std::cerr << "error while parsing file " << file_path << ": "
                   << std::endl;
@@ -81,7 +80,7 @@ int main(int argc, char **argv) {
 
     // quantum state and circuits
     size_t qubits = ast.numQubits();
-    qx::qu_register *reg = NULL;
+    std::unique_ptr<qx::qu_register> reg;
     std::vector<qx::circuit *> circuits;
     std::vector<qx::circuit *> noisy_circuits;
     std::vector<qx::circuit *> perfect_circuits;
@@ -93,7 +92,7 @@ int main(int argc, char **argv) {
     // create the quantum state
     println("[+] creating quantum register of " << qubits << " qubits... ");
     try {
-        reg = new qx::qu_register(qubits);
+        reg = std::make_unique<qx::qu_register>(qubits);
     } catch (std::bad_alloc &exception) {
         std::cerr << "[x] not enough memory, aborting" << std::endl;
         // xpu::clean();
@@ -138,18 +137,18 @@ int main(int argc, char **argv) {
             qx::measure m;
             for (size_t s = 0; s < navg; ++s) {
                 reg->reset();
-                for (size_t i = 0; i < perfect_circuits.size(); i++) {
-                    if (perfect_circuits[i]->size() == 0)
+                for (auto perfect_circuit: perfect_circuits) {
+                    if (perfect_circuit->size() == 0)
                         continue;
-                    size_t iterations = perfect_circuits[i]->get_iterations();
+                    size_t iterations = perfect_circuit->get_iterations();
                     if (iterations > 1) {
                         for (size_t it = 0; it < iterations; ++it) {
-                            qx::noisy_dep_ch(perfect_circuits[i],
+                            qx::noisy_dep_ch(perfect_circuit,
                                              error_probability, total_errors)
                                 ->execute(*reg, false, true);
                         }
                     } else
-                        qx::noisy_dep_ch(perfect_circuits[i], error_probability,
+                        qx::noisy_dep_ch(perfect_circuit, error_probability,
                                          total_errors)
                             ->execute(*reg, false, true);
                 }
@@ -159,8 +158,9 @@ int main(int argc, char **argv) {
             qx::measure m;
             for (size_t s = 0; s < navg; ++s) {
                 reg->reset();
-                for (size_t i = 0; i < perfect_circuits.size(); i++)
-                    perfect_circuits[i]->execute(*reg, false, true);
+                for (auto perfect_circuit: perfect_circuits) {
+                    perfect_circuit->execute(*reg, false, true);
+                }
                 m.apply(*reg);
             }
         }
@@ -174,29 +174,31 @@ int main(int argc, char **argv) {
         if (error_model == qx::__depolarizing_channel__) {
             // println("[+] generating noisy circuits (p=" <<
             // qxr.getErrorProbability() << ")...");
-            for (size_t i = 0; i < perfect_circuits.size(); i++) {
-                if (perfect_circuits[i]->size() == 0)
+            for (auto perfect_circuit: perfect_circuits) {
+                if (perfect_circuit->size() == 0)
                     continue;
                 // println("[>] processing circuit '" <<
-                // perfect_circuits[i]->id() << "'...");
-                size_t iterations = perfect_circuits[i]->get_iterations();
+                // perfect_circuit->id() << "'...");
+                size_t iterations = perfect_circuit->get_iterations();
                 if (iterations > 1) {
                     for (size_t it = 0; it < iterations; ++it)
-                        circuits.push_back(qx::noisy_dep_ch(perfect_circuits[i],
+                        circuits.push_back(qx::noisy_dep_ch(perfect_circuit,
                                                             error_probability,
                                                             total_errors));
                 } else {
                     circuits.push_back(qx::noisy_dep_ch(
-                        perfect_circuits[i], error_probability, total_errors));
+                        perfect_circuit, error_probability, total_errors));
                 }
             }
             // println("[+] total errors injected in all circuits : " <<
             // total_errors);
-        } else
-            circuits = perfect_circuits; // qxr.circuits();
+        } else {
+            circuits = perfect_circuits;
+        }
 
-        for (size_t i = 0; i < circuits.size(); i++)
-            circuits[i]->execute(*reg);
+        for (auto circuit: circuits) {
+            circuit->execute(*reg);
+        }
     }
 
     // exit(0);

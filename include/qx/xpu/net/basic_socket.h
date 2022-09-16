@@ -44,14 +44,14 @@ public:
      *   @return local address of socket
      *   @exception SocketException thrown if fetch fails
      */
-    std::string get_local_address() throw(socket_exception);
+    std::string get_local_address();
 
     /**
      *   get the local port
      *   @return local port of socket
      *   @exception SocketException thrown if fetch fails
      */
-    unsigned short get_local_port() throw(socket_exception);
+    unsigned short get_local_port();
 
     /**
      *   set the local port to the specified port and the local address
@@ -59,7 +59,7 @@ public:
      *   @param localPort local port
      *   @exception SocketException thrown if setting local port fails
      */
-    void set_local_port(unsigned short local_port) throw(socket_exception);
+    void set_local_port(unsigned short local_port);
 
     /**
      *   set the local port to the specified port and the local address
@@ -70,9 +70,8 @@ public:
      *   @exception SocketException thrown if setting local port or address
      * fails
      */
-    void set_local_address_and_port(
-        const std::string &local_address,
-        unsigned short local_port = 0) throw(socket_exception);
+    void set_local_address_and_port(const std::string &local_address,
+                                    unsigned short local_port = 0);
 
     /**
      *   If WinSock, unload the WinSock dlls; otherwise do nothing.  We ignore
@@ -80,15 +79,15 @@ public:
      *   completeness.  If you are running on Windows and you are concerned
      *   about dll resource consumption, call this after you are done with all
      *   Socket instances.  If you execute this on Windows while some instance
-     *   of Socket exists, you are toast.  for portability of client code, this is
-     *   an empty function on non-Windows platforms so you can always include
+     *   of Socket exists, you are toast.  for portability of client code, this
+     * is an empty function on non-Windows platforms so you can always include
      *   it.
      *   @param buffer buffer to receive the data
      *   @param bufferLen maximum number of bytes to read into buffer
      *   @return number of bytes read, 0 for EOF, and -1 for error
      *   @exception SocketException thrown WinSock clean up fails
      */
-    static void cleanup() throw(socket_exception);
+    static void cleanup();
 
     /**
      *   resolve the specified service for the specified protocol to the
@@ -106,7 +105,7 @@ private:
 
 protected:
     int sock_desc; // socket descriptor
-    basic_socket(int type, int protocol) throw(socket_exception);
+    basic_socket(int type, int protocol);
     basic_socket(int sock_desc);
 
 }; // class basic_socket

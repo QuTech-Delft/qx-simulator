@@ -18,7 +18,7 @@ public:
      *   @exception socket_exception thrown if unable to establish connection
      */
     void connect(const std::string &foreign_address,
-                 unsigned short foreign_port) throw(socket_exception);
+                 unsigned short foreign_port);
 
     /**
      *   Write the given buffer to this socket.  Call connect() before
@@ -27,7 +27,7 @@ public:
      *   @param bufferLen number of bytes from buffer to be written
      *   @exception socket_exception thrown if unable to send data
      */
-    void send(const void *buffer, int buffer_len) throw(socket_exception);
+    void send(const void *buffer, int buffer_len);
 
     /**
      *   Read into the given buffer up to bufferLen bytes data from this
@@ -37,24 +37,24 @@ public:
      *   @return number of bytes read, 0 for EOF, and -1 for error
      *   @exception socket_exception thrown if unable to receive data
      */
-    int recv(void *buffer, int buffer_len) throw(socket_exception);
+    int recv(void *buffer, int buffer_len);
 
     /**
      *   Get the foreign address.  Call connect() before calling recv()
      *   @return foreign address
      *   @exception socket_exception thrown if unable to fetch foreign address
      */
-    std::string get_foreign_address() throw(socket_exception);
+    std::string get_foreign_address();
 
     /**
      *   Get the foreign port.  Call connect() before calling recv()
      *   @return foreign port
      *   @exception socket_exception thrown if unable to fetch foreign port
      */
-    unsigned short get_foreign_port() throw(socket_exception);
+    unsigned short get_foreign_port();
 
 protected:
-    active_socket(int type, int protocol) throw(socket_exception);
+    active_socket(int type, int protocol);
     active_socket(int new_conn_sd);
 
 }; // class active_socket
