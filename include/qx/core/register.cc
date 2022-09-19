@@ -73,7 +73,6 @@ qx::qu_register::qu_register(uint64_t n_qubits)
       measurement_prediction(n_qubits, __state_0__),
       measurement_register(n_qubits, 0), n_qubits(n_qubits),
       rgenerator(xpu::timer().current() * 10e5), udistribution(.0, 1),
-      measurement_averaging_enabled(true),
       measurement_averaging(
           n_qubits, integration_t{.ground_states = 0, .excited_states = 0}) {
     if (n_qubits > 63) {
@@ -206,19 +205,7 @@ void qx::qu_register::dump(bool only_binary = false) {
         }
         std::cout.precision(stream_size);
     }
-    if (measurement_averaging_enabled) {
-        std::setprecision(9);
-        println("------------------------------------------- ");
-        print("[>>] measurement averaging (ground state) :");
-        print(" ");
-        for (int i = measurement_averaging.size() - 1; i >= 0; --i) {
-            double gs = measurement_averaging[i].ground_states;
-            double es = measurement_averaging[i].excited_states;
-            double av = ((es + gs) != 0. ? (gs / (es + gs)) : 0.);
-            print(" | ", std::setw(9), av);
-        }
-        println(" |");
-    }
+
     println("------------------------------------------- ");
     print("[>>] measurement prediction               :");
     print(" ");
@@ -236,6 +223,20 @@ void qx::qu_register::dump(bool only_binary = false) {
     println("------------------------------------------- ");
 }
 
+void qx::qu_register::dump_measurement_averaging() {
+    std::setprecision(9);
+    println("------------------------------------------- ");
+    print("[>>] measurement averaging (ground state) :");
+    print(" ");
+    for (int i = measurement_averaging.size() - 1; i >= 0; --i) {
+        double gs = measurement_averaging[i].ground_states;
+        double es = measurement_averaging[i].excited_states;
+        double av = ((es + gs) != 0. ? (gs / (es + gs)) : 0.);
+        print(" | ", std::setw(9), av);
+    }
+    println(" |");
+}
+
 /**
  * \brief return the quantum state as string
  */
@@ -243,12 +244,16 @@ std::string qx::qu_register::get_state(bool only_binary = false) {
     std::stringstream ss;
     if (!only_binary) {
         std::cout << std::fixed;
+        bool first_term = true;
         for (int i = 0; i < data.size(); ++i) {
             if (data[i] != complex_t(0, 0)) {
+                if (!first_term) {
+                    ss << "+ ";
+                }
+                first_term = false;
                 ss << "   " << std::showpos << std::setw(7) << data[i] << " |";
                 ss << to_binary_string(i, n_qubits);
-                ss << "> +";
-                ss << "\n";
+                ss << "> \n";
             }
         }
     }

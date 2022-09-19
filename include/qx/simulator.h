@@ -80,7 +80,7 @@ public:
     /**
      * execute qasm file
      */
-    void execute(size_t navg) {
+    void execute(size_t number_of_runs) {
         // quantum state and circuits
         size_t qubits = ast.numQubits();
         std::vector<std::shared_ptr<qx::circuit>> circuits;
@@ -99,7 +99,7 @@ public:
             error("Not enough memory, aborting");
             throw exception;
         } catch (std::exception const& exception) {
-            error("Unexpected exception (", exception.what(), "), aborting", std::endl);
+            error("Unexpected exception (", exception.what(), "), aborting");
             throw exception;
         }
 
@@ -124,10 +124,10 @@ public:
         }
 
         // measurement averaging
-        if (navg) {
+        if (number_of_runs >= 2) {
             if (error_model == qx::__depolarizing_channel__) {
-                qx::measure m;
-                for (size_t s = 0; s < navg; ++s) {
+                qx::measure measure;
+                for (size_t s = 0; s < number_of_runs; ++s) {
                     reg->reset();
                     for (auto& perfect_circuit: perfect_circuits) {
                         if (perfect_circuit->size() == 0)
@@ -145,21 +145,21 @@ public:
                                 ->execute(*reg, false, true);
                         }
                     }
-                    m.apply(*reg);
+                    measure.apply(*reg); // FIXME: does this work when the circuit already contains measure gates???
                 }
             } else {
-                qx::measure m;
-                for (size_t s = 0; s < navg; ++s) {
+                qx::measure measure;
+                for (size_t s = 0; s < number_of_runs; ++s) {
                     reg->reset();
                     for (auto& perfect_circuit: perfect_circuits) {
                         perfect_circuit->execute(*reg, false, true);
                     }
-                    m.apply(*reg);
+                    measure.apply(*reg);
                 }
             }
 
-            log("Average measurement after ", navg, " shots:");
-            reg->dump(true);
+            log("Average measurement after ", number_of_runs, " shots:");
+            reg->dump_measurement_averaging();
         } else {
             if (error_model == qx::__depolarizing_channel__) {
                 for (auto& perfect_circuit: perfect_circuits) {

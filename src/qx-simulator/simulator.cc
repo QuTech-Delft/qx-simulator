@@ -7,6 +7,7 @@
 
 #include "qx/libqasm_interface.h"
 #include "qx/representation.h"
+#include "qx/qxelarator.h"
 #include <qasm_semantic.hpp>
 #ifdef USE_GPERFTOOLS
 #include <gperftools/profiler.h>
@@ -49,163 +50,23 @@ int main(int argc, char **argv) {
 
     // parse arguments and initialise xpu cores
     file_path = argv[1];
-    if (argc > 2)
+    if (argc > 2) {
         navg = (atoi(argv[2]));
-
-    // size_t ncpu = 0;
-    // if (argc > 3)
-    //     ncpu = (atoi(argv[3]));
-    // if (ncpu && ncpu < 128) xpu::init(ncpu);
-    // else xpu::init();
-
-    // parse file and create abstract syntax tree
-    println("[+] loading circuit from '", file_path, "' ...");
-    FILE *qasm_file = fopen(file_path.c_str(), "r");
-    if (!qasm_file) {
-        std::cerr << "[x] error: could not open " << file_path << std::endl;
-        // xpu::clean();
-        return -1;
     }
 
-    compiler::QasmRepresentation
-        ast; // FIXME: this should be allocated on the heap.
+    std::unique_ptr<QX> qx;
     try {
-        ast = compiler::QasmSemanticChecker(qasm_file).getQasmRepresentation();
-    } catch (std::exception &e) {
-        std::cerr << "error while parsing file " << file_path << ": "
-                  << std::endl;
-        std::cerr << e.what() << std::endl;
-        // xpu::clean();
-        fclose(qasm_file);
-        return -1;
+        qx = std::make_unique<QX>();
+    } catch (std::exception const& e) {
+        return 1;
     }
 
-    fclose(qasm_file);
+    qx->set(file_path);
 
-    // quantum state and circuits
-    size_t qubits = ast.numQubits();
-    std::shared_ptr<qx::qu_register> reg;
-    std::vector<std::shared_ptr<qx::circuit>> circuits;
-    std::vector<std::shared_ptr<qx::circuit>> noisy_circuits;
-    std::vector<std::shared_ptr<qx::circuit>> perfect_circuits;
-    // error model parameters
-    size_t total_errors = 0;
-    double error_probability = 0;
-    qx::error_model_t error_model = qx::__unknown_error_model__;
+    qx->execute(navg);
 
-    // create the quantum state
-    println("[+] creating quantum register of ", qubits, " qubits... ");
-    try {
-        reg = std::make_shared<qx::qu_register>(qubits);
-    } catch (std::bad_alloc &exception) {
-        std::cerr << "[x] not enough memory, aborting" << std::endl;
-        // xpu::clean();
-        return -1;
-    } catch (std::exception &exception) {
-        std::cerr << "[x] unexpected exception (" << exception.what()
-                  << "), aborting" << std::endl;
-        // xpu::clean();
-        return -1;
-    }
-
-    // convert libqasm ast to qx internal representation
-    // qx::QxRepresentation qxr = qx::QxRepresentation(qubits);
-    std::vector<compiler::SubCircuit> subcircuits =
-        ast.getSubCircuits().getAllSubCircuits();
-    for (auto &subcircuit : subcircuits) {
-        try {
-            // qxr.circuits().push_back(load_cqasm_code(qubits, *subcircuit));
-            perfect_circuits.push_back(load_cqasm_code(qubits, subcircuit));
-        } catch (std::string type) {
-            std::cerr << "[x] encountered unsuported gate: " << type
-                      << std::endl;
-            // xpu::clean();
-            return -1;
-        }
-    }
-
-    println("[i] loaded ", perfect_circuits.size(), " circuits.");
-
-    // check whether an error model is specified
-    if (ast.getErrorModelType() == "depolarizing_channel") {
-        error_probability = ast.getErrorModelParameters().at(0);
-        error_model = qx::__depolarizing_channel__;
-    }
-
-    // measurement averaging
-    if (navg) {
-#ifdef USE_GPERFTOOLS
-        ProfilerStart("profile.log");
-#endif
-        if (error_model == qx::__depolarizing_channel__) {
-            qx::measure m;
-            for (size_t s = 0; s < navg; ++s) {
-                reg->reset();
-                for (auto perfect_circuit : perfect_circuits) {
-                    if (perfect_circuit->size() == 0)
-                        continue;
-                    size_t iterations = perfect_circuit->get_iterations();
-                    if (iterations > 1) {
-                        for (size_t it = 0; it < iterations; ++it) {
-                            qx::noisy_dep_ch(perfect_circuit, error_probability,
-                                             total_errors)
-                                ->execute(*reg, false, true);
-                        }
-                    } else
-                        qx::noisy_dep_ch(perfect_circuit, error_probability,
-                                         total_errors)
-                            ->execute(*reg, false, true);
-                }
-                m.apply(*reg);
-            }
-        } else {
-            qx::measure m;
-            for (size_t s = 0; s < navg; ++s) {
-                reg->reset();
-                for (auto perfect_circuit : perfect_circuits) {
-                    perfect_circuit->execute(*reg, false, true);
-                }
-                m.apply(*reg);
-            }
-        }
-#ifdef USE_GPERFTOOLS
-        ProfilerStop();
-#endif
-        println("[+] average measurement after ", navg, " shots:");
-        reg->dump(true);
-    } else {
-        // if (qxr.getErrorModel() == qx::__depolarizing_channel__)
-        if (error_model == qx::__depolarizing_channel__) {
-            // println("[+] generating noisy circuits (p=" ,
-            // qxr.getErrorProbability() , ")...");
-            for (auto perfect_circuit : perfect_circuits) {
-                if (perfect_circuit->size() == 0)
-                    continue;
-                // println("[>] processing circuit '" ,
-                // perfect_circuit->id() , "'...");
-                size_t iterations = perfect_circuit->get_iterations();
-                if (iterations > 1) {
-                    for (size_t it = 0; it < iterations; ++it)
-                        circuits.push_back(qx::noisy_dep_ch(
-                            perfect_circuit, error_probability, total_errors));
-                } else {
-                    circuits.push_back(qx::noisy_dep_ch(
-                        perfect_circuit, error_probability, total_errors));
-                }
-            }
-            // println("[+] total errors injected in all circuits : " ,
-            // total_errors);
-        } else {
-            circuits = perfect_circuits;
-        }
-
-        for (auto circuit : circuits) {
-            circuit->execute(*reg);
-        }
-    }
-
-    // exit(0);
-    // xpu::clean();
+    // FIXME: when averaging measurements are ON, this will result in always "flat" state even though the circuit doesn't contain measure gates.
+    println("Final quantum state after completion of the circuit: ", qx->get_state());
 
     return 0;
 }
