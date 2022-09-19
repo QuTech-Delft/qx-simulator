@@ -53,8 +53,8 @@ namespace qx {
  */
 class qx_server {
 
-    typedef std::map<std::string, std::string> map_t;
-    typedef std::vector<std::shared_ptr<qx::circuit>> circuits_t;
+    using map_t = std::map<std::string, std::string>;
+    using circuits_t = std::vector<std::shared_ptr<qx::circuit>>;
 
 public:
     /**

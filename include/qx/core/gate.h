@@ -61,9 +61,9 @@ namespace qx {
 /**
  * types definition
  */
-typedef uint64_t basis_state_t;
-typedef std::map<basis_state_t, complex_t> quantum_state_t;
-typedef enum __gate_type_t {
+using basis_state_t = uint64_t;
+using quantum_state_t = std::map<basis_state_t, complex_t>;
+enum gate_type_t {
     __identity_gate__,
     __hadamard_gate__,
     __pauli_x_gate__,
@@ -101,7 +101,7 @@ typedef enum __gate_type_t {
     __qft_gate__,
     __prepare_gate__,
     __unitary_gate__
-} gate_type_t;
+};
 
 /**
  * gates coeffecients
@@ -680,13 +680,13 @@ inline void sqg_apply(cmatrix_t &cm, uint64_t qubit, qu_register &qureg) {
 
 #endif // remove naive tensor computation
 
-typedef enum {
+enum elementary_operation_t {
     __x180__,
     __x90__,
     __y180__,
     __y90__,
     __ym90__
-} elementary_operation_t;
+};
 
 static const char *pulse_lt[][5] = {
     {"  pulse 9,0,0", "  pulse 10,0,0", "  pulse 11,0,0", "  pulse 12,0,0",

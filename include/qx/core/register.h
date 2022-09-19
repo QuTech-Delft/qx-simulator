@@ -39,7 +39,7 @@ namespace qx {
 /**
  * state_t
  */
-typedef enum __state_t { __state_0__, __state_1__, __state_unknown__ } state_t;
+enum state_t { __state_0__, __state_1__, __state_unknown__ };
 
 struct __integration_t {
     size_t ground_states = 0;
