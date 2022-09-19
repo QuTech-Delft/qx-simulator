@@ -93,29 +93,11 @@ public:
      * measurement averaging
      */
     measurement_averaging_t measurement_averaging;
-    bool measurement_averaging_enabled;
-
-    void enable_measurement_averaging() {
-        measurement_averaging_enabled = true;
-        for (size_t i = 0; i < measurement_averaging.size(); ++i) {
-            measurement_averaging[i].ground_states = 0;
-            measurement_averaging[i].excited_states = 0;
-        }
-    }
 
     void reset_measurement_averaging() {
-        measurement_averaging_enabled = true;
         for (size_t i = 0; i < measurement_averaging.size(); ++i) {
             measurement_averaging[i].ground_states = 0;
             measurement_averaging[i].excited_states = 0;
-        }
-    }
-
-    void disable_measurement_averaging() {
-        measurement_averaging_enabled = true;
-        for (size_t i = 0; i < measurement_averaging.size(); ++i) {
-            measurement_averaging[i].ground_states = 0;
-            measurement_averaging[i].ground_states = 0;
         }
     }
 
@@ -177,6 +159,11 @@ public:
      * \brief dump
      */
     void dump(bool only_binary);
+
+    /**
+     * \brief print measurement averaging for all usages of this register object
+     */
+    void dump_measurement_averaging();
 
     /**
      * \brief return the quantum state as a string

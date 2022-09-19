@@ -20,6 +20,8 @@ public:
         } catch (std::exception &e) {
             std::cerr << "error creating qx::simulator " << std::endl;
             std::cerr << e.what() << std::endl;
+
+            throw e;
         }
     }
 

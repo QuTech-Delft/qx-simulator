@@ -2756,14 +2756,12 @@ private:
         // qreg.set_binary(qubit,(value == 1 ? __state_1__ : __state_0__));
 
         if (!disable_averaging) {
-            if (qreg.measurement_averaging_enabled) {
-                if (value == 1) {
-                    // println("> excited_states++");
-                    qreg.measurement_averaging[qubit].excited_states++;
-                } else {
-                    // println("> ground_states++");
-                    qreg.measurement_averaging[qubit].ground_states++;
-                }
+            if (value == 1) {
+                // println("> excited_states++");
+                qreg.measurement_averaging[qubit].excited_states++;
+            } else {
+                // println("> ground_states++");
+                qreg.measurement_averaging[qubit].ground_states++;
             }
         }
 
@@ -2772,7 +2770,7 @@ private:
 
 public:
     measure(uint64_t qubit, bool disable_averaging = false)
-        : qubit(qubit), disable_averaging(disable_averaging) {}
+        : qubit(qubit), disable_averaging(disable_averaging) {} // fIXME: disable_averaging should be TRUE for circuit gates, otherwise they are counted in the total average.
 
     measure() : qubit(0), measure_all(true) {}
 
