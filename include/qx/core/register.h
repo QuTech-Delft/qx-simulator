@@ -41,10 +41,12 @@ namespace qx {
  */
 typedef enum __state_t { __state_0__, __state_1__, __state_unknown__ } state_t;
 
-typedef struct __integration_t {
+struct __integration_t {
     size_t ground_states = 0;
-    size_t exited_states = 0;
-} integration_t;
+    size_t excited_states = 0;
+};
+
+using integration_t = __integration_t;
 
 using measurement_prediction_t = std::vector<state_t>;
 using measurement_register_t = std::vector<bool>;
@@ -97,7 +99,7 @@ public:
         measurement_averaging_enabled = true;
         for (size_t i = 0; i < measurement_averaging.size(); ++i) {
             measurement_averaging[i].ground_states = 0;
-            measurement_averaging[i].exited_states = 0;
+            measurement_averaging[i].excited_states = 0;
         }
     }
 
@@ -105,7 +107,7 @@ public:
         measurement_averaging_enabled = true;
         for (size_t i = 0; i < measurement_averaging.size(); ++i) {
             measurement_averaging[i].ground_states = 0;
-            measurement_averaging[i].exited_states = 0;
+            measurement_averaging[i].excited_states = 0;
         }
     }
 
@@ -137,12 +139,12 @@ public:
     /**
      * \brief size getter
      */
-    uint64_t size();
+    uint64_t size() const;
 
     /**
      * \brief get states
      */
-    uint64_t states();
+    uint64_t states() const;
 
     /**
      * \brief assign operator
@@ -209,7 +211,7 @@ public:
      * \brief getter
      * \return the measurement prediction of qubit <q>
      */
-    state_t get_measurement_prediction(uint64_t q);
+    state_t get_measurement_prediction(uint64_t q) const;
 
     /**
      * \brief getter

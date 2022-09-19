@@ -147,7 +147,7 @@ public:
                     size_t q = atoi(words[1].c_str());
                     qx::qu_register &r = *reg;
                     double gs = r.measurement_averaging[q].ground_states;
-                    double es = r.measurement_averaging[q].exited_states;
+                    double es = r.measurement_averaging[q].excited_states;
                     double avg = ((es + gs) != 0. ? (gs / (es + gs)) : 0.);
                     println("[+] measurement averaging of qubit ", q, " : ",
                             avg);
