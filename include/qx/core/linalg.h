@@ -42,7 +42,8 @@ using complex_t = xpu::complex_d;
 // 	 using cmatrix_t ublas::matrix<complex_t>;
 // 	 using cidentity_t = ublas::identity_matrix<complex_t>;
 // #else
-using cvector_t = std::vector<complex_t, xpu::aligned_memory_allocator<complex_t, 64>>;
+using cvector_t =
+    std::vector<complex_t, xpu::aligned_memory_allocator<complex_t, 64>>;
 // using cvector_t = xpu::vector<complex_t,16>;
 // using cmatrix_t = qx::linalg::matrix<complex_t>;
 using cmatrix_t = qx::linalg::tiny_matrix<complex_t, 2>;

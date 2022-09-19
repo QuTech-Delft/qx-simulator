@@ -56,7 +56,9 @@ namespace qx {
 class simulator {
 protected:
     std::unique_ptr<qx::qu_register> reg;
-    compiler::QasmRepresentation ast; // FIXME: this should be allocated on the heap, and should not be copied from the parser object.
+    compiler::QasmRepresentation
+        ast; // FIXME: this should be allocated on the heap, and should not be
+             // copied from the parser object.
 
 public:
     simulator() : reg(nullptr) { /*xpu::init();*/
@@ -71,7 +73,8 @@ public:
         }
 
         try {
-            ast = compiler::QasmSemanticChecker(qasm_file)->getQasmRepresentation();
+            ast = compiler::QasmSemanticChecker(qasm_file)
+                      ->getQasmRepresentation();
         } catch (std::exception &e) {
             error("parsing file ", file_path);
             error(e.what());

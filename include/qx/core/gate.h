@@ -896,27 +896,19 @@ public:
            println("s=" , (1 , (b1+1)));
            println("steps=" , steps);
          */
-        if (qn < 17)
+        if (qn < 17) {
             fast_cx(amp, qn, b1, b2, tq, cq);
-        else {
+        } else {
 #ifdef USE_OPENMP
 #pragma omp parallel
-            {
 #ifndef _MSC_VER
 #pragma omp for simd
-#endif
-                for (size_t i = 0; i < steps; ++i)
-                    cx_worker(i, i + 1, 1UL, &amp, b1, b2, (size_t)tq,
-                              (size_t)cq);
+#endif // _MSC_VER
+#endif // USE_OPENMP
+            for (size_t i = 0; i < steps; ++i) {
+                cx_worker(i, i + 1, 1UL, &amp, b1, b2, (size_t)tq, (size_t)cq);
             }
-#else
-            xpu::task t(cx_worker, 0UL, 0UL, 0UL, &amp, b1, b2, (size_t)tq,
-                        (size_t)cq);
-            xpu::parallel_for fswp(0, steps, 1, &t);
-            fswp.run();
-#endif
         }
-        // #endif
 
 #elif defined(CG_HASH_SET)
 

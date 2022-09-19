@@ -70,10 +70,12 @@ std::string qx::qu_register::to_binary_string(uint64_t state, uint64_t nq) {
  */
 qx::qu_register::qu_register(uint64_t n_qubits)
     : data(1ULL << n_qubits, 0.0), aux(1ULL << n_qubits, 0.0),
-      measurement_prediction(n_qubits, __state_0__), measurement_register(n_qubits, 0),
-      n_qubits(n_qubits), rgenerator(xpu::timer().current() * 10e5),
-      udistribution(.0, 1), measurement_averaging_enabled(true),
-      measurement_averaging(n_qubits, integration_t{ .ground_states = 0, .excited_states = 0}) {
+      measurement_prediction(n_qubits, __state_0__),
+      measurement_register(n_qubits, 0), n_qubits(n_qubits),
+      rgenerator(xpu::timer().current() * 10e5), udistribution(.0, 1),
+      measurement_averaging_enabled(true),
+      measurement_averaging(
+          n_qubits, integration_t{.ground_states = 0, .excited_states = 0}) {
     if (n_qubits > 63) {
         throw std::invalid_argument("hard limit of 63 qubits exceeded");
     }
@@ -90,7 +92,7 @@ void qx::qu_register::reset() {
 #ifdef USE_OPENMP
 #pragma omp parallel for
 #endif
-    for (auto& c: data) {
+    for (auto &c : data) {
         c = 0.0;
     }
     data[0] = complex_t(1, 0);
