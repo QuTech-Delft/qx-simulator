@@ -14,7 +14,7 @@ typedef enum __error_model_t {
     __unknown_error_model__
 } error_model_t;
 
-std::shared_ptr<qx::circuit> noisy_dep_ch(std::shared_ptr<qx::circuit> c,
+std::shared_ptr<qx::circuit> noisy_dep_ch(std::shared_ptr<qx::circuit> const& c,
                                           double p, size_t &total_errors) {
     if (c) {
         qx::depolarizing_channel dep_ch(c, c->get_qubit_count(), p);

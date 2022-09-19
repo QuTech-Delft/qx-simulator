@@ -426,7 +426,7 @@ std::shared_ptr<qx::gate> gateLookup(compiler::Operation &operation) {
 }
 
 std::shared_ptr<qx::circuit> load_cqasm_code(uint64_t qubits_count,
-                                             compiler::SubCircuit &subcircuit) {
+                                             compiler::SubCircuit const &subcircuit) {
     uint64_t iterations = subcircuit.numberIterations();
     std::string name = subcircuit.nameSubCircuit();
 
@@ -453,7 +453,7 @@ std::shared_ptr<qx::circuit> load_cqasm_code(uint64_t qubits_count,
                 exit(-1);
             }
             if (!g) {
-                throw p_operation->getType();
+                throw std::runtime_error("Cannot create gate of type " + p_operation->getType());
             } else {
                 circuit->add(g);
             }

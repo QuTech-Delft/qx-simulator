@@ -20,8 +20,8 @@ typedef std::pair<error_type_t, size_t> error_t;
  */
 class depolarizing_channel : public error_injector {
 public:
-    depolarizing_channel(std::shared_ptr<qx::circuit> c, size_t nq, double pe)
-        : nrg(0, __third__), c(c), nq(nq), pe(pe), xp(__third__), yp(__third__),
+    depolarizing_channel(std::shared_ptr<qx::circuit> const& c, size_t nq, double pe)
+        : nrg(0, __third__), circuit(c), nq(nq), pe(pe), xp(__third__), yp(__third__),
           zp(__third__), overall_error_probability(0), total_errors(0),
           error_histogram(nq + 1, 0), error_recording(false) {
         for (size_t i = 1; i < (nq + 1); ++i) {
@@ -32,9 +32,9 @@ public:
         QX_SRAND(xpu::timer().current());
     }
 
-    depolarizing_channel(std::shared_ptr<qx::circuit> c, size_t nq, double pe,
+    depolarizing_channel(std::shared_ptr<qx::circuit> const& c, size_t nq, double pe,
                          double xp, double yp, double zp)
-        : nrg(0, __third__), c(c), nq(nq), pe(pe), xp(xp), yp(yp), zp(zp),
+        : nrg(0, __third__), circuit(c), nq(nq), pe(pe), xp(xp), yp(yp), zp(zp),
           overall_error_probability(0), total_errors(0),
           error_histogram(nq + 1, 0), error_recording(false) {
         for (size_t i = 1; i < (nq + 1); ++i) {
@@ -124,9 +124,9 @@ public:
 
         __verbose__ println(
             "    [e] depolarizing_channel : injecting errors in circuit '",
-            c->id(), "'...");
-        size_t steps = c->size();
-        auto noisy_c = std::make_shared<qx::circuit>(nq, c->id() + "(noisy)");
+            circuit->id(), "'...");
+        size_t steps = circuit->size();
+        auto noisy_circuit = std::make_shared<qx::circuit>(nq, circuit->id() + "(noisy)");
 
         errors.clear();
         error_location.clear();
@@ -134,12 +134,12 @@ public:
 
         __verbose__ println("    [+] circuit steps : ", steps);
         for (size_t p = 0; p < steps; ++p) {
-            qx::gate_type_t gt = c->get(p)->type();
+            qx::gate_type_t gt = circuit->get(p)->type();
             if ((gt == qx::__display__) || (gt == qx::__display_binary__)) {
-                noisy_c->add(c->get(p));
+                noisy_circuit->add(circuit->get(p));
                 continue;
             }
-            // std::vector<size_t> used = c->get(p)->qubits();
+            // std::vector<size_t> used = circuit->get(p)->qubits();
             // std::vector<size_t> idle = idle_qubits(nq,used);
             // size_t idle_nq=idle.size();
 
@@ -170,15 +170,15 @@ public:
                     // size_t q = idle[(rand()%idle_nq)];
                     size_t q = rand() % nq;
 
-                    if (is_measurement(c->get(p).get(), q)) {
+                    if (is_measurement(circuit->get(p).get(), q)) {
                         __verbose__ print("      |--> error on qubit ", q,
                                           " (potential measurement error) ");
-                        noisy_c->add(measurement_error(q, verbose));
-                        noisy_c->add(c->get(p));
+                        noisy_circuit->add(measurement_error(q, verbose));
+                        noisy_circuit->add(circuit->get(p));
                     } else {
                         __verbose__ print("      |--> error on qubit  ", q);
-                        noisy_c->add(c->get(p));
-                        noisy_c->add(single_qubit_error(q, verbose));
+                        noisy_circuit->add(circuit->get(p));
+                        noisy_circuit->add(single_qubit_error(q, verbose));
                     }
 
                 } else {
@@ -194,7 +194,7 @@ public:
                         // q = idle[(rand()%idle_nq)];
                         v[q] = 1;
 
-                        if (is_measurement(c->get(p).get(), q))
+                        if (is_measurement(circuit->get(p).get(), q))
                             measurement = true;
                         __verbose__ print("      |--> error on qubit  ", q,
                                           (measurement
@@ -206,21 +206,21 @@ public:
                     if (measurement) {
                         //__verbose__  println("      |--> (!) potential
                         // measurement error.");
-                        noisy_c->add(g);
-                        noisy_c->add(c->get(p));
+                        noisy_circuit->add(g);
+                        noisy_circuit->add(circuit->get(p));
                     } else {
-                        noisy_c->add(c->get(p));
-                        noisy_c->add(g);
+                        noisy_circuit->add(circuit->get(p));
+                        noisy_circuit->add(g);
                     }
                 }
             } else {
-                noisy_c->add(c->get(p));
+                noisy_circuit->add(circuit->get(p));
             }
         }
         __verbose__ println("    [+] total injected errors in circuit '",
-                            c->id(), "': ", total_errors);
+                            circuit->id(), "': ", total_errors);
 
-        return std::move(noisy_c);
+        return std::move(noisy_circuit);
     }
 
     /**
@@ -338,7 +338,7 @@ private:
     qx::normal_random_number_generator nrg;
     qx::uniform_random_number_generator urg;
 
-    std::shared_ptr<qx::circuit> c;
+    std::shared_ptr<qx::circuit> const& circuit;
     size_t nq;
 
     double pe;

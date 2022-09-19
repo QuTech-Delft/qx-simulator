@@ -37,15 +37,15 @@ private:
     size_t n_qubit;
     std::vector<std::shared_ptr<gate>> gates;
     std::string name;
-    size_t iteration;
+    size_t iterations;
     double time = 0;
 
 public:
     /**
      * \brief circuit constructor
      */
-    circuit(size_t n_qubit, std::string name = "", size_t iteration = 1)
-        : n_qubit(n_qubit), name(std::move(name)), iteration(iteration) {}
+    circuit(size_t n_qubit, std::string name = "", size_t iterations = 1)
+        : n_qubit(n_qubit), name(std::move(name)), iterations(iterations) {}
 
     /**
      * \brief micro code generator
@@ -80,14 +80,9 @@ public:
     }
 
     /**
-     * \brief set iterations number
+     * \brief get iterations number
      */
-    void set_iterations(size_t n) { iteration = n; }
-
-    /**
-     * \brief set iterations number
-     */
-    size_t get_iterations() { return iteration; }
+    size_t get_iterations() { return iterations; }
 
     /**
      * \brief return gate <i>
@@ -99,7 +94,7 @@ public:
 
     void execute(qu_register &reg, bool verbose = false, bool silent = false,
                  bool only_binary = false) {
-        size_t it = iteration;
+        size_t it = iterations;
 
 #ifdef XPU_TIMER
         xpu::timer tmr;
@@ -110,8 +105,9 @@ public:
 #endif
         while (it--) {
             if (!verbose)
-                for (size_t i = 0; i < gates.size(); ++i)
+                for (size_t i = 0; i < gates.size(); ++i) {
                     gates[i]->apply(reg);
+                }
             else {
                 for (size_t i = 0; i < gates.size(); ++i) {
                     println("[-] executing gate ", i, "...");
