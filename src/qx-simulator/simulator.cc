@@ -67,7 +67,7 @@ int main(int argc, char **argv) {
         return -1;
     }
 
-    compiler::QasmRepresentation ast;
+    compiler::QasmRepresentation ast; // FIXME: this should be allocated on the heap.
     try {
         ast = compiler::QasmSemanticChecker(qasm_file).getQasmRepresentation();
     } catch (std::exception &e) {
@@ -75,8 +75,11 @@ int main(int argc, char **argv) {
                   << std::endl;
         std::cerr << e.what() << std::endl;
         // xpu::clean();
+        fclose(qasm_file);
         return -1;
     }
+
+    fclose(qasm_file);
 
     // quantum state and circuits
     size_t qubits = ast.numQubits();
