@@ -77,6 +77,13 @@ set(
 )
 mark_as_advanced(QX_PYTHON_EXT)
 
+option(
+    QX_USE_OPENMP
+    "Whether OpenMP should be used"
+    ON
+)
+mark_as_advanced(QX_USE_OPENMP)
+
 
 #=============================================================================#
 # CMake weirdness and compatibility                                           #
@@ -135,7 +142,11 @@ add_library(qx
 target_compile_definitions(qx PRIVATE BUILDING_QX)
 
 # FIXME: these should be removed or added to a global config header file!
-target_compile_definitions(qx PUBLIC USE_OPENMP XPU_TIMER CG_BC QX_SPARSE_MV_MUL __BUILTIN_LINALG__)
+target_compile_definitions(qx PUBLIC XPU_TIMER CG_BC QX_SPARSE_MV_MUL __BUILTIN_LINALG__)
+
+if(QX_USE_OPENMP)
+    target_compile_definitions(qx PUBLIC USE_OPENMP)
+endif()
 
 # Add the src directory as a private include path and include as the public
 # include path.
@@ -201,8 +212,10 @@ endif()
 #=============================================================================#
 
 # OpenMP
-find_package(OpenMP REQUIRED)
-target_link_libraries(qx PUBLIC OpenMP::OpenMP_CXX)
+if(QX_USE_OPENMP)
+    find_package(OpenMP REQUIRED)
+    target_link_libraries(qx PUBLIC OpenMP::OpenMP_CXX)
+endif()
 
 # libqasm
 option(LIBQASM_COMPAT "" ON)
