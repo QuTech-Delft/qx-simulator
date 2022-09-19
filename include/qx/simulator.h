@@ -29,11 +29,11 @@
  */
 
 template <typename... Args> constexpr void printImpl(Args... x) {
-    (void)int[]{0, (std::cout << x, 0)...};
+    (void)(int[]){0, (std::cout << x, 0)...};
 }
 
-template <typename... Args> constexpr void println(Args... x) {
-    std::cout << "[QXELERATOR]" << __FILE__ << ":" << __LINE__ << " ";
+template <typename... Args> constexpr void log(Args... x) {
+    std::cout << "[QXELERATOR] " << __FILE__ << ":" << __LINE__ << " ";
 
     printImpl(x...);
 
@@ -41,7 +41,7 @@ template <typename... Args> constexpr void println(Args... x) {
 }
 
 template <typename... Args> constexpr void error(Args... x) {
-    std::cerr << "[QXELERATOR]" << __FILE__ << ":" << __LINE__ << " Error:";
+    std::cerr << "[QXELERATOR] " << __FILE__ << ":" << __LINE__ << " Error: ";
 
     printImpl(x...);
 
@@ -70,13 +70,14 @@ public:
         FILE *qasm_file = fopen(file_path.c_str(), "r");
         if (!qasm_file) {
             error("Could not open ", file_path);
+            return;
         }
 
         try {
             ast = compiler::QasmSemanticChecker(qasm_file)
-                      ->getQasmRepresentation();
+                      .getQasmRepresentation();
         } catch (std::exception &e) {
-            error("parsing file ", file_path);
+            error("Cannot parse file ", file_path);
             error(e.what());
         }
 
@@ -99,7 +100,7 @@ public:
         qx::error_model_t error_model = qx::__unknown_error_model__;
 
         // create the quantum state
-        println("Creating quantum register of ", qubits, " qubits... ");
+        log("Creating quantum register of ", qubits, " qubits... ");
         try {
             reg = std::make_unique<qx::qu_register>(qubits);
         } catch (std::bad_alloc &exception) {
@@ -124,7 +125,7 @@ public:
             }
         }
 
-        println("Loaded ", perfect_circuits.size(), " circuits.");
+        log("Loaded ", perfect_circuits.size(), " circuits.");
 
         // check whether an error model is specified
         if (ast.getErrorModelType() == "depolarizing_channel") {
@@ -167,16 +168,16 @@ public:
                 }
             }
 
-            println("Average measurement after ", navg, " shots:");
+            log("Average measurement after ", navg, " shots:");
             reg->dump(true);
         } else {
             if (error_model == qx::__depolarizing_channel__) {
-                // println("[+] generating noisy circuits (p=",
+                // log("[+] generating noisy circuits (p=",
                 // qxr.getErrorProbability(), ")...");
                 for (size_t i = 0; i < perfect_circuits.size(); i++) {
                     if (perfect_circuits[i]->size() == 0)
                         continue;
-                    // println("[>] processing circuit '",
+                    // log("[>] processing circuit '",
                     // perfect_circuits[i]->id(), "'...");
                     size_t iterations = perfect_circuits[i]->get_iterations();
                     if (iterations > 1) {
@@ -190,7 +191,7 @@ public:
                                                             total_errors));
                     }
                 }
-                // println("[+] total errors injected in all circuits : ",
+                // log("[+] total errors injected in all circuits : ",
                 // total_errors);
             } else
                 circuits = perfect_circuits; // qxr.circuits();
