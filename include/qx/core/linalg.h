@@ -35,22 +35,21 @@
 
 namespace qx {
 namespace linalg {
-// typedef std::complex<double>      complex_t;
-typedef xpu::complex_d complex_t;
+// using complex_t = std::complex<double>;
+using complex_t = xpu::complex_d;
 // #ifndef __BUILTIN_LINALG__
-// 	 typedef ublas::vector<complex_t>  cvector_t;
-// 	 typedef ublas::matrix<complex_t>  cmatrix_t;
-// 	 typedef ublas::identity_matrix<complex_t> cidentity_t;
+// 	 using cvector_t ublas::vector<complex_t>;
+// 	 using cmatrix_t ublas::matrix<complex_t>;
+// 	 using cidentity_t = ublas::identity_matrix<complex_t>;
 // #else
-typedef std::vector<complex_t, xpu::aligned_memory_allocator<complex_t, 64>>
-    cvector_t;
-// typedef xpu::vector<complex_t,16>  cvector_t;
-// typedef qx::linalg::matrix<complex_t>  cmatrix_t;
-typedef qx::linalg::tiny_matrix<complex_t, 2> cmatrix_t;
-typedef qx::linalg::identity_matrix<complex_t> cidentity_t;
+using cvector_t = std::vector<complex_t, xpu::aligned_memory_allocator<complex_t, 64>>;
+// using cvector_t = xpu::vector<complex_t,16>;
+// using cmatrix_t = qx::linalg::matrix<complex_t>;
+using cmatrix_t = qx::linalg::tiny_matrix<complex_t, 2>;
+using cidentity_t = qx::linalg::identity_matrix<complex_t>;
 // #endif // __BUILTIN_LINALG__
 
-typedef std::vector<std::pair<uint32_t, uint32_t>> perm_t;
+using perm_t = std::vector<std::pair<uint32_t, uint32_t>>;
 
 #ifdef __SSE__
 void cmul(complex_t *x, complex_t *y, complex_t *z) {

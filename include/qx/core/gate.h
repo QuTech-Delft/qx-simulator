@@ -877,7 +877,6 @@ public:
 
 #elif defined(CG_BC)
 
-        uint64_t sn = qreg.states();
         uint64_t qn = qreg.size();
         uint64_t cq = control_qubit;
         uint64_t tq = target_qubit;
@@ -2767,8 +2766,8 @@ private:
         if (!disable_averaging) {
             if (qreg.measurement_averaging_enabled) {
                 if (value == 1) {
-                    // println("> exited_states++");
-                    qreg.measurement_averaging[qubit].exited_states++;
+                    // println("> excited_states++");
+                    qreg.measurement_averaging[qubit].excited_states++;
                 } else {
                     // println("> ground_states++");
                     qreg.measurement_averaging[qubit].ground_states++;

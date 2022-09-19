@@ -68,43 +68,17 @@ std::string qx::qu_register::to_binary_string(uint64_t state, uint64_t nq) {
 /**
  * \brief quantum register of n_qubit
  */
-// qx::qu_register::qu_register(uint64_t n_qubits) : data(1 << n_qubits),
-// binary(n_qubits), n_qubits(n_qubits),
-// rgenerator(xpu::timer().current()*10e5), udistribution(.0,1)
-// qx::qu_register::qu_register(uint64_t n_qubits) : data(1 << n_qubits),
-// measurement_prediction(n_qubits), measurement_register(n_qubits),
-// n_qubits(n_qubits), rgenerator(xpu::timer().current()*10e5),
-// udistribution(.0,1)
 qx::qu_register::qu_register(uint64_t n_qubits)
-    : data(1ULL << n_qubits), aux(1ULL << n_qubits),
-      measurement_prediction(n_qubits), measurement_register(n_qubits),
+    : data(1ULL << n_qubits, 0.0), aux(1ULL << n_qubits, 0.0),
+      measurement_prediction(n_qubits, __state_0__), measurement_register(n_qubits, 0),
       n_qubits(n_qubits), rgenerator(xpu::timer().current() * 10e5),
       udistribution(.0, 1), measurement_averaging_enabled(true),
-      measurement_averaging(n_qubits) {
+      measurement_averaging(n_qubits, integration_t{ .ground_states = 0, .excited_states = 0}) {
     if (n_qubits > 63) {
         throw std::invalid_argument("hard limit of 63 qubits exceeded");
     }
 
-    uint64_t num_elts = (1ULL << n_qubits);
-
-#ifdef USE_OPENMP
-#pragma omp parallel for
-#endif
-    for (int64_t i = 0; i < (int64_t)num_elts; ++i) {
-        data[i] = 0.0;
-        aux[i] = 0.0;
-    }
     data[0] = complex_t(1, 0);
-
-    for (uint64_t i = 0; i < n_qubits; i++) {
-        measurement_prediction[i] = __state_0__;
-        measurement_register[i] = 0;
-    }
-
-    for (size_t i = 0; i < measurement_averaging.size(); ++i) {
-        measurement_averaging[i].ground_states = 0;
-        measurement_averaging[i].ground_states = 0;
-    }
 }
 
 /**
@@ -116,8 +90,8 @@ void qx::qu_register::reset() {
 #ifdef USE_OPENMP
 #pragma omp parallel for
 #endif
-    for (int64_t i = 0; i < (int64_t)num_elts; ++i) {
-        data[i] = 0.0;
+    for (auto& c: data) {
+        c = 0.0;
     }
     data[0] = complex_t(1, 0);
 
@@ -143,12 +117,12 @@ void qx::qu_register::set_data(cvector_t d) { data = d; }
 /**
  * \brief size getter
  */
-uint64_t qx::qu_register::size() { return n_qubits; }
+uint64_t qx::qu_register::size() const { return n_qubits; }
 
 /**
  * \brief get states
  */
-uint64_t qx::qu_register::states() { return (1ULL << n_qubits); }
+uint64_t qx::qu_register::states() const { return (1ULL << n_qubits); }
 
 /**
  * \brief assign operator
@@ -207,7 +181,7 @@ int64_t qx::qu_register::measure() {
     return -1;
 }
 
-#define __amp_epsilon__ (0.000001f)
+constexpr double __amp_epsilon__ = 0.000001f;
 
 /**
  * \brief dump
@@ -237,7 +211,7 @@ void qx::qu_register::dump(bool only_binary = false) {
         print(" ");
         for (int i = measurement_averaging.size() - 1; i >= 0; --i) {
             double gs = measurement_averaging[i].ground_states;
-            double es = measurement_averaging[i].exited_states;
+            double es = measurement_averaging[i].excited_states;
             double av = ((es + gs) != 0. ? (gs / (es + gs)) : 0.);
             print(" | ", std::setw(9), av);
         }
@@ -246,14 +220,16 @@ void qx::qu_register::dump(bool only_binary = false) {
     println("------------------------------------------- ");
     print("[>>] measurement prediction               :");
     print(" ");
-    for (int i = measurement_prediction.size() - 1; i >= 0; --i)
+    for (int i = measurement_prediction.size() - 1; i >= 0; --i) {
         print(" | ", std::setw(9), __format_bin(measurement_prediction[i]));
+    }
     println(" |");
     println("------------------------------------------- ");
     print("[>>] measurement register                 :");
     print(" ");
-    for (int i = measurement_register.size() - 1; i >= 0; --i)
+    for (int i = measurement_register.size() - 1; i >= 0; --i) {
         print(" | ", std::setw(9), (measurement_register[i] ? '1' : '0'));
+    }
     println(" |");
     println("------------------------------------------- ");
 }
@@ -316,7 +292,7 @@ void qx::qu_register::set_measurement(uint64_t q, bool m) {
  * \brief getter
  * \return the state of bit <q>
  */
-state_t qx::qu_register::get_measurement_prediction(uint64_t q) {
+state_t qx::qu_register::get_measurement_prediction(uint64_t q) const {
     assert(q < n_qubits);
     return measurement_prediction[q];
 }
