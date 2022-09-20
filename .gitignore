@@ -4,6 +4,7 @@ cbuild
 pybuild
 *.pyc
 __pycache__
+.eggs
 
 # CLion files
 /.idea
