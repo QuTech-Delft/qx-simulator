@@ -38,7 +38,6 @@ private:
     std::vector<std::shared_ptr<gate>> gates;
     std::string name;
     size_t iterations;
-    double time = 0;
 
 public:
     /**

@@ -47,9 +47,9 @@ uint64_t qx::qu_register::collapse(uint64_t entry) {
  * to binary
  */
 void qx::qu_register::to_binary(uint64_t state, uint64_t nq) {
-    uint64_t k = 0;
-    while (nq--)
+    while (nq--) {
         std::cout << (((state >> nq) & 1) ? "1" : "0");
+    }
 }
 
 /**
@@ -86,8 +86,6 @@ qx::qu_register::qu_register(uint64_t n_qubits)
  * reset
  */
 void qx::qu_register::reset() {
-    uint64_t num_elts = (1ULL << n_qubits);
-
 #ifdef USE_OPENMP
 #pragma omp parallel for
 #endif

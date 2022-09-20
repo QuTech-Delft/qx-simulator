@@ -12,6 +12,8 @@
 
 #include <inttypes.h>
 #include <map>
+#include <functional>
+#include <unordered_set>
 
 #include <emmintrin.h> // sse
 #include <immintrin.h> // avx
@@ -19,7 +21,6 @@
 #include <algorithm>
 #include <memory>
 
-#include "qx/core/hash_set.h"
 #include "qx/core/linalg.h"
 #include "qx/core/register.h"
 
@@ -299,7 +300,6 @@ uint64_t rw_process(uint64_t is, uint64_t ie, uint64_t s, uint64_t n,
 
 void sparse_mulmv(uint64_t n, uint64_t qubit, const kronecker &m, cvector_t &v,
                   cvector_t &res) {
-    uint64_t k = n - qubit;
     uint64_t rows = (1UL << n);
     uint64_t z = 0UL;
 
@@ -478,7 +478,6 @@ uint64_t rw_process_ui(uint64_t is, uint64_t ie, uint64_t s, uint64_t n,
 
 void sparse_mulmv(uint64_t n, uint64_t qubit, kronecker_ui m, cvector_t &v,
                   cvector_t &res) {
-    uint64_t k = n - qubit;
     uint64_t rows = (1UL << n);
     uint64_t z = 0;
 
@@ -539,7 +538,6 @@ uint64_t rw_process_iu(uint64_t is, uint64_t ie, uint64_t s, uint64_t n,
 
 void sparse_mulmv(uint64_t n, uint64_t qubit, kronecker_iu m, cvector_t &v,
                   cvector_t &res) {
-    uint64_t k = n - qubit;
     uint64_t rows = (1UL << n);
     uint64_t z = 0;
 
@@ -657,9 +655,7 @@ pr[bc].xmm = _mm_add_pd((pv[c1]*(m.get(bc,c1))).xmm,
 
 void sparse_mulmv(uint64_t n, uint64_t qubit, kronecker_iui m, cvector_t &v,
                   cvector_t &res) {
-    uint64_t k = n - qubit;
     uint64_t rows = (1UL << n);
-    uint64_t z = 0;
 
 #ifdef SEQUENTIAL
     rw_process_iui(z, rows, 1, n, qubit, m, &v, &res);
@@ -759,9 +755,6 @@ public:
 
 inline void __swap(cvector_t &amp, size_t size, size_t bit, size_t trg,
                    size_t ctrl, size_t offset = 0) {
-    // println("bit=", bit);
-    // println("ctrl=", ctrl);
-    complex_t *p = amp.data();
     size_t incrementer = 1UL << (bit + 1);
 
     if ((1UL << bit) == 1) {
@@ -909,7 +902,7 @@ public:
 
         uint64_t r_size = qreg.states();
 
-        xpu::container::hash_set<uint64_t> swap_set;
+        std::unordered_set<uint64_t> swap_set;
 
         // find swap pairs
         for (uint64_t t = 0; t < r_size; t++) {
@@ -924,14 +917,12 @@ public:
         cvector_t &amp = qreg.get_data();
         complex_t c1(0., 0.), c2(0., 0.);
 
-        for (xpu::container::hash_set<uint64_t>::iterator t = swap_set.begin();
-             t != swap_set.end(); ++t) {
-            int64_t _t = *t;
-            t2 = (_t + k2 < r_size) ? _t + k2 : _t - k2;
-            c1 = amp(_t);
+        for (auto& element: swap_set) {
+            t2 = (element + k2 < r_size) ? element + k2 : element - k2;
+            c1 = amp(element);
             c2 = amp(t2);
             std::swap(c1, c2);
-            amp(_t) = c1;
+            amp(element) = c1;
             amp(t2) = c2;
         }
         // qreg=amp;
@@ -1039,7 +1030,6 @@ public:
           target_qubit(target_q) {}
 
     int64_t apply(qu_register &qreg) override {
-        uint64_t sn = qreg.states();
         uint64_t qn = qreg.size();
         uint64_t cq1 = control_qubit_1;
         uint64_t cq2 = control_qubit_2;
@@ -1947,8 +1937,6 @@ void qft_nth_fold(uint64_t n, uint64_t qubit, kronecker_iui m, cvector_t &v,
 
 int qft_worker(int cs, int ce, int s, size_t n, cvector_t &p_in,
                cvector_t &p_out, kronecker_ui kr, size_t qubit) {
-    complex_t *in = p_in.data();
-    complex_t *out = p_out.data();
     cvector_t &amp = p_out;
     // xpu::parallel_for fswp(__bit_set(0,b1), (1 << qn), (1 << (b1+1)), &t);
     size_t b = cs;
@@ -1973,9 +1961,6 @@ int qft_worker(int cs, int ce, int s, size_t n, cvector_t &p_in,
 
 int qft_worker(int cs, int ce, int s, size_t n, cvector_t &p_in,
                cvector_t &p_out, kronecker_iui kr, size_t qubit) {
-    complex_t *in = p_in.data();
-    complex_t *out = p_out.data();
-    cvector_t &amp = p_out;
     // xpu::parallel_for fswp(__bit_set(0,b1), (1 << qn), (1 << (b1+1)), &t);
     size_t b = cs;
     size_t e = ce;
@@ -2151,7 +2136,6 @@ public:
 
     int64_t apply(qu_register &qreg) override {
         uint64_t n = qreg.size();
-        complex_t *s = qreg.get_data().data();
         size_t c = ctrl_qubit;
         size_t t = target_qubit;
 
@@ -2474,7 +2458,6 @@ inline double zero_worker_false(uint64_t cs, uint64_t ce, uint64_t s,
 
 int renorm_worker(uint64_t cs, uint64_t ce, uint64_t s, double *length,
                   cvector_t *p_data) {
-    cvector_t &data = *p_data;
     double l = *length;
     double l_rec = 1. / l;
     uint64_t num_elts = ce - cs;
@@ -2555,8 +2538,8 @@ class measure final : public gate {
 private:
     uint64_t qubit;
 
-    MeasureAll measure_all = MeasureAll::No;
     CountMeasureInAverage count_measure_in_average = CountMeasureInAverage::No;
+    MeasureAll measure_all = MeasureAll::No;
 
     static int64_t
     apply_single(uint64_t qubit, qu_register &qreg,
@@ -2585,7 +2568,6 @@ private:
             (uint64_t)1, &p1_worker_t); parallel_p1.run();*/
             static const uint64_t SIZE = 1000;
 
-            uint64_t ref = 1UL << qubit;
             uint64_t range = (n >> 1);
 #ifdef USE_OPENMP
 #pragma omp parallel for reduction(+ : p)
@@ -2596,41 +2578,39 @@ private:
                                qubit, &data);
             }
 
-            if (f < p)
+            if (f < p) {
                 value = 1;
-            else
+            }
+            else {
                 value = 0;
+            }
 
 #ifdef USE_OPENMP
 #pragma omp parallel
-            {
 #endif
-                if (value) {
+            if (value) {
 #ifdef USE_OPENMP
 #pragma omp for reduction(+ : length)
 #endif
-                    for (int64_t batch = 0; batch <= (int64_t)n / SIZE;
-                         batch++) {
-                        length += zero_worker_false(
-                            batch * SIZE,
-                            std::min<uint64_t>((batch + 1) * SIZE, n),
-                            (uint64_t)1, qubit, &data);
-                    }
-                } else {
-#ifdef USE_OPENMP
-#pragma omp for reduction(+ : length)
-#endif
-                    for (int64_t batch = 0; batch <= (int64_t)n / SIZE;
-                         batch++) {
-                        length += zero_worker_true(
-                            batch * SIZE,
-                            std::min<uint64_t>((batch + 1) * SIZE, n),
-                            (uint64_t)1, qubit, &data);
-                    }
+                for (int64_t batch = 0; batch <= (int64_t)n / SIZE;
+                        batch++) {
+                    length += zero_worker_false(
+                        batch * SIZE,
+                        std::min<uint64_t>((batch + 1) * SIZE, n),
+                        (uint64_t)1, qubit, &data);
                 }
+            } else {
 #ifdef USE_OPENMP
-            }
+#pragma omp for reduction(+ : length)
 #endif
+                for (int64_t batch = 0; batch <= (int64_t)n / SIZE;
+                        batch++) {
+                    length += zero_worker_true(
+                        batch * SIZE,
+                        std::min<uint64_t>((batch + 1) * SIZE, n),
+                        (uint64_t)1, qubit, &data);
+                }
+            }
 
             length = std::sqrt(length);
 
@@ -2757,10 +2737,10 @@ class measure_x final : public gate {
 private:
     uint64_t qubit;
 
-    MeasureAll measure_all = MeasureAll::No;
-
     qx::hadamard hg;
     qx::measure mg;
+    
+    MeasureAll measure_all = MeasureAll::No;
 
 public:
     measure_x(uint64_t qubit) : qubit(qubit), hg(qubit), mg(qubit) {}
@@ -2828,11 +2808,11 @@ public:
 class measure_y final : public gate {
 private:
     uint64_t qubit;
-    MeasureAll measure_all = MeasureAll::No;
 
     qx::phase_shift sg;
     qx::pauli_z zg;
     qx::measure_x mg;
+    MeasureAll measure_all = MeasureAll::No;
 
 public:
     measure_y(uint64_t qubit) : qubit(qubit), sg(qubit), zg(qubit), mg(qubit) {}

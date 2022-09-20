@@ -220,7 +220,7 @@ public:
         __verbose__ println("    [+] total injected errors in circuit '",
                             circuit->id(), "': ", total_errors);
 
-        return std::move(noisy_circuit);
+        return noisy_circuit;
     }
 
     /**
