@@ -159,7 +159,7 @@ class gate {
 public:
     virtual int64_t apply(qu_register &qureg) = 0;
     virtual std::vector<uint64_t> qubits() const = 0;
-    virtual std::vector<uint64_t> control_qubits() = 0;
+    virtual std::vector<uint64_t> control_qubits() { return {}; };
     virtual std::vector<uint64_t> target_qubits() = 0;
     virtual gate_type_t type() const = 0;
     virtual std::string micro_code() {
@@ -680,13 +680,7 @@ inline void sqg_apply(cmatrix_t &cm, uint64_t qubit, qu_register &qureg) {
 
 #endif // remove naive tensor computation
 
-enum elementary_operation_t {
-    __x180__,
-    __x90__,
-    __y180__,
-    __y90__,
-    __ym90__
-};
+enum elementary_operation_t { __x180__, __x90__, __y180__, __y90__, __ym90__ };
 
 static const char *pulse_lt[][5] = {
     {"  pulse 9,0,0", "  pulse 10,0,0", "  pulse 11,0,0", "  pulse 12,0,0",
@@ -749,11 +743,6 @@ public:
     std::vector<uint64_t> qubits() const override {
         std::vector<uint64_t> r{};
         r.push_back(qubit);
-        return r;
-    }
-
-    std::vector<uint64_t> control_qubits() override {
-        std::vector<uint64_t> r{};
         return r;
     }
 
@@ -1233,11 +1222,6 @@ public:
         return r;
     }
 
-    std::vector<uint64_t> control_qubits() override {
-        std::vector<uint64_t> r{};
-        return r;
-    }
-
     std::vector<uint64_t> target_qubits() override {
         std::vector<uint64_t> r{};
         r.push_back(qubit);
@@ -1308,11 +1292,6 @@ public:
         return r;
     }
 
-    std::vector<uint64_t> control_qubits() override {
-        std::vector<uint64_t> r{};
-        return r;
-    }
-
     std::vector<uint64_t> target_qubits() override {
         std::vector<uint64_t> r{};
         r.push_back(qubit);
@@ -1360,11 +1339,6 @@ public:
     std::vector<uint64_t> qubits() const override {
         std::vector<uint64_t> r{};
         r.push_back(qubit);
-        return r;
-    }
-
-    std::vector<uint64_t> control_qubits() override {
-        std::vector<uint64_t> r{};
         return r;
     }
 
@@ -1419,11 +1393,6 @@ public:
         return r;
     }
 
-    std::vector<uint64_t> control_qubits() override {
-        std::vector<uint64_t> r{};
-        return r;
-    }
-
     std::vector<uint64_t> target_qubits() override {
         std::vector<uint64_t> r{};
         r.push_back(qubit);
@@ -1473,11 +1442,6 @@ public:
         return r;
     }
 
-    std::vector<uint64_t> control_qubits() override {
-        std::vector<uint64_t> r{};
-        return r;
-    }
-
     std::vector<uint64_t> target_qubits() override {
         std::vector<uint64_t> r{};
         r.push_back(qubit);
@@ -1510,11 +1474,6 @@ public:
     std::vector<uint64_t> qubits() const override {
         std::vector<uint64_t> r{};
         r.push_back(qubit);
-        return r;
-    }
-
-    std::vector<uint64_t> control_qubits() override {
-        std::vector<uint64_t> r{};
         return r;
     }
 
@@ -1551,11 +1510,6 @@ public:
         return r;
     }
 
-    std::vector<uint64_t> control_qubits() override {
-        std::vector<uint64_t> r{};
-        return r;
-    }
-
     std::vector<uint64_t> target_qubits() override {
         std::vector<uint64_t> r{};
         r.push_back(qubit);
@@ -1588,11 +1542,6 @@ public:
     std::vector<uint64_t> qubits() const override {
         std::vector<uint64_t> r{};
         r.push_back(qubit);
-        return r;
-    }
-
-    std::vector<uint64_t> control_qubits() override {
-        std::vector<uint64_t> r{};
         return r;
     }
 
@@ -1676,11 +1625,6 @@ public:
         return r;
     }
 
-    std::vector<uint64_t> control_qubits() override {
-        std::vector<uint64_t> r{};
-        return r;
-    }
-
     std::vector<uint64_t> target_qubits() override {
         std::vector<uint64_t> r{};
         r.push_back(qubit);
@@ -1723,11 +1667,6 @@ public:
     std::vector<uint64_t> qubits() const override {
         std::vector<uint64_t> r{};
         r.push_back(qubit);
-        return r;
-    }
-
-    std::vector<uint64_t> control_qubits() override {
-        std::vector<uint64_t> r{};
         return r;
     }
 
@@ -1776,11 +1715,6 @@ public:
         return r;
     }
 
-    std::vector<uint64_t> control_qubits() override {
-        std::vector<uint64_t> r{};
-        return r;
-    }
-
     std::vector<uint64_t> target_qubits() override {
         std::vector<uint64_t> r{};
         r.push_back(qubit);
@@ -1823,11 +1757,6 @@ public:
     std::vector<uint64_t> qubits() const override {
         std::vector<uint64_t> r{};
         r.push_back(qubit);
-        return r;
-    }
-
-    std::vector<uint64_t> control_qubits() override {
-        std::vector<uint64_t> r{};
         return r;
     }
 
@@ -2304,11 +2233,6 @@ public:
         return r;
     }
 
-    std::vector<uint64_t> control_qubits() override {
-        std::vector<uint64_t> r{};
-        return r;
-    }
-
     std::vector<uint64_t> target_qubits() override {
         std::vector<uint64_t> r{};
         r.push_back(qubit1);
@@ -2623,14 +2547,20 @@ int renorm_worker(uint64_t cs, uint64_t ce, uint64_t s, double *length,
 /**
  * measure
  */
+
+enum class MeasureAll { No, Yes };
+enum class CountMeasureInAverage { No, Yes };
+
 class measure final : public gate {
 private:
     uint64_t qubit;
-    bool measure_all = false;
-    bool disable_averaging = false;
 
-    static int64_t apply_single(uint64_t qubit, qu_register &qreg,
-                                bool disable_averaging = false) {
+    MeasureAll measure_all = MeasureAll::No;
+    CountMeasureInAverage count_measure_in_average = CountMeasureInAverage::No;
+
+    static int64_t
+    apply_single(uint64_t qubit, qu_register &qreg,
+                 CountMeasureInAverage count_measure_in_average) {
         double f = qreg.rand();
         double p = 0;
         int64_t value;
@@ -2755,7 +2685,7 @@ private:
         qreg.set_measurement(qubit, (value == 1 ? true : false));
         // qreg.set_binary(qubit,(value == 1 ? __state_1__ : __state_0__));
 
-        if (!disable_averaging) {
+        if (count_measure_in_average == CountMeasureInAverage::Yes) {
             if (value == 1) {
                 // println("> excited_states++");
                 qreg.measurement_averaging[qubit].excited_states++;
@@ -2769,24 +2699,28 @@ private:
     }
 
 public:
-    measure(uint64_t qubit, bool disable_averaging = false)
-        : qubit(qubit), disable_averaging(disable_averaging) {} // fIXME: disable_averaging should be TRUE for circuit gates, otherwise they are counted in the total average.
+    measure(uint64_t qubit, CountMeasureInAverage count_measure_in_average =
+                                CountMeasureInAverage::No)
+        : qubit(qubit), count_measure_in_average(count_measure_in_average),
+          measure_all(MeasureAll::No) {}
 
-    measure() : qubit(0), measure_all(true) {}
+    measure(CountMeasureInAverage count_measure_in_average =
+                                CountMeasureInAverage::No) : qubit(0), count_measure_in_average(count_measure_in_average),
+                                measure_all(MeasureAll::Yes) {}
 
     int64_t apply(qu_register &qreg) override {
-        if (measure_all) {
+        if (measure_all == MeasureAll::Yes) {
             for (size_t q = 0; q < qreg.size(); q++) {
-                apply_single(q, qreg, disable_averaging);
+                apply_single(q, qreg, count_measure_in_average);
             }
             return 0;
         }
 
-        return apply_single(qubit, qreg, disable_averaging);
+        return apply_single(qubit, qreg, count_measure_in_average);
     }
 
     void dump() override {
-        if (measure_all)
+        if (measure_all == MeasureAll::Yes)
             println("  [-] measure(register)");
         else
             println("  [-] measure(qubit=", qubit, ")");
@@ -2794,7 +2728,7 @@ public:
 
     std::vector<uint64_t> qubits() const override {
         std::vector<uint64_t> r{};
-        if (!measure_all)
+        if (measure_all == MeasureAll::No)
             r.push_back(qubit);
         else // this is a dirty hack, itshould be fixed later (unknown qubit
              // number !)
@@ -2805,18 +2739,14 @@ public:
         return r;
     }
 
-    std::vector<uint64_t> control_qubits() override {
-        std::vector<uint64_t> r{};
-        return r;
-    }
-
     std::vector<uint64_t> target_qubits() override { return qubits(); }
 
     gate_type_t type() const override {
-        if (measure_all)
+        if (measure_all == MeasureAll::Yes) {
             return __measure_reg_gate__;
-        else
+        } else {
             return __measure_gate__;
+        }
     }
 };
 
@@ -2826,28 +2756,29 @@ public:
 class measure_x final : public gate {
 private:
     uint64_t qubit;
-    bool measure_all;
-    bool disable_averaging;
+
+    MeasureAll measure_all = MeasureAll::No;
 
     qx::hadamard hg;
     qx::measure mg;
 
 public:
-    measure_x(uint64_t qubit, bool disable_averaging = false)
-        : qubit(qubit), measure_all(false), hg(qubit), mg(qubit),
-          disable_averaging(disable_averaging) {}
+    measure_x(uint64_t qubit) : qubit(qubit), hg(qubit), mg(qubit) {}
 
-    measure_x() : qubit(0), hg(qubit), mg(qubit), measure_all(true) {}
+    measure_x()
+        : qubit(0), hg(qubit), mg(qubit), measure_all(MeasureAll::Yes) {}
 
     int64_t apply(qu_register &qreg) override {
         int64_t r = 0;
 
-        if (measure_all) {
-            for (size_t i = 0; i < qreg.size(); ++i)
+        if (measure_all == MeasureAll::Yes) {
+            for (size_t i = 0; i < qreg.size(); ++i) {
                 qx::hadamard(i).apply(qreg);
+            }
             qreg.measure();
-            for (size_t i = 0; i < qreg.size(); ++i)
+            for (size_t i = 0; i < qreg.size(); ++i) {
                 qx::hadamard(i).apply(qreg);
+            }
             return 0;
         }
 
@@ -2859,37 +2790,35 @@ public:
     }
 
     void dump() override {
-        if (measure_all)
+        if (measure_all == MeasureAll::Yes) {
             println("  [-] measure_x(register)");
-        else
+        } else {
             println("  [-] measure_x(qubit=", qubit, ")");
+        }
     }
 
     std::vector<uint64_t> qubits() const override {
         std::vector<uint64_t> r{};
-        if (!measure_all)
+        if (measure_all == MeasureAll::No) {
             r.push_back(qubit);
-        else // this is a dirty hack, itshould be fixed later (unknown qubit
-             // number !)
+        } else // this is a dirty hack, itshould be fixed later (unknown qubit
+               // number !)
         {
-            for (int64_t i = 0; i < MAX_QB_N; ++i)
+            for (int64_t i = 0; i < MAX_QB_N; ++i) {
                 r.push_back(i);
+            }
         }
-        return r;
-    }
-
-    std::vector<uint64_t> control_qubits() override {
-        std::vector<uint64_t> r{};
         return r;
     }
 
     std::vector<uint64_t> target_qubits() override { return qubits(); }
 
     gate_type_t type() const override {
-        if (measure_all)
+        if (measure_all == MeasureAll::Yes) {
             return __measure_x_reg_gate__;
-        else
+        } else {
             return __measure_x_gate__;
+        }
     }
 };
 
@@ -2899,37 +2828,30 @@ public:
 class measure_y final : public gate {
 private:
     uint64_t qubit;
-    bool measure_all;
-    bool disable_averaging;
+    MeasureAll measure_all = MeasureAll::No;
 
     qx::phase_shift sg;
     qx::pauli_z zg;
     qx::measure_x mg;
-    /*
-       S(qubit);
-       Z(qubit);
-       bool b = MeasX(qubit, randint);
-       S(qubit);
-    */
 
 public:
-    measure_y(uint64_t qubit, bool disable_averaging = false)
-        : qubit(qubit), measure_all(false), sg(qubit), zg(qubit), mg(qubit),
-          disable_averaging(disable_averaging) {}
+    measure_y(uint64_t qubit) : qubit(qubit), sg(qubit), zg(qubit), mg(qubit) {}
 
-    measure_y() : qubit(0), sg(qubit), zg(qubit), mg(), measure_all(true) {}
+    measure_y()
+        : qubit(0), sg(qubit), zg(qubit), mg(), measure_all(MeasureAll::Yes) {}
 
     int64_t apply(qu_register &qreg) override {
         int64_t r = 0;
 
-        if (measure_all) {
+        if (measure_all == MeasureAll::Yes) {
             for (size_t i = 0; i < qreg.size(); ++i) {
                 qx::phase_shift(i).apply(qreg);
                 qx::pauli_z(i).apply(qreg);
             }
             mg.apply(qreg);
-            for (size_t i = 0; i < qreg.size(); ++i)
+            for (size_t i = 0; i < qreg.size(); ++i) {
                 qx::phase_shift(i).apply(qreg);
+            }
             return 0;
         }
 
@@ -2942,37 +2864,35 @@ public:
     }
 
     void dump() override {
-        if (measure_all)
+        if (measure_all == MeasureAll::Yes) {
             println("  [-] measure_y(register)");
-        else
+        } else {
             println("  [-] measure_y(qubit=", qubit, ")");
+        }
     }
 
     std::vector<uint64_t> qubits() const override {
         std::vector<uint64_t> r{};
-        if (!measure_all)
+        if (measure_all == MeasureAll::No) {
             r.push_back(qubit);
-        else // this is a dirty hack, itshould be fixed later (unknown qubit
-             // number !)
+        } else // this is a dirty hack, itshould be fixed later (unknown qubit
+               // number !)
         {
-            for (int64_t i = 0; i < MAX_QB_N; ++i)
+            for (int64_t i = 0; i < MAX_QB_N; ++i) {
                 r.push_back(i);
+            }
         }
-        return r;
-    }
-
-    std::vector<uint64_t> control_qubits() override {
-        std::vector<uint64_t> r{};
         return r;
     }
 
     std::vector<uint64_t> target_qubits() override { return qubits(); }
 
     gate_type_t type() const override {
-        if (measure_all)
+        if (measure_all == MeasureAll::Yes) {
             return __measure_y_reg_gate__;
-        else
+        } else {
             return __measure_y_gate__;
+        }
     }
 };
 
@@ -3058,10 +2978,6 @@ public:
         return std::vector<uint64_t>();
     }
 
-    std::vector<uint64_t> control_qubits() override {
-        return std::vector<uint64_t>();
-    }
-
     std::vector<uint64_t> target_qubits() override {
         return std::vector<uint64_t>();
     }
@@ -3080,7 +2996,7 @@ public:
     prepz(uint64_t qubit) : qubit(qubit) {}
 
     int64_t apply(qu_register &qreg) override {
-        measure(qubit, true).apply(qreg);
+        measure(qubit).apply(qreg);
         bin_ctrl_pauli_x(qubit, qubit).apply(qreg);
         // bin_ctrl_pauli_z(qubit,qubit).apply(qreg);
         qreg.set_measurement(qubit, false);
@@ -3092,11 +3008,6 @@ public:
     std::vector<uint64_t> qubits() const override {
         std::vector<uint64_t> r{};
         r.push_back(qubit);
-        return r;
-    }
-
-    std::vector<uint64_t> control_qubits() override {
-        std::vector<uint64_t> r{};
         return r;
     }
 
@@ -3118,7 +3029,7 @@ public:
 
     int64_t apply(qu_register &qreg) override {
         h.apply(qreg);
-        measure(qubit, true).apply(qreg);
+        measure(qubit).apply(qreg);
         h.apply(qreg);
         bin_ctrl_pauli_z(qubit, qubit).apply(qreg);
         qreg.set_measurement(qubit, false);
@@ -3130,11 +3041,6 @@ public:
     std::vector<uint64_t> qubits() const override {
         std::vector<uint64_t> r{};
         r.push_back(qubit);
-        return r;
-    }
-
-    std::vector<uint64_t> control_qubits() override {
-        std::vector<uint64_t> r{};
         return r;
     }
 
@@ -3167,11 +3073,6 @@ public:
     std::vector<uint64_t> qubits() const override {
         std::vector<uint64_t> r{};
         r.push_back(qubit);
-        return r;
-    }
-
-    std::vector<uint64_t> control_qubits() override {
-        std::vector<uint64_t> r{};
         return r;
     }
 
@@ -3286,11 +3187,6 @@ public:
     }
 
     std::vector<uint64_t> qubits() const override {
-        std::vector<uint64_t> r{};
-        return r;
-    }
-
-    std::vector<uint64_t> control_qubits() override {
         std::vector<uint64_t> r{};
         return r;
     }
@@ -3427,11 +3323,6 @@ public:
         return r;
     }
 
-    std::vector<uint64_t> control_qubits() override {
-        std::vector<uint64_t> r{};
-        return r;
-    }
-
     std::vector<uint64_t> target_qubits() override { return qubits(); }
 
     gate_type_t type() const override { return __prepare_gate__; }
@@ -3456,8 +3347,6 @@ public:
     void dump() override { println(" print ", str, "\""); }
 
     std::vector<uint64_t> qubits() const override { return {}; }
-
-    std::vector<uint64_t> control_qubits() override { return {}; }
 
     std::vector<uint64_t> target_qubits() override { return {}; }
 

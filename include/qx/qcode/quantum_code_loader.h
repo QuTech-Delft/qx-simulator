@@ -364,9 +364,10 @@ private:
             else if (words[0] == "display_binary")
                 current_sub_circuit(qubits_count)
                     ->add(std::make_shared<qx::display>(true));
-            else if (words[0] == "measure")
+            else if (words[0] == "measure") {
                 current_sub_circuit(qubits_count)
                     ->add(std::make_shared<qx::measure>());
+            }
             else
                 print_syntax_error("unknown commad !");
             return 0;
@@ -822,12 +823,10 @@ private:
         else if (words[0] == "prepz") // prepz gate
         {
             size_t q = qubit_id(words[1]);
-            if (q > (qubits_count - 1))
+            if (q > (qubits_count - 1)) {
                 print_semantic_error(" target qubit out of range !");
-            // println(" => t gate on: " , q);
+            }
             if (pg) {
-                // pg->add(std::make_shared<qx::measure>(q));
-                // pg->add(std::make_shared<qx::bin_ctrl>(q,std::make_shared<qx::pauli_x>(q)));
                 pg->add(std::make_shared<qx::prepz>(q));
             } else {
                 current_sub_circuit(qubits_count)
@@ -941,11 +940,13 @@ private:
                 print_semantic_error(" target qubit out of range !");
             // println(" => measure qubit " , atoi(words[1].c_str()));
             // println(" => measure qubit " , q);
-            if (pg)
+            if (pg) {
                 pg->add(std::make_shared<qx::measure>(q));
-            else
+            }
+            else {
                 current_sub_circuit(qubits_count)
                     ->add(std::make_shared<qx::measure>(q));
+            }
         }
         /**
          * toffoli
