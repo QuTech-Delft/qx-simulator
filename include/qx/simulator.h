@@ -126,7 +126,7 @@ public:
         // measurement averaging
         if (number_of_runs >= 2) {
             if (error_model == qx::__depolarizing_channel__) {
-                qx::measure measure;
+                qx::measure measure(CountMeasureInAverage::Yes);
                 for (size_t s = 0; s < number_of_runs; ++s) {
                     reg->reset();
                     for (auto& perfect_circuit: perfect_circuits) {
@@ -148,7 +148,7 @@ public:
                     measure.apply(*reg); // FIXME: does this work when the circuit already contains measure gates???
                 }
             } else {
-                qx::measure measure;
+                qx::measure measure(CountMeasureInAverage::Yes);
                 for (size_t s = 0; s < number_of_runs; ++s) {
                     reg->reset();
                     for (auto& perfect_circuit: perfect_circuits) {

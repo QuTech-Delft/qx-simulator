@@ -234,32 +234,39 @@ std::shared_ptr<qx::gate> gateLookup(compiler::Operation &operation) {
 
     ////////// measurements //////////////////
     if (type == "measure" || type == "measure_z") {
-        if (!pg)
+        if (!pg) {
             return std::make_shared<qx::measure>(sqid(operation));
+        }
         else {
-            for (auto q : qv)
+            for (auto q : qv) {
                 pg->add(std::make_shared<qx::measure>(q));
+            }
             return pg;
         }
     }
-    if (type == "measure_all")
+    if (type == "measure_all") {
         return std::make_shared<qx::measure>();
+    }
 
     if (type == "measure_x") {
-        if (!pg)
+        if (!pg) {
             return std::make_shared<qx::measure_x>(sqid(operation));
+        }
         else {
-            for (auto q : qv)
+            for (auto q : qv) {
                 pg->add(std::make_shared<qx::measure_x>(q));
+            }
             return pg;
         }
     }
     if (type == "measure_y") {
-        if (!pg)
+        if (!pg) {
             return std::make_shared<qx::measure_y>(sqid(operation));
+        }
         else {
-            for (auto q : qv)
+            for (auto q : qv) {
                 pg->add(std::make_shared<qx::measure_y>(q));
+            }
             return pg;
         }
     }
