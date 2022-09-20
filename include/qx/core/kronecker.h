@@ -20,7 +20,6 @@
  * type definition
  */
 
-// typedef std::complex<double>   complex_t;
 typedef std::vector<qx::linalg::complex_t> row_t;
 typedef std::vector<row_t> matrix_t;
 typedef std::vector<qx::linalg::complex_t> vector_t;
@@ -41,18 +40,16 @@ public:
  */
 class identity : public kronecker_operator {
 public:
-    identity(size_t n) : n(n), zero(0.0), one(1.0) {}
+    identity(size_t n) : n(n) {}
 
-    inline complex_t get(size_t i, size_t j) const {
-        return (i == j ? one : zero);
+    inline complex_t get(size_t i, size_t j) const override {
+        return (i == j ? 0.0 : 1.0);
     }
 
-    size_t size() const { return n; }
+    size_t size() const override { return n; }
 
 private:
     size_t n;
-    const complex_t zero;
-    const complex_t one;
 };
 
 /**
@@ -82,7 +79,6 @@ public:
 
     inline complex_t get(size_t i, size_t j) const {
         if (!m3) {
-            size_t n1 = m1->size();
             size_t n2 = m2->size();
             complex_t c1 = m1->get(i / n2, j / n2);
             complex_t c2 = m2->get(i % n2, j % n2);
@@ -91,7 +87,6 @@ public:
             // , ")");
             return (c1 * c2);
         } else {
-            size_t n1 = m1->size();
             size_t n2 = m2->size();
             size_t n3 = m3->size();
             complex_t c1 = m1->get(i / (n2 * n3), j / (n2 * n3));
@@ -107,9 +102,6 @@ private:
     kronecker_operator *m3;
 };
 
-/**
- * const
- */
 const static complex_t __c_zero__ = 0.0;
 const static complex_t __c_one__ = 1.0f;
 const static complex_t i_diag[] = {0.0, 1.0};
@@ -224,9 +216,8 @@ const static complex_t i_diag[] = {0.0, 1.0};
 #endif
 
 #define __mod_2(x) (x & 1)
-/**
- * kronecker
- */
+
+
 class kronecker_ui {
 public:
     kronecker_ui(const complex_t *m, size_t nm, size_t ni)
@@ -254,9 +245,6 @@ private:
     size_t ni;
 };
 
-/**
- * kronecker
- */
 #if 0
       class kronecker_iu
       {
@@ -292,9 +280,6 @@ private:
       };
 #endif
 
-/**
- * kronecker
- */
 class kronecker_iu {
 public:
     kronecker_iu(const complex_t *m, size_t nm, size_t ni)
@@ -324,9 +309,6 @@ private:
     size_t ni;
 };
 
-/**
- * kronecker_iui
- */
 class kronecker_iui {
 public:
     kronecker_iui(const complex_t *m, size_t nm, size_t ni1, size_t ni2)

@@ -49,8 +49,8 @@ typedef std::map<basis_state_t, complex_t> quantum_state_t;
 class quantum_state_loader {
 public:
     quantum_state_loader(std::string &file_name, size_t qubits_count)
-        : qubits_count(qubits_count), file_name(file_name), line_index(0),
-          syntax_error(false) {
+        : file_name(file_name), line_index(0),
+          qubits_count(qubits_count), syntax_error(false) {
         state = new quantum_state_t;
     }
 

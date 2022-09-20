@@ -18,8 +18,8 @@ public:
      * \brief ctor
      */
     uniform_random_number_generator(double min = 0.0f, double max = 1.0f)
-        : min(min), max(max), distribution(min, max),
-          generator(xpu::timer().current() * rd()) {}
+        : generator(xpu::timer().current() * rd()),
+        distribution(min, max) {}
 
     /**
      * \brief generate random number
@@ -27,9 +27,6 @@ public:
     double next() { return distribution(generator); }
 
 private:
-    double min;
-    double max;
-
     std::random_device rd;
     std::default_random_engine generator;
     std::uniform_real_distribution<double> distribution;
@@ -44,8 +41,7 @@ public:
      * \brief ctor
      */
     normal_random_number_generator(double mean = 0.0f, double deviation = 1.0f)
-        : mean(mean), deviation(deviation),
-          generator(xpu::timer().current() * rd()),
+        : generator(xpu::timer().current() * rd()),
           distribution(mean, deviation) {}
 
     /**
@@ -54,9 +50,6 @@ public:
     double next() { return distribution(generator); }
 
 private:
-    double mean;
-    double deviation;
-
     std::random_device rd;
     std::mt19937 generator;
     std::normal_distribution<double> distribution;

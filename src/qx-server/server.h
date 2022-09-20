@@ -61,7 +61,7 @@ public:
      * ctor
      */
     qx_server(uint32_t port = 5555)
-        : port(port), sock(0), qubits_count(0), parsed_successfully(false),
+        : port(port), sock(0), qubits_count(0),
           syntax_error(false), semantic_error(false),
           error_model(__unknown_error_model__), error_probability(0) {}
 
@@ -204,7 +204,6 @@ public:
                 // else if (words.size() == 4)
                 else {
                     std::shared_ptr<qx::circuit> c{};
-                    bool multi_run = false;
                     size_t iterations = 1;
                     if (words.size() == 5)
                         iterations = atoi(words[4].c_str());
@@ -1260,7 +1259,6 @@ private:
 
 private:
     int line_index;
-    bool parsed_successfully;
     bool syntax_error;
     bool semantic_error;
 

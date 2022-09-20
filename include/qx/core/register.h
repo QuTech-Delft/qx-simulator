@@ -234,8 +234,6 @@ public:
         for (int i = 0; i < data.size(); ++i) {
             if (data[i] != complex_t(0, 0)) {
                 ss << "   " << std::fixed << data[i] << " |";
-                // to_binary(i,n_qubits);
-                uint64_t k = 0;
                 uint64_t nq = n_qubits;
                 uint64_t state = i;
                 while (nq--)

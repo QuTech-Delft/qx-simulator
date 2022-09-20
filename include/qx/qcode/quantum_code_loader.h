@@ -66,13 +66,6 @@ private:
     quantum_states_t quantum_states;
     str::strings quantum_state_files;
 
-    // noise
-    double phase_noise;
-    double rotation_noise;
-
-    // decoherence
-    double decoherence; // const
-
     // error model
     qx::error_model_t error_model;
     double error_probability;
@@ -83,9 +76,8 @@ public:
      *    quantum_code_parser constructor
      */
     quantum_code_parser(std::string file_name)
-        : file_name(file_name), qubits_count(0), parsed_successfully(false),
-          syntax_error(false), semantic_error(false), phase_noise(0),
-          rotation_noise(0), decoherence(0),
+        : file_name(file_name), parsed_successfully(false),
+          syntax_error(false), semantic_error(false), qubits_count(0),
           error_model(__unknown_error_model__), error_probability(0) {
         size_t last = file_name.find_last_of('/');
         if (last != std::string::npos) {
