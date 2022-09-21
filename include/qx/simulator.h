@@ -24,14 +24,14 @@
 #include <string>
 #include <vector>
 
-template <typename... Args> constexpr void printImpl(Args... x) {
-    (void)(int[]){0, (std::cout << x, 0)...};
+template <typename... Args> constexpr void printImpl(std::ostream& stream, Args... x) {
+    (void)(int[]){0, (stream << x, 0)...};
 }
 
 template <typename... Args> constexpr void log(Args... x) {
     std::cout << "[QXELERATOR] " << __FILE__ << ":" << __LINE__ << " ";
 
-    printImpl(x...);
+    printImpl(std::cout, x...);
 
     std::cout << std::endl;
 }
@@ -39,7 +39,7 @@ template <typename... Args> constexpr void log(Args... x) {
 template <typename... Args> constexpr void error(Args... x) {
     std::cerr << "[QXELERATOR] " << __FILE__ << ":" << __LINE__ << " Error: ";
 
-    printImpl(x...);
+    printImpl(std::cerr, x...);
 
     std::cerr << std::endl;
 }
