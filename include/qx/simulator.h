@@ -59,22 +59,24 @@ protected:
 public:
     simulator() = default;
 
-    void set(std::string file_path) {
+    bool set(std::string file_path) {
         FILE *qasm_file = fopen(file_path.c_str(), "r");
         if (!qasm_file) {
             error("Could not open ", file_path);
-            return;
+            return false;
         }
 
         try {
             ast = compiler::QasmSemanticChecker(qasm_file)
                       .getQasmRepresentation();
         } catch (std::exception &e) {
-            error("Cannot parse file ", file_path);
             error(e.what());
+            error("Cannot parse file ", file_path);
+            return false;
         }
 
         fclose(qasm_file);
+        return true;
     }
 
     /**
