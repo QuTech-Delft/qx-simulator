@@ -1,5 +1,6 @@
+version 1.0
 
 qubits 28
 
 .bench
-  x q0
+  x q[0]

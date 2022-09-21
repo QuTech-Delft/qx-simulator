@@ -1,108 +1,110 @@
+version 1.0
+
 qubits 17
 
 .init
-   x q8
-   h q0
-   h q1
-   h q2
-   h q3
-   h q4
-   h q5
-   h q6
-   h q7
-   h q8
+   x q[8]
+   h q[0]
+   h q[1]
+   h q[2]
+   h q[3]
+   h q[4]
+   h q[5]
+   h q[6]
+   h q[7]
+   h q[8]
 
 # iterating 12 times
 .grover(12)
 
    # oracle_64
 
-   x q0
-   x q1
-   x q2
-   x q3
-   x q4
-   x q5
-   x q7
-   toffoli q0,q1,q9
-   toffoli q1,q9,q10
-   toffoli q2,q10,q11
-   toffoli q3,q11,q12
-   toffoli q4,q12,q13
-   toffoli q5,q13,q14
-   toffoli q6,q14,q15
-   toffoli q7,q15,q16
-   cnot q16,q8
-   toffoli q7,q15,q16
-   toffoli q6,q14,q15
-   toffoli q5,q13,q14
-   toffoli q4,q12,q13
-   toffoli q3,q11,q12
-   toffoli q2,q10,q11
-   toffoli q1,q9,q10
-   toffoli q0,q1,q9
-   x q0
-   x q1
-   x q2
-   x q3
-   x q4
-   x q5
-   x q7
-   h q0
-   h q1
-   h q2
-   h q3
-   h q4
-   h q5
-   h q6
-   h q7
+   x q[0]
+   x q[1]
+   x q[2]
+   x q[3]
+   x q[4]
+   x q[5]
+   x q[7]
+   toffoli q[0],q[1],q[9]
+   toffoli q[1],q[9],q[10]
+   toffoli q[2],q[10],q[11]
+   toffoli q[3],q[11],q[12]
+   toffoli q[4],q[12],q[13]
+   toffoli q[5],q[13],q[14]
+   toffoli q[6],q[14],q[15]
+   toffoli q[7],q[15],q[16]
+   cnot q[16],q[8]
+   toffoli q[7],q[15],q[16]
+   toffoli q[6],q[14],q[15]
+   toffoli q[5],q[13],q[14]
+   toffoli q[4],q[12],q[13]
+   toffoli q[3],q[11],q[12]
+   toffoli q[2],q[10],q[11]
+   toffoli q[1],q[9],q[10]
+   toffoli q[0],q[1],q[9]
+   x q[0]
+   x q[1]
+   x q[2]
+   x q[3]
+   x q[4]
+   x q[5]
+   x q[7]
+   h q[0]
+   h q[1]
+   h q[2]
+   h q[3]
+   h q[4]
+   h q[5]
+   h q[6]
+   h q[7]
 
    # inversion
 
-   x q0
-   x q1
-   x q2
-   x q3
-   x q4
-   x q5
-   x q6
-   x q7
-   h q7
-   toffoli q0,q1,q9
-   toffoli q1,q9,q10
-   toffoli q2,q10,q11
-   toffoli q3,q11,q12
-   toffoli q4,q12,q13
-   toffoli q5,q13,q14
-   toffoli q6,q14,q15
-   cnot q15,q7
-   toffoli q6,q14,q15
-   toffoli q5,q13,q14
-   toffoli q4,q12,q13
-   toffoli q3,q11,q12
-   toffoli q2,q10,q11
-   toffoli q1,q9,q10
-   toffoli q0,q1,q9
-   h q7
-   x q0
-   x q1
-   x q2
-   x q3
-   x q4
-   x q5
-   x q6
-   x q7
-   h q0
-   h q1
-   h q2
-   h q3
-   h q4
-   h q5
-   h q6
-   h q7
+   x q[0]
+   x q[1]
+   x q[2]
+   x q[3]
+   x q[4]
+   x q[5]
+   x q[6]
+   x q[7]
+   h q[7]
+   toffoli q[0],q[1],q[9]
+   toffoli q[1],q[9],q[10]
+   toffoli q[2],q[10],q[11]
+   toffoli q[3],q[11],q[12]
+   toffoli q[4],q[12],q[13]
+   toffoli q[5],q[13],q[14]
+   toffoli q[6],q[14],q[15]
+   cnot q[15],q[7]
+   toffoli q[6],q[14],q[15]
+   toffoli q[5],q[13],q[14]
+   toffoli q[4],q[12],q[13]
+   toffoli q[3],q[11],q[12]
+   toffoli q[2],q[10],q[11]
+   toffoli q[1],q[9],q[10]
+   toffoli q[0],q[1],q[9]
+   h q[7]
+   x q[0]
+   x q[1]
+   x q[2]
+   x q[3]
+   x q[4]
+   x q[5]
+   x q[6]
+   x q[7]
+   h q[0]
+   h q[1]
+   h q[2]
+   h q[3]
+   h q[4]
+   h q[5]
+   h q[6]
+   h q[7]
 
 .measure
-   h q8
+   h q[8]
    measure
    display_binary
 
