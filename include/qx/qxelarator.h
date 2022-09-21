@@ -25,7 +25,7 @@ public:
         }
     }
 
-    void set(std::string qasm_file_name) { qx_sim->set(qasm_file_name); }
+    bool set(std::string qasm_file_name) { return qx_sim->set(qasm_file_name); }
 
     void execute(size_t navg = 0) { qx_sim->execute(navg); }
 

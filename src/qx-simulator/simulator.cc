@@ -61,12 +61,15 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    qx->set(file_path);
+    if (!qx->set(file_path)) {
+        println("Failed to load cqasm file.");
+
+        return 1;
+    }
 
     qx->execute(navg);
-
-    // FIXME: when averaging measurements are ON, this will result in always "flat" state even though the circuit doesn't contain measure gates.
     println("Final quantum state after completion of the circuit: ", qx->get_state());
+    // FIXME: when averaging measurements are ON, this will result in always "flat" state even though the circuit doesn't contain measure gates.
 
     return 0;
 }
