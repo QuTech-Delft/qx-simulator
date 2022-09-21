@@ -1,3 +1,4 @@
+version 1.0
 
 # quantum error correction test
 # 3 qubit bit flip correction code
@@ -5,13 +6,13 @@
 # qubit definition
 qubits 3 
 
-map q0,d
-map q1,a0
-map q2,a1
+map q[0],d
+map q[1],a0
+map q[2],a1
 
 # init logical gate
 .init
-#   x q0
+#   x q[0]
    x d
    display_binary
 

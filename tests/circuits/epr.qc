@@ -1,14 +1,16 @@
+version 1.0
+
 # EPR pair
 
 qubits 2
 
-h q0 
+h q[0]
 display
-cnot q0,q1
+cnot q[0],q[1]
 display
-measure q0
+measure q[0]
 display
-measure q1
+measure q[1]
 display
 
 # error_model depolarizing_channel,0.1

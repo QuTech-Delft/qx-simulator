@@ -416,5 +416,5 @@ map b[23],bsyn2
    h l2_0
 
 .result
-   measure
+   measure_all
    display_binary

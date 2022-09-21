@@ -19,39 +19,31 @@ rX q[1,2:5], 3.1416E-01
 
 
 .mapping
-   map b[0:11], bitcontroller
-   map q[0] , q0
-   map q[1] , q1
-   map q[2] , q2
-   map q[3] , q3
-   map q[4] , q4
-   map q[5] , q5
-   map q[6] , q6
-   map q[7] , q7
+   map b[0:7], bitcontroller
 
 .waits
    wait 2
 
 .first_circuit(50)
-   H q0
-   cnot q0,q1
-   x  q1
-   Y  q2
-   z  q6
-   {x q3 | h q7| c-x bitcontroller, bleh2| c-toffoli b[4], q3, q4, q5}
+   H q[0]
+   cnot q[0],q[1]
+   x  q[1]
+   Y  q[2]
+   z  q[6]
+   {x q[3] | h q[7]| c-x bitcontroller, bleh2| c-toffoli b[4], q[3], q[4], q[5]}
 
 .second_circuit
-   rx q4,     -0.453e1
-   ry q5,0.244
-   rz q6,0.555
+   rx q[4],     -0.453e1
+   ry q[5],0.244
+   rz q[6],0.555
    c-x bitcontroller, q[2:5]
-   c-swap b[7], q1 , q[5,7]
-   toffoli q3, q4, q[0:5]
+   c-swap b[7], q[1] , q[5,7]
+   toffoli q[3], q[4], q[0:5]
 
 .result
 # measurement
-   measure q1
-   {measure q0 | measure q2 | measure q3}
+   measure q[1]
+   {measure q[0] | measure q[2] | measure q[3]}
 
 .display_results
 display

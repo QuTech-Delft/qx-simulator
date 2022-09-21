@@ -1,6 +1,6 @@
 version 1.0
 
-qubits 19
+qubits 24
 
 h q[0]
 cnot q[0],q[1]
@@ -21,5 +21,9 @@ cnot q[0],q[15]
 cnot q[0],q[16]
 cnot q[0],q[17]
 cnot q[0],q[18]
-measure
-
+cnot q[0],q[19]
+cnot q[0],q[20]
+cnot q[0],q[21]
+cnot q[0],q[22]
+cnot q[0],q[23]
+# measure_all

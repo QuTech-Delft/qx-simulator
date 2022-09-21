@@ -1,3 +1,5 @@
+version 1.0
+
 #This is a test file for 1024 qubits
 #bleh
 
@@ -5,7 +7,6 @@ qubiTs 1024
 
 display
 display b[100,10,99]
-display bleh
 
 reset-AveraGing
 reset-Averaging Q[8,9, 0:100, 6, 8, 9]
