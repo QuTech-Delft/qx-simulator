@@ -121,4 +121,4 @@ qubits 21
 
 .measure
    h q[10]
-   measure
+   measure_all

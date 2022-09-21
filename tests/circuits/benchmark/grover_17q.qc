@@ -105,6 +105,6 @@ qubits 17
 
 .measure
    h q[8]
-   measure
+   measure_all
    display_binary
 

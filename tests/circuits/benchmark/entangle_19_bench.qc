@@ -1,6 +1,6 @@
 version 1.0
 
-qubits 18
+qubits 19
 
 h q[0]
 cnot q[0],q[1]
@@ -20,4 +20,6 @@ cnot q[0],q[14]
 cnot q[0],q[15]
 cnot q[0],q[16]
 cnot q[0],q[17]
-measure
+cnot q[0],q[18]
+measure_all
+

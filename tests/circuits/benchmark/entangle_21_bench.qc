@@ -23,4 +23,4 @@ cnot q[0],q[17]
 cnot q[0],q[18]
 cnot q[0],q[19]
 cnot q[0],q[20]
-measure
+measure_all
