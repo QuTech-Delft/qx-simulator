@@ -26,7 +26,8 @@ using namespace str;
 using namespace qx::linalg;
 
 template <typename... Args> constexpr void printImpl(Args... x) {
-    (void)(int[]){0, (std::cout << x, 0)...};
+    int dummy[] = {0, (std::cout << x, 0)...};
+    (void) dummy;
 }
 
 template <typename... Args> constexpr void error(Args... x) {

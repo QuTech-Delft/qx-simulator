@@ -13,7 +13,8 @@
 #include <vector>
 
 template <typename... Args> constexpr void print(Args... x) {
-    (void)(int[]){0, (std::cout << x, 0)...};
+    int dummy[] = {0, (std::cout << x, 0)...};
+    (void) dummy;
 }
 
 template <typename... Args> constexpr void println(Args... x) {
