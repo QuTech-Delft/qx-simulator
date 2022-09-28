@@ -74,7 +74,7 @@ qx::qu_register::qu_register(uint64_t n_qubits)
       measurement_register(n_qubits, 0), n_qubits(n_qubits),
       rgenerator(xpu::timer().current() * 10e5), udistribution(.0, 1),
       measurement_averaging(
-          n_qubits, integration_t{.ground_states = 0, .excited_states = 0}) {
+          n_qubits, integration_t{0, 0}) {
     if (n_qubits > 63) {
         throw std::invalid_argument("hard limit of 63 qubits exceeded");
     }
@@ -86,9 +86,6 @@ qx::qu_register::qu_register(uint64_t n_qubits)
  * reset
  */
 void qx::qu_register::reset() {
-#ifdef USE_OPENMP
-#pragma omp parallel for
-#endif
     for (auto &c : data) {
         c = 0.0;
     }

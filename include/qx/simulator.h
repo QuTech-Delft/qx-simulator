@@ -25,7 +25,8 @@
 #include <vector>
 
 template <typename... Args> constexpr void printImpl(std::ostream& stream, Args... x) {
-    (void)(int[]){0, (stream << x, 0)...};
+    int dummy[] = {0, (stream << x, 0)...};
+    (void) dummy;
 }
 
 template <typename... Args> constexpr void log(Args... x) {
