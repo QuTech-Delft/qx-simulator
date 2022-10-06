@@ -3,470 +3,356 @@
 
 #include "qx/compat.h"
 #include "qx/core/circuit.h"
-#include <qasm_ast.hpp>
+#include "cqasm-v1-semantic-gen.hpp"
 
-#define __ret_gate_1(__g)                                                      \
-    {                                                                          \
-        if (!pg)                                                               \
-            if (!bc)                                                           \
-                return std::make_shared<__g>(sqid(operation));                 \
-            else                                                               \
-                return std::make_shared<qx::bin_ctrl>(                         \
-                    bv, std::make_shared<__g>(sqid(operation)));               \
-        else {                                                                 \
-            if (!bc) {                                                         \
-                for (auto q : qv)                                              \
-                    pg->add(std::make_shared<__g>(q));                         \
-            } else {                                                           \
-                for (auto q : qv)                                              \
-                    pg->add(std::make_shared<qx::bin_ctrl>(                    \
-                        bv, std::make_shared<__g>(q)));                        \
-            }                                                                  \
-            return std::move(pg);                                              \
-        }                                                                      \
+namespace cq = ::cqasm::v1::semantic;
+namespace values = ::cqasm::v1::values;
+
+class OperandsHelper {
+public:
+    OperandsHelper(const cq::Instruction &instruction) : instruction(instruction) {}
+
+    cq::Many<values::ConstInt> get_qubit_operands(int id) const {
+        return instruction.operands[id]->as_qubit_refs()->index;
     }
 
-#define __ret_bin_gate(__g)                                                    \
-    {                                                                          \
-        if (!pg && (bv.size() > 1))                                            \
-            pg = std::make_shared<qx::parallel_gates>();                       \
-        if (!pg)                                                               \
-            return std::make_shared<__g>(bid(operation));                      \
-        else {                                                                 \
-            for (auto b : bv)                                                  \
-                pg->add(std::make_shared<__g>(b));                             \
-            return pg;                                                         \
-        }                                                                      \
+    cq::Many<values::ConstInt> get_bit_operands(int id) const {
+        return instruction.operands[id]->as_bit_refs()->index;
     }
 
-#define __ret_gate_2(__g)                                                      \
-    {                                                                          \
-        const std::vector<size_t> &qv0 =                                       \
-            operation.getQubitsInvolved(1).getSelectedQubits().getIndices();   \
-        const std::vector<size_t> &qv1 =                                       \
-            operation.getQubitsInvolved(2).getSelectedQubits().getIndices();   \
-                                                                               \
-        if (qv0.size() != qv1.size())                                          \
-            throw("[x] error : parallel " + type +                             \
-                  " args have different sizes !");                             \
-                                                                               \
-        if (qv0.size() == 1) {                                                 \
-            if (!bc)                                                           \
-                return std::make_shared<__g>(qv0[0], qv1[0]);                  \
-            else                                                               \
-                return std::make_shared<qx::bin_ctrl>(                         \
-                    bv, std::make_shared<__g>(qv0[0], qv1[0]));                \
-        } else {                                                               \
-            pg = std::make_shared<qx::parallel_gates>();                       \
-            if (!bc) {                                                         \
-                for (size_t i = 0; i < qv0.size(); ++i)                        \
-                    pg->add(std::make_shared<__g>(qv0[i], qv1[i]));            \
-            } else {                                                           \
-                for (size_t i = 0; i < qv0.size(); ++i)                        \
-                    pg->add(std::make_shared<qx::bin_ctrl>(                    \
-                        bv, std::make_shared<__g>(qv0[i], qv1[i])));           \
-            }                                                                  \
-            return pg;                                                         \
-        }                                                                      \
+    double get_float_operand(int id) const {
+        return instruction.operands[id]->as_const_real()->value;
     }
 
-int sqid(compiler::Operation &operation) {
-    return operation.getQubitsInvolved().getSelectedQubits().getIndices()[0];
+    std::int64_t get_int_operand(int id) const {
+        return instruction.operands[id]->as_const_int()->value;
+    }
+
+private:
+    const cq::Instruction &instruction;
+};
+
+template <typename GateT>
+std::vector<std::shared_ptr<qx::gate>> make_gates(cq::Many<values::ConstInt> qubits) {
+    std::vector<std::shared_ptr<qx::gate>> gates{};
+
+    for (const auto& qubit: qubits) {
+        gates.push_back(std::make_shared<GateT>(qubit->value));
+    }
+
+    return gates;
 }
 
-int qid(compiler::Operation &operation, int id) {
-    return operation.getQubitsInvolved(id).getSelectedQubits().getIndices()[0];
+template <typename GateT, typename Arg>
+std::vector<std::shared_ptr<qx::gate>> make_gates(cq::Many<values::ConstInt> qubits, Arg&& arg) {
+    std::vector<std::shared_ptr<qx::gate>> gates{};
+
+    for (const auto& qubit: qubits) {
+        gates.push_back(std::make_shared<GateT>(qubit->value, arg));
+    }
+
+    return gates;
 }
 
-int bid(compiler::Operation &operation) {
-    return operation.getControlBits().getSelectedBits().getIndices()[0];
+template <typename GateT>
+std::vector<std::shared_ptr<qx::gate>> make_gates(cq::Many<values::ConstInt> qubits1, cq::Many<values::ConstInt> qubits2) {
+    assert(qubits1.size() == qubits2.size());
+
+    std::vector<std::shared_ptr<qx::gate>> gates{};
+
+    for (std::size_t i = 0; i < qubits1.size(); ++i) {
+        gates.push_back(std::make_shared<GateT>(qubits1[i]->value, qubits2[i]->value));
+    }
+
+    return gates;
 }
 
-std::shared_ptr<qx::gate> gateLookup(compiler::Operation &operation) {
-    // operation.printOperation();
-    bool bc = false;
-    const std::vector<size_t> &qv =
-        operation.getQubitsInvolved().getSelectedQubits().getIndices();
-    const std::vector<size_t> &bv =
-        operation.getControlBits().getSelectedBits().getIndices();
-    std::shared_ptr<qx::parallel_gates> pg;
+template <typename GateT, typename Arg>
+std::vector<std::shared_ptr<qx::gate>> make_gates(cq::Many<values::ConstInt> qubits1, cq::Many<values::ConstInt> qubits2, Arg&& arg) {
+    assert(qubits1.size() == qubits2.size());
 
-    if (bv.size())
-        bc = true;
-    if (qv.size() > 1)
-        pg = std::make_shared<qx::parallel_gates>();
+    std::vector<std::shared_ptr<qx::gate>> gates{};
 
-    // if (bc) { std::cout << operation.getControlBits().printMembers(); }
-
-    std::string type = operation.getType();
-
-    if (type == "toffoli") {
-        const std::vector<size_t> &qv0 =
-            operation.getQubitsInvolved(1).getSelectedQubits().getIndices();
-        const std::vector<size_t> &qv1 =
-            operation.getQubitsInvolved(2).getSelectedQubits().getIndices();
-        const std::vector<size_t> &qv2 =
-            operation.getQubitsInvolved(3).getSelectedQubits().getIndices();
-
-        if ((qv0.size() != qv1.size()) || (qv0.size() != qv2.size()))
-            throw("[x] error : parallel toffoli args have different sizes !");
-
-        if (qv0.size() == 1) {
-            if (!bc)
-                return std::make_shared<qx::toffoli>(qv0[0], qv1[0], qv2[0]);
-            else
-                return std::make_shared<qx::bin_ctrl>(
-                    bv, std::make_shared<qx::toffoli>(qv0[0], qv1[0], qv2[0]));
-        } else {
-            pg = std::make_shared<qx::parallel_gates>();
-            if (!bc)
-                for (size_t i = 0; i < qv0.size(); ++i)
-                    pg->add(
-                        std::make_shared<qx::toffoli>(qv0[i], qv1[i], qv2[i]));
-            else
-                for (size_t i = 0; i < qv0.size(); ++i)
-                    pg->add(std::make_shared<qx::bin_ctrl>(
-                        bv,
-                        std::make_shared<qx::toffoli>(qv0[i], qv1[i], qv2[i])));
-            return std::move(pg);
-        }
+    for (std::size_t i = 0; i < qubits1.size(); ++i) {
+        gates.push_back(std::make_shared<GateT>(qubits1[i]->value, qubits2[i]->value, arg));
     }
 
-    ///////// common sq gates //////
-    if (type == "i")
-        __ret_gate_1(qx::identity);
-    if (type == "x")
-        __ret_gate_1(qx::pauli_x);
-    if (type == "y")
-        __ret_gate_1(qx::pauli_y);
-    if (type == "z")
-        __ret_gate_1(qx::pauli_z);
-    if (type == "h")
-        __ret_gate_1(qx::hadamard);
-    if (type == "s")
-        __ret_gate_1(qx::phase_shift);
-    if (type == "sdag")
-        __ret_gate_1(qx::s_dag_gate);
-    if (type == "t")
-        __ret_gate_1(qx::t_gate);
-    if (type == "tdag")
-        __ret_gate_1(qx::t_dag_gate);
+    return gates;
+}
 
-    /////////// classical /////////
+template <typename GateT>
+std::vector<std::shared_ptr<qx::gate>> make_gates(cq::Many<values::ConstInt> qubits1, cq::Many<values::ConstInt> qubits2, cq::Many<values::ConstInt> qubits3) {
+    assert(qubits1.size() == qubits2.size() && qubits2.size() == qubits3.size());
 
-    if (type == "not")
-        __ret_bin_gate(qx::classical_not);
+    std::vector<std::shared_ptr<qx::gate>> gates{};
 
-    /////////// rotations /////////
-    if (type == "rx") {
-        double angle = operation.getRotationAngle();
-        if (!pg)
-            if (!bc)
-                return std::make_shared<qx::rx>(sqid(operation), angle);
-            else
-                return std::make_shared<qx::bin_ctrl>(
-                    bv, std::make_shared<qx::rx>(sqid(operation), angle));
-        else {
-            if (!bc)
-                for (auto q : qv)
-                    pg->add(std::make_shared<qx::rx>(q, angle));
-            else
-                for (auto q : qv)
-                    pg->add(std::make_shared<qx::bin_ctrl>(
-                        bv, std::make_shared<qx::rx>(q, angle)));
-            return pg;
-        }
-    }
-    if (type == "ry") {
-        double angle = operation.getRotationAngle();
-        if (!pg)
-            if (!bc)
-                return std::make_shared<qx::ry>(sqid(operation), angle);
-            else
-                return std::make_shared<qx::bin_ctrl>(
-                    bv, std::make_shared<qx::ry>(sqid(operation), angle));
-        else {
-            if (!bc)
-                for (auto q : qv)
-                    pg->add(std::make_shared<qx::ry>(q, angle));
-            else
-                for (auto q : qv)
-                    pg->add(std::make_shared<qx::bin_ctrl>(
-                        bv, std::make_shared<qx::ry>(q, angle)));
-            return pg;
-        }
-    }
-    if (type == "rz") {
-        double angle = operation.getRotationAngle();
-        if (!pg)
-            if (!bc)
-                return std::make_shared<qx::rz>(sqid(operation), angle);
-            else
-                return std::make_shared<qx::bin_ctrl>(
-                    bv, std::make_shared<qx::rz>(sqid(operation), angle));
-        else {
-            if (!bc)
-                for (auto q : qv)
-                    pg->add(std::make_shared<qx::rz>(q, angle));
-            else
-                for (auto q : qv)
-                    pg->add(std::make_shared<qx::bin_ctrl>(
-                        bv, std::make_shared<qx::rz>(q, angle)));
-            return pg;
-        }
+    for (std::size_t i = 0; i < qubits1.size(); ++i) {
+        gates.push_back(std::make_shared<GateT>(qubits1[i]->value, qubits2[i]->value, qubits3[i]->value));
     }
 
-    //////////// two qubits gates //////////////
-    if (type == "cnot")
-        __ret_gate_2(qx::cnot);
-    if (type == "cz")
-        __ret_gate_2(qx::cphase);
-    if (type == "swap")
-        __ret_gate_2(qx::swap);
+    return gates;
+}
 
-    ///////////// prep gates //////////////////
-    if (type == "prep_z")
-        __ret_gate_1(qx::prepz);
-    if (type == "prep_y")
-        __ret_gate_1(qx::prepy);
-    if (type == "prep_x")
-        __ret_gate_1(qx::prepx);
+std::vector<std::shared_ptr<qx::gate>> gateLookupWithoutCondition(const cq::Instruction &instruction) {
+    auto &name = instruction.instruction->name;
+    OperandsHelper operands(instruction);
 
-    ////////// measurements //////////////////
-    if (type == "measure" || type == "measure_z") {
-        if (!pg) {
-            return std::make_shared<qx::measure>(sqid(operation));
-        }
-        else {
-            for (auto q : qv) {
-                pg->add(std::make_shared<qx::measure>(q));
-            }
-            return pg;
-        }
-    }
-    if (type == "measure_all") {
-        return std::make_shared<qx::measure>();
+    if (name == "toffoli") {
+        return make_gates<qx::toffoli>(operands.get_qubit_operands(0), operands.get_qubit_operands(1), operands.get_qubit_operands(2));
     }
 
-    if (type == "measure_x") {
-        if (!pg) {
-            return std::make_shared<qx::measure_x>(sqid(operation));
-        }
-        else {
-            for (auto q : qv) {
-                pg->add(std::make_shared<qx::measure_x>(q));
-            }
-            return pg;
-        }
-    }
-    if (type == "measure_y") {
-        if (!pg) {
-            return std::make_shared<qx::measure_y>(sqid(operation));
-        }
-        else {
-            for (auto q : qv) {
-                pg->add(std::make_shared<qx::measure_y>(q));
-            }
-            return pg;
-        }
+    if (name == "i") {
+        return make_gates<qx::identity>(operands.get_qubit_operands(0));
     }
 
-    ////////////// display /////////////////
-    if (type == "display")
-        return std::make_shared<qx::display>();
-    if (type == "display_binary")
-        return std::make_shared<qx::display>(true);
+    if (name == "x") {
+        return make_gates<qx::pauli_x>(operands.get_qubit_operands(0));
+    }
 
-    /////////////// x90 //////////////////
-    if (type == "x90") {
+    if (name == "y") {
+        return make_gates<qx::pauli_y>(operands.get_qubit_operands(0));
+    }
+
+    if (name == "z") {
+        return make_gates<qx::pauli_z>(operands.get_qubit_operands(0));
+    }
+
+    if (name == "h") {
+        return make_gates<qx::hadamard>(operands.get_qubit_operands(0));
+    }
+
+    if (name == "s") {
+        return make_gates<qx::phase_shift>(operands.get_qubit_operands(0));
+    }
+
+    if (name == "sdag") {
+        return make_gates<qx::s_dag_gate>(operands.get_qubit_operands(0));
+    }
+
+    if (name == "t") {
+        return make_gates<qx::t_gate>(operands.get_qubit_operands(0));
+    }
+
+    if (name == "tdag") {
+        return make_gates<qx::t_dag_gate>(operands.get_qubit_operands(0));
+    }
+
+    if (name == "not") {
+        return make_gates<qx::classical_not>(operands.get_bit_operands(0));
+    }
+
+    if (name == "rx") {
+        return make_gates<qx::rx>(operands.get_qubit_operands(0), operands.get_float_operand(1));
+    }
+
+    if (name == "ry") {
+        return make_gates<qx::ry>(operands.get_qubit_operands(0), operands.get_float_operand(1));
+    }
+
+    if (name == "rz") {
+        return make_gates<qx::rz>(operands.get_qubit_operands(0), operands.get_float_operand(1));
+    }
+
+    if (name == "cnot") {
+        return make_gates<qx::cnot>(operands.get_qubit_operands(0), operands.get_qubit_operands(1));
+    }
+
+    if (name == "cz") {
+        return make_gates<qx::cphase>(operands.get_qubit_operands(0), operands.get_qubit_operands(1));
+    }
+
+    if (name == "swap") {
+        return make_gates<qx::swap>(operands.get_qubit_operands(0), operands.get_qubit_operands(1));
+    }
+
+    if (name == "prep_x") {
+        return make_gates<qx::prepx>(operands.get_qubit_operands(0));
+    }
+
+    if (name == "prep_y") {
+        return make_gates<qx::prepy>(operands.get_qubit_operands(0));
+    }
+
+    if (name == "prep_z") {
+        return make_gates<qx::prepz>(operands.get_qubit_operands(0));
+    }
+
+    if (name == "measure" || name == "measure_z") {
+        return make_gates<qx::measure>(operands.get_qubit_operands(0));
+    }
+
+    if (name == "measure_all") {
+        return {std::make_shared<qx::measure>()};
+    }
+
+    if (name == "measure_x") {
+        return make_gates<qx::measure_x>(operands.get_qubit_operands(0));
+    }
+
+    if (name == "measure_y") {
+        return make_gates<qx::measure_y>(operands.get_qubit_operands(0));
+    }
+
+    if (name == "display") {
+        return {std::make_shared<qx::display>()};
+    }
+
+    if (name == "display_binary") {
+        return {std::make_shared<qx::display>(true)};
+    }
+
+    if (name == "x90") {
         double angle = QX_PI / 2;
-        if (!pg)
-            if (!bc)
-                return std::make_shared<qx::rx>(sqid(operation), angle);
-            else
-                return std::make_shared<qx::bin_ctrl>(
-                    bv, std::make_shared<qx::rx>(sqid(operation), angle));
-        else {
-            if (!bc)
-                for (auto q : qv)
-                    pg->add(std::make_shared<qx::rx>(q, angle));
-            else
-                for (auto q : qv)
-                    pg->add(std::make_shared<qx::bin_ctrl>(
-                        bv, std::make_shared<qx::rx>(q, angle)));
-            return pg;
-        }
+        return make_gates<qx::rx>(operands.get_qubit_operands(0), angle);
     }
-    if (type == "mx90") {
+
+    if (name == "mx90") {
         double angle = -QX_PI / 2;
-        if (!pg)
-            if (!bc)
-                return std::make_shared<qx::rx>(sqid(operation), angle);
-            else
-                return std::make_shared<qx::bin_ctrl>(
-                    bv, std::make_shared<qx::rx>(sqid(operation), angle));
-        else {
-            if (!bc)
-                for (auto q : qv)
-                    pg->add(std::make_shared<qx::rx>(q, angle));
-            else
-                for (auto q : qv)
-                    pg->add(std::make_shared<qx::bin_ctrl>(
-                        bv, std::make_shared<qx::rx>(q, angle)));
-            return pg;
-        }
+        return make_gates<qx::rx>(operands.get_qubit_operands(0), angle);
     }
-    if (type == "y90") {
+
+    if (name == "y90") {
         double angle = QX_PI / 2;
-        if (!pg)
-            if (!bc)
-                return std::make_shared<qx::ry>(sqid(operation), angle);
-            else
-                return std::make_shared<qx::bin_ctrl>(
-                    bv, std::make_shared<qx::ry>(sqid(operation), angle));
-        else {
-            if (!bc)
-                for (auto q : qv)
-                    pg->add(std::make_shared<qx::ry>(q, angle));
-            else
-                for (auto q : qv)
-                    pg->add(std::make_shared<qx::bin_ctrl>(
-                        bv, std::make_shared<qx::ry>(q, angle)));
-            return pg;
-        }
+        return make_gates<qx::ry>(operands.get_qubit_operands(0), angle);
     }
-    if (type == "my90") {
+
+    if (name == "my90") {
         double angle = -QX_PI / 2;
-        if (!pg)
-            if (!bc)
-                return std::make_shared<qx::ry>(sqid(operation), angle);
-            else
-                return std::make_shared<qx::bin_ctrl>(
-                    bv, std::make_shared<qx::ry>(sqid(operation), angle));
-        else {
-            if (!bc)
-                for (auto q : qv)
-                    pg->add(std::make_shared<qx::ry>(q, angle));
-            else
-                for (auto q : qv)
-                    pg->add(std::make_shared<qx::bin_ctrl>(
-                        bv, std::make_shared<qx::ry>(q, angle)));
-            return pg;
-        }
-    }
-    if (type == "c-x")
-        return std::make_shared<qx::bin_ctrl>(
-            bid(operation), std::make_shared<qx::pauli_x>(sqid(operation)));
-    if (type == "c-z")
-        return std::make_shared<qx::bin_ctrl>(
-            bid(operation), std::make_shared<qx::pauli_z>(sqid(operation)));
-
-    if (type == "cr") {
-        double angle = operation.getRotationAngle();
-        const std::vector<size_t> &qv0 =
-            operation.getQubitsInvolved(1).getSelectedQubits().getIndices();
-        const std::vector<size_t> &qv1 =
-            operation.getQubitsInvolved(2).getSelectedQubits().getIndices();
-
-        if (qv0.size() != qv1.size())
-            throw("[x] error : parallel 'cr' args have different sizes !");
-
-        if (qv0.size() == 1) {
-            if (!bc)
-                return std::make_shared<qx::ctrl_phase_shift>(qv0[0], qv1[0],
-                                                              angle);
-            else
-                return std::make_shared<qx::bin_ctrl>(
-                    bv, std::make_shared<qx::ctrl_phase_shift>(qv0[0], qv1[0],
-                                                               angle));
-        } else {
-            pg = std::make_shared<qx::parallel_gates>();
-            if (!bc)
-                for (size_t i = 0; i < qv0.size(); ++i)
-                    pg->add(std::make_shared<qx::ctrl_phase_shift>(
-                        qv0[i], qv1[i], angle));
-            else
-                for (size_t i = 0; i < qv0.size(); ++i)
-                    pg->add(std::make_shared<qx::bin_ctrl>(
-                        bv, std::make_shared<qx::ctrl_phase_shift>(
-                                qv0[i], qv1[i], angle)));
-            return pg;
-        }
-    }
-    if (type == "crk") {
-        size_t angle = operation.getRotationAngle();
-        const std::vector<size_t> &qv0 =
-            operation.getQubitsInvolved(1).getSelectedQubits().getIndices();
-        const std::vector<size_t> &qv1 =
-            operation.getQubitsInvolved(2).getSelectedQubits().getIndices();
-
-        if (qv0.size() != qv1.size())
-            throw("[x] error : parallel 'crk' args have different sizes !");
-
-        if (qv0.size() == 1) {
-            if (!bc) {
-                return std::make_shared<qx::ctrl_phase_shift>(qv0[0], qv1[0],
-                                                              angle);
-            } else {
-                return std::make_shared<qx::bin_ctrl>(
-                    bv, std::make_shared<qx::ctrl_phase_shift>(qv0[0], qv1[0],
-                                                               angle));
-            }
-        } else {
-            pg = std::make_shared<qx::parallel_gates>();
-            if (!bc)
-                for (size_t i = 0; i < qv0.size(); ++i) {
-                    pg->add(std::make_shared<qx::ctrl_phase_shift>(
-                        qv0[i], qv1[i], angle));
-                }
-            else
-                for (size_t i = 0; i < qv0.size(); ++i) {
-                    pg->add(std::make_shared<qx::bin_ctrl>(
-                        bv, std::make_shared<qx::ctrl_phase_shift>(
-                                qv0[i], qv1[i], angle)));
-                }
-            return pg;
-        }
+        return make_gates<qx::ry>(operands.get_qubit_operands(0), angle);
     }
 
-    return NULL;
+    if (name == "cr") {
+        return make_gates<qx::ctrl_phase_shift>(operands.get_qubit_operands(0), operands.get_qubit_operands(1), operands.get_float_operand(2));
+    }
+
+    if (name == "crk") {
+        return make_gates<qx::ctrl_phase_shift>(operands.get_qubit_operands(0), operands.get_qubit_operands(1), static_cast<std::size_t>(operands.get_int_operand(2)));
+    }
+
+    return {};
 }
+
+std::vector<std::shared_ptr<qx::gate>> gateLookup(const cq::Instruction &instruction) {
+    auto b = instruction.condition->as_const_bool();
+    if (b && !(b->value)) {
+        return {};
+    }
+
+    auto gates = gateLookupWithoutCondition(instruction);
+
+    if (b && b->value) {
+        return gates;
+    }
+
+    if (auto bitref = instruction.condition->as_bit_refs()) {
+        std::vector<std::shared_ptr<qx::gate>> controlled_gates{};
+
+        for (std::size_t i = 0; i < gates.size(); ++i) {
+            auto control_bit = bitref->index[i]->value;
+            controlled_gates.push_back(std::make_shared<qx::bin_ctrl>(control_bit, gates[i]));
+        }
+
+        return controlled_gates;
+    }
+
+    return {};
+}
+
+std::string to_string(cq::NodeType nodeType) {
+    switch (nodeType) {
+        case cq::NodeType::AnnotationData:
+            return "AnnotationData";
+        case cq::NodeType::Block:
+            return "Block";
+        case cq::NodeType::BreakStatement:
+            return "BreakStatement";
+        case cq::NodeType::Bundle:
+            return "Bundle";
+        case cq::NodeType::BundleExt:
+            return "BundleExt";
+        case cq::NodeType::ContinueStatement:
+            return "ContinueStatement";
+        case cq::NodeType::ErrorModel:
+            return "ErrorModel";
+        case cq::NodeType::ForLoop:
+            return "ForLoop";
+        case cq::NodeType::ForeachLoop:
+            return "ForeachLoop";
+        case cq::NodeType::GotoInstruction:
+            return "GotoInstruction";
+        case cq::NodeType::IfElse:
+            return "IfElse";
+        case cq::NodeType::IfElseBranch:
+            return "IfElseBranch";
+        case cq::NodeType::Instruction:
+            return "Instruction";
+        case cq::NodeType::Mapping:
+            return "Mapping";
+        case cq::NodeType::Program:
+            return "Program";
+        case cq::NodeType::RepeatUntilLoop:
+            return "RepeatUntilLoop";
+        case cq::NodeType::SetInstruction:
+            return "SetInstruction";
+        case cq::NodeType::Subcircuit:
+            return "Subcircuit";
+        case cq::NodeType::Variable:
+            return "Variable";
+        case cq::NodeType::Version:
+            return "Version";
+        case cq::NodeType::WhileLoop:
+            return "WhileLoop";
+    }
+
+    return "Unknown";
+}
+
+class GateConvertor : public cq::RecursiveVisitor {
+    public:
+    GateConvertor(std::vector<std::shared_ptr<qx::gate>> &gs) : gates(gs) {}
+
+    void visit_instruction(cq::Instruction &instr) override {
+        const auto newGates = gateLookup(instr);
+        for (const auto newGate: newGates) {
+            gates.push_back(newGate);
+        }
+    }
+
+    void visit_bundle_ext(cq::BundleExt &node) override {
+        node.items.visit(*this);
+    }
+
+    void visit_node(cq::Node &node) override {
+        throw std::runtime_error("Statements of the following type are not supported: " + to_string(node.type()));
+    }
+
+    private:
+    std::vector<std::shared_ptr<qx::gate>> &gates;
+};
 
 std::shared_ptr<qx::circuit> load_cqasm_code(uint64_t qubits_count,
-                                             compiler::SubCircuit const &subcircuit) {
-    uint64_t iterations = subcircuit.numberIterations();
-    std::string name = subcircuit.nameSubCircuit();
+                                             cq::Subcircuit const &subcircuit) {
+    auto iterations = subcircuit.iterations;
+    auto name = subcircuit.name;
 
     auto circuit =
         std::make_shared<qx::circuit>(qubits_count, name, iterations);
 
-    const std::vector<compiler::OperationsCluster *> &clusters =
-        subcircuit.getOperationsCluster();
+    if (subcircuit.body.empty()) {
+        return circuit;
+    }
 
-    for (auto p_cluster : clusters) {
-        const std::vector<compiler::Operation *> operations =
-            p_cluster->getOperations();
-        for (auto p_operation : operations) {
-            std::shared_ptr<qx::gate> g;
-            try {
-                if (p_operation->getType() == "barrier" ||
-                    p_operation->getType() == "skip" ||
-                    p_operation->getType() == "wait") {
-                    continue;
-                }
-                g = gateLookup(*p_operation);
-            } catch (const char *error) {
-                std::cerr << error << std::endl;
-                exit(-1);
-            }
-            if (!g) {
-                throw std::runtime_error("Cannot create gate of type " + p_operation->getType());
-            } else {
-                circuit->add(g);
-            }
+    for (const auto& statement : subcircuit.body->statements) {
+        std::vector<std::shared_ptr<qx::gate>> gs{};
+
+        GateConvertor gateConvertor(gs);
+
+        statement->visit(gateConvertor);
+
+        for (const auto &g : gs) {
+            circuit->add(g); 
         }
     }
-    // circuit->dump();
     return circuit;
 }
 

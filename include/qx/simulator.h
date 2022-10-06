@@ -13,7 +13,7 @@
 #include "qx/libqasm_interface.h"
 #include "qx/representation.h"
 #include "qx/version.h"
-#include <qasm_semantic.hpp>
+#include "cqasm.hpp"
 
 #include <cstdlib>
 #include <fstream>
@@ -47,36 +47,29 @@ template <typename... Args> constexpr void error(Args... x) {
 
 namespace qx {
 
+namespace cq = ::cqasm::v1;
 /**
  * simulator
  */
 class simulator {
+
 protected:
     std::unique_ptr<qx::qu_register> reg;
-    compiler::QasmRepresentation
-        ast; // FIXME: this should be allocated on the heap, and should not be
-             // copied from the parser object.
+    cq::ast::One<cq::semantic::Program> program;
 
 public:
     simulator() = default;
 
     bool set(std::string file_path) {
-        FILE *qasm_file = fopen(file_path.c_str(), "r");
-        if (!qasm_file) {
-            error("Could not open ", file_path);
+        auto analyzer = cq::default_analyzer("1.2");
+
+        program = analyzer.analyze(file_path).unwrap();
+
+        if (program.empty()) {
+            error("Cannot parse and analyze file ", file_path);
             return false;
         }
 
-        try {
-            ast = compiler::QasmSemanticChecker(qasm_file)
-                      .getQasmRepresentation();
-        } catch (std::exception &e) {
-            error(e.what());
-            error("Cannot parse file ", file_path);
-            return false;
-        }
-
-        fclose(qasm_file);
         return true;
     }
 
@@ -85,7 +78,7 @@ public:
      */
     void execute(size_t number_of_runs) {
         // quantum state and circuits
-        size_t qubits = ast.numQubits();
+        size_t qubits = program->num_qubits;
         std::vector<std::shared_ptr<qx::circuit>> circuits;
         std::vector<std::shared_ptr<qx::circuit>> perfect_circuits;
 
@@ -107,11 +100,10 @@ public:
         }
 
         // convert libqasm ast to qx internal representation
-        auto const& subcircuits =
-            ast.getSubCircuits().getAllSubCircuits();
+        auto const& subcircuits = program->subcircuits;
         for (auto const& subcircuit : subcircuits) {
             try {
-                perfect_circuits.push_back(load_cqasm_code(qubits, subcircuit));
+                perfect_circuits.push_back(load_cqasm_code(qubits, *subcircuit));
             } catch (std::runtime_error const& exception) {
                 error("Error while creating circuits: ", exception.what());
                 throw exception;
@@ -121,8 +113,8 @@ public:
         log("Loaded ", perfect_circuits.size(), " circuits.");
 
         // check whether an error model is specified
-        if (ast.getErrorModelType() == "depolarizing_channel") {
-            error_probability = ast.getErrorModelParameters().at(0);
+        if (!program->error_model.empty() && program->error_model->name == "depolarizing_channel") {
+            error_probability = program->error_model->parameters[0]->as_const_real()->value;
             error_model = qx::__depolarizing_channel__;
         }
 
