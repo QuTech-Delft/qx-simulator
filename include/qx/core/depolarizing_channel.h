@@ -72,8 +72,12 @@ public:
             return true;
         }
         if (g->type() == __measure_gate__) {
-            if (g->qubits()[0] == q)
-                return true;
+            assert(dynamic_cast<const qx::measure*>(g));
+            auto* measure_g = static_cast<const qx::measure*>(g);
+            return measure_g->measured_qubit() == q;
+        }
+        if (g->type() == __measure_reg_gate__) {
+            return true;
         }
         if (g->type() == __parallel_gate__) {
             return ((qx::parallel_gates *)g)->has([this, q](auto const *gate) {
@@ -139,9 +143,6 @@ public:
                 noisy_circuit->add(circuit->get(p));
                 continue;
             }
-            // std::vector<size_t> used = circuit->get(p)->qubits();
-            // std::vector<size_t> idle = idle_qubits(nq,used);
-            // size_t idle_nq=idle.size();
 
             double x = uniform_rand();
 
@@ -153,8 +154,7 @@ public:
                         break;
                     affected_qubits++;
                 }
-                // affected_qubits = (affected_qubits > idle_nq ? idle_nq :
-                // affected_qubits);
+
                 total_errors += affected_qubits;
                 error_histogram[affected_qubits]++;
 
@@ -167,7 +167,6 @@ public:
                 }
 
                 if (affected_qubits == 1) {
-                    // size_t q = idle[(rand()%idle_nq)];
                     size_t q = rand() % nq;
 
                     if (is_measurement(circuit->get(p).get(), q)) {
@@ -187,11 +186,10 @@ public:
 
                     std::vector<bool> v(nq, 0);
                     for (size_t i = 0; i < affected_qubits; ++i) {
-                        // size_t q = idle[(rand()%idle_nq)];
                         size_t q = rand() % nq;
-                        while (v[q])
+                        while (v[q]) {
                             q = rand() % nq;
-                        // q = idle[(rand()%idle_nq)];
+                        }
                         v[q] = 1;
 
                         if (is_measurement(circuit->get(p).get(), q))

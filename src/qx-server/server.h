@@ -117,48 +117,6 @@ public:
                 println("[+] reset done.");
                 sock->send("OK\n", 3);
                 continue;
-            } else if (words[0] == "reset_measurement_averaging") {
-                if (qubits_count == 0) {
-                    std::string error_code =
-                        "E" + int_to_str(QX_ERROR_QUBITS_NOT_YET_DEFINED) +
-                        "\n";
-                    sock->send(error_code.c_str(), error_code.length() + 1);
-                } else if (words.size() != 1) {
-                    std::string error_code =
-                        "E" + int_to_str(QX_ERROR_MALFORMED_CMD) + "\n";
-                    sock->send(error_code.c_str(), error_code.length() + 1);
-                } else {
-                    qx::qu_register &r = *reg;
-                    r.reset_measurement_averaging();
-                    sock->send("OK\n", 3);
-                }
-                continue;
-            } else if (words[0] == "measurement_average") {
-                if (qubits_count == 0) {
-                    std::string error_code =
-                        "E" + int_to_str(QX_ERROR_QUBITS_NOT_YET_DEFINED) +
-                        "\n";
-                    sock->send(error_code.c_str(), error_code.length() + 1);
-                } else if (words.size() != 2) {
-                    std::string error_code =
-                        "E" + int_to_str(QX_ERROR_MALFORMED_CMD) + "\n";
-                    sock->send(error_code.c_str(), error_code.length() + 1);
-                } else {
-                    size_t q = atoi(words[1].c_str());
-                    qx::qu_register &r = *reg;
-                    double gs = r.measurement_averaging[q].ground_states;
-                    double es = r.measurement_averaging[q].excited_states;
-                    double avg = ((es + gs) != 0. ? (gs / (es + gs)) : 0.);
-                    println("[+] measurement averaging of qubit ", q, " : ",
-                            avg);
-                    std::stringstream ss;
-                    ss << std::fixed << std::setw(7) << avg;
-                    ss << '\n';
-                    std::string s = ss.str();
-                    sock->send(s.c_str(), s.length());
-                    sock->send("OK\n", 3);
-                }
-                continue;
             } else if (words[0] == "run") {
                 if (qubits_count == 0) {
                     std::string error_code =
@@ -739,9 +697,9 @@ private:
             // (ctrl_q1=" << params[0] << ", ctrl_q2=" << params[1] << ")");
             pg->add(std::make_shared<qx::toffoli>(q0, q1, q2));
         } else if (words[0] == "nop") {
-            // current_sub_circuit(qubits_count)->add(std::make_shared<qx::measure>());
+            // current_sub_circuit(qubits_count)->add(std::make_shared<qx::measure_all>());
         } else if (words[0] == "qwait") {
-            // current_sub_circuit(qubits_count)->add(std::make_shared<qx::measure>());
+            // current_sub_circuit(qubits_count)->add(std::make_shared<qx::measure_all>());
         }
         return 0;
     }
@@ -815,11 +773,11 @@ private:
                 sock->send(breg.c_str(), breg.length());
             } else if (words[0] == "measure") {
                 current_sub_circuit(qubits_count)
-                    ->add(std::make_shared<qx::measure>());
+                    ->add(std::make_shared<qx::measure_all>());
             } else if (words[0] == "nop") {
-                // current_sub_circuit(qubits_count)->add(std::make_shared<qx::measure>());
+                // current_sub_circuit(qubits_count)->add(std::make_shared<qx::measure_all>());
             } else if (words[0] == "qwait") {
-                // current_sub_circuit(qubits_count)->add(std::make_shared<qx::measure>());
+                // current_sub_circuit(qubits_count)->add(std::make_shared<qx::measure_all>());
             } else
                 print_syntax_error("unknown command !",
                                    QX_ERROR_UNKNOWN_COMMAND);

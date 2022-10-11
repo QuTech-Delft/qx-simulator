@@ -72,9 +72,7 @@ qx::qu_register::qu_register(uint64_t n_qubits)
     : data(1ULL << n_qubits, 0.0), aux(1ULL << n_qubits, 0.0),
       measurement_prediction(n_qubits, __state_0__),
       measurement_register(n_qubits, 0), n_qubits(n_qubits),
-      rgenerator(xpu::timer().current() * 10e5), udistribution(.0, 1),
-      measurement_averaging(
-          n_qubits, integration_t{0, 0}) {
+      rgenerator(xpu::timer().current() * 10e5), udistribution(.0, 1) {
     if (n_qubits > 63) {
         throw std::invalid_argument("hard limit of 63 qubits exceeded");
     }
@@ -216,20 +214,6 @@ void qx::qu_register::dump(bool only_binary = false) {
     }
     println(" |");
     println("------------------------------------------- ");
-}
-
-void qx::qu_register::dump_measurement_averaging() {
-    std::setprecision(9);
-    println("------------------------------------------- ");
-    print("[>>] measurement averaging (ground state) :");
-    print(" ");
-    for (int i = measurement_averaging.size() - 1; i >= 0; --i) {
-        double gs = measurement_averaging[i].ground_states;
-        double es = measurement_averaging[i].excited_states;
-        double av = ((es + gs) != 0. ? (gs / (es + gs)) : 0.);
-        print(" | ", std::setw(9), av);
-    }
-    println(" |");
 }
 
 /**

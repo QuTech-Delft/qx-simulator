@@ -41,16 +41,8 @@ namespace qx {
  */
 enum state_t { __state_0__, __state_1__, __state_unknown__ };
 
-struct __integration_t {
-    size_t ground_states = 0;
-    size_t excited_states = 0;
-};
-
-using integration_t = __integration_t;
-
 using measurement_prediction_t = std::vector<state_t>;
 using measurement_register_t = std::vector<bool>;
-using measurement_averaging_t = std::vector<integration_t>;
 
 /**
  * \brief quantum register implementation.
@@ -88,18 +80,6 @@ public:
      * \brief quantum register of n_qubit
      */
     qu_register(uint64_t n_qubits);
-
-    /**
-     * measurement averaging
-     */
-    measurement_averaging_t measurement_averaging;
-
-    void reset_measurement_averaging() {
-        for (size_t i = 0; i < measurement_averaging.size(); ++i) {
-            measurement_averaging[i].ground_states = 0;
-            measurement_averaging[i].excited_states = 0;
-        }
-    }
 
     /**
      * reset
@@ -159,11 +139,6 @@ public:
      * \brief dump
      */
     void dump(bool only_binary);
-
-    /**
-     * \brief print measurement averaging for all usages of this register object
-     */
-    void dump_measurement_averaging();
 
     /**
      * \brief return the quantum state as a string

@@ -38,20 +38,54 @@ void print_banner() {
  * simulator
  */
 int main(int argc, char **argv) {
-    std::string file_path;
+    std::string file_path = "";
     size_t navg = 0;
+    std::string json_filename = "";
     print_banner();
 
-    if (!(argc == 2 || argc == 3 || argc == 4)) {
-        println("error : you must specify a circuit file !");
-        println("usage: \n   ", argv[0], " file.qc [iterations] [num_cpu]");
+    int arg_index = 1;
+    bool arg_parsing_failed = false;
+    while (arg_index < argc) {
+        auto current_arg = argv[arg_index];
+
+        if (std::string(current_arg) == "-j") {
+            if (arg_index + 1 >= argc) {
+                arg_parsing_failed = true;
+            } else {
+                json_filename = std::string(argv[++arg_index]);
+            }
+        } else if (std::string(current_arg) == "-c") {
+            if (arg_index + 1 >= argc) {
+                arg_parsing_failed = true;
+            } else {
+                navg = atoi(argv[++arg_index]);
+            }
+        } else {
+            if (arg_index + 1 < argc) {
+                arg_parsing_failed = true;
+            } else {
+                file_path = std::string(current_arg);
+            }
+        }
+
+        if (arg_parsing_failed) {
+            break;
+        }
+
+        ++arg_index;
+    }
+    
+    if (file_path == "" || arg_parsing_failed) {
+        println("usage: \n   ", argv[0], " [-j filename.json] [-c iterations] file.qc");
         return -1;
     }
 
-    // parse arguments and initialise xpu cores
-    file_path = argv[1];
-    if (argc > 2) {
-        navg = (atoi(argv[2]));
+    if (json_filename != "") {
+        println("Will output JSON simulation result to file ", json_filename);
+    }
+    
+    if (navg > 0) {
+        println("Will execute circuit ", navg, " times");
     }
 
     std::unique_ptr<QX> qx;
@@ -66,10 +100,8 @@ int main(int argc, char **argv) {
 
         return 1;
     }
-
+    qx->set_json_output_path(json_filename);
     qx->execute(navg);
-    println("Final quantum state after completion of the circuit: ", qx->get_state());
-    // FIXME: when averaging measurements are ON, this will result in always "flat" state even though the circuit doesn't contain measure gates.
 
     return 0;
 }
