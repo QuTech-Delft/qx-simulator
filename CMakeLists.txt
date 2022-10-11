@@ -236,10 +236,6 @@ endif()
 add_executable("qx-simulator" "${CMAKE_CURRENT_SOURCE_DIR}/src/qx-simulator/simulator.cc")
 target_link_libraries(qx-simulator qx)
 
-# qx-simulator-old
-add_executable("qx-simulator-old" "${CMAKE_CURRENT_SOURCE_DIR}/src/qx-simulator-old/simulator_old.cc")
-target_link_libraries(qx-simulator-old qx)
-
 # qx-server
 add_executable("qx-server" "${CMAKE_CURRENT_SOURCE_DIR}/src/qx-server/server.cc")
 target_link_libraries(qx-server qx)
@@ -289,10 +285,6 @@ install(
     TARGETS qx
     LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-)
-install(
-    TARGETS qx-simulator qx-simulator-old qx-server
-    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
 )
 install(
     DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/"
