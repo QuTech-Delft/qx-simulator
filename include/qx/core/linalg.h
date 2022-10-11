@@ -234,6 +234,7 @@ inline uint32_t pow2(uint32_t x) { return (1 << x); }
 /**
  * inc
  */
+[[nodiscard]]
 std::bitset<MAX_QB_N> inc(std::bitset<MAX_QB_N> in) {
     for (size_t i = 0; i < MAX_QB_N; ++i) {
         if (in[i] == 0) {

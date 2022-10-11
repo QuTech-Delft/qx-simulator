@@ -25,6 +25,8 @@ public:
         }
     }
 
+    void set_json_output_path(std::string filename) { qx_sim->set_json_output_path(filename); }
+
     bool set(std::string qasm_file_name) { return qx_sim->set(qasm_file_name); }
 
     void execute(size_t navg = 0) { qx_sim->execute(navg); }

@@ -182,7 +182,7 @@ std::vector<std::shared_ptr<qx::gate>> gateLookupWithoutCondition(const cq::Inst
     }
 
     if (name == "measure_all") {
-        return {std::make_shared<qx::measure>()};
+        return {std::make_shared<qx::measure_all>()};
     }
 
     if (name == "measure_x") {

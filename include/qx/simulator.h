@@ -13,6 +13,7 @@
 #include "qx/libqasm_interface.h"
 #include "qx/representation.h"
 #include "qx/version.h"
+#include "qx/core/simulation_result.h"
 #include "cqasm.hpp"
 
 #include <cstdlib>
@@ -52,6 +53,7 @@ namespace cq = ::cqasm::v1;
  * simulator
  */
 class simulator {
+    std::string json_output_filename = "";
 
 protected:
     std::unique_ptr<qx::qu_register> reg;
@@ -59,6 +61,10 @@ protected:
 
 public:
     simulator() = default;
+
+    void set_json_output_path(std::string filename) {
+        json_output_filename = filename;
+    }
 
     bool set(std::string file_path) {
         auto analyzer = cq::default_analyzer("1.2");
@@ -120,13 +126,14 @@ public:
 
         // measurement averaging
         if (number_of_runs >= 2) {
+            MeasurementAveraging measurementAveraging(qubits);
+
             if (error_model == qx::__depolarizing_channel__) {
-                qx::measure measure(CountMeasureInAverage::Yes);
+                qx::measure_all measure{};
                 for (size_t s = 0; s < number_of_runs; ++s) {
                     reg->reset();
                     for (auto& perfect_circuit: perfect_circuits) {
-                        if (perfect_circuit->size() == 0)
-                        {
+                        if (perfect_circuit->size() == 0) {
                             continue;
                         }
                         size_t iterations =
@@ -140,21 +147,25 @@ public:
                                 ->execute(*reg, false, true);
                         }
                     }
-                    measure.apply(*reg); // FIXME: does this work when the circuit already contains measure gates???
+                    auto res = measure.apply_and_get_result(*reg);
+                    measurementAveraging.append(res);
                 }
             } else {
-                qx::measure measure(CountMeasureInAverage::Yes);
+                qx::measure_all measure{};
                 for (size_t s = 0; s < number_of_runs; ++s) {
                     reg->reset();
                     for (auto& perfect_circuit: perfect_circuits) {
                         perfect_circuit->execute(*reg, false, true);
                     }
-                    measure.apply(*reg);
+                    auto res = measure.apply_and_get_result(*reg);
+                    measurementAveraging.append(res);
                 }
             }
 
-            log("Average measurement after ", number_of_runs, " shots:");
-            reg->dump_measurement_averaging();
+            measurementAveraging.dump();
+            if (json_output_filename != "") {
+                measurementAveraging.dump_json(json_output_filename);
+            }
         } else {
             if (error_model == qx::__depolarizing_channel__) {
                 for (auto& perfect_circuit: perfect_circuits) {
@@ -177,6 +188,12 @@ public:
 
             for (size_t i = 0; i < circuits.size(); i++) {
                 circuits[i]->execute(*reg);
+            }
+
+            ExactQuantumState quantumState(*reg);
+            quantumState.dump();
+            if (json_output_filename != "") {
+                quantumState.dump_json(json_output_filename);
             }
         }
     }
