@@ -1,3 +1,7 @@
+#include "qx/xpu/net/socket_exception.h"
+
+namespace xpu {
+
 /**
  * socket_exception implementation
  */
@@ -15,4 +19,6 @@ socket_exception::~socket_exception() throw() {}
 
 const char *socket_exception::what() const throw() {
     return user_message.c_str();
+}
+
 }

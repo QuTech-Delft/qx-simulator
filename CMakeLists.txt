@@ -138,6 +138,11 @@ add_library(qx
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/core/linalg.cc"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/core/gaussian.cc"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/xpu/complex.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/xpu/net/active_socket.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/xpu/net/basic_socket.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/xpu/net/socket_exception.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/xpu/net/tcp_server_socket.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/xpu/net/tcp_socket.cc"
 )
 
 # This definition is used to define QX_DECLSPEC for __declspec. More info:

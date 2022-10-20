@@ -57,7 +57,4 @@ protected:
     active_socket(int new_conn_sd);
 
 }; // class active_socket
-
-#include "qx/xpu/net/active_socket.cc"
-
 } // namespace xpu

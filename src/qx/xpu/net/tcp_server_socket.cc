@@ -1,3 +1,7 @@
+#include "qx/xpu/net/tcp_server_socket.h"
+
+namespace xpu {
+
 tcp_server_socket::tcp_server_socket(unsigned short local_port, int queue_len)
     : basic_socket(SOCK_STREAM, IPPROTO_TCP) {
     set_local_port(local_port);
@@ -24,4 +28,6 @@ void tcp_server_socket::set_listen(int queue_len) {
     if (listen(sock_desc, queue_len) < 0) {
         throw socket_exception("set listening socket failed (listen())", true);
     }
+}
+
 }

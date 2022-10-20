@@ -1,6 +1,10 @@
+#include "qx/xpu/net/basic_socket.h"
+
+namespace xpu {
+
 // function to fill in address structure given an address and port
 
-inline static void fill_addr(const std::string &address, unsigned short port,
+void fill_addr(const std::string &address, unsigned short port,
                              sockaddr_in &addr) {
     memset(&addr, 0, sizeof(addr)); // zero out address structure
     addr.sin_family = AF_INET;      // internet address
@@ -113,4 +117,6 @@ unsigned short basic_socket::resolve_service(const std::string &service,
     else
         return ntohs(
             serv->s_port); /* found port (network byte order) by name */
+}
+
 }

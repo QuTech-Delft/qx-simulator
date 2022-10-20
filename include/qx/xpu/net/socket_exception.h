@@ -35,7 +35,4 @@ private:
     std::string user_message; // exception message
 
 }; // class socket_exception
-
-#include "qx/xpu/net/socket_exception.cc"
-
 } // namespace xpu

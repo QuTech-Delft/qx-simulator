@@ -109,6 +109,7 @@ protected:
 
 }; // class basic_socket
 
-#include "qx/xpu/net/basic_socket.cc"
+void fill_addr(const std::string &address, unsigned short port,
+                             sockaddr_in &addr);
 
 } // namespace xpu
