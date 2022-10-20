@@ -1,9 +1,4 @@
-/**
- * @file		gaussian.cc
- * @author	Nader KHAMMASSI - nader.khammassi@gmail.com
- * @date		15-10-15
- * @brief
- */
+#include "qx/core/gaussian.h"
 
 /**
  * random
