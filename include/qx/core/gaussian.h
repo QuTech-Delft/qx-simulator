@@ -53,7 +53,5 @@ private:
     std::normal_distribution<double> distribution;
 };
 
-#include "gaussian.cc"
-
 } // namespace gaussian
 } // namespace qx
