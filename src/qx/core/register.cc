@@ -1,3 +1,5 @@
+#include "qx/core/register.h"
+
 #include <exception>
 
 /**
@@ -164,7 +166,7 @@ int64_t qx::qu_register::measure() {
     // double r = drand48();
     double r = this->rand();
 
-    for (int i = 0; i < data.size(); ++i) {
+    for (std::size_t i = 0; i < data.size(); ++i) {
         // r -= std::norm(data[i]);
         r -= data[i].norm();
         if (r <= 0) {
@@ -219,12 +221,12 @@ void qx::qu_register::dump(bool only_binary = false) {
 /**
  * \brief return the quantum state as string
  */
-std::string qx::qu_register::get_state(bool only_binary = false) {
+std::string qx::qu_register::get_state(bool only_binary) {
     std::stringstream ss;
     if (!only_binary) {
         std::cout << std::fixed;
         bool first_term = true;
-        for (int i = 0; i < data.size(); ++i) {
+        for (std::size_t i = 0; i < data.size(); ++i) {
             if (data[i] != complex_t(0, 0)) {
                 if (!first_term) {
                     ss << "+ ";
@@ -278,7 +280,7 @@ void qx::qu_register::set_measurement(uint64_t q, bool m) {
  * \brief getter
  * \return the state of bit <q>
  */
-state_t qx::qu_register::get_measurement_prediction(uint64_t q) const {
+qx::state_t qx::qu_register::get_measurement_prediction(uint64_t q) const {
     assert(q < n_qubits);
     return measurement_prediction[q];
 }
@@ -326,14 +328,14 @@ void qx::qu_register::flip_measurement(uint64_t q) {
 /**
  * fidelity
  */
-double fidelity(qu_register &s1, qu_register &s2) {
+double fidelity(qx::qu_register &s1, qx::qu_register &s2) {
     if (s1.size() != s2.size()) {
         println("[x] error : the specified registers have different sizes !");
         return -1;
     }
 
     double f = 0;
-    for (int i = 0; i < s1.states(); ++i)
+    for (std::size_t i = 0; i < s1.states(); ++i)
         // f += sqrt(std::norm(s1[i])*std::norm(s2[i]));
         f += sqrt(s1[i].norm() * s2[i].norm());
 

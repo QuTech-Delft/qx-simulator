@@ -134,7 +134,9 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 # or as a static library based on BUILD_SHARED_LIBS; add_library switches
 # automatically.
 add_library(qx
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/dummy.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/core/register.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/core/linalg.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/xpu/complex.cc"
 )
 
 # This definition is used to define QX_DECLSPEC for __declspec. More info:

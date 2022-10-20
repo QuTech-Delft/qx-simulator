@@ -32,8 +32,6 @@ using namespace qx::linalg;
 #define __format_bin(x)                                                        \
     (x == __state_0__ ? '0' : (x == __state_1__ ? '1' : 'X'))
 
-char bin_state_lt[] = {'0', '1', 'X'};
-
 namespace qx {
 /**
  * state_t
@@ -142,7 +140,7 @@ public:
     /**
      * \brief return the quantum state as a string
      */
-    std::string get_state(bool only_binary);
+    std::string get_state(bool only_binary = false);
 
     std::string to_binary_string(uint64_t state, uint64_t nq);
 
@@ -205,7 +203,7 @@ public:
         std::stringstream ss;
         ss << std::fixed;
         ss << "START\n";
-        for (int i = 0; i < data.size(); ++i) {
+        for (std::size_t i = 0; i < data.size(); ++i) {
             if (data[i] != complex_t(0, 0)) {
                 ss << "   " << std::fixed << data[i] << " |";
                 uint64_t nq = n_qubits;
@@ -252,7 +250,5 @@ public:
  * \brief fidelity
  */
 double fidelity(qu_register &s1, qu_register &s2);
-
-#include "register.cc"
 
 } // namespace qx

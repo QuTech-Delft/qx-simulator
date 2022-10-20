@@ -8,21 +8,11 @@
 #pragma once
 
 #include <cstdint>
-#include <iostream>
 #include <string>
 #include <vector>
 
-template <typename... Args> constexpr void print(Args... x) {
-    int dummy[] = {0, (std::cout << x, 0)...};
-    (void) dummy;
-}
-
-template <typename... Args> constexpr void println(Args... x) {
-    print(x...);
-    std::cout << std::endl;
-}
-
 #include "qx/core/gate.h"
+#include "qx/core/printhelpers.h"
 
 #ifdef XPU_TIMER
 #include "qx/xpu/timer.h"
