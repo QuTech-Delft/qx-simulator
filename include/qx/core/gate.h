@@ -23,8 +23,6 @@
 
 #include "qx/core/linalg.h"
 #include "qx/core/register.h"
-
-#include "qx/core/binary_counter.h"
 #include "qx/core/kronecker.h"
 
 #include "qx/compat.h"
