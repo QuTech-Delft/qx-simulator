@@ -4,8 +4,8 @@
  * @date		03-10-15
  * @brief
  */
-#ifndef QX_CIRCUIT_H
-#define QX_CIRCUIT_H
+
+#pragma once
 
 #include <cstdint>
 #include <iostream>
@@ -23,10 +23,6 @@ template <typename... Args> constexpr void println(Args... x) {
 }
 
 #include "qx/core/gate.h"
-
-// #ifndef XPU_TIMER
-// #define XPU_TIMER
-// #endif // XPU_TIMER
 
 #ifdef XPU_TIMER
 #include "qx/xpu/timer.h"
@@ -159,5 +155,3 @@ public:
     }
 };
 } // namespace qx
-
-#endif // QX_CIRCUIT_H

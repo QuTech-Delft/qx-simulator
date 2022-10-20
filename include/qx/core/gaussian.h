@@ -5,8 +5,7 @@
  * @brief
  */
 
-#ifndef QX_GAUSSIAN_H
-#define QX_GAUSSIAN_H
+#pragma once
 
 #include <iostream>
 #include <random>
@@ -58,5 +57,3 @@ private:
 
 } // namespace gaussian
 } // namespace qx
-
-#endif // QX_GAUSSIAN_H

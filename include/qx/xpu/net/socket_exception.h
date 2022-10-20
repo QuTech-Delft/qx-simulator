@@ -1,5 +1,4 @@
-#ifndef __SOCKET_EXCEPTION_H__
-#define __SOCKET_EXCEPTION_H__
+#pragma once
 
 #include <cerrno>    // for errno
 #include <cstring>   // for strerror
@@ -40,5 +39,3 @@ private:
 #include "qx/xpu/net/socket_exception.cc"
 
 } // namespace xpu
-
-#endif // __SOCKET_EXCEPTION_H__

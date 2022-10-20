@@ -25,8 +25,7 @@
  * @brief
  */
 
-#ifndef __XPU_COMPLEX_D_H__
-#define __XPU_COMPLEX_D_H__
+#pragma once
 
 #include <iostream>
 
@@ -613,5 +612,3 @@ inline __m128d _mm_mulc_pd(__m128d mx, __m128d my) {
 #endif
 
 } // namespace xpu
-
-#endif // __XPU_COMPLEX_D_H__

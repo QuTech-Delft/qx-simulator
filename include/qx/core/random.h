@@ -1,5 +1,4 @@
-#ifndef QX_RANDOM_H
-#define QX_RANDOM_H
+#pragma once
 
 #include "qx/xpu/timer.h"
 
@@ -56,5 +55,3 @@ private:
 };
 
 } // namespace qx
-
-#endif // QX_RANDOM_H

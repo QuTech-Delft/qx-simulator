@@ -4,8 +4,7 @@
  * @brief  header file for qxelarator python interface
  */
 
-#ifndef QXELARATOR_H
-#define QXELARATOR_H
+#pragma once
 
 #include "qx/simulator.h"
 #include <iostream>
@@ -35,5 +34,3 @@ public:
     
     std::string get_state() { return qx_sim->get_state(); }
 };
-
-#endif

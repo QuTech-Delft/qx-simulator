@@ -1,5 +1,4 @@
-#ifndef LIBQASM_INTERFACE_H
-#define LIBQASM_INTERFACE_H
+#pragma once
 
 #include "qx/compat.h"
 #include "qx/core/circuit.h"
@@ -355,5 +354,3 @@ std::shared_ptr<qx::circuit> load_cqasm_code(uint64_t qubits_count,
     }
     return circuit;
 }
-
-#endif

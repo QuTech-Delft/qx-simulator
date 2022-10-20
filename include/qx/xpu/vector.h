@@ -1,5 +1,4 @@
-#ifndef XPU_ALIGNED_VECTOR_H
-#define XPU_ALIGNED_VECTOR_H
+#pragma once
 
 #include "qx/xpu/aligned_memory_allocator.h"
 #include <cstring>
@@ -108,5 +107,3 @@ private:
 };
 
 } // namespace xpu
-
-#endif // XPU_ALIGNED_VECTOR_H

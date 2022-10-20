@@ -1,5 +1,4 @@
-#ifndef QX_NINJA_STAR_H
-#define QX_NINJA_STAR_H
+#pragma once
 
 #include <core/circuit.h>
 
@@ -442,5 +441,3 @@ private:
 } // namespace qecc
 
 } // namespace qx
-
-#endif // QX_NINJA_STAR_H

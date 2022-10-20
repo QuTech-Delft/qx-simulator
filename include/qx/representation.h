@@ -1,5 +1,4 @@
-#ifndef QX_REPRESENTATION_H
-#define QX_REPRESENTATION_H
+#pragma once
 
 #include "qx/core/error_model.h"
 #include <stdint.h>
@@ -35,5 +34,3 @@ private:
 };
 
 } // namespace qx
-
-#endif // QX_REPRESENTATION_H
