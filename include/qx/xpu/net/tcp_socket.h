@@ -28,7 +28,4 @@ private:
     tcp_socket(int new_conn_sd);
 
 }; // class tcp_socket
-
-#include "qx/xpu/net/tcp_socket.cc"
-
 } // namespace xpu

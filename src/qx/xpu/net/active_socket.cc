@@ -1,3 +1,7 @@
+#include "qx/xpu/net/active_socket.h"
+
+namespace xpu {
+
 active_socket::active_socket(int type, int protocol)
     : basic_socket(type, protocol) {}
 
@@ -50,4 +54,5 @@ unsigned short active_socket::get_foreign_port() {
                                true);
     }
     return ntohs(addr.sin_port);
+}
 }

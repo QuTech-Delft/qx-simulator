@@ -45,7 +45,4 @@ public:
 private:
     void set_listen(int queue_len);
 };
-
-#include "qx/xpu/net/tcp_server_socket.cc"
-
 } // namespace xpu
