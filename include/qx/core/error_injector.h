@@ -2,7 +2,6 @@
 
 #include "qx/core/circuit.h"
 #include "qx/core/gaussian.h"
-#include "qx/core/random.h"
 #include "qx/xpu/timer.h"
 
 namespace qx {

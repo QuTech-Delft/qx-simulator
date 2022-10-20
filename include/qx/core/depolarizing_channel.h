@@ -2,6 +2,7 @@
 
 #include "qx/compat.h"
 #include "qx/core/error_injector.h"
+#include "qx/core/random.h"
 #include <memory>
 #include <random>
 
