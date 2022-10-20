@@ -1,3 +1,6 @@
 [submodule "deps/libqasm"]
 	path = deps/libqasm
 	url = https://github.com/QuTech-Delft/libqasm.git
+[submodule "deps/doctest"]
+	path = deps/doctest
+	url = https://github.com/doctest/doctest.git
