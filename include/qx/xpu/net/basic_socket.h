@@ -1,5 +1,4 @@
-#ifndef __BASIC_SOCKET_H__
-#define __BASIC_SOCKET_H__
+#pragma once
 
 #include <cstdlib>   // for atoi
 #include <cstring>   // for memset
@@ -113,5 +112,3 @@ protected:
 #include "qx/xpu/net/basic_socket.cc"
 
 } // namespace xpu
-
-#endif // __BASIC_SOCKET_H__

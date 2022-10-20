@@ -1,5 +1,4 @@
-#ifndef QX_ERROR_INJECTOR
-#define QX_ERROR_INJECTOR
+#pragma once
 
 #include "qx/core/circuit.h"
 #include "qx/core/gaussian.h"
@@ -18,5 +17,3 @@ public:
 };
 
 } // namespace qx
-
-#endif // QX_ERROR_INJECTOR

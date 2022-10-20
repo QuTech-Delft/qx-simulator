@@ -1,5 +1,4 @@
-#ifndef __TCP_SERVER_SOCKET_H__
-#define __TCP_SERVER_SOCKET_H__
+#pragma once
 
 #include "qx/xpu/net/tcp_socket.h"
 
@@ -50,5 +49,3 @@ private:
 #include "qx/xpu/net/tcp_server_socket.cc"
 
 } // namespace xpu
-
-#endif // __TCP_SERVER_SOCKET_H__

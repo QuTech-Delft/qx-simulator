@@ -5,8 +5,7 @@
  *          http://creativecommons.org/licenses/by/3.0/deed.en_US
  */
 
-#ifndef QX_MEM_MONITOR_H
-#define QX_MEM_MONITOR_H
+#pragma once
 
 #if defined(_WIN32)
 #include <psapi.h>
@@ -119,5 +118,3 @@ size_t get_current_rss() {
     return (size_t)0L; /* Unsupported. */
 #endif
 }
-
-#endif // QX_MEM_MONITOR_H

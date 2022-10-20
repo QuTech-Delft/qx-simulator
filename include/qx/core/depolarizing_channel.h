@@ -1,5 +1,4 @@
-#ifndef QX_DEPOLARIZING_CHANNEL_H
-#define QX_DEPOLARIZING_CHANNEL_H
+#pragma once
 
 #include "qx/compat.h"
 #include "qx/core/error_injector.h"
@@ -356,5 +355,3 @@ private:
     size_t z_errors = 0;
 };
 } // namespace qx
-
-#endif // QX_ERROR_INJECTOR

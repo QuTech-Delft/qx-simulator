@@ -6,8 +6,7 @@
  * @brief	qx simulator interface
  */
 
-#ifndef QX_SIMULATOR_H
-#define QX_SIMULATOR_H
+#pragma once
 
 #include "qx/core/circuit.h"
 #include "qx/libqasm_interface.h"
@@ -203,5 +202,3 @@ public:
     std::string get_state() { return reg->get_state(); }
 };
 } // namespace qx
-
-#endif // QX_SIMULATOR_H

@@ -4,8 +4,7 @@
  * @date        25-02-16
  */
 
-#ifndef QX_SERVER_H
-#define QX_SERVER_H
+#pragma once
 
 #include <cstdlib>
 #include <fstream>
@@ -1235,5 +1234,3 @@ private:
     std::unique_ptr<qu_register> reg;
 };
 } // namespace qx
-
-#endif // QX_SERVER_H

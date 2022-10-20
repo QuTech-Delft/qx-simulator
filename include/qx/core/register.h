@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef QX_REGISTER_H
-#define QX_REGISTER_H
+#pragma once
 
 #include <cassert>
 #include <cfloat>
@@ -257,5 +256,3 @@ double fidelity(qu_register &s1, qu_register &s2);
 #include "register.cc"
 
 } // namespace qx
-
-#endif // QX_REGISTER_H

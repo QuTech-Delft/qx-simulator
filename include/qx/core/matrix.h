@@ -1,5 +1,4 @@
-#ifndef QX_MATRIX_H
-#define QX_MATRIX_H
+#pragma once
 
 #include <complex>
 #include <iomanip>
@@ -230,5 +229,3 @@ template <typename __T> bool equals(matrix<__T> &m1, identity_matrix<__T> &m2) {
 
 } // namespace linalg
 } // namespace qx
-
-#endif // QX_MATRIX_H

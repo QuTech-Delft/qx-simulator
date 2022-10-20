@@ -1,5 +1,4 @@
-#ifndef XPU_STRINGS_H
-#define XPU_STRINGS_H
+#pragma once
 
 #include <sstream>
 #include <vector>
@@ -197,5 +196,3 @@ std::string int_to_str(int i) {
 }
 
 } // namespace str
-
-#endif // XPU_STRINGS_H

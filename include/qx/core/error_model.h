@@ -1,5 +1,4 @@
-#ifndef QX_ERROR_MODEL
-#define QX_ERROR_MODEL
+#pragma once
 
 #include "qx/core/depolarizing_channel.h"
 #include "qx/core/error_injector.h"
@@ -26,5 +25,3 @@ std::shared_ptr<qx::circuit> noisy_dep_ch(std::shared_ptr<qx::circuit> const& c,
 }
 
 }; // namespace qx
-
-#endif // QX_ERROR_MODEL

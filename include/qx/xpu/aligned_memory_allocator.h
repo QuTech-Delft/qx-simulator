@@ -1,5 +1,4 @@
-#ifndef XPU_ALIGNED_MEMORY_ALLOCATOR_H
-#define XPU_ALIGNED_MEMORY_ALLOCATOR_H
+#pragma once
 
 #include <cstdlib>
 #include <string>
@@ -80,5 +79,3 @@ public:
 };
 
 } // namespace xpu
-
-#endif

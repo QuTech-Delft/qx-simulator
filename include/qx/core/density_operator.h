@@ -1,5 +1,4 @@
-#ifndef QX_DENSITY_OPERATOR_H
-#define QX_DENSITY_OPERATOR_H
+#pragma once
 
 #include "qx/core/register.h"
 
@@ -110,5 +109,3 @@ public:
 };
 
 } // namespace qx
-
-#endif // QX_DENSITY_OPERATOR_H

@@ -5,8 +5,7 @@
  * @brief		linear algebra utils
  */
 
-#ifndef QX_LINALG_H
-#define QX_LINALG_H
+#pragma once
 
 // #define __BUILTIN_LINALG_
 
@@ -363,5 +362,3 @@ void dump_matrix(cmatrix_t &m, bool complex_format = false) {
 
 } // namespace linalg
 } // namespace qx
-
-#endif // QX_LINALG_H

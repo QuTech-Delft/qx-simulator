@@ -7,9 +7,6 @@
 
 #pragma once
 
-#ifndef QX_GATE_H
-#define QX_GATE_H
-
 #include <inttypes.h>
 #include <map>
 #include <functional>
@@ -2821,5 +2818,3 @@ public:
 };
 
 } // namespace qx
-
-#endif // QX_GATE_H

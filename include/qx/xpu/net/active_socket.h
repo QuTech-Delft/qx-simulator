@@ -1,5 +1,4 @@
-#ifndef __ACTIVE_SOCKET_H__
-#define __ACTIVE_SOCKET_H__
+#pragma once
 
 #include "qx/xpu/net/basic_socket.h"
 
@@ -62,5 +61,3 @@ protected:
 #include "qx/xpu/net/active_socket.cc"
 
 } // namespace xpu
-
-#endif // __ACTIVE_SOCKET_H__
