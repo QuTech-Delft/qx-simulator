@@ -37,7 +37,7 @@ jobs:
           ${{ runner.os }}-chocolatey-
     - name: Install dependencies
       if: matrix.os == 'windows-latest'
-      run: choco install winflexbison3 --version 2.5.18.20190508
+      run: choco install winflexbison3 --version 2.5.24.20210105
     - name: Configure
       run: cmake . -DCMAKE_BUILD_TYPE=Debug -DQX_BUILD_TESTS=ON -DBUILD_SHARED_LIBS=OFF
     - name: Build
@@ -90,7 +90,7 @@ jobs:
       if: matrix.os == 'windows-latest'
       shell: powershell
       run: |
-        choco install winflexbison3 --version 2.5.18.20190508
+        choco install winflexbison3 --version 2.5.24.20210105
     - name: Select build type
       if: matrix.os == 'windows-latest'
       shell: powershell
