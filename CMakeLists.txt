@@ -84,6 +84,10 @@ option(
 )
 mark_as_advanced(QX_USE_OPENMP)
 
+if(APPLE AND QX_USE_OPENMP)
+    message(WARNING "OpenMP unsupported on MacOS, deactivating")
+    set(QX_USE_OPENMP OFF)
+endif()
 
 #=============================================================================#
 # CMake weirdness and compatibility                                           #
