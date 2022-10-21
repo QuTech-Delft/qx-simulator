@@ -108,7 +108,10 @@ cvector_t &qx::qu_register::get_aux() { return aux; }
 /**
  * \brief data setter
  */
-void qx::qu_register::set_data(cvector_t d) { data = d; }
+void qx::qu_register::set_data(const cvector_t& d) {
+    assert(d.size() == data.size());
+    data = d;
+}
 
 /**
  * \brief size getter

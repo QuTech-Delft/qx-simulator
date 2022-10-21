@@ -260,13 +260,15 @@ if(QX_BUILD_TESTS)
     # Convenience function to add a test.
     function(add_qx_test name source workdir)
         add_executable("${name}" "${CMAKE_CURRENT_SOURCE_DIR}/${source}")
-        target_link_libraries("${name}" qx)
+        target_link_libraries("${name}" PRIVATE qx)
         add_test(
             NAME "${name}"
             WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${workdir}"
             COMMAND "${name}"
         )
     endfunction()
+
+    add_subdirectory(deps/doctest)
 
     # Include the directories containing tests.
     add_subdirectory(tests)

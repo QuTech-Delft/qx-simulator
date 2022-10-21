@@ -93,7 +93,7 @@ public:
     /**
      * \brief data setter
      */
-    void set_data(cvector_t d);
+    void set_data(const cvector_t& d);
 
     /**
      * \brief size getter
