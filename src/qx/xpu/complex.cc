@@ -126,7 +126,7 @@ struct QX_ALIGNED(16) __v2d {
     };
 };
 
-double complex_d::norm() {
+double complex_d::norm() const {
     __m128d c = xmm;
     c = _mm_mul_pd(c, c);
     c = _mm_hadd_pd(c, c);

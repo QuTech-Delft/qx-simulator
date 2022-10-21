@@ -68,7 +68,7 @@ struct complex_d {
 
     void operator>>(double *v);
 
-    double norm();
+    double norm() const;
 
     friend std::ostream &operator<<(std::ostream &os, const complex_d &c);
 
