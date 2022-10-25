@@ -19,13 +19,8 @@ void qx::qu_register::set_measurement_prediction(uint64_t state, uint64_t nq) {
 /**
  * \brief set measurement outcome
  */
-void qx::qu_register::set_measurement(uint64_t state, uint64_t nq) {
-    // uint64_t k=0;
-    uint64_t k = nq - 1;
-    while (nq--) {
-        // binary[k--] = (((state >> nq) & 1) ? __state_1__ : __state_0__);
-        measurement_register[k--] = ((state >> nq) & 1);
-    }
+void qx::qu_register::set_measurement(measurement_register_t const& meas) {
+    measurement_register = measurement_register;
 }
 
 /**
@@ -73,7 +68,7 @@ std::string qx::qu_register::to_binary_string(uint64_t state, uint64_t nq) {
 qx::qu_register::qu_register(uint64_t n_qubits)
     : data(1ULL << n_qubits, 0.0), aux(1ULL << n_qubits, 0.0),
       measurement_prediction(n_qubits, __state_0__),
-      measurement_register(n_qubits, 0), n_qubits(n_qubits),
+      measurement_register(), n_qubits(n_qubits),
       rgenerator(xpu::timer().current() * 10e5), udistribution(.0, 1) {
     if (n_qubits > 63) {
         throw std::invalid_argument("hard limit of 63 qubits exceeded");
@@ -94,8 +89,8 @@ void qx::qu_register::reset() {
     for (uint64_t i = 0; i < n_qubits; i++) {
         // binary[i] = __state_0__;
         measurement_prediction[i] = __state_0__;
-        measurement_register[i] = 0;
     }
+    measurement_register.reset();
 }
 
 /**
@@ -275,8 +270,7 @@ void qx::qu_register::set_measurement_prediction(uint64_t q, state_t s) {
  */
 void qx::qu_register::set_measurement(uint64_t q, bool m) {
     assert(q < n_qubits);
-    // binary[q] = s;
-    measurement_register[q] = m;
+    measurement_register.set(q, m);
 }
 
 /**
@@ -297,13 +291,10 @@ bool qx::qu_register::get_measurement(uint64_t q) {
  * \brief test bit <q> of the binary register
  * \return true if bit <q> is 1
  */
-bool qx::qu_register::test(
-    uint64_t q) // throw (qubit_not_measured_exception)  // trow exception if
-                // qubit value is unknown (never measured) !!!!
+bool qx::qu_register::test(uint64_t q)
 {
     assert(q < n_qubits);
-    return (measurement_register[q]);
-    // return (binary[q] == __state_1__);
+    return measurement_register.test(q);
 }
 
 /**
@@ -325,7 +316,7 @@ void qx::qu_register::flip_binary(uint64_t q) {
  */
 void qx::qu_register::flip_measurement(uint64_t q) {
     assert(q < n_qubits);
-    measurement_register[q] = !measurement_register[q];
+    measurement_register.flip(q);
 }
 
 /**

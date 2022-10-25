@@ -39,7 +39,7 @@ namespace qx {
 enum state_t { __state_0__, __state_1__, __state_unknown__ };
 
 using measurement_prediction_t = std::vector<state_t>;
-using measurement_register_t = std::vector<bool>;
+using measurement_register_t = std::bitset<MAX_QB_N>;
 
 /**
  * \brief quantum register implementation.
@@ -159,7 +159,7 @@ public:
     /**
      * \brief set measurement outcome
      */
-    void set_measurement(uint64_t state, uint64_t nq);
+    void set_measurement(measurement_register_t const& meas);
 
     /**
      * \brief set measurement outcome
@@ -237,8 +237,9 @@ public:
         ss << "START\n";
         // for (int i=binary.size()-1; i>=0; --i)
         // ss << " | " << __format_bin(binary[i]);
-        for (int i = measurement_prediction.size() - 1; i >= 0; --i)
-            ss << " | " << __format_bin(measurement_register[i]);
+        for (int i = measurement_prediction.size() - 1; i >= 0; --i) {
+            ss << " | " << (measurement_register[i] ? "1" : "0");
+        }
         // ss << " | " << __format_bin(measurement_prediction[i]);
         ss << " | \n";
         ss << "END\n";

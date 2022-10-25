@@ -2255,7 +2255,7 @@ private:
     apply_single(uint64_t qubit, qu_register &qreg) {
         double f = qreg.rand();
         double p = 0;
-        int64_t value;
+        bool value = false;
         uint64_t size = qreg.size();
         uint64_t n = (1UL << size);
         cvector_t &data = qreg.get_data();
@@ -2279,12 +2279,7 @@ private:
                                qubit, &data);
             }
 
-            if (f < p) {
-                value = true;
-            }
-            else {
-                value = false;
-            }
+            value = (f < p);
 
 #ifdef USE_OPENMP
 #pragma omp parallel
@@ -2329,13 +2324,9 @@ private:
                 bc = b.to_ulong();
             }
 
-            if (f < p) {
-                value = true;
-            } else {
-                value = false;
-            }
+            value = (f < p);
 
-            if (value) // 1
+            if (value)
             {          // reset all states where the qubit is 0
                 for (uint64_t i = 0; i < (1UL << size); ++i) {
                     if (!__bit_test(i, qubit)) {
@@ -2363,7 +2354,7 @@ private:
 
         qreg.set_measurement_prediction(
             qubit, (value ? __state_1__ : __state_0__));
-        qreg.set_measurement(qubit, (value ? true : false));
+        qreg.set_measurement(qubit, value);
 
         return value;
     }
@@ -2417,6 +2408,8 @@ public:
         }
 
         assert(has_found_measured_state);
+        qreg.set_measurement(measured_state);
+
         return measured_state;
     }
 
@@ -2519,11 +2512,15 @@ public:
 
     void apply(qu_register &qreg) override {
         bool m = true;
-        for (auto b : bits)
-            if (!qreg.test(b))
+        for (auto b : bits) {
+            if (!qreg.test(b)) {
                 m = false;
-        if (m)
+                break;
+            }
+        }
+        if (m) {
             g->apply(qreg);
+        }
     }
 
     std::shared_ptr<gate> get_gate() { return g; }
