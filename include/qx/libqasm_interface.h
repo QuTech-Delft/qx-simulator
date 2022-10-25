@@ -244,11 +244,15 @@ std::vector<std::shared_ptr<qx::gate>> gateLookup(const cq::Instruction &instruc
     }
 
     if (auto bitref = instruction.condition->as_bit_refs()) {
+        std::vector<std::size_t> control_bits;
+        for (auto const& b: bitref->index) {
+            control_bits.push_back(b->value);
+        }
+
         std::vector<std::shared_ptr<qx::gate>> controlled_gates{};
 
-        for (std::size_t i = 0; i < gates.size(); ++i) {
-            auto control_bit = bitref->index[i]->value;
-            controlled_gates.push_back(std::make_shared<qx::bin_ctrl>(control_bit, gates[i]));
+        for (auto const& gate: gates) {
+            controlled_gates.push_back(std::make_shared<qx::bin_ctrl>(control_bits, gate));
         }
 
         return controlled_gates;
