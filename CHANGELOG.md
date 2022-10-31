@@ -2,6 +2,31 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [ 0.5.0 ] - [ 2022-11-15 ]
+### Added
+- "-j <filename>" CLI option to output JSON to a file
+- Possible to use the simulator without OpenMP.
+
+### Changed
+- Measure_all gate added; does no longer measure each qubit separately.
+- Move to C++11: smart pointers, etc.
+- Format of output has been changed. You no longer need to add a "display" gate to
+output the quantum state at the end of the circuit.
+- Now uses the new Libqasm API instead of the old one.
+- Output complex amplitudes when not averaging measurement register.
+- Do not add automatically a measure_all when doing measurement averaging;
+average the measurement register only.
+
+### Removed
+- Most preprocessor macros. E.g. for gate creation.
+- A lot of old and useless code was removed. A lot of dead code removed.
+
+### Fixed
+- Close input file when done.
+- Code style has been completely fixed automatically with clang-format.
+- Headers no longer include .cc file.
+- Moved implementations to .cc files instead of headers.
+
 ## [ 0.4.2 ] - [ 2021-06-01 ]
 ### Added
 -
