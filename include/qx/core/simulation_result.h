@@ -28,7 +28,7 @@ public:
         outfile << "{\n";
         outfile << "  \"info\": {\n";
         outfile << "    \"shots_requested\": " << get_shots_requested() << ",\n";
-        outfile << "    \"shots_measured\": " << get_shots_measured() << "\n";
+        outfile << "    \"shots_done\": " << get_shots_done() << "\n";
         outfile << "  },\n";
         outfile << "  \"results\": {\n";
 
@@ -63,7 +63,7 @@ protected:
 
     virtual std::uint64_t get_shots_requested() = 0;
 
-    virtual std::uint64_t get_shots_measured() = 0;
+    virtual std::uint64_t get_shots_done() = 0;
 
     std::size_t nQubits = 0;
 
@@ -95,7 +95,7 @@ protected:
         return n_measurements;
     };
 
-    std::uint64_t get_shots_measured() override {
+    std::uint64_t get_shots_done() override {
         return n_measurements;
     };
 
@@ -154,7 +154,7 @@ protected:
         return 1;
     };
 
-    std::uint64_t get_shots_measured() override {
+    std::uint64_t get_shots_done() override {
         // Since we provide the exact quantum state without measurement, this is 0.
         return 0;
     };
