@@ -107,7 +107,7 @@ public:
 
 protected:
     std::string get_title() override {
-        return "Measurement averaging";
+        return "Measurement register averaging";
     }
 
     std::uint64_t get_shots_requested() override {

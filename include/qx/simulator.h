@@ -124,11 +124,10 @@ public:
         }
 
         // measurement averaging
-        if (number_of_runs >= 2) {
+        if (number_of_runs >= 1) {
             MeasurementAveraging measurementAveraging(qubits);
 
             if (error_model == qx::__depolarizing_channel__) {
-                qx::measure_all measure{};
                 for (size_t s = 0; s < number_of_runs; ++s) {
                     reg->reset();
                     for (auto& perfect_circuit: perfect_circuits) {
@@ -146,18 +145,15 @@ public:
                                 ->execute(*reg, false, true);
                         }
                     }
-                    auto res = measure.apply_and_get_result(*reg);
-                    measurementAveraging.append(res);
+                    measurementAveraging.append(reg->get_measurement_register());
                 }
             } else {
-                qx::measure_all measure{};
                 for (size_t s = 0; s < number_of_runs; ++s) {
                     reg->reset();
                     for (auto& perfect_circuit: perfect_circuits) {
                         perfect_circuit->execute(*reg, false, true);
                     }
-                    auto res = measure.apply_and_get_result(*reg);
-                    measurementAveraging.append(res);
+                    measurementAveraging.append(reg->get_measurement_register());
                 }
             }
 

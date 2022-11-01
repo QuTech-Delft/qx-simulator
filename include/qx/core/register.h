@@ -179,11 +179,16 @@ public:
     bool get_measurement(uint64_t q);
 
     /**
+     * \brief getter
+     * \return a reference to the whole measurement register
+     */
+    const std::bitset<MAX_QB_N>& get_measurement_register() const;
+
+    /**
      * \brief test bit <q> of the binary register
      * \return true if bit <q> is 1
      */
-    bool
-    test(uint64_t q); // throw (qubit_not_measured_exception)  // trow exception
+    bool test(uint64_t q); // throw (qubit_not_measured_exception)  // trow exception
                       // if qubit value is unknown (never measured) !!!!
 
     /**

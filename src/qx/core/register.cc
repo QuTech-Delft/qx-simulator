@@ -20,7 +20,7 @@ void qx::qu_register::set_measurement_prediction(uint64_t state, uint64_t nq) {
  * \brief set measurement outcome
  */
 void qx::qu_register::set_measurement(measurement_register_t const& meas) {
-    measurement_register = measurement_register;
+    measurement_register = meas;
 }
 
 /**
@@ -285,6 +285,10 @@ qx::state_t qx::qu_register::get_measurement_prediction(uint64_t q) const {
 bool qx::qu_register::get_measurement(uint64_t q) {
     assert(q < n_qubits);
     return measurement_register[q];
+}
+
+const std::bitset<MAX_QB_N>& qx::qu_register::get_measurement_register() const {
+    return measurement_register;
 }
 
 /**
