@@ -71,8 +71,7 @@ private:
     std::string get_state_string(State s) {
         auto str = s.to_string();
 
-        std::reverse(str.begin(), str.end());
-        return str.substr(0, nQubits);
+        return str.substr(str.size() - nQubits, str.size());
     }
 
 };
