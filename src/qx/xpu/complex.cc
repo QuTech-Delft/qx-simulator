@@ -137,7 +137,7 @@ double complex_d::norm() const {
 
 std::ostream &operator<<(std::ostream &os, const complex_d &c)
 {
-    os << "(" << c.re << "," << c.im << ")";
+    os << c.re << " + " << c.im << " * i";
     return os;
 }
 
