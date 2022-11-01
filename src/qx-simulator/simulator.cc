@@ -84,8 +84,10 @@ int main(int argc, char **argv) {
         println("Will output JSON simulation result to file ", json_filename);
     }
     
-    if (navg > 0) {
-        println("Will execute circuit ", navg, " times");
+    if (navg >= 1) {
+        println("Will execute circuit ", navg, " times and aggregate measurement registers");
+    } else {
+        println("Will simulate circuit once and output the final quantum state");
     }
 
     std::unique_ptr<QX> qx;
