@@ -68,7 +68,12 @@ public:
     bool set(std::string file_path) {
         auto analyzer = cq::default_analyzer("1.2");
 
-        program = analyzer.analyze(file_path).unwrap();
+        try {
+            program = analyzer.analyze(file_path).unwrap();
+        } catch (const cq::analyzer::AnalysisFailed &e) {
+            error("Cannot parse and analyze file ", file_path);
+            return false;
+        }
 
         if (program.empty()) {
             error("Cannot parse and analyze file ", file_path);
@@ -82,6 +87,11 @@ public:
      * execute qasm file
      */
     void execute(size_t number_of_runs) {
+        if (program.empty()) {
+            error("No circuit loaded, call set(...) first");
+            return;
+        }
+
         // quantum state and circuits
         size_t qubits = program->num_qubits;
         std::vector<std::shared_ptr<qx::circuit>> circuits;
