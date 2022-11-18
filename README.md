@@ -21,7 +21,7 @@ For compilation, you need the following things.
 For the QXelarator Python module, you also need the following.
 
  - swig (Linux/MacOS >= 3.0.12; Windows >= 4.0.0)
- - python (>= 3.5) [for python interface to QX]
+ - python (>= 3.7) [for python interface to QX]
 
 ## Installation
 
