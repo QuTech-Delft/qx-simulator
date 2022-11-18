@@ -12,7 +12,7 @@ QX should work on the following platforms.
 
 For compilation, you need the following things.
 
- - A C++ compiler with C++11 and OpenMP support (GCC for Linux, LLVM/clang for
+ - A C++ compiler with C++14 and OpenMP support (GCC for Linux, LLVM/clang for
    MacOS, MSVC 2015 with update 3 or above for Windows)
  - cmake (>= 3.13)
  - flex (>= 2.6.1)
@@ -49,10 +49,20 @@ which is perhaps the easiest way to start simulating quantum circuits.
 
 `qxelarator` mainly provides the following API calls:
 
-    qx.set('basic.qasm')            # set the required qasm to be executed on qx
-    qx.execute()                    # execute
-    qx.get_measurement_outcome(0)   # get measurement results from qubit 'n' as bool
-    get_state()                     # get quantum register state as string
+    qx.set('basic.qasm')                    # set the required qasm to be executed on qx
+    qx.set_json_output_path('output.json)   # set the path to the output JSON, containing
+                                                either complex amplitude (single shot) or
+                                                measurement register averaging
+    qx.execute()                            # execute the circuit once, print the final quantum
+                                                state
+    qx.execute(100)                         # execute the circuit 100 times, print measurement
+                                                register averaging
+    qx.get_measurement_outcome(0)           # get measurement results from qubit 'n' as bool
+                                                note: in the case of repeated execution, the very
+                                                last value of the measurement register is returned
+    qx.get_state()                          # get quantum register state as string
+                                                note: in the case of repeated execution, the very
+                                                last quantum state is returned
 
 
 ### Installation
