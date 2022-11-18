@@ -30,7 +30,7 @@ public:
 
     void execute(size_t navg = 0) { qx_sim->execute(navg); }
 
-    bool get_measurement_outcome(size_t q) { return qx_sim->move(q); }
+    bool get_measurement_outcome(size_t q) { return qx_sim->get_measurement_outcome(q); }
     
     std::string get_state() { return qx_sim->get_state(); }
 };

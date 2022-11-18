@@ -203,7 +203,7 @@ public:
         }
     }
 
-    bool move(size_t q) { return reg->get_measurement(q); }
+    bool get_measurement_outcome(size_t q) { return reg->get_measurement(q); }
 
     std::string get_state() { return reg->get_state(); }
 };
