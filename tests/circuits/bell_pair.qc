@@ -11,17 +11,14 @@ qubits 2
 .init
   prep_z q[0]
   prep_z q[1]
-  display
 
 .entangle
   h q[0] 
   cnot q[0],q[1]
-  display    # display the quantum state
 
 .measurement
   measure q[0]
   measure q[1]
-  display
 
 # to activate error injection, uncomment the following line (error rate = 1%)
 # error_model depolarizing_channel,0.01
