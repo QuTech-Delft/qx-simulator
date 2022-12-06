@@ -2,6 +2,18 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [ 0.5.1 ] - [ 2022-12-6 ]
+### Added
+- Readthedocs documentation
+
+### Changed
+- Fixed Python versions on Linux
+- Updated README with new API functions
+- Tidy tests and circuits folder
+
+### Removed
+- Python 3.6 support
+
 ## [ 0.5.0 ] - [ 2022-11-15 ]
 ### Added
 - "-j <filename>" CLI option to output JSON to a file
