@@ -2,6 +2,16 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [ 0.5.2 ] - [ 2022-12-7 ]
+### Added
+-
+
+### Changed
+- Fixed version number incorrectly set in previous release
+
+### Removed
+-
+
 ## [ 0.5.1 ] - [ 2022-12-6 ]
 ### Added
 - Readthedocs documentation
