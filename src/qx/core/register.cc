@@ -66,7 +66,7 @@ std::string qx::qu_register::to_binary_string(uint64_t state, uint64_t nq) {
  * \brief quantum register of n_qubit
  */
 qx::qu_register::qu_register(uint64_t n_qubits)
-    : data(1ULL << n_qubits, 0.0), aux(1ULL << n_qubits, 0.0),
+    : data(1ULL << n_qubits, 0.0),
       measurement_prediction(n_qubits, __state_0__),
       measurement_register(), n_qubits(n_qubits),
       rgenerator(xpu::timer().current() * 10e5), udistribution(.0, 1) {
@@ -97,8 +97,6 @@ void qx::qu_register::reset() {
  * \brief data getter
  */
 cvector_t &qx::qu_register::get_data() { return data; }
-
-cvector_t &qx::qu_register::get_aux() { return aux; }
 
 /**
  * \brief data setter
