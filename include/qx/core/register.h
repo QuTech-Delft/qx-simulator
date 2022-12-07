@@ -47,7 +47,6 @@ using measurement_register_t = std::bitset<MAX_QB_N>;
 class qu_register {
 private:
     cvector_t data;
-    cvector_t aux;
     measurement_prediction_t measurement_prediction;
     measurement_register_t measurement_register;
 
@@ -87,8 +86,6 @@ public:
      * \brief data getter
      */
     cvector_t &get_data();
-
-    cvector_t &get_aux();
 
     /**
      * \brief data setter
