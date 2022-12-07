@@ -58,7 +58,6 @@ private:
     static std::uint64_t get_state_index(std::string state_string) {
         REQUIRE_EQ(state_string.size(), N_QUBITS);
 
-        std::reverse(state_string.begin(), state_string.end());
         std::bitset<MAX_QB_N> state(state_string);
 
         return state.to_ulong();
@@ -71,7 +70,7 @@ TEST_CASE_FIXTURE(GateTest, "Hadamard") {
     apply(hadamard(0));
 
     check_norm("00000", 0.5);
-    check_norm("10000", 0.5);
+    check_norm("00001", 0.5);
 }
 
 TEST_CASE_FIXTURE(GateTest, "Bell pair") {
@@ -79,7 +78,7 @@ TEST_CASE_FIXTURE(GateTest, "Bell pair") {
     apply(cnot(3,4));
 
     check_norm("00000", 0.5);
-    check_norm("00011", 0.5);
+    check_norm("11000", 0.5);
 }
 
 TEST_CASE_FIXTURE(GateTest, "Pauli X") {
@@ -91,30 +90,30 @@ TEST_CASE_FIXTURE(GateTest, "Pauli X") {
 TEST_CASE_FIXTURE(GateTest, "Swap") {
     SUBCASE("Simple state") {
         prepare_state({
-            {"01000", complex_t(0, 0)},
-            {"00001", complex_t(0, 1)}
+            {"00010", complex_t(0, 0)},
+            {"10000", complex_t(0, 1)}
         });
 
         apply(swap(1, 4));
 
-        check_state("01000", complex_t(0, 1));
-        check_state("00001", complex_t(0, 0));
+        check_state("00010", complex_t(0, 1));
+        check_state("10000", complex_t(0, 0));
     }
     
     SUBCASE("Entangled states") {
         prepare_state({
-            {"01100", c1},
+            {"00110", c1},
             {"10001", c2},
-            {"01001", c3}
+            {"10010", c3}
         });
 
         apply(swap(1, 3));
 
         log_reg();
 
-        check_state("00110", c1);
+        check_state("01100", c1);
         check_state("10001", c2);
-        check_state("00011", c3);
+        check_state("11000", c3);
     }
 
     // TODO: add test cases for other gates.
