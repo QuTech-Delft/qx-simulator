@@ -167,11 +167,11 @@ class build_ext(_build_ext):
             # C++ tests can be enabled using an environment variable. They'll
             # be run before the install.
             if 'QX_BUILD_TESTS' in os.environ:
-                cmd = cmd['-DQX_BUILD_TESTS=ON']
+                cmd = cmd['-DQX_BUILD_TESTS=' + os.environ['QX_BUILD_TESTS']]
 
             # Enable CPU extension compatibility mode when requested.
             if 'QX_CPU_COMPATIBILITY_MODE' in os.environ:
-                cmd = cmd['-DQX_CPU_COMPATIBILITY_MODE=ON']
+                cmd = cmd['-DQX_CPU_COMPATIBILITY_MODE=' + os.environ['QX_CPU_COMPATIBILITY_MODE']]
 
             # Run cmake configuration.
             cmd & FG
