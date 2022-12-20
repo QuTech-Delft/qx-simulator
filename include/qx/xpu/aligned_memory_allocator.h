@@ -3,16 +3,13 @@
 #include <cstdlib>
 #include <string>
 
-#if defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
-#include <mm_malloc.h>
-#define QX_ALIGNED_MEMORY_MALLOC _mm_malloc
-#define QX_ALIGNED_MEMORY_FREE _mm_free
-#else
-#define QX_ALIGNED_MEMORY_MALLOC _aligned_malloc
-#define QX_ALIGNED_MEMORY_FREE _aligned_free
+#if defined(_MSC_VER)
+namespace {
+    void* aligned_alloc(size_t alignment, size_t size) {
+        return _aligned_malloc(size, alignment);
+    }
+}
 #endif
-
-#include <new>
 
 namespace xpu {
 
@@ -43,14 +40,20 @@ public:
 
     inline pointer allocate(size_type n) {
         pointer rv =
-            (pointer)QX_ALIGNED_MEMORY_MALLOC(n * sizeof(value_type), N);
+            (pointer)aligned_alloc(N, n * sizeof(value_type));
         if (NULL == rv) {
             throw std::bad_alloc();
         }
         return rv;
     }
 
-    inline void deallocate(pointer p, size_type) { QX_ALIGNED_MEMORY_FREE(p); }
+    inline void deallocate(pointer p, size_type) {
+#if defined(_MSC_VER)
+        _aligned_free(p);
+#else
+        free(p);
+#endif
+    }
 
     inline void construct(pointer p, const value_type &wert) {
         new (p) value_type(wert);

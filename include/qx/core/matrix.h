@@ -10,7 +10,6 @@
 #include <stdint.h>
 
 #include "qx/compat.h"
-#include "qx/xpu/aligned_memory_allocator.h"
 
 namespace qx {
 namespace linalg {
@@ -21,7 +20,6 @@ namespace linalg {
 template <typename __T> class matrix {
 
     typedef std::vector<__T> row_t;
-    // typedef std::vector<__T,xpu::aligned_memory_allocator<__T,16> > row_t;
 
 public:
     matrix() : rows(0), cols(0) {}
