@@ -2,11 +2,10 @@
 #include <iostream>
 
 int main() {
-
     qx::simulator sim;
     sim.set("basic.qasm");
-    // FIXME: should be way more iterations, but this causes CI problems
-    for (int i = 0; i < 1; i++) {
+
+    for (int i = 0; i < 10000; i++) {
         sim.execute(0);
         auto c0 = sim.get_measurement_outcome(0);
         auto c1 = sim.get_measurement_outcome(1);
