@@ -5,17 +5,18 @@
 #include "qx/compat.h"
 #include "qx/core/printhelpers.h"
 
-#ifndef __SSE__
-#error "SSE not available !"
-#endif
-
 #ifdef __AVX__
 #include <immintrin.h>
 #endif
 
+#if defined(__arm__) || defined(__ARM_NEON) || defined(__ARM_NEON__)
+#include "sse2neon.h"
+#else
 #include <emmintrin.h>
 #include <pmmintrin.h>
 #include <xmmintrin.h>
+#endif
+
 #ifdef __SSE4_1__
 #include <smmintrin.h>
 #endif

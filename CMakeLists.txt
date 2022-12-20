@@ -234,6 +234,10 @@ option(LIBQASM_COMPAT "" ON)
 add_subdirectory(deps/libqasm)
 target_link_libraries(qx PUBLIC cqasm)
 
+# sse2neon
+add_subdirectory(deps/sse2neon)
+target_link_libraries(qx PUBLIC sse2neon)
+
 # winsock
 if(WIN32)
     target_link_libraries(qx PUBLIC wsock32 ws2_32)
