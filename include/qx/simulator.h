@@ -203,8 +203,22 @@ public:
         }
     }
 
-    bool get_measurement_outcome(size_t q) { return reg->get_measurement(q); }
+    bool get_measurement_outcome(size_t q) {
+        if (!reg) {
+            error("Register not initialized, set and execute circuit first");
+            return false;
+        }
 
-    std::string get_state() { return reg->get_state(); }
+        return reg->get_measurement(q);
+    }
+
+    std::string get_state() {
+        if (!reg) {
+            error("Register not initialized, set and execute circuit first");
+            return "";
+        }
+
+        return reg->get_state();
+    }
 };
 } // namespace qx
