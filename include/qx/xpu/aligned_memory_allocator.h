@@ -2,6 +2,7 @@
 
 #include <cstdlib>
 #include <string>
+#include <iostream>
 
 #if defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
 #include <mm_malloc.h>
@@ -47,10 +48,14 @@ public:
         if (NULL == rv) {
             throw std::bad_alloc();
         }
+        std::cout << "allocated " << rv << " size " << n << " alignment " << N << " sizeof value_type " << sizeof(value_type) << std::endl;
         return rv;
     }
 
-    inline void deallocate(pointer p, size_type) { QX_ALIGNED_MEMORY_FREE(p); }
+    inline void deallocate(pointer p, size_type) {
+        std::cout << "deallocating " << p << std::endl;
+        QX_ALIGNED_MEMORY_FREE(p);
+    }
 
     inline void construct(pointer p, const value_type &wert) {
         new (p) value_type(wert);
