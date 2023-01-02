@@ -3,13 +3,19 @@
 #include <cstdlib>
 #include <string>
 
-#if defined(_MSC_VER)
-namespace {
-    void* aligned_alloc(size_t alignment, size_t size) {
-        return _aligned_malloc(size, alignment);
-    }
-}
+// #if defined(__arm__) || defined(__ARM_NEON) || defined(__ARM_NEON__)
+// #define QX_ALIGNED_MEMORY_MALLOC(size, alignment) aligned_alloc((alignment), (size))
+// #define QX_ALIGNED_MEMORY_FREE free
+#if defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
+#include <mm_malloc.h>
+#define QX_ALIGNED_MEMORY_MALLOC _mm_malloc
+#define QX_ALIGNED_MEMORY_FREE _mm_free
+#else
+#define QX_ALIGNED_MEMORY_MALLOC _aligned_malloc
+#define QX_ALIGNED_MEMORY_FREE _aligned_free
 #endif
+
+#include <new>
 
 namespace xpu {
 
@@ -40,20 +46,14 @@ public:
 
     inline pointer allocate(size_type n) {
         pointer rv =
-            (pointer)aligned_alloc(N, n * sizeof(value_type));
+            (pointer)QX_ALIGNED_MEMORY_MALLOC(n * sizeof(value_type), N);
         if (NULL == rv) {
             throw std::bad_alloc();
         }
         return rv;
     }
 
-    inline void deallocate(pointer p, size_type) {
-#if defined(_MSC_VER)
-        _aligned_free(p);
-#else
-        free(p);
-#endif
-    }
+    inline void deallocate(pointer p, size_type) { QX_ALIGNED_MEMORY_FREE(p); }
 
     inline void construct(pointer p, const value_type &wert) {
         new (p) value_type(wert);
