@@ -12,15 +12,8 @@
 #include <functional>
 #include <unordered_set>
 
-#if defined(__arm__) || defined(__ARM_NEON) || defined(__ARM_NEON__)
-#include "sse2neon.h"
-#else
-#include <emmintrin.h>
-
-#ifdef __AVX__
-#include <immintrin.h>
-#endif
-#endif
+#include <emmintrin.h> // sse
+#include <immintrin.h> // avx
 
 #include <algorithm>
 #include <memory>
@@ -346,6 +339,8 @@ void __apply_m(std::size_t start, std::size_t end, const std::size_t qubit,
         }
 }
 
+#ifdef __SSE__
+// #ifdef __FMA__
 void __apply_x(std::size_t start, std::size_t end, const std::size_t qubit,
                complex_t *state, const std::size_t stride0,
                const std::size_t stride1, const complex_t *matrix) {
@@ -368,7 +363,15 @@ void __apply_x(std::size_t start, std::size_t end, const std::size_t qubit,
             state[i1].xmm = xin0;
         }
 }
+// #else
+// #error "FMA not available !"
+// #endif // FMA
+#else
+#error "SSE not available !"
+#endif // SSE
 
+#ifdef __SSE__
+// #ifdef __FMA__
 void __apply_h(std::size_t start, std::size_t end, const std::size_t qubit,
                complex_t *state, const std::size_t stride0,
                const std::size_t stride1, const complex_t *matrix) {
@@ -412,6 +415,12 @@ void __apply_h(std::size_t start, std::size_t end, const std::size_t qubit,
             state[i1].xmm = xi1; // _mm_store_pd((double*)(&state[i1].xmm),xi1);
         }
 }
+// #else
+// #error "FMA not available !"
+// #endif // FMA
+#else
+#error "SSE not available !"
+#endif // SSE
 
 uint64_t rw_process_ui(uint64_t is, uint64_t ie, uint64_t s, uint64_t n,
                        uint64_t qubit, kronecker_ui m, cvector_t *v,
@@ -1876,7 +1885,7 @@ inline double zero_worker_norm(uint64_t cs, uint64_t ce, cvector_t *p_data) {
     __m256d r2 = _mm256_hadd_pd(sum, sum);
     local_length = _mm_cvtsd_f64(
         _mm_add_pd(_mm256_extractf128_pd(r2, 1), _mm256_castpd256_pd128(r2)));
-#else
+#elif defined(__SSE__)
     __m128d sum = _mm_set1_pd(0.0);
     for (uint64_t i = cs; i < ce; i += tile_size) {
         for (uint64_t j = i, end = std::min(ce, tile_size + i); j < end; ++j) {
@@ -1886,6 +1895,13 @@ inline double zero_worker_norm(uint64_t cs, uint64_t ce, cvector_t *p_data) {
         }
     }
     local_length = _mm_cvtsd_f64(_mm_hadd_pd(sum, sum));
+#else
+    for (uint64_t i = cs; i < ce; i += tile_size) {
+        for (uint64_t j = i, end = std::min(ce, tile_size + i); j < end;
+             j += 2) {
+            local_length += data[j].norm() + data[j + 1].norm();
+        }
+    }
 #endif
     return local_length;
 }
@@ -1958,7 +1974,7 @@ int renorm_worker(uint64_t cs, uint64_t ce, uint64_t s, double *length,
             _mm256_store_pd(pvd, _mm256_mul_pd(_mm256_load_pd(pvd), vl));
         }
     }
-#else
+#elif defined(__SSE__)
     __m128d vl = _mm_set1_pd(l_rec);
 #ifdef USE_OPENMP
 #pragma omp parallel for
@@ -1969,6 +1985,17 @@ int renorm_worker(uint64_t cs, uint64_t ce, uint64_t s, double *length,
              j < end; ++j) {
             double *pvd = (double *)&vd[j];
             _mm_store_pd(pvd, _mm_mul_pd(_mm_load_pd(pvd), vl));
+        }
+    }
+#else
+#ifdef USE_OPENMP
+#pragma omp parallel for
+#endif
+    for (int64_t i = cs; i < (int64_t)ce; i += tile_size) {
+        for (uint64_t j = (uint64_t)i,
+                      end = std::min(ce, tile_size + (uint64_t)i);
+             j < end; ++j) {
+            data[j] *= l_rec;
         }
     }
 #endif

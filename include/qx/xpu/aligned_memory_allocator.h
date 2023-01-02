@@ -3,10 +3,10 @@
 #include <cstdlib>
 #include <string>
 
-// #if defined(__arm__) || defined(__ARM_NEON) || defined(__ARM_NEON__)
-// #define QX_ALIGNED_MEMORY_MALLOC(size, alignment) aligned_alloc((alignment), (size))
-// #define QX_ALIGNED_MEMORY_FREE free
-#if defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
+#if defined(__arm__) || defined(__ARM_NEON) || defined(__ARM_NEON__)
+#define QX_ALIGNED_MEMORY_MALLOC(size, alignment) aligned_alloc((alignment), (size))
+#define QX_ALIGNED_MEMORY_FREE free
+#elif defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
 #include <mm_malloc.h>
 #define QX_ALIGNED_MEMORY_MALLOC _mm_malloc
 #define QX_ALIGNED_MEMORY_FREE _mm_free
@@ -14,8 +14,6 @@
 #define QX_ALIGNED_MEMORY_MALLOC _aligned_malloc
 #define QX_ALIGNED_MEMORY_FREE _aligned_free
 #endif
-
-#include <new>
 
 namespace xpu {
 
