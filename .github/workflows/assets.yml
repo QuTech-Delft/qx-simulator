@@ -3,10 +3,10 @@ name: Assets
 on:
   release:
     types:
-    - created
+      - created
   push:
     branches:
-    - 'release**'
+      - "release**"
 
 jobs:
   macos:
@@ -15,108 +15,109 @@ jobs:
     strategy:
       matrix:
         python:
-        - '3.7'
-        - '3.8'
-        - '3.9'
-        - '3.10'
+          - "3.7"
+          - "3.8"
+          - "3.9"
+          - "3.10"
+          - "3.11"
     steps:
-    - uses: actions/checkout@v2
-      with:
-        submodules: recursive
-    - uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python }}
-    - name: Install dependencies
-      run: |
-        brew install bison flex swig libomp
-        echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
-        echo "/usr/local/opt/flex/bin" >> $GITHUB_PATH
-        python -m pip install --upgrade pip setuptools wheel
-    - name: Enable CPU compatibility mode
-      run: echo "QX_CPU_COMPATIBILITY_MODE=ON" >> $GITHUB_ENV
-    - name: Build wheel
-      env:
-        NPROCS: 5
-      run: python setup.py bdist_wheel
-    - name: Wheel path
-      id: wheel
-      working-directory: pybuild/dist/
-      run: echo "##[set-output name=wheel;]$(ls *.whl)"
-    - uses: actions/upload-artifact@v2
-      with:
-        name: pypi-macos-py${{ matrix.python }}
-        path: pybuild/dist/${{ steps.wheel.outputs.wheel }}
-    - uses: actions/upload-release-asset@v1
-      if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: pybuild/dist/${{ steps.wheel.outputs.wheel }}
-        asset_name: ${{ steps.wheel.outputs.wheel }}
-        asset_content_type: application/zip
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install dependencies
+        run: |
+          brew install bison flex swig libomp
+          echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
+          echo "/usr/local/opt/flex/bin" >> $GITHUB_PATH
+          python -m pip install --upgrade pip setuptools wheel
+      - name: Enable CPU compatibility mode
+        run: echo "QX_CPU_COMPATIBILITY_MODE=ON" >> $GITHUB_ENV
+      - name: Build wheel
+        env:
+          NPROCS: 5
+        run: python setup.py bdist_wheel
+      - name: Wheel path
+        id: wheel
+        working-directory: pybuild/dist/
+        run: echo "##[set-output name=wheel;]$(ls *.whl)"
+      - uses: actions/upload-artifact@v2
+        with:
+          name: pypi-macos-py${{ matrix.python }}
+          path: pybuild/dist/${{ steps.wheel.outputs.wheel }}
+      - uses: actions/upload-release-asset@v1
+        if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: pybuild/dist/${{ steps.wheel.outputs.wheel }}
+          asset_name: ${{ steps.wheel.outputs.wheel }}
+          asset_content_type: application/zip
 
   manylinux:
     name: PyPI wheels for Manylinux
     runs-on: ubuntu-latest
     container: quay.io/pypa/manylinux${{ matrix.manylinux }}_x86_64:latest
     env:
-      FLEX_VERSION: '2.6.4'
-      BISON_VERSION: '3.0.4-2.el7'
-      SWIG_VERSION: '3.0.12-17.el7'
-      CMAKE_VERSION: '3.13.0'
+      FLEX_VERSION: "2.6.4"
+      BISON_VERSION: "3.0.4-2.el7"
+      SWIG_VERSION: "3.0.12-17.el7"
+      CMAKE_VERSION: "3.13.0"
     strategy:
       matrix:
         manylinux:
-        - 2014
+          - 2014
         cpython_version:
-        - 'cp37-cp37m'
-        - 'cp38-cp38'
-        - 'cp39-cp39'
-        - 'cp310-cp310'
+          - "cp37-cp37m"
+          - "cp38-cp38"
+          - "cp39-cp39"
+          - "cp310-cp310"
     steps:
-    - uses: actions/checkout@v2
-      with:
-        submodules: recursive
-    - name: Install dependencies
-      run: |
-        yum install -y bison-$BISON_VERSION swig3-$SWIG_VERSION
-        /opt/python/${{ matrix.cpython_version }}/bin/python -m pip install auditwheel
-    - name: Install flex
-      run: |
-        mkdir -p $HOME/flex
-        curl -L https://github.com/westes/flex/releases/download/v$FLEX_VERSION/flex-$FLEX_VERSION.tar.gz | tar xz --strip-components=1 -C $HOME/flex
-        cd $HOME/flex
-        ./configure
-        make -j
-        make install
-    - name: Install cmake
-      run: curl -L https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION-Linux-x86_64.tar.gz | tar xz --strip-components=1 -C /usr
-    - name: Enable CPU compatibility mode
-      run: echo "QX_CPU_COMPATIBILITY_MODE=ON" >> $GITHUB_ENV
-    - name: Build wheel
-      env:
-        NPROCS: 5
-      run: |
-        /opt/python/${{ matrix.cpython_version }}/bin/python setup.py bdist_wheel
-        /opt/python/${{ matrix.cpython_version }}/bin/python -m auditwheel repair pybuild/dist/*.whl
-    - name: Wheel path
-      id: wheel
-      working-directory: wheelhouse
-      run: echo "##[set-output name=wheel;]$(ls *.whl)"
-    - uses: actions/upload-artifact@v2
-      with:
-        name: pypi-linux-${{ matrix.cpython_version }}
-        path: wheelhouse/${{ steps.wheel.outputs.wheel }}
-    - uses: actions/upload-release-asset@v1
-      if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: wheelhouse/${{ steps.wheel.outputs.wheel }}
-        asset_name: ${{ steps.wheel.outputs.wheel }}
-        asset_content_type: application/zip
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Install dependencies
+        run: |
+          yum install -y bison-$BISON_VERSION swig3-$SWIG_VERSION
+          /opt/python/${{ matrix.cpython_version }}/bin/python -m pip install auditwheel
+      - name: Install flex
+        run: |
+          mkdir -p $HOME/flex
+          curl -L https://github.com/westes/flex/releases/download/v$FLEX_VERSION/flex-$FLEX_VERSION.tar.gz | tar xz --strip-components=1 -C $HOME/flex
+          cd $HOME/flex
+          ./configure
+          make -j
+          make install
+      - name: Install cmake
+        run: curl -L https://github.com/Kitware/CMake/releases/download/v$CMAKE_VERSION/cmake-$CMAKE_VERSION-Linux-x86_64.tar.gz | tar xz --strip-components=1 -C /usr
+      - name: Enable CPU compatibility mode
+        run: echo "QX_CPU_COMPATIBILITY_MODE=ON" >> $GITHUB_ENV
+      - name: Build wheel
+        env:
+          NPROCS: 5
+        run: |
+          /opt/python/${{ matrix.cpython_version }}/bin/python setup.py bdist_wheel
+          /opt/python/${{ matrix.cpython_version }}/bin/python -m auditwheel repair pybuild/dist/*.whl
+      - name: Wheel path
+        id: wheel
+        working-directory: wheelhouse
+        run: echo "##[set-output name=wheel;]$(ls *.whl)"
+      - uses: actions/upload-artifact@v2
+        with:
+          name: pypi-linux-${{ matrix.cpython_version }}
+          path: wheelhouse/${{ steps.wheel.outputs.wheel }}
+      - uses: actions/upload-release-asset@v1
+        if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: wheelhouse/${{ steps.wheel.outputs.wheel }}
+          asset_name: ${{ steps.wheel.outputs.wheel }}
+          asset_content_type: application/zip
 
   windows:
     name: PyPI wheels for Windows
@@ -124,68 +125,67 @@ jobs:
     strategy:
       matrix:
         python:
-        - '3.7'
-        - '3.8'
-        - '3.9'
-        - '3.10'
+          - "3.7"
+          - "3.8"
+          - "3.9"
+          - "3.10"
     steps:
-    - uses: actions/checkout@v2
-      with:
-        submodules: recursive
-    - uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python }}
-    - uses: actions/cache@v2
-      with:
-        path: C:\Users\runneradmin\AppData\Local\Temp\chocolatey
-        key: ${{ runner.os }}-chocolatey-python-1
-        restore-keys: |
-          ${{ runner.os }}-chocolatey-python-
-          ${{ runner.os }}-chocolatey-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip setuptools wheel
-        choco install winflexbison3 --version 2.5.24.20210105
-    - name: Enable CPU compatibility mode
-      run: echo "QX_CPU_COMPATIBILITY_MODE=ON" >> $GITHUB_ENV
-    - name: Build wheel
-      env:
-        NPROCS: 5
-      run: python setup.py bdist_wheel
-    - name: Wheel path
-      id: wheel
-      working-directory: pybuild/dist/
-      run: echo "##[set-output name=wheel;]$(Get-ChildItem -name *.whl)"
-    - uses: actions/upload-artifact@v2
-      with:
-        name: pypi-windows-py${{ matrix.python }}
-        path: pybuild/dist/${{ steps.wheel.outputs.wheel }}
-    - uses: actions/upload-release-asset@v1
-      if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: pybuild/dist/${{ steps.wheel.outputs.wheel }}
-        asset_name: ${{ steps.wheel.outputs.wheel }}
-        asset_content_type: application/zip
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: actions/cache@v2
+        with:
+          path: C:\Users\runneradmin\AppData\Local\Temp\chocolatey
+          key: ${{ runner.os }}-chocolatey-python-1
+          restore-keys: |
+            ${{ runner.os }}-chocolatey-python-
+            ${{ runner.os }}-chocolatey-
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          choco install winflexbison3 --version 2.5.24.20210105
+      - name: Enable CPU compatibility mode
+        run: echo "QX_CPU_COMPATIBILITY_MODE=ON" >> $GITHUB_ENV
+      - name: Build wheel
+        env:
+          NPROCS: 5
+        run: python setup.py bdist_wheel
+      - name: Wheel path
+        id: wheel
+        working-directory: pybuild/dist/
+        run: echo "##[set-output name=wheel;]$(Get-ChildItem -name *.whl)"
+      - uses: actions/upload-artifact@v2
+        with:
+          name: pypi-windows-py${{ matrix.python }}
+          path: pybuild/dist/${{ steps.wheel.outputs.wheel }}
+      - uses: actions/upload-release-asset@v1
+        if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: pybuild/dist/${{ steps.wheel.outputs.wheel }}
+          asset_name: ${{ steps.wheel.outputs.wheel }}
+          asset_content_type: application/zip
 
   publish:
     name: Publish
     if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
     needs:
-    - macos
-    - manylinux
-    - windows
+      - macos
+      - manylinux
+      - windows
     runs-on: ubuntu-latest
     steps:
-    - name: Download artifacts
-      uses: actions/download-artifact@v2
-      id: download
-    - name: Publish to PyPI
-      uses: pypa/gh-action-pypi-publish@v1.3.1
-      with:
-        user: __token__
-        password: ${{ secrets.PYPI_TOKEN }}
-        packages_dir: ${{ steps.download.outputs.download-path }}/pypi-*
-
+      - name: Download artifacts
+        uses: actions/download-artifact@v2
+        id: download
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@v1.3.1
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_TOKEN }}
+          packages_dir: ${{ steps.download.outputs.download-path }}/pypi-*
