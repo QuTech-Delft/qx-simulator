@@ -75,6 +75,7 @@ jobs:
           - "cp38-cp38"
           - "cp39-cp39"
           - "cp310-cp310"
+          - "cp311-cp311"
     steps:
       - uses: actions/checkout@v2
         with:
@@ -129,6 +130,7 @@ jobs:
           - "3.8"
           - "3.9"
           - "3.10"
+          - "3.11"
     steps:
       - uses: actions/checkout@v2
         with:
