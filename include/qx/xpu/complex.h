@@ -5,16 +5,15 @@
 #include "qx/compat.h"
 #include "qx/core/printhelpers.h"
 
-#ifdef __AVX__
-#include <immintrin.h>
-#endif
-
 #if defined(__arm__) || defined(__ARM_NEON) || defined(__ARM_NEON__)
 #include "sse2neon.h"
 #else
 #include <emmintrin.h>
 #include <pmmintrin.h>
 #include <xmmintrin.h>
+#ifdef __AVX__
+#include <immintrin.h>
+#endif
 #endif
 
 #ifdef __SSE4_1__

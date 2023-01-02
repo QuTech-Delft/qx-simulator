@@ -16,10 +16,10 @@
 #include "sse2neon.h"
 #else
 #include <emmintrin.h>
-#endif
 
 #ifdef __AVX__
 #include <immintrin.h>
+#endif
 #endif
 
 #include <algorithm>
