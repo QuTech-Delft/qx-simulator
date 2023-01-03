@@ -46,6 +46,14 @@ protected:
         CHECK_EQ(expected_c.im, doctest::Approx(reg[get_state_index(state_string)].im));
     }
 
+    void check_measurement_register(std::string expected) {
+        CAPTURE(expected);
+
+        REQUIRE_EQ(expected.size(), N_QUBITS);
+
+        CHECK_EQ(reg.get_measurement_register(), std::bitset<MAX_QB_N>(expected));
+    }
+
     // Three complex numbers c1, c2 and c3 such that |c1|^2+|c2|^2+|c3|^2 == 1.
     double m1 = 0.2;
     double m2 = 0.14;
@@ -115,7 +123,122 @@ TEST_CASE_FIXTURE(GateTest, "Swap") {
         check_state("10001", c2);
         check_state("11000", c3);
     }
-
-    // TODO: add test cases for other gates.
 }
+
+TEST_CASE_FIXTURE(GateTest, "Measure all zeros") {
+    apply(measure(0, [](qu_register&) { return 0.123456789; }));
+    check_measurement_register("00000");
+
+    check_state("00000", complex_t(1, 0));
+}
+
+TEST_CASE_FIXTURE(GateTest, "Measure after hadamard on qubit 3 returns 1") {
+    apply(hadamard(3));
+    apply(measure(3, [](qu_register&) { return 0.45; }));
+    check_measurement_register("01000");
+
+    check_state("01000", complex_t(1, 0));
+}
+
+TEST_CASE_FIXTURE(GateTest, "Measure after hadamard on qubit 3 returns 0") {
+    apply(hadamard(3));
+    apply(measure(3, [](qu_register&) { return 0.7; }));
+    check_measurement_register("00000");
+
+    check_state("00000", complex_t(1, 0));
+}
+
+TEST_CASE_FIXTURE(GateTest, "Measure qubit 1") {
+    auto rand = 0.;
+    prepare_state({
+        {"00110", c1},
+        {"10001", c2},
+        {"10010", c3}
+    });
+
+    SUBCASE("Returns 1") {
+        SUBCASE("A") {
+            rand = 0.001;
+        }
+        SUBCASE("B") {
+            rand = pow(m1, 2) + pow(m3, 2) - 0.0000854;
+        }
+
+        apply(measure(1, [rand](qu_register&) { return rand; }));
+        check_measurement_register("00010");
+
+        check_state("00110", c1 / sqrt(pow(m1, 2) + pow(m3, 2)));
+        check_state("10010", c3 / sqrt(pow(m1, 2) + pow(m3, 2)));
+    }
+
+    SUBCASE("Returns 0") {
+        SUBCASE("A") {
+            rand = pow(m1, 2) + pow(m3, 2) + 0.0000198;
+        }
+        SUBCASE("B") {
+            rand = 0.99;
+        }
+
+        apply(measure(1, [rand](qu_register&) { return rand; }));
+        check_measurement_register("00000");
+
+        check_state("10001", c2 / sqrt(pow(m2, 2)));
+    }
+}
+
+TEST_CASE_FIXTURE(GateTest, "Measure all qubits") {
+    auto rand = 0.;
+    prepare_state({
+        {"00110", c1},
+        {"10001", c2},
+        {"10010", c3}
+    });
+
+    SUBCASE("00110") {
+        SUBCASE("A") {
+            rand = 0.001;
+        }
+        SUBCASE("B") {
+            rand = pow(m1, 2) - 0.000026;
+        }
+
+        apply(measure_all([rand](qu_register&) { return rand; }));
+        check_measurement_register("00110");
+
+        check_state("00110", c1 / sqrt(pow(m1, 2)));
+    }
+
+    SUBCASE("10001") {
+        SUBCASE("A") {
+            rand = pow(m1, 2) + 0.00001;
+        }
+        SUBCASE("B") {
+            rand = pow(m1, 2) + pow(m2, 2) - 0.0002;
+        }
+
+        apply(measure_all([rand](qu_register&) { return rand; }));
+        check_measurement_register("10001");
+
+        check_state("10001", c2 / sqrt(pow(m2, 2)));
+    }
+
+    SUBCASE("10010") {
+        SUBCASE("A") {
+            rand = pow(m1, 2) + pow(m2, 2) + 0.0000005;
+        }
+        SUBCASE("B") {
+            rand = 0.99;
+        }
+
+        apply(measure_all([rand](qu_register&) { return rand; }));
+        check_measurement_register("10010");
+
+        check_state("10010", c3 / sqrt(pow(m3, 2)));
+        check_norm("10001", 0.);
+        check_norm("00110", 0.);
+    }
+}
+
+// TODO: add test cases for other gates.
+
 }

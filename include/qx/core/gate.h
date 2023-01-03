@@ -2020,9 +2020,15 @@ class measure final : public gate {
 private:
     uint64_t qubit;
 
-    static bool
-    apply_single(uint64_t qubit, qu_register &qreg) {
-        double f = qreg.rand();
+    // This is to allow unit-testing.
+    std::function<double(qu_register &qreg)> uniform_random_generator;
+
+public:
+    measure(uint64_t qubit, std::function<double(qu_register &qreg)> rand = [](qu_register &qreg) { return qreg.rand(); })
+        : qubit(qubit), uniform_random_generator(rand) {}
+
+    void apply(qu_register &qreg) override {
+        double f = uniform_random_generator(qreg);
         double p = 0;
         bool value = false;
         uint64_t size = qreg.size();
@@ -2030,12 +2036,11 @@ private:
         cvector_t &data = qreg.get_data();
         double length = 0;
 
-        // Basically, this "if" operator determines what to do if we have more
-        // than 64 qubits. It also determines whether to invoke parallel or
-        // sequential computations. As of now, we set parallel execution as the
-        // default one.
-        if (1) // size > 64
+        if (false)
         {
+            // This part is a multithreaded/intrinsics version of the measurement operation, which currently doesn't seem to work,
+            // see issue #114.
+
             static const uint64_t SIZE = 1000;
 
             uint64_t range = (n >> 1);
@@ -2124,16 +2129,6 @@ private:
         qreg.set_measurement_prediction(
             qubit, (value ? __state_1__ : __state_0__));
         qreg.set_measurement(qubit, value);
-
-        return value;
-    }
-
-public:
-    measure(uint64_t qubit)
-        : qubit(qubit) {}
-
-    void apply(qu_register &qreg) override {
-        apply_single(qubit, qreg);
     }
 
     void dump() override {
@@ -2150,8 +2145,13 @@ public:
 };
 
 class measure_all final : public gate {
+private:
+    // This is to allow unit-testing.
+    std::function<double(qu_register &qreg)> uniform_random_generator;
+
 public:
-    measure_all() = default;
+    measure_all(std::function<double(qu_register &qreg)> rand = [](qu_register &qreg) { return qreg.rand(); })
+        : uniform_random_generator(rand) {}
 
     std::bitset<MAX_QB_N> apply_and_get_result(qu_register &qreg) {
         std::bitset<MAX_QB_N> b;
@@ -2159,7 +2159,7 @@ public:
         bool has_found_measured_state = false;
 
         double p = 0;
-        double f = qreg.rand();
+        double f = uniform_random_generator(qreg);
         auto &data = qreg.get_data();
         auto bc = b.to_ulong();
 
