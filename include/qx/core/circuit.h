@@ -44,6 +44,13 @@ public:
     void add(std::shared_ptr<gate> gate) {
         // check gate validity before (target/ctrl qubits < n_qubit)
         gates.push_back(std::move(gate));
+    }\
+
+    /**
+     * \brief add all gates in the input vector at the end of the circuit
+     */
+    void add(std::vector<std::shared_ptr<gate>> new_gates) {
+        gates.insert(gates.end(), new_gates.begin(), new_gates.end());
     }
 
     /**
