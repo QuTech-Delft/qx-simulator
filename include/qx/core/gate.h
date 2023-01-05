@@ -657,8 +657,6 @@ inline void sqg_apply(cmatrix_t &cm, uint64_t qubit, qu_register &qureg) {
 
 #endif // remove naive tensor computation
 
-enum elementary_operation_t { __x180__, __x90__, __y180__, __y90__, __ym90__ };
-
 /**
  * \brief hadamard gate:
  *
