@@ -154,7 +154,7 @@ public:
     virtual void apply(qu_register &qureg) = 0;
     virtual gate_type_t type() const = 0;
     virtual void dump() = 0;
-    virtual ~gate(){};
+    virtual ~gate() = default;
 
     virtual void set_duration(uint64_t d) { duration = d; }
     virtual uint64_t get_duration() { return duration; }
