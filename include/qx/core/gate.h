@@ -659,15 +659,6 @@ inline void sqg_apply(cmatrix_t &cm, uint64_t qubit, qu_register &qureg) {
 
 enum elementary_operation_t { __x180__, __x90__, __y180__, __y90__, __ym90__ };
 
-static const char *pulse_lt[][5] = {
-    {"  pulse 9,0,0", "  pulse 10,0,0", "  pulse 11,0,0", "  pulse 12,0,0",
-     "  pulse 14,0,0"},
-    {"  pulse 0,9,0", "  pulse 0,10,0", "  pulse 0,11,0", "  pulse 0,12,0",
-     "  pulse 0,14,0"},
-    {"  pulse 0,0,9", "  pulse 0,0,10", "  pulse 0,0,11", "  pulse 0,0,12",
-     "  pulse 0,0,14"},
-};
-
 /**
  * \brief hadamard gate:
  *
