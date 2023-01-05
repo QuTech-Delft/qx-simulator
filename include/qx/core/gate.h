@@ -153,9 +153,6 @@ class gate {
 public:
     virtual void apply(qu_register &qureg) = 0;
     virtual gate_type_t type() const = 0;
-    virtual std::string micro_code() {
-        return "# unsupported operation : qubit out of range";
-    }
     virtual void dump() = 0;
     virtual ~gate(){};
 
@@ -708,23 +705,6 @@ public:
         qureg.set_measurement_prediction(qubit, __state_unknown__);
     }
 
-    std::string micro_code() override {
-        /**
-          | wait 5
-          | y90 q0  --> { pulse 12,0,0 }
-          | wait 5
-          | x180 q0 --> { pulse 9,0,0 }
-         */
-        if (qubit > 2)
-            return "# unsupported operation : qubit out of range";
-        std::stringstream uc;
-        uc << pulse_lt[qubit][__y90__] << "\n";
-        uc << "  wait 4 \n";
-        uc << pulse_lt[qubit][__x180__] << "\n";
-        uc << "  wait 4 \n";
-        return uc.str();
-    }
-
     gate_type_t type() const override { return __hadamard_gate__; }
 
     void dump() override { println("  [-] hadamard(q=", qubit, ")"); }
@@ -1128,15 +1108,6 @@ public:
 
     void apply(qu_register &qreg) override {}
 
-    std::string micro_code() override {
-        if (qubit > 2)
-            return "# unsupported operation : qubit out of range";
-        std::stringstream uc;
-        // uc << pulse_lt[qubit][__x180__] << "\n";
-        uc << "  wait 4 \n";
-        return uc.str();
-    }
-
     void dump() override { println("  [-] identity(qubit=", qubit, ")"); }
 
     gate_type_t type() const override { return __identity_gate__; }
@@ -1181,19 +1152,6 @@ public:
         qreg.flip_binary(qubit);
     }
 
-    std::string micro_code() override {
-        /**
-          | wait 5
-          | x180 q0 --> { pulse 9,0,0 }
-         */
-        if (qubit > 2)
-            return "# unsupported operation : qubit out of range";
-        std::stringstream uc;
-        uc << pulse_lt[qubit][__x180__] << "\n";
-        uc << "  wait 4 \n";
-        return uc.str();
-    }
-
     void dump() override { println("  [-] pauli-x(qubit=", qubit, ")"); }
 
     gate_type_t type() const override { return __pauli_x_gate__; }
@@ -1216,19 +1174,6 @@ public:
     void apply(qu_register &qreg) override {
         sqg_apply(m, qubit, qreg);
         qreg.flip_binary(qubit);
-    }
-
-    std::string micro_code() override {
-        /**
-          | wait 5
-          | x180 q0 --> { pulse 9,0,0 }
-         */
-        if (qubit > 2)
-            return "# unsupported operation : qubit out of range";
-        std::stringstream uc;
-        uc << pulse_lt[qubit][__y180__] << "\n";
-        uc << "  wait 4 \n";
-        return uc.str();
     }
 
     void dump() override { println("  [-] pauli-y(qubit=", qubit, ")"); }
@@ -1254,21 +1199,6 @@ public:
         sqg_apply(m, qubit, qreg);
     }
 
-    std::string micro_code() override {
-        /**
-          | wait 5
-          | x180 q0 --> { pulse 9,0,0 }
-         */
-        if (qubit > 2)
-            return "# unsupported operation : qubit out of range";
-        std::stringstream uc;
-        uc << pulse_lt[qubit][__y180__] << "\n";
-        uc << "  wait 4 \n";
-        uc << pulse_lt[qubit][__x180__] << "\n";
-        uc << "  wait 4 \n";
-        return uc.str();
-    }
-
     void dump() override { println("  [-] pauli-z(qubit=", qubit, ")"); }
 
     gate_type_t type() const override { return __pauli_z_gate__; }
@@ -1290,19 +1220,6 @@ public:
 
     void apply(qu_register &qreg) override {
         sqg_apply(m, qubit, qreg);
-    }
-
-    std::string micro_code() override {
-        if (qubit > 2)
-            return "# unsupported operation : qubit out of range";
-        std::stringstream uc;
-        uc << pulse_lt[qubit][__y90__] << "\n";
-        uc << "  wait 4 \n";
-        uc << pulse_lt[qubit][__x90__] << "\n";
-        uc << "  wait 4 \n";
-        uc << pulse_lt[qubit][__ym90__] << "\n";
-        uc << "  wait 4 \n";
-        return uc.str();
     }
 
     void dump() override { println("  [-] phase(qubit=", qubit, ")"); }
