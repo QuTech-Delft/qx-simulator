@@ -85,7 +85,6 @@ enum gate_type_t {
     __measure_y_gate__,
     __measure_y_reg_gate__,
     __ctrl_phase_shift_gate__,
-    __parallel_gate__,
     __display__,
     __display_binary__,
     __bin_ctrl_gate__,
@@ -2374,44 +2373,6 @@ public:
         else
             return __display__;
     }
-};
-
-/**
- * parallel gates
- */
-class parallel_gates final : public gate {
-public:
-    parallel_gates() = default;
-
-    void apply(qu_register &qreg) override {
-        for (uint64_t i = 0; i < gates.size(); i++)
-            gates[i]->apply(qreg);
-    }
-
-    uint64_t add(std::shared_ptr<gate> gate) {
-        gates.push_back(std::move(gate));
-        return gates.size();
-    }
-
-    bool has(std::function<bool(gate const *)> predicate) {
-        for (auto const &gate : gates) {
-            if (predicate(gate.get())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    void dump() override {
-        println("  [-] parallel_gates (", gates.size(), " gates) : ");
-        for (uint64_t i = 0; i < gates.size(); i++)
-            gates[i]->dump();
-    }
-
-    gate_type_t type() const override { return __parallel_gate__; }
-
-private:
-    std::vector<std::shared_ptr<gate>> gates; // list of the parallel gates
 };
 
 /**

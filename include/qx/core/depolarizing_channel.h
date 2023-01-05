@@ -79,11 +79,6 @@ public:
         if (g->type() == __measure_reg_gate__) {
             return true;
         }
-        if (g->type() == __parallel_gate__) {
-            return ((qx::parallel_gates *)g)->has([this, q](auto const *gate) {
-                return is_measurement(gate, q);
-            });
-        }
         return false;
     }
 
@@ -181,7 +176,7 @@ public:
                     }
 
                 } else {
-                    auto g = std::make_shared<qx::parallel_gates>();
+                    std::vector<std::shared_ptr<qx::gate>> errors;
                     bool measurement = false;
 
                     std::vector<bool> v(nq, 0);
@@ -198,17 +193,17 @@ public:
                                           (measurement
                                                ? "(potential measurement error)"
                                                : ""));
-                        g->add(single_qubit_error(q, verbose));
+                        errors.push_back(single_qubit_error(q, verbose));
                     }
 
                     if (measurement) {
                         //__verbose__  println("      |--> (!) potential
                         // measurement error.");
-                        noisy_circuit->add(g);
+                        noisy_circuit->add(errors);
                         noisy_circuit->add(circuit->get(p));
                     } else {
                         noisy_circuit->add(circuit->get(p));
-                        noisy_circuit->add(g);
+                        noisy_circuit->add(errors);
                     }
                 }
             } else {
