@@ -24,8 +24,6 @@
 
 #include "qx/compat.h"
 
-#include <chrono>
-
 #ifdef USE_OPENMP
 #include <omp.h>
 #endif
