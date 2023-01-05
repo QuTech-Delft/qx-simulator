@@ -90,7 +90,6 @@ enum gate_type_t {
     __parallel_gate__,
     __display__,
     __display_binary__,
-    __print_str__,
     __bin_ctrl_gate__,
     __lookup_table__,
     __classical_not_gate__,
@@ -2561,26 +2560,6 @@ public:
     }
 
     gate_type_t type() const override { return __prepare_gate__; }
-};
-
-/**
- * \brief print  : debug utility
- *     print arbitrary string
- */
-class print_str final : public gate {
-private:
-    std::string str;
-
-public:
-    print_str(std::string &s) : str(s) {}
-
-    void apply(qu_register &qreg) override {
-        println(str);
-    }
-
-    void dump() override { println(" print ", str, "\""); }
-
-    gate_type_t type() const override { return __print_str__; }
 };
 
 } // namespace qx
