@@ -113,14 +113,6 @@ public:
     size_t size() { return gates.size(); }
 
     /**
-     * insert a gate at the specified
-     * position
-     */
-    void insert(size_t pos, std::shared_ptr<qx::gate> gate) {
-        gates.insert(gates.begin() + pos, gate);
-    }
-
-    /**
      * \return the name of the circuit
      */
     std::string id() { return name; }
