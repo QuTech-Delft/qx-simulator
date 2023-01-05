@@ -1,13 +1,5 @@
 #pragma once
 
-// #define __BUILTIN_LINALG_
-
-// #ifndef __BUILTIN_LINALG__
-// #include <boost/numeric/ublas/vector.hpp>
-// #include <boost/numeric/ublas/matrix.hpp>
-// #include <boost/numeric/ublas/io.hpp>
-// #endif
-
 #include "qx/core/matrix.h"
 
 #ifdef USE_OPENMP
@@ -21,7 +13,6 @@
 
 #include "qx/xpu/aligned_memory_allocator.h"
 #include "qx/xpu/complex.h"
-#include "qx/xpu/vector.h"
 
 #define MAX_QB_N 64
 
@@ -40,7 +31,6 @@ using complex_t = xpu::complex_d;
 // #else
 using cvector_t =
     std::vector<complex_t, xpu::aligned_memory_allocator<complex_t, 64>>;
-// using cvector_t = xpu::vector<complex_t,16>;
 // using cmatrix_t = qx::linalg::matrix<complex_t>;
 using cmatrix_t = qx::linalg::tiny_matrix<complex_t, 2>;
 using cidentity_t = qx::linalg::identity_matrix<complex_t>;
