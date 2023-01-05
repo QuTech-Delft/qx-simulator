@@ -34,17 +34,6 @@ public:
         : n_qubit(n_qubit), name(std::move(name)), iterations(iterations) {}
 
     /**
-     * \brief micro code generator
-     */
-    std::string micro_code() {
-        std::stringstream uc;
-        uc << "\n" << name << ": \n";
-        for (auto &gate : gates)
-            uc << gate->micro_code();
-        return uc.str();
-    }
-
-    /**
      * \brief destructor
      */
     void clear() { gates.clear(); }
