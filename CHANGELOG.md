@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [ 0.5.4 ] - [ 2023-01-06 ]
+
+### Added
+
+- Tests for measure gate
+
+### Changed
+
+- Fixed issues #91 and #114
+- As part of #114, switch to sequential/simple measure gate
+
+### Removed
+
+- QFT implementation (never instantiated, so no functional change)
+- qx-server no longer exists, together with the network libraries
+- "Microcode" generation functions (never used either)
+- Parallel gates in gate.h (they were executed sequentially)
+- Some non-needed and/or obsolete code
+
 ## [ 0.5.3 ] - [ 2023-01-02 ]
 
 ### Added
