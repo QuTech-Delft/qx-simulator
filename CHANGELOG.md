@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [ 0.6.0 ] - [ 2023-01-19 ]
+
+Almost a complete rewrite. No functional change except it's faster.
+
+### Added
+
+- Ability to easily implement any quantum gate by simply giving an arbitrary unitary matrix in Gates.h
+- Performance speedup using a single thread
+- Some proper linear algebra primitives using template metaprogramming
+- Abseil-cpp dependency for flat_hash_map
+- Ability to compile the simulator with an set maximum number of qubits - in the future this will
+be using templates as well to switch data structures based on the input quantum circuit
+
+### Changed
+
+- Quantum state is stored as a sparse array implemented using a flat_hash_map from Abseil-cpp
+- C++20 in place of C++14,
+- Code style: camel case
+
+### Removed
+- OpenMP and multithreading.
+- SSE, AVX and other intrinsics.
+- get_measurement_outcome and get_state methods. Now accessible via JSON output.
+
 ## [ 0.5.5 ] - [ 2023-01-12 ]
 
 ### Added

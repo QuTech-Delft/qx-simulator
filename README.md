@@ -21,7 +21,7 @@ For compilation, you need the following things.
 For the QXelarator Python module, you also need the following.
 
  - swig (Linux/MacOS >= 3.0.12; Windows >= 4.0.0)
- - python (>= 3.7) [for python interface to QX]
+ - python (>= 3.8) [for python interface to QX]
 
 ## Installation
 
@@ -58,12 +58,6 @@ which is perhaps the easiest way to start simulating quantum circuits.
                                                             state and measurement register, save the result as JSON in in json_string
     json_string = qx.execute(100)                       # execute the circuit 100 times, print the very final quantum state
                                                             and measurement register averaging, save the result as JSON in in json_string
-    qx.get_measurement_outcome(0)                       # get measurement results from qubit 'n' as bool
-                                                            note: in the case of repeated execution, the very
-                                                            last value of the measurement register is returned
-    qx.get_state()                                      # get quantum register state as string
-                                                            note: in the case of repeated execution, the very
-                                                            last quantum state is returned
 
 
 ### Installation
