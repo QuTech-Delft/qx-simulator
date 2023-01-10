@@ -9,7 +9,5 @@ def test_get_state():
     qx.set(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'basic.qasm'))
     qx.execute()
 
-    print( qx.get_state() )
-
 if __name__ == '__main__':
     test_get_state()

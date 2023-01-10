@@ -47,7 +47,7 @@ def get_version(verbose=0):
 
     matcher = re.compile('[\t ]*#define[\t ]+QX_VERSION[\t ]+"(.*)"')
     version = None
-    with open(os.path.join(inc_dir, "qx", "version.h"), "r") as f:
+    with open(os.path.join(inc_dir, "qx", "Version.h"), "r") as f:
         for ln in f:
             m = matcher.match(ln)
             if m:
@@ -107,7 +107,7 @@ class build_ext(_build_ext):
         if not os.path.exists(cbuild_dir):
             os.makedirs(cbuild_dir)
         with local.cwd(cbuild_dir):
-            build_type = os.environ.get("QX_BUILD_TYPE", "Release")
+            build_type = os.environ.get("CMAKE_BUILD_TYPE", "Release")
 
             cmd = (
                 local["cmake"][root_dir]["-DQX_BUILD_PYTHON=YES"][
@@ -118,10 +118,6 @@ class build_ext(_build_ext):
                 # Make sure CMake uses the Python installation corresponding
                 # with the the Python version we're building with now.
                 ["-DPYTHON_EXECUTABLE=" + sys.executable]
-                # (ab)use static libs for the intermediate libraries to avoid
-                # dealing with R(UN)PATH nonsense on Linux/OSX as much as
-                # possible.
-                ["-DBUILD_SHARED_LIBS=NO"]
                 # Build type can be set using an environment variable.
                 ["-DCMAKE_BUILD_TYPE=" + build_type]
             )
@@ -347,7 +343,6 @@ setup(
         "Operating System :: MacOS",
         "Operating System :: Microsoft :: Windows",
         "Programming Language :: Python :: 3 :: Only",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",

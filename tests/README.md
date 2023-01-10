@@ -1,1 +1,0 @@
-Tests in this folder have unfortunately very limited coverage.

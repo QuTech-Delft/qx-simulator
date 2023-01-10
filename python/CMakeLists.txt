@@ -102,7 +102,7 @@ endif()
 #=============================================================================#
 
 # Configure SWIG.
-set(SWIG_FILE "${CMAKE_CURRENT_SOURCE_DIR}/qxelarator.i")
+set(SWIG_FILE "${CMAKE_CURRENT_SOURCE_DIR}/Qxelarator.i")
 
 set_source_files_properties("${SWIG_FILE}" PROPERTIES
     CPLUSPLUS ON

@@ -1,20 +1,14 @@
-#include "qx/simulator.h"
+#include "qx/Simulator.h"
 #include <iostream>
 
 int main() {
 
-    qx::simulator sim;
+    qx::Simulator sim;
     sim.set("basic.qasm");
-    // FIXME: should be way more iterations, but this causes CI problems
-    for (int i = 0; i < 1; i++) {
+    for (int i = 0; i < 100; i++) {
         sim.execute();
-        auto c0 = sim.get_measurement_outcome(0);
-        auto c1 = sim.get_measurement_outcome(1);
-        std::cout << c0 << " " << c1 << std::endl;
+        // FIXME: do something
     }
-
-    std::cout << "quantum state:" << std::endl;
-    std::cout << sim.get_state() << std::endl;
 
     return 0;
 }
