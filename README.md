@@ -49,20 +49,21 @@ which is perhaps the easiest way to start simulating quantum circuits.
 
 `qxelarator` mainly provides the following API calls:
 
-    qx.set('basic.qasm')                    # set the required qasm to be executed on qx
-    qx.set_json_output_path('output.json)   # set the path to the output JSON, containing
-                                                either complex amplitude (single shot) or
-                                                measurement register averaging
-    qx.execute()                            # execute the circuit once, print the final quantum
-                                                state
-    qx.execute(100)                         # execute the circuit 100 times, print measurement
-                                                register averaging
-    qx.get_measurement_outcome(0)           # get measurement results from qubit 'n' as bool
-                                                note: in the case of repeated execution, the very
-                                                last value of the measurement register is returned
-    qx.get_state()                          # get quantum register state as string
-                                                note: in the case of repeated execution, the very
-                                                last quantum state is returned
+    qx.set('basic.qasm')                                # set the required qasm file to be executed on qx
+    qx.set_string('version 1.0\nqubits 2\nh q[1]')      # set the required qasm string to be executed on qx
+    qx.set_json_output_path('output.json)               # set the path to the output JSON, containing
+                                                            either complex amplitude (single shot) or
+                                                            measurement register averaging
+    json_string = qx.execute()                          # execute the circuit once, print the final quantum
+                                                            state and measurement register, save the result as JSON in in json_string
+    json_string = qx.execute(100)                       # execute the circuit 100 times, print the very final quantum state
+                                                            and measurement register averaging, save the result as JSON in in json_string
+    qx.get_measurement_outcome(0)                       # get measurement results from qubit 'n' as bool
+                                                            note: in the case of repeated execution, the very
+                                                            last value of the measurement register is returned
+    qx.get_state()                                      # get quantum register state as string
+                                                            note: in the case of repeated execution, the very
+                                                            last quantum state is returned
 
 
 ### Installation
