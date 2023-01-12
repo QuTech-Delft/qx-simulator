@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [ 0.5.5 ] - [ 2023-01-12 ]
+
+### Added
+
+- set_string method to parse a cqasm string directly instead of a cqasm file
+
+### Changed
+
+- Fixed issue #118: quantum state is always displayed, as well as measurement register averaging
+
+### Removed
+- 
+
 ## [ 0.5.4 ] - [ 2023-01-06 ]
 
 ### Added

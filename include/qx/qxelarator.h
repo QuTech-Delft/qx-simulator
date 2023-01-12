@@ -28,7 +28,9 @@ public:
 
     bool set(std::string qasm_file_name) { return qx_sim->set(qasm_file_name); }
 
-    void execute(size_t navg = 0) { qx_sim->execute(navg); }
+    bool set_string(std::string cqasm_data) { return qx_sim->set_string(cqasm_data); }
+
+    std::string execute(size_t navg = 1) { return qx_sim->execute(navg); }
 
     bool get_measurement_outcome(size_t q) { return qx_sim->get_measurement_outcome(q); }
     

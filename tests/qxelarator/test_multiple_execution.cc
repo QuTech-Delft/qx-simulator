@@ -7,7 +7,7 @@ int main() {
     sim.set("basic.qasm");
     // FIXME: should be way more iterations, but this causes CI problems
     for (int i = 0; i < 1; i++) {
-        sim.execute(0);
+        sim.execute();
         auto c0 = sim.get_measurement_outcome(0);
         auto c1 = sim.get_measurement_outcome(1);
         std::cout << c0 << " " << c1 << std::endl;
