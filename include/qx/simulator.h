@@ -86,10 +86,15 @@ public:
     /**
      * execute qasm file
      */
-    void execute(size_t number_of_runs) {
+    std::string execute(size_t number_of_runs = 1) {
         if (program.empty()) {
             error("No circuit loaded, call set(...) first");
-            return;
+            return "";
+        }
+
+        if (number_of_runs <= 0) {
+            error("Number of runs is 0");
+            return "";
         }
 
         // quantum state and circuits
@@ -133,78 +138,63 @@ public:
             error_model = qx::__depolarizing_channel__;
         }
 
-        // measurement averaging
-        if (number_of_runs >= 1) {
-            MeasurementAveraging measurementAveraging(qubits);
+        SimulationResultAccumulator simulationResult(*reg);
 
-            if (error_model == qx::__depolarizing_channel__) {
-                for (size_t s = 0; s < number_of_runs; ++s) {
-                    reg->reset();
-                    for (auto& perfect_circuit: perfect_circuits) {
-                        if (perfect_circuit->size() == 0) {
-                            continue;
-                        }
-                        size_t iterations =
-                            perfect_circuit->get_iterations();
-                        assert(iterations >= 1);
-
-                        for (size_t it = 0; it < iterations; ++it) {
-                            qx::noisy_dep_ch(perfect_circuit,
-                                                error_probability,
-                                                total_errors)
-                                ->execute(*reg, false, true);
-                        }
-                    }
-                    measurementAveraging.append(reg->get_measurement_register());
-                }
-            } else {
-                for (size_t s = 0; s < number_of_runs; ++s) {
-                    reg->reset();
-                    for (auto& perfect_circuit: perfect_circuits) {
-                        perfect_circuit->execute(*reg, false, true);
-                    }
-                    measurementAveraging.append(reg->get_measurement_register());
-                }
-            }
-
-            measurementAveraging.dump();
-            if (json_output_filename != "") {
-                measurementAveraging.dump_json(json_output_filename);
-            }
-        } else {
-            if (error_model == qx::__depolarizing_channel__) {
+        if (error_model == qx::__depolarizing_channel__) {
+            for (size_t s = 0; s < number_of_runs; ++s) {
+                reg->reset();
                 for (auto& perfect_circuit: perfect_circuits) {
                     if (perfect_circuit->size() == 0) {
                         continue;
                     }
-
-                    size_t iterations = perfect_circuit->get_iterations();
+                    size_t iterations =
+                        perfect_circuit->get_iterations();
                     assert(iterations >= 1);
-                    for (size_t it = 0; it < iterations; ++it)
-                    {
-                        circuits.push_back(qx::noisy_dep_ch(
-                            perfect_circuit, error_probability,
-                            total_errors));
+
+                    for (size_t it = 0; it < iterations; ++it) {
+                        qx::noisy_dep_ch(perfect_circuit,
+                                            error_probability,
+                                            total_errors)
+                            ->execute(*reg, false, true);
                     }
                 }
-            } else {
-                circuits = perfect_circuits;
+                simulationResult.append(reg->get_measurement_register());
             }
-
-            for (size_t i = 0; i < circuits.size(); i++) {
-                circuits[i]->execute(*reg);
-            }
-
-            ExactQuantumState quantumState(*reg);
-            quantumState.dump();
-            if (json_output_filename != "") {
-                quantumState.dump_json(json_output_filename);
+        } else {
+            for (size_t s = 0; s < number_of_runs; ++s) {
+                reg->reset();
+                for (auto& perfect_circuit: perfect_circuits) {
+                    perfect_circuit->execute(*reg, false, true);
+                }
+                simulationResult.append(reg->get_measurement_register());
             }
         }
+
+        simulationResult.dump();
+
+        auto resultJson = simulationResult.get().getJsonString();
+        if (json_output_filename != "") {
+            std::ofstream outfile(json_output_filename);
+            outfile << resultJson;
+        }
+
+        return resultJson;
     }
 
-    bool get_measurement_outcome(size_t q) { return reg->get_measurement(q); }
+    bool get_measurement_outcome(size_t q) {
+        if (!reg) {
+            error("No circuit successfully executed");
+            return false;
+        }
+        return reg->get_measurement(q);
+    }
 
-    std::string get_state() { return reg->get_state(); }
+    std::string get_state() {
+        if (!reg) {
+            error("No circuit successfully executed");
+            return "<error>";
+        }
+        return reg->get_state();
+    }
 };
 } // namespace qx

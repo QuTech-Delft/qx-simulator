@@ -39,7 +39,7 @@ void print_banner() {
  */
 int main(int argc, char **argv) {
     std::string file_path = "";
-    size_t navg = 0;
+    size_t navg = 1;
     std::string json_filename = "";
     print_banner();
 
@@ -84,11 +84,7 @@ int main(int argc, char **argv) {
         println("Will output JSON simulation result to file ", json_filename);
     }
     
-    if (navg >= 1) {
-        println("Will execute circuit ", navg, " times and aggregate measurement registers");
-    } else {
-        println("Will simulate circuit once and output the final quantum state");
-    }
+    println("Will execute circuit ", navg, " times");
 
     std::unique_ptr<QX> qx;
     try {

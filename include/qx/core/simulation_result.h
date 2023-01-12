@@ -1,204 +1,179 @@
 #include "linalg.h"
 #include "register.h"
-#include <fstream>
+#include <variant>
 
 using State = std::bitset<MAX_QB_N>;
 
-template <typename ResultT>
-class SimulationResult {
+class JsonDict {
 public:
-    SimulationResult(std::size_t nQubits) : nQubits(nQubits) {};
-
-    void dump() {
-        std::setprecision(9);
-        println("-------------------------------------------");
-        println(get_title());
-        auto per_state = get_result_per_state();
-        for (const auto &kv: per_state) {
-            const auto& state = kv.first;
-            const auto& value = kv.second;
-
-            println(get_state_string(state), "       ", value.represent_for_output());
-        }
+    template <typename V>
+    void add(std::string key, V value) {
+        m.push_back(std::make_pair(key, ValueType(value)));
     }
 
-    void dump_json(const std::string &filename) {
-        std::ofstream outfile(filename);
+    std::string to_string(std::size_t level = 0) const {
+        std::stringstream ss;
 
-        // No need for a JSON library for such a small output.
-        outfile << "{\n";
-        outfile << "  \"info\": {\n";
-        outfile << "    \"shots_requested\": " << get_shots_requested() << ",\n";
-        outfile << "    \"shots_done\": " << get_shots_done() << "\n";
-        outfile << "  },\n";
-        outfile << "  \"results\": {\n";
-
-        auto per_state = get_result_per_state();
+        ss << std::fixed << std::setprecision(6) << "{" << std::endl;
+        
         bool first = true;
-        for (const auto &kv: per_state) {
-            const auto& state = kv.first;
-            const auto& value = kv.second;
-
+        for (auto const& kv: m) {
             if (!first) {
-                outfile << ",\n";
+                ss << "," << std::endl;
+            } else {
+                first = false;
             }
 
-            first = false;
-
-            outfile << "    \"" << get_state_string(state) << "\": " << value.json();
+            ss << std::string((level + 1) * 4, ' ') << '"' << kv.first << "\": ";
+            if (auto const* d = std::get_if<JsonDict>(&kv.second)) {
+                ss << d->to_string(level + 1);
+            } else if (auto const* d = std::get_if<double>(&kv.second)) {
+                ss << *d;
+            } else if (auto const* i = std::get_if<std::uint64_t>(&kv.second)) {
+                ss << *i;
+            }
         }
-        outfile << "\n  }\n";
-        outfile << "}\n";
-    };
 
-protected:
-    struct compare_states {
-        bool operator()(const State& a, const State& b) const {
-            return a.to_ulong() < b.to_ulong();
-        }
-    };
+        ss << std::endl << std::string(level * 4, ' ') << "}";
 
-    virtual std::string get_title() = 0;
-
-    virtual std::map<State, ResultT, compare_states> get_result_per_state() = 0;
-
-    virtual std::uint64_t get_shots_requested() = 0;
-
-    virtual std::uint64_t get_shots_done() = 0;
-
-    std::size_t nQubits = 0;
-
-private:
-    std::string get_state_string(State s) {
-        auto str = s.to_string();
-
-        return str.substr(str.size() - nQubits, str.size());
-    }
-
-};
-
-class Fraction {
-public:
-    Fraction() = default;
-
-    Fraction(std::uint64_t aNumerator, std::uint64_t aDenominator) : numerator(aNumerator), denominator(aDenominator) {}
-
-    std::string represent_for_output() const {
-        return std::to_string(numerator) + "/" + std::to_string(denominator) + " (" + std::to_string(numerator / static_cast<double>(denominator)) + ")";
-    }
-
-    std::string json() const {
-        return std::to_string(numerator / static_cast<double>(denominator));
+        return ss.str();
     }
 
 private:
-    std::uint64_t numerator = 0;
-    std::uint64_t denominator = 0;
+    using ValueType = std::variant<JsonDict, double, std::uint64_t>;
+    std::vector<std::pair<std::string, ValueType>> m;
 };
 
-class MeasurementAveraging : public SimulationResult<Fraction> {
+struct SimulationResult {
+    struct Complex {
+        double real = 0;
+        double imag = 0;
+    };
+    
+    std::uint64_t shots_requested = 0;
+    std::uint64_t shots_done = 0;
+
+    std::vector<std::pair<std::string, double>> results;
+    std::vector<std::pair<std::string, Complex>> state;
+    
+    std::string getJsonString() {
+        JsonDict info;
+        info.add("shots_requested", shots_requested);
+        info.add("shots_done", shots_done);
+
+        JsonDict resultsJson;
+        for (auto const& kv: results) {
+            resultsJson.add(kv.first, kv.second);
+        }
+
+        JsonDict stateJson;
+        for (auto const& kv: state) {
+            JsonDict complex;
+            complex.add("real", kv.second.real);
+            complex.add("imag", kv.second.imag);
+
+            stateJson.add(kv.first, complex);
+        }
+        
+        JsonDict totalOutput;
+        totalOutput.add("info", info);
+        totalOutput.add("results", resultsJson);
+        totalOutput.add("state", stateJson);
+        
+        return totalOutput.to_string();
+    }
+};
+
+class SimulationResultAccumulator {
 public:
-    MeasurementAveraging(std::size_t nQubits) : SimulationResult(nQubits) {};
+    SimulationResultAccumulator(qx::qu_register &reg) : reg(reg) {};
 
     void append(State measured_state) {
         measured_states[measured_state]++;
         n_measurements++;
     }
 
-protected:
-    std::string get_title() override {
-        return "Measurement register averaging";
+    void dump() {
+        std::setprecision(6);
+        std::cout << std::setprecision(6) << std::fixed;
+        println("-------------------------------------------");
+
+        println("Final quantum state");
+
+        forAllNonZeroStates([](auto stateString, auto c) {
+            println(stateString, "       ", c, " (", c.norm(), ")");
+        });
+        println();
+
+        if (n_measurements > 0) {
+            println("Measurement register averaging");
+
+            for (const auto &kv: measured_states) {
+                const auto& state = kv.first;
+                const auto& count = kv.second;
+                println(get_state_string(state), "       ", count, "/", n_measurements, " (", static_cast<double>(count) / n_measurements, ")");
+            }
+        }
     }
 
-    std::uint64_t get_shots_requested() override {
-        return n_measurements;
-    };
+    SimulationResult get() {
+        SimulationResult result;
+        result.shots_requested = n_measurements;
+        result.shots_done = n_measurements;
 
-    std::uint64_t get_shots_done() override {
-        return n_measurements;
-    };
-
-private:
-    std::map<State, Fraction, compare_states> get_result_per_state() override {
-        std::map<State, Fraction, compare_states> result;
-
-        for (const auto &kv: measured_states) {
-            const auto& state = kv.first;
-            const auto& count = kv.second;
-
+        if (n_measurements == 0) {
+            forAllNonZeroStates([&result](auto stateString, auto c) {
+                result.results.push_back(std::make_pair(stateString, c.norm()));
+            });
+        } else {
             assert(n_measurements > 0);
 
-            result[state] = Fraction(count, n_measurements);
-        }
+            for (const auto &kv: measured_states) {
+                const auto& state = kv.first;
+                const auto& count = kv.second;
 
-        return result;
-    }
-    
-    std::map<State, std::uint64_t, compare_states> measured_states;
-    std::uint64_t n_measurements = 0;
-};
-
-class ComplexWithProba {
-public:
-    ComplexWithProba() = default;
-
-    ComplexWithProba(complex_t aComplex) : complex(aComplex) {}
-
-    std::string represent_for_output() const {
-        std::stringstream ss;
-        ss << complex;
-        return ss.str() + " (" + std::to_string(complex.norm()) + ")";
-    }
-
-    std::string json() const {
-        return std::to_string(complex.norm());    }
-
-    double norm() const {
-        return complex.norm();
-    }
-
-private:
-    complex_t complex{};
-};
-
-class ExactQuantumState : public SimulationResult<ComplexWithProba> {
-public:
-    ExactQuantumState(qx::qu_register &reg) : SimulationResult(reg.size()), reg(reg) {}
-
-    std::string get_title() override {
-        return "Complex amplitudes with probabilities";
-    }
-
-protected:
-    std::map<State, ComplexWithProba, compare_states> get_result_per_state() override {
-        std::map<State, ComplexWithProba, compare_states> result;
-
-        State s;
-        auto s_number = s.to_ulong();
-        auto& data = reg.get_data();
-        while (s_number < (1 << nQubits)) {
-            ComplexWithProba c(data[s_number]);
-
-            static constexpr double epsilon = 10e-10;
-            if (c.norm() > epsilon) {
-                result[s] = c;
+                result.results.push_back(std::make_pair(get_state_string(state), static_cast<double>(count) / n_measurements));
             }
-
-            s = inc(s);
-            s_number = s.to_ulong();
         }
         
+        forAllNonZeroStates([&result](auto stateString, auto c) {
+            result.state.push_back(std::make_pair(stateString, SimulationResult::Complex{ .real = c.re, .imag = c.im }));
+        });
+
         return result;
     }
 
-    std::uint64_t get_shots_requested() override {
-        return 1;
-    };
-
-    std::uint64_t get_shots_done() override {
-        return 1;
-    };
-
 private:
+    struct compare_states {
+        bool operator()(const State& a, const State& b) const {
+            return a.to_ulong() < b.to_ulong();
+        }
+    };
+
+    template <typename Op>
+    void forAllNonZeroStates(Op op) {
+        State state;
+        auto s_number = state.to_ulong();
+        auto& data = reg.get_data();
+        while (s_number < (1 << reg.size())) {
+            static constexpr double epsilon = 10e-10;
+            auto probability = data[s_number].norm();
+            if (probability > epsilon) {
+                op(get_state_string(state), data[s_number]);
+            }
+
+            state = inc(state);
+            s_number = state.to_ulong();
+        }
+    }
+
+    std::string get_state_string(State s) {
+        auto str = s.to_string();
+
+        return str.substr(str.size() - reg.size(), str.size());
+    }
+
     qx::qu_register &reg;
+    std::map<State, std::uint64_t, compare_states> measured_states;
+    std::uint64_t n_measurements = 0;
 };
