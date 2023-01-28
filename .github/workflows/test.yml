@@ -39,7 +39,43 @@ jobs:
       - name: Test
         working-directory: build-${{ matrix.compiler }}-${{ matrix.build_type }}
         run: ctest --output-on-failure
-  
+
+  cpp-linux-arm64:
+    name: "C++ tests on Linux"
+    runs-on:
+      - "self-hosted"
+      - "ARM64"
+      - "Linux"
+    strategy:
+      fail-fast: false
+      matrix:
+        build_type:
+          - Debug
+          - Release
+        compiler:
+          - clang++
+          - g++
+    steps:
+      - name: Checkout with submodules
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Create build directory
+        run: mkdir -p build-${{ matrix.compiler }}-${{ matrix.build_type }}
+      - name: Configure
+        working-directory: build-${{ matrix.compiler }}-${{ matrix.build_type }}
+        env:
+          CXX: ${{ matrix.compiler }}
+        run: cmake -S .. -B . -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DQX_BUILD_TESTS=ON
+      - name: Build
+        working-directory: build-${{ matrix.compiler }}-${{ matrix.build_type }}
+        env:
+          CXX: ${{ matrix.compiler }}
+        run: cmake --build . --parallel 10
+      - name: Test
+        working-directory: build-${{ matrix.compiler }}-${{ matrix.build_type }}
+        run: ctest --output-on-failure
+
   cpp-macos:
     name: "C++ tests on MacOS with Clang"
     runs-on: macos-latest

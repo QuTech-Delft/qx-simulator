@@ -9,7 +9,7 @@ on:
       - "release**"
 
 jobs:
-  macos:
+  macos-x64:
     name: PyPI wheels for macOS
     runs-on: macos-latest
     strategy:
@@ -56,7 +56,7 @@ jobs:
           asset_name: ${{ steps.wheel.outputs.wheel }}
           asset_content_type: application/zip
 
-  manylinux:
+  manylinux-x64:
     name: PyPI wheels for Manylinux
     runs-on: ubuntu-latest
     container: quay.io/pypa/manylinux${{ matrix.manylinux }}_x86_64:latest
@@ -106,7 +106,59 @@ jobs:
           asset_name: ${{ steps.wheel.outputs.wheel }}
           asset_content_type: application/zip
 
-  windows:
+  manylinux-arm64:
+    name: PyPI wheels for Manylinux
+    runs-on:
+      - "self-hosted"
+      - "ARM64"
+      - "Linux"
+    env:
+      BISON_VERSION: "3.0.4-2.el7"
+      SWIG_VERSION: "3.0.12-17.el7"
+    strategy:
+      matrix:
+        manylinux:
+          - 2014
+        cpython_version:
+          - "cp38-cp38"
+          - "cp39-cp39"
+          - "cp310-cp310"
+          - "cp311-cp311"
+    steps:
+      - name: Checkout with submodules
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Install dependencies
+        run: |
+          sudo yum install -y flex bison swig cmake
+          /opt/python/${{ matrix.cpython_version }}/bin/python -m pip install auditwheel
+      - name: Build wheel
+        env:
+          QX_CPU_COMPATIBILITY_MODE: OFF
+          NPROCS: 5
+        run: |
+          /opt/python/${{ matrix.cpython_version }}/bin/python setup.py bdist_wheel
+          /opt/python/${{ matrix.cpython_version }}/bin/python -m auditwheel repair pybuild/dist/*.whl
+      - name: Wheel path
+        id: wheel
+        working-directory: wheelhouse
+        run: echo "##[set-output name=wheel;]$(ls *.whl)"
+      - uses: actions/upload-artifact@v2
+        with:
+          name: pypi-linux-${{ matrix.cpython_version }}
+          path: wheelhouse/${{ steps.wheel.outputs.wheel }}
+      - uses: actions/upload-release-asset@v1
+        if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: wheelhouse/${{ steps.wheel.outputs.wheel }}
+          asset_name: ${{ steps.wheel.outputs.wheel }}
+          asset_content_type: application/zip
+
+  windows-x64:
     name: PyPI wheels for Windows
     runs-on: windows-latest
     strategy:
@@ -162,9 +214,10 @@ jobs:
     name: Publish
     if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
     needs:
-      - macos
-      - manylinux
-      - windows
+      - macos-x64
+      - manylinux-x64
+      - manylinux-arm64
+      - windows-x64
     runs-on: ubuntu-latest
     steps:
       - name: Download artifacts
