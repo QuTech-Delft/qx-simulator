@@ -8,7 +8,7 @@ on:
 
 jobs:
   cpp-linux:
-    name: "C++ tests on Linux"
+    name: "C++ tests on Linux (x64)"
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -41,7 +41,7 @@ jobs:
         run: ctest --output-on-failure
 
   cpp-linux-arm64:
-    name: "C++ tests on Linux"
+    name: "C++ tests on Linux (arm64)"
     runs-on:
       - "self-hosted"
       - "ARM64"
@@ -60,6 +60,10 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: recursive
+      - name: Install dependencies
+        run: |
+          yum install -y flex bison-$BISON_VERSION swig3-$SWIG_VERSION cmake
+          /opt/python/${{ matrix.cpython_version }}/bin/python -m pip install auditwheel
       - name: Create build directory
         run: mkdir -p build-${{ matrix.compiler }}-${{ matrix.build_type }}
       - name: Configure
