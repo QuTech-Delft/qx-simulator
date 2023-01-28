@@ -62,7 +62,7 @@ jobs:
           submodules: recursive
       - name: Install dependencies
         run: |
-          sudo yum install -y flex bison swig cmake
+          sudo yum install -y flex bison swig cmake clang gcc
       - name: Create build directory
         run: mkdir -p build-${{ matrix.compiler }}-${{ matrix.build_type }}
       - name: Configure
