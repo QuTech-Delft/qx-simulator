@@ -62,8 +62,7 @@ jobs:
           submodules: recursive
       - name: Install dependencies
         run: |
-          yum install -y flex bison-$BISON_VERSION swig3-$SWIG_VERSION cmake
-          /opt/python/${{ matrix.cpython_version }}/bin/python -m pip install auditwheel
+          sudo yum install -y flex bison swig cmake
       - name: Create build directory
         run: mkdir -p build-${{ matrix.compiler }}-${{ matrix.build_type }}
       - name: Configure
