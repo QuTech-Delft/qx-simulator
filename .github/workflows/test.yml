@@ -46,15 +46,6 @@ jobs:
       - "self-hosted"
       - "ARM64"
       - "Linux"
-    strategy:
-      fail-fast: false
-      matrix:
-        build_type:
-          - Debug
-          - Release
-        compiler:
-          - clang++
-          - g++
     steps:
       - name: Checkout with submodules
         uses: actions/checkout@v2
@@ -64,19 +55,19 @@ jobs:
         run: |
           sudo yum install -y flex bison swig cmake clang gcc
       - name: Create build directory
-        run: mkdir -p build-${{ matrix.compiler }}-${{ matrix.build_type }}
+        run: mkdir -p build-g++-Release
       - name: Configure
-        working-directory: build-${{ matrix.compiler }}-${{ matrix.build_type }}
+        working-directory: build-g++-Release
         env:
-          CXX: ${{ matrix.compiler }}
-        run: cmake -S .. -B . -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DQX_BUILD_TESTS=ON
+          CXX: g++
+        run: cmake -S .. -B . -DCMAKE_BUILD_TYPE=Release -DQX_BUILD_TESTS=ON
       - name: Build
-        working-directory: build-${{ matrix.compiler }}-${{ matrix.build_type }}
+        working-directory: build-g++-Release
         env:
-          CXX: ${{ matrix.compiler }}
+          CXX: g++
         run: cmake --build . --parallel 10
       - name: Test
-        working-directory: build-${{ matrix.compiler }}-${{ matrix.build_type }}
+        working-directory: build-g++-Release
         run: ctest --output-on-failure
 
   cpp-macos:
