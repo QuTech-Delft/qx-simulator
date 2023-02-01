@@ -40,6 +40,10 @@ public:
         }
     }
 
+    inline void reset() {
+        data = {};
+    }
+
     inline bool test(std::size_t index) const {
         assert(index < NumberOfBits && "Bitset::test bit index out of range");
         return getBit(data[index / BITS_IN_SIZE_T], index % BITS_IN_SIZE_T);
@@ -56,6 +60,12 @@ public:
 
     inline bool operator==(Bitset<NumberOfBits> const &other) const {
         return data == other.data;
+    }
+
+    inline void operator^=(Bitset<NumberOfBits> const &other) {
+        for (std::size_t i = 0; i < data.size(); ++i) {
+            data[i] ^= other.data[i];
+        }
     }
 
     template <typename H> friend H AbslHashValue(H h, Bitset const &bitset) {

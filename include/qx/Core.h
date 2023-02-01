@@ -199,6 +199,7 @@ public:
     void reset() {
         data.clear();
         data.set(BasisVector{}, 1); // Start initialized in state 00...000
+        measurementRegister.reset();
     }
 
     void testInitialize(
@@ -213,6 +214,8 @@ public:
     template <typename F> void forEach(F &&f) { data.forEachSorted(f); }
 
     BasisVector getMeasurementRegister() const { return measurementRegister; }
+
+    BasisVector& getMeasurementRegister() { return measurementRegister; }
 
     template <typename F>
     void measure(QubitIndex qubitIndex, F &&randomGenerator) {

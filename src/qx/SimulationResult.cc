@@ -75,6 +75,12 @@ std::string SimulationResult::getJsonString() {
     return totalOutput.to_string();
 }
 
+void SimulationResultAccumulator::append(BasisVector measuredState) {
+    assert(measuredStates.size() <= (1 << quantumState.getNumberOfQubits()));
+    measuredStates[measuredState]++;
+    nMeasurements++;
+}
+
 void SimulationResultAccumulator::dump() {
     std::cout << std::setprecision(6) << std::fixed;
     std::cout << "-------------------------------------------" << std::endl;
@@ -92,19 +98,19 @@ void SimulationResultAccumulator::dump() {
     for (const auto &kv : measuredStates) {
         const auto &state = kv.first;
         const auto &count = kv.second;
-        std::cout << get_state_string(state) << "       " << count << "/"
-                  << n_measurements << " ("
-                  << static_cast<double>(count) / n_measurements << ")"
+        std::cout << getStateString(state) << "       " << count << "/"
+                  << nMeasurements << " ("
+                  << static_cast<double>(count) / nMeasurements << ")"
                   << std::endl;
     }
 }
 
 SimulationResult SimulationResultAccumulator::get() {
     SimulationResult result;
-    result.shots_requested = n_measurements;
-    result.shots_done = n_measurements;
+    result.shots_requested = nMeasurements;
+    result.shots_done = nMeasurements;
 
-    if (n_measurements == 1) {
+    if (nMeasurements == 1) {
         // When doing a single shot, it is assumed that one is more interested
         // in norms of the complex amplitudes.
 
@@ -112,15 +118,15 @@ SimulationResult SimulationResultAccumulator::get() {
             result.results.push_back(std::make_pair(stateString, std::norm(c)));
         });
     } else {
-        assert(n_measurements > 1);
+        assert(nMeasurements > 1);
 
         for (const auto &kv : measuredStates) {
             const auto &state = kv.first;
             const auto &count = kv.second;
 
             result.results.push_back(
-                std::make_pair(get_state_string(state),
-                               static_cast<double>(count) / n_measurements));
+                std::make_pair(getStateString(state),
+                               static_cast<double>(count) / nMeasurements));
         }
     }
 
@@ -136,11 +142,11 @@ SimulationResult SimulationResultAccumulator::get() {
 template <typename F>
 void SimulationResultAccumulator::forAllNonZeroStates(F &&f) {
     quantumState.forEach([&f, this](auto const &kv) {
-        f(get_state_string(kv.first), kv.second);
+        f(getStateString(kv.first), kv.second);
     });
 }
 
-std::string SimulationResultAccumulator::get_state_string(BasisVector s) {
+std::string SimulationResultAccumulator::getStateString(BasisVector s) {
     auto str = s.toString();
 
     return str.substr(str.size() - quantumState.getNumberOfQubits(),
