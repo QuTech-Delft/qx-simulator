@@ -194,8 +194,7 @@ private:
             }
 
             circuit.addInstruction(Circuit::MeasurementRegisterOperation{
-                [mask](auto& bitReg) { bitReg ^= mask; }
-            });
+                [mask](auto &bitReg) { bitReg ^= mask; }});
         } else if (name == "rx") {
             addGates<1>(gates::RX(operands.get_float_operand(1)),
                         {operands.get_qubit_operands(0)}, controlBits);

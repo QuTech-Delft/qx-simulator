@@ -40,9 +40,7 @@ public:
         }
     }
 
-    inline void reset() {
-        data = {};
-    }
+    inline void reset() { data = {}; }
 
     inline bool test(std::size_t index) const {
         assert(index < NumberOfBits && "Bitset::test bit index out of range");

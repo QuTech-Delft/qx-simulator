@@ -82,18 +82,18 @@ void SimulationResultAccumulator::append(BasisVector measuredState) {
     nMeasurements++;
 }
 
-std::ostream& operator<<(std::ostream& os, SimulationResult const& r) {
+std::ostream &operator<<(std::ostream &os, SimulationResult const &r) {
     os << std::setprecision(6) << std::fixed;
     os << "-------------------------------------------" << std::endl;
 
     os << "Final quantum state" << std::endl;
 
-    for (auto const& kv: r.state) {
-        auto const& stateString = kv.first;
-        auto const& amplitude = kv.second;
-        os << stateString << "       " << amplitude.real << " + " << amplitude.imag
-                  << "*i   "
-                  << " (p = " << amplitude.norm << ")" << std::endl;
+    for (auto const &kv : r.state) {
+        auto const &stateString = kv.first;
+        auto const &amplitude = kv.second;
+        os << stateString << "       " << amplitude.real << " + "
+           << amplitude.imag << "*i   "
+           << " (p = " << amplitude.norm << ")" << std::endl;
     }
 
     os << std::endl << "Measurement register averaging" << std::endl;
@@ -101,10 +101,8 @@ std::ostream& operator<<(std::ostream& os, SimulationResult const& r) {
     for (const auto &kv : r.results) {
         const auto &stateString = kv.first;
         const auto &count = kv.second;
-        os << stateString << "       " << count << "/"
-                  << r.shots_done << " ("
-                  << static_cast<double>(count) / r.shots_done << ")"
-                  << std::endl;
+        os << stateString << "       " << count << "/" << r.shots_done << " ("
+           << static_cast<double>(count) / r.shots_done << ")" << std::endl;
     }
     return os;
 }
@@ -113,7 +111,7 @@ SimulationResult SimulationResultAccumulator::get() {
     SimulationResult simulationResult;
     simulationResult.shots_requested = nMeasurements;
     simulationResult.shots_done = nMeasurements;
-    
+
     assert(nMeasurements > 0);
 
     for (const auto &kv : measuredStates) {
@@ -126,8 +124,9 @@ SimulationResult SimulationResultAccumulator::get() {
 
     forAllNonZeroStates([&simulationResult](auto stateString, auto c) {
         simulationResult.state.push_back(std::make_pair(
-            stateString,
-            SimulationResult::Complex{.real = c.real(), .imag = c.imag(), .norm = std::norm(c)}));
+            stateString, SimulationResult::Complex{.real = c.real(),
+                                                   .imag = c.imag(),
+                                                   .norm = std::norm(c)}));
     });
 
     return simulationResult;
@@ -135,9 +134,8 @@ SimulationResult SimulationResultAccumulator::get() {
 
 template <typename F>
 void SimulationResultAccumulator::forAllNonZeroStates(F &&f) {
-    quantumState.forEach([&f, this](auto const &kv) {
-        f(getStateString(kv.first), kv.second);
-    });
+    quantumState.forEach(
+        [&f, this](auto const &kv) { f(getStateString(kv.first), kv.second); });
 }
 
 std::string SimulationResultAccumulator::getStateString(BasisVector s) {

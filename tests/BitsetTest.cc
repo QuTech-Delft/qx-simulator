@@ -84,7 +84,7 @@ TEST_CASE_FIXTURE(BitsetTest, "operator^") {
         victim ^= mask;
         CHECK_EQ(victim.toString(), "000001001010000");
     }
-    
+
     SUBCASE("Large bitset") {
         Bitset<123456> victim{};
         victim.set(457);
