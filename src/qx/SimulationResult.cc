@@ -63,6 +63,7 @@ std::string SimulationResult::getJsonString() {
         JsonDict complex;
         complex.add("real", kv.second.real);
         complex.add("imag", kv.second.imag);
+        complex.add("norm", kv.second.norm);
 
         stateJson.add(kv.first, complex);
     }
@@ -81,62 +82,55 @@ void SimulationResultAccumulator::append(BasisVector measuredState) {
     nMeasurements++;
 }
 
-void SimulationResultAccumulator::dump() {
-    std::cout << std::setprecision(6) << std::fixed;
-    std::cout << "-------------------------------------------" << std::endl;
+std::ostream& operator<<(std::ostream& os, SimulationResult const& r) {
+    os << std::setprecision(6) << std::fixed;
+    os << "-------------------------------------------" << std::endl;
 
-    std::cout << "Final quantum state" << std::endl;
+    os << "Final quantum state" << std::endl;
 
-    forAllNonZeroStates([](auto const &stateString, auto c) {
-        std::cout << stateString << "       " << c.real() << " + " << c.imag()
+    for (auto const& kv: r.state) {
+        auto const& stateString = kv.first;
+        auto const& amplitude = kv.second;
+        os << stateString << "       " << amplitude.real << " + " << amplitude.imag
                   << "*i   "
-                  << " (p = " << std::norm(c) << ")" << std::endl;
-    });
+                  << " (p = " << amplitude.norm << ")" << std::endl;
+    }
 
-    std::cout << std::endl << "Measurement register averaging" << std::endl;
+    os << std::endl << "Measurement register averaging" << std::endl;
+
+    for (const auto &kv : r.results) {
+        const auto &stateString = kv.first;
+        const auto &count = kv.second;
+        os << stateString << "       " << count << "/"
+                  << r.shots_done << " ("
+                  << static_cast<double>(count) / r.shots_done << ")"
+                  << std::endl;
+    }
+    return os;
+}
+
+SimulationResult SimulationResultAccumulator::get() {
+    SimulationResult simulationResult;
+    simulationResult.shots_requested = nMeasurements;
+    simulationResult.shots_done = nMeasurements;
+    
+    assert(nMeasurements > 0);
 
     for (const auto &kv : measuredStates) {
         const auto &state = kv.first;
         const auto &count = kv.second;
-        std::cout << getStateString(state) << "       " << count << "/"
-                  << nMeasurements << " ("
-                  << static_cast<double>(count) / nMeasurements << ")"
-                  << std::endl;
-    }
-}
 
-SimulationResult SimulationResultAccumulator::get() {
-    SimulationResult result;
-    result.shots_requested = nMeasurements;
-    result.shots_done = nMeasurements;
-
-    if (nMeasurements == 1) {
-        // When doing a single shot, it is assumed that one is more interested
-        // in norms of the complex amplitudes.
-
-        forAllNonZeroStates([&result](auto stateString, auto c) {
-            result.results.push_back(std::make_pair(stateString, std::norm(c)));
-        });
-    } else {
-        assert(nMeasurements > 1);
-
-        for (const auto &kv : measuredStates) {
-            const auto &state = kv.first;
-            const auto &count = kv.second;
-
-            result.results.push_back(
-                std::make_pair(getStateString(state),
-                               static_cast<double>(count) / nMeasurements));
-        }
+        simulationResult.results.push_back(
+            std::make_pair(getStateString(state), count));
     }
 
-    forAllNonZeroStates([&result](auto stateString, auto c) {
-        result.state.push_back(std::make_pair(
+    forAllNonZeroStates([&simulationResult](auto stateString, auto c) {
+        simulationResult.state.push_back(std::make_pair(
             stateString,
-            SimulationResult::Complex{.real = c.real(), .imag = c.imag()}));
+            SimulationResult::Complex{.real = c.real(), .imag = c.imag(), .norm = std::norm(c)}));
     });
 
-    return result;
+    return simulationResult;
 }
 
 template <typename F>

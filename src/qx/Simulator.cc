@@ -99,9 +99,11 @@ std::string Simulator::execute(size_t numberOfRuns) {
             quantumState->getMeasurementRegister());
     }
 
-    simulationResultAccumulator.dump();
+    auto simulationResult = simulationResultAccumulator.get();
 
-    auto resultJson = simulationResultAccumulator.get().getJsonString();
+    std::cout << simulationResult << std::endl;
+
+    auto resultJson = simulationResult.getJsonString();
     if (jsonOutputFilename != "") {
         std::ofstream outfile(jsonOutputFilename);
         outfile << resultJson;
