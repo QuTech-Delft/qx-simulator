@@ -58,10 +58,10 @@ This will print the resulting final quantum state as well as the resulting measu
     >>> json_string = qx.execute()
     -------------------------------------------
     Final quantum state
-    11       1.0000 + 0.0000 * i (1.0000)
+    11       1.000000 + 0.000000 * i (1.000000)
 
     Measurement register averaging
-    11       1/1 (1.0000)
+    11       1/1 (1.000000)
 
 Since the circuit contains final measurements for all qubits, the quantum state is collapsed. If you execute the above command multiple times, you can notice
 that the final quantum state changes between runs, non-deterministically.
@@ -69,13 +69,13 @@ that the final quantum state changes between runs, non-deterministically.
 When removing the measurement, you obtain a fixed quantum state:
 
 ::
-
+    -------------------------------------------
     Final quantum state
-    00       0.7071 + 0.0000 * i (0.5000)
-    11       0.7071 + 0.0000 * i (0.5000)
+    00       0.707107 + 0.000000 * i (0.500000)
+    11       0.707107 + 0.000000 * i (0.500000)
 
     Measurement register averaging
-    00       1/1 (1.0000)
+    00       1/1 (1.000000)
 
 The quantum state shows as expected superposition of the two qubits in the bell state.
 Notice how the measurement register is then always 0, even if you repeat the execution.
@@ -87,11 +87,11 @@ Add back the measurement and you can leverage measurement register averaging, by
     >>> qx.execute(100)
     -------------------------------------------
     Final quantum state
-    00       1.0000 + 0.0000 * i (1.0000)
+    00       1.000000 + 0.000000 * i (1.000000)
 
     Measurement register averaging
-    00       54/100 (0.4500)
-    11       46/100 (0.5500)
+    00       54/100 (0.450000)
+    11       46/100 (0.550000)
 
 The quantum state is less relevant here, since it displays the very final quantum state after the last run of the 100 executions.
 The above "Measurement register averaging" section means that out of 100 executions of the bell pair circuit, the measurement register had a final state of "00" in 54 cases,
@@ -118,7 +118,7 @@ and get:
     >>> qx.execute(1000)
     -------------------------------------------
     Final quantum state
-    001       1.0000 + 0.0000 * i (1.0000)
+    001       1.000000 + 0.000000 * i (1.000000)
 
     Measurement register averaging
     000       504/1000 (0.504000)
@@ -150,24 +150,22 @@ After another ``execute(1000)`` call, that JSON output will look like this:
             "shots_done": 1000
         },
         "results": {
-            "000": 0.516000,
-            "001": 0.241000,
-            "011": 0.243000
+            "000": 516,
+            "001": 241,
+            "011": 243
         },
         "state": {
             "001": {
                 "real": 1.000000,
-                "imag": 0.000000
+                "imag": 0.000000,
+                "norm": 1.000000
             }
         }
     }
 
 Note 1: The json string ``json_string``` obtained as output of ``json_string = qx.execute(n)``` is equal to the content of this file.
 
-Note 2 (!IMPORTANT!): When doing a single run (e.g. ``qx.execute()``` or ``qx.execute(1)```), the "results" section contains the norms of the complex amplitudes (that is, probabilities of measuring each quantum state).
-When doing n>=2 runs, the same section contains averages of the measurement register.
-
-Note 3: ``shots_done`` will always equal to ``shots_requested``. These two keys are distinct so that hardware backends can output the same JSON keys and optionally
+Note 2: ``shots_done`` will always equal to ``shots_requested``. These two keys are distinct so that hardware backends can output the same JSON keys and optionally
 notify that they have failed to execute all requested runs.
 
 Running the binary built from source

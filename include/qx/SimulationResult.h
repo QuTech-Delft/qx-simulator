@@ -17,16 +17,19 @@ struct SimulationResult {
     struct Complex {
         double real = 0;
         double imag = 0;
+        double norm = 0;
     };
 
     std::uint64_t shots_requested = 0;
     std::uint64_t shots_done = 0;
 
-    std::vector<std::pair<std::string, double>> results;
+    std::vector<std::pair<std::string, std::uint64_t>> results;
     std::vector<std::pair<std::string, Complex>> state;
 
     std::string getJsonString();
 };
+
+std::ostream& operator<<(std::ostream& os, SimulationResult const& r);
 
 class SimulationResultAccumulator {
 public:
