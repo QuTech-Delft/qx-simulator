@@ -25,7 +25,7 @@ QX-simulator can be built from source, provided you have installed some dependen
 * Bison (for building libqasm)
 * Flex (for building libqasm)
 
-On top of that, you will need a C++ compiler with support for C++14, ``make`` (for Linux) and ``cmake``.
+On top of that, you will need a C++ compiler with support for C++20, ``make`` (for Linux) and ``cmake``.
 
 ::
     

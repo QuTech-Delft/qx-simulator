@@ -56,14 +56,6 @@ This will print the resulting final quantum state as well as the resulting measu
 ::
 
     >>> json_string = qx.execute()
-    [QXELERATOR] Creating quantum register of 2 qubits...
-    [QXELERATOR] Loaded 3 circuits.
-    [+] executing circuit 'init' (1 iter) ...
-    [+] circuit execution time: +0.215587 sec.
-    [+] executing circuit 'entangle' (1 iter) ...
-    [+] circuit execution time: +0.081271 sec.
-    [+] executing circuit 'measurement' (1 iter) ...
-    [+] circuit execution time: +0.202154 sec.
     -------------------------------------------
     Final quantum state
     11       1.0000 + 0.0000 * i (1.0000)
@@ -93,8 +85,6 @@ Add back the measurement and you can leverage measurement register averaging, by
 ::
 
     >>> qx.execute(100)
-    [QXELERATOR] Creating quantum register of 2 qubits...
-    [QXELERATOR] Loaded 3 circuits.
     -------------------------------------------
     Final quantum state
     00       1.0000 + 0.0000 * i (1.0000)
@@ -126,8 +116,6 @@ and get:
 ::
 
     >>> qx.execute(1000)
-    [QXELERATOR] Creating quantum register of 3 qubits...
-    [QXELERATOR] Loaded 1 circuits.
     -------------------------------------------
     Final quantum state
     001       1.0000 + 0.0000 * i (1.0000)
