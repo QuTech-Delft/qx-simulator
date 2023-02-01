@@ -32,10 +32,7 @@ class SimulationResultAccumulator {
 public:
     SimulationResultAccumulator(qx::core::QuantumState &s) : quantumState(s){};
 
-    void append(BasisVector measured_state) {
-        measuredStates[measured_state]++;
-        n_measurements++;
-    }
+    void append(BasisVector measuredState);
 
     void dump();
 
@@ -44,11 +41,11 @@ public:
 private:
     template <typename F> void forAllNonZeroStates(F &&f);
 
-    std::string get_state_string(BasisVector s);
+    std::string getStateString(BasisVector s);
 
     core::QuantumState &quantumState;
     absl::btree_map<BasisVector, std::uint64_t> measuredStates;
-    std::uint64_t n_measurements = 0;
+    std::uint64_t nMeasurements = 0;
 };
 
 } // namespace qx

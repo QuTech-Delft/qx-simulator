@@ -187,7 +187,15 @@ private:
             addGates<1>(gates::TDAG, {operands.get_qubit_operands(0)},
                         controlBits);
         } else if (name == "not") {
-            throw std::runtime_error("'Classical not' not supported");
+            assert(!controlBits && "Classical not cannot be conditional");
+            BasisVector mask{};
+            for (auto b : operands.get_bit_operands(0)) {
+                mask.set(b->value);
+            }
+
+            circuit.addInstruction(Circuit::MeasurementRegisterOperation{
+                [mask](auto& bitReg) { bitReg ^= mask; }
+            });
         } else if (name == "rx") {
             addGates<1>(gates::RX(operands.get_float_operand(1)),
                         {operands.get_qubit_operands(0)}, controlBits);

@@ -76,5 +76,31 @@ TEST_CASE_FIXTURE(BitsetTest, "toString") {
 //     CHECK(absl::VerifyTypeImplementsAbslHashCorrectly({victim2}));
 // }
 
+TEST_CASE_FIXTURE(BitsetTest, "operator^") {
+    SUBCASE("Small bitset") {
+        Bitset<15> victim{"000010000010001"};
+        Bitset<15> mask  {"000011001000001"};
+
+        victim ^= mask;
+        CHECK_EQ(victim.toString(), "000001001010000");
+    }
+    
+    SUBCASE("Large bitset") {
+        Bitset<123456> victim{};
+        victim.set(457);
+
+        Bitset<123456> mask{};
+
+        mask.set(457);
+        mask.set(654);
+
+        victim ^= mask;
+
+        CHECK(!victim.test(457));
+        CHECK(victim.test(654));
+        CHECK(!victim.test(875));
+    }
+}
+
 }
 }

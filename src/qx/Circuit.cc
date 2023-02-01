@@ -17,6 +17,9 @@ public:
     void operator()(Circuit::PrepZ const &r) {
         quantumState.prep(r.qubitIndex, [this]() { return rand.next(); });
     }
+    void operator()(Circuit::MeasurementRegisterOperation const &op) {
+        op.operation(quantumState.getMeasurementRegister());
+    }
 
     template <std::size_t N> void operator()(Circuit::Unitary<N> &u) {
         if (u.controlBits) {
@@ -50,6 +53,8 @@ void Circuit::execute(core::QuantumState &quantumState) const {
                 instructionExecutor(*measureAll);
             } else if (auto* prepZ = std::get_if<Circuit::PrepZ>(&instruction)) {
                 instructionExecutor(*prepZ);
+            } else if (auto* classicalOp = std::get_if<Circuit::MeasurementRegisterOperation>(&instruction)) {
+                instructionExecutor(*classicalOp);
             } else if (auto* instruction1 = std::get_if<Circuit::Unitary<1>>(&instruction)) {
                 instructionExecutor(*instruction1);
             } else if (auto* instruction2 = std::get_if<Circuit::Unitary<2>>(&instruction)) {
