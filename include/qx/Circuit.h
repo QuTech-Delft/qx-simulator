@@ -20,7 +20,7 @@ public:
     };
 
     struct MeasurementRegisterOperation {
-        std::function<void(BasisVector&)> operation;
+        std::function<void(BasisVector &)> operation;
     };
 
     template <std::size_t NumberOfOperands> struct Unitary {
@@ -33,8 +33,9 @@ public:
         std::optional<std::vector<core::QubitIndex>> controlBits{};
     };
 
-    using Instruction = std::variant<Measure, MeasureAll, PrepZ, MeasurementRegisterOperation, Unitary<1>,
-                                     Unitary<2>, Unitary<3>>;
+    using Instruction =
+        std::variant<Measure, MeasureAll, PrepZ, MeasurementRegisterOperation,
+                     Unitary<1>, Unitary<2>, Unitary<3>>;
 
     // We could in the future add loops and if/else...
 

@@ -29,7 +29,7 @@ struct SimulationResult {
     std::string getJsonString();
 };
 
-std::ostream& operator<<(std::ostream& os, SimulationResult const& r);
+std::ostream &operator<<(std::ostream &os, SimulationResult const &r);
 
 class SimulationResultAccumulator {
 public:

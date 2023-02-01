@@ -215,7 +215,7 @@ public:
 
     BasisVector getMeasurementRegister() const { return measurementRegister; }
 
-    BasisVector& getMeasurementRegister() { return measurementRegister; }
+    BasisVector &getMeasurementRegister() { return measurementRegister; }
 
     template <typename F>
     void measure(QubitIndex qubitIndex, F &&randomGenerator) {
