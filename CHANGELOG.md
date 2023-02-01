@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [ 0.6.1 ] - [ 2023-02-01 ]
+
+### Added
+
+- Linux arm64 Python wheel and Linux arm64 test workflow (GCC-Release)
+- "classical not" gate is back
+- "state" section in JSON now contains a new entry "norm" which is the square of the modulus
+of the complex number
+- C++ integration test
+- All gates can be controlled (including prep, measure). This is not new but was accidentally removed in 0.6.0.
+- New Python API execute_string and execute_file without having to create qxelarator.QX() and returning user-friendly Python type
+
+### Changed
+
+- Fixed README
+- "results" section in JSON contains integers instead of floats (those integers being the number of occurences)
+- In relation to previous point, "results" only relates to measurement register averaging, and no longer to quantum state
+when doing a single shot. For that, use the "state" section in the JSON.
+- Output float precision is 8 decimals instead of 6
+
+### Removed
+- Most Python tests - already covered in C++ integration test, and they didn't check much anyway
+
 ## [ 0.6.0 ] - [ 2023-01-19 ]
 
 Almost a complete rewrite. No functional change except it's faster.
