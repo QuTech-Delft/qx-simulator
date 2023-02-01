@@ -16,7 +16,7 @@ public:
     std::string to_string(std::size_t level = 0) const {
         std::stringstream ss;
 
-        ss << std::fixed << std::setprecision(6) << "{" << std::endl;
+        ss << std::fixed << std::setprecision(config::OUTPUT_DECIMALS) << "{" << std::endl;
 
         bool first = true;
         for (auto const &kv : m) {
@@ -83,7 +83,7 @@ void SimulationResultAccumulator::append(BasisVector measuredState) {
 }
 
 std::ostream &operator<<(std::ostream &os, SimulationResult const &r) {
-    os << std::setprecision(6) << std::fixed;
+    os << std::setprecision(config::OUTPUT_DECIMALS) << std::fixed;
     os << "-------------------------------------------" << std::endl;
 
     os << "Final quantum state" << std::endl;
