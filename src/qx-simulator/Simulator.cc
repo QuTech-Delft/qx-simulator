@@ -65,13 +65,13 @@ int main(int argc, char **argv) {
         return -1;
     }
 
-    if (jsonFilename != "") {
-        std::cout << "Will output JSON simulation result to file "
-                  << jsonFilename << std::endl;
-    }
+    std::cout << "Will execute " << numberOfRuns << " time"
+              << (numberOfRuns > 1 ? "s" : "") << " file '" << filePath << "'..." << std::endl;
 
-    std::cout << "Will execute circuit " << numberOfRuns << " time"
-              << (numberOfRuns > 1 ? "s" : "") << std::endl;
+    if (jsonFilename != "") {
+        std::cout << "Will output JSON simulation result to file '"
+                  << jsonFilename << "'..." << std::endl;
+    }
 
     qx::QX qx;
 
