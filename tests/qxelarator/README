@@ -1,0 +1,8 @@
+C++ tests should do all the coverage of the simulator functionality.
+
+This is better for several reasons, including:
+- it's easier to debug a C++ test with GDB,
+- it gives access to C++ data structures for assertions,
+- the tests are run in the CI with more compilers and build types.
+
+There is this single Python test solely to check that the SWIG interfacing works.
