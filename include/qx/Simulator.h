@@ -1,7 +1,9 @@
 #pragma once
 
 #include "cqasm.hpp"
+#include "qx/SimulationResult.h"
 
+#include <optional>
 #include <string>
 
 namespace qx {
@@ -12,10 +14,6 @@ class QuantumState;
 
 class Simulator {
 public:
-    Simulator();
-
-    ~Simulator();
-
     void setJSONOutputPath(std::string filename) {
         jsonOutputFilename = filename;
     }
@@ -24,11 +22,10 @@ public:
 
     bool setString(std::string cqasmData);
 
-    std::string execute(size_t numberOfRuns = 1);
+    std::optional<SimulationResult> execute(size_t numberOfRuns = 1);
 
 private:
     std::string jsonOutputFilename = "";
-    std::unique_ptr<qx::core::QuantumState> quantumState;
     cqasm::v1::ast::One<cqasm::v1::semantic::Program> program;
 };
 

@@ -12,4 +12,5 @@ target_link_libraries(SparseArrayTest PRIVATE doctest)
 add_qx_test(QuantumStateTest QuantumStateTest.cc .)
 target_link_libraries(QuantumStateTest PRIVATE doctest)
 
-add_qx_test(test_multiple_execution qxelarator/test_multiple_execution.cc qxelarator)
+add_qx_test(IntegrationTest IntegrationTest.cc .)
+target_link_libraries(IntegrationTest PRIVATE doctest)
