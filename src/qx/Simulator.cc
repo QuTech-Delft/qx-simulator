@@ -10,10 +10,6 @@
 
 namespace qx {
 
-Simulator::Simulator() = default;
-
-Simulator::~Simulator() = default;
-
 bool Simulator::set(std::string filePath) {
     auto analyzer = cqasm::v1::default_analyzer("1.2");
 
@@ -66,50 +62,50 @@ bool Simulator::setString(std::string cqasmData) {
     return true;
 }
 
-std::string Simulator::execute(size_t numberOfRuns) {
+std::optional<SimulationResult> Simulator::execute(size_t numberOfRuns) {
     if (program.empty()) {
         std::cerr << "No circuit successfully loaded, call set(...) first"
                   << std::endl;
-        return "";
+        return {};
     }
 
     if (numberOfRuns <= 0) {
         std::cerr << "Number of runs is 0" << std::endl;
-        return "";
+        return {};
     }
 
     std::size_t qubitCount = program->num_qubits;
     std::vector<std::shared_ptr<qx::Circuit>> perfectCircuits;
 
-    quantumState = std::make_unique<qx::core::QuantumState>(qubitCount);
+    qx::core::QuantumState quantumState(qubitCount);
 
     auto const &subcircuits = program->subcircuits;
     for (auto const &subcircuit : subcircuits) {
         perfectCircuits.push_back(loadCqasmCode(*subcircuit));
     }
 
-    SimulationResultAccumulator simulationResultAccumulator(*quantumState);
+    SimulationResultAccumulator simulationResultAccumulator(quantumState);
 
     for (size_t s = 0; s < numberOfRuns; ++s) {
-        quantumState->reset();
+        quantumState.reset();
         for (auto &perfectCircuit : perfectCircuits) {
-            perfectCircuit->execute(*quantumState);
+            perfectCircuit->execute(quantumState);
         }
         simulationResultAccumulator.append(
-            quantumState->getMeasurementRegister());
+            quantumState.getMeasurementRegister());
     }
 
     auto simulationResult = simulationResultAccumulator.get();
 
     std::cout << simulationResult << std::endl;
 
-    auto resultJson = simulationResult.getJsonString();
     if (jsonOutputFilename != "") {
+        auto resultJson = simulationResult.getJsonString();
         std::ofstream outfile(jsonOutputFilename);
         outfile << resultJson;
     }
 
-    return resultJson;
+    return simulationResult;
 }
 
 } // namespace qx

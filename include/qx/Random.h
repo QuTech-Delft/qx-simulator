@@ -5,9 +5,9 @@
 namespace qx {
 namespace random {
 
-class uniform_random_number_generator {
+class UniformRandomNumberGenerator {
 public:
-    uniform_random_number_generator(double min = 0.0f, double max = 1.0f)
+    UniformRandomNumberGenerator(double min = 0.0f, double max = 1.0f)
         : generator(rd()), distribution(min, max) {}
 
     double next() { return distribution(generator); }

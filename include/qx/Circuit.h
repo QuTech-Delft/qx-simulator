@@ -27,23 +27,26 @@ public:
         // Matrix is stored inline but could also be a pointer.
         core::DenseUnitaryMatrix<1 << NumberOfOperands> matrix{};
         std::array<core::QubitIndex, NumberOfOperands> operands{};
-
-        // Control bits vector is stored in an optional to avoid allocation in
-        // case there are no control bits.
-        std::optional<std::vector<core::QubitIndex>> controlBits{};
     };
 
     using Instruction =
         std::variant<Measure, MeasureAll, PrepZ, MeasurementRegisterOperation,
                      Unitary<1>, Unitary<2>, Unitary<3>>;
+    
+    struct ControlledInstruction {
+        ControlledInstruction(Instruction const& instr, std::shared_ptr<std::vector<core::QubitIndex>> ctrlB) : instruction(instr), controlBits(ctrlB) {};
+
+        Instruction instruction;
+        std::shared_ptr<std::vector<core::QubitIndex>> controlBits;
+    };
 
     // We could in the future add loops and if/else...
 
     Circuit(std::string name = "", std::size_t iterations = 1)
         : name(name), iterations(iterations) {}
 
-    void addInstruction(Instruction instruction) {
-        instructions.push_back(instruction);
+    void addInstruction(Instruction const& instruction, std::shared_ptr<std::vector<core::QubitIndex>> controlBits) {
+        controlledInstructions.emplace_back(instruction, controlBits);
     }
 
     void execute(core::QuantumState &quantumState) const;
@@ -51,7 +54,7 @@ public:
     std::string getName() const { return name; }
 
 private:
-    std::vector<Instruction> instructions;
+    std::vector<ControlledInstruction> controlledInstructions;
     std::string const name;
     std::size_t const iterations = 1;
 };

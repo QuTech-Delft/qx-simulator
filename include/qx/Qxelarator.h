@@ -20,7 +20,11 @@ public:
         return simulator->setString(cqasm_data);
     }
 
-    std::string execute(size_t navg = 1) { return simulator->execute(navg); }
+    std::string execute(size_t navg = 1) {
+        auto simulationResult = simulator->execute(navg);
+        assert(simulationResult);
+        return simulationResult->getJsonString();
+    }
 
 private:
     std::shared_ptr<qx::Simulator> simulator;

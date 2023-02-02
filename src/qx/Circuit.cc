@@ -1,6 +1,7 @@
 #include "qx/Circuit.h"
 
 #include "qx/Random.h"
+#include <algorithm>
 
 namespace qx {
 namespace {
@@ -11,32 +12,26 @@ public:
     void operator()(Circuit::Measure const &m) {
         quantumState.measure(m.qubitIndex, [this]() { return rand.next(); });
     }
+
     void operator()(Circuit::MeasureAll const &) {
         quantumState.measureAll([this]() { return rand.next(); });
     }
+
     void operator()(Circuit::PrepZ const &r) {
         quantumState.prep(r.qubitIndex, [this]() { return rand.next(); });
     }
+    
     void operator()(Circuit::MeasurementRegisterOperation const &op) {
         op.operation(quantumState.getMeasurementRegister());
     }
 
-    template <std::size_t N> void operator()(Circuit::Unitary<N> &u) {
-        if (u.controlBits) {
-            auto measurementRegister = quantumState.getMeasurementRegister();
-            for (auto b : *u.controlBits) {
-                if (!measurementRegister.test(b.value)) {
-                    return;
-                }
-            }
-        }
-
+    template <std::size_t N> void operator()(Circuit::Unitary<N> const &u) {
         quantumState.apply(u.matrix, u.operands);
     }
 
 private:
     core::QuantumState &quantumState;
-    random::uniform_random_number_generator rand{0.0, 1.0};
+    random::UniformRandomNumberGenerator rand{0.0, 1.0};
 };
 } // namespace
 
@@ -44,7 +39,18 @@ void Circuit::execute(core::QuantumState &quantumState) const {
     std::size_t it = iterations;
     InstructionExecutor instructionExecutor(quantumState);
     while (it-- > 0) {
-        for (auto instruction : instructions) {
+        for (auto const& controlledInstruction : controlledInstructions) {
+            auto const& controlBits = controlledInstruction.controlBits;
+            if (controlBits) {
+                auto measurementRegister = quantumState.getMeasurementRegister();
+                auto isBitNotSet = [&measurementRegister](auto const& cb) { return !measurementRegister.test(cb.value); };
+                if (std::any_of(controlBits->begin(), controlBits->end(), isBitNotSet)) {
+                        continue;
+                }
+            }
+
+            auto const& instruction = controlledInstruction.instruction;
+
             // AppleClang doesn't support std::visit
             // std::visit(instructionExecutor, instruction);
             if (auto *measure = std::get_if<Circuit::Measure>(&instruction)) {

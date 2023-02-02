@@ -108,10 +108,10 @@ private:
             return;
         }
 
-        std::optional<std::vector<core::QubitIndex>> controlBits;
+        std::shared_ptr<std::vector<core::QubitIndex>> controlBits;
 
         if (auto bitref = instruction.condition->as_bit_refs()) {
-            controlBits.emplace();
+            controlBits = std::make_shared<std::vector<core::QubitIndex>>();
             for (auto const &b : bitref->index) {
                 controlBits->push_back(
                     core::QubitIndex{static_cast<std::size_t>(b->value)});
@@ -125,7 +125,7 @@ private:
     void addGates(
         core::DenseUnitaryMatrix<1 << NumberOfQubitOperands> matrix,
         std::array<cq::Many<values::ConstInt>, NumberOfQubitOperands> operands,
-        std::optional<std::vector<core::QubitIndex>> controlBits) {
+        std::shared_ptr<std::vector<core::QubitIndex>> controlBits) {
         static_assert(NumberOfQubitOperands > 0);
 
 #ifndef NDEBUG
@@ -142,14 +142,13 @@ private:
                     static_cast<std::size_t>(operands[op][i]->value)};
             }
 
-            Circuit::Unitary<NumberOfQubitOperands> unitary{matrix, ops,
-                                                            controlBits};
-            circuit.addInstruction(unitary);
+            Circuit::Unitary<NumberOfQubitOperands> unitary{matrix, ops};
+            circuit.addInstruction(unitary, controlBits);
         }
     }
 
     void addGates(const cq::Instruction &instruction,
-                  std::optional<std::vector<core::QubitIndex>> controlBits) {
+                  std::shared_ptr<std::vector<core::QubitIndex>> controlBits) {
         auto &name = instruction.instruction->name;
         OperandsHelper operands(instruction);
 
@@ -187,14 +186,13 @@ private:
             addGates<1>(gates::TDAG, {operands.get_qubit_operands(0)},
                         controlBits);
         } else if (name == "not") {
-            assert(!controlBits && "Classical not cannot be conditional");
             BasisVector mask{};
             for (auto b : operands.get_bit_operands(0)) {
                 mask.set(b->value);
             }
 
             circuit.addInstruction(Circuit::MeasurementRegisterOperation{
-                [mask](auto &bitReg) { bitReg ^= mask; }});
+                [mask](auto &bitReg) { bitReg ^= mask; }}, controlBits);
         } else if (name == "rx") {
             addGates<1>(gates::RX(operands.get_float_operand(1)),
                         {operands.get_qubit_operands(0)}, controlBits);
@@ -220,55 +218,48 @@ private:
                          operands.get_qubit_operands(1)},
                         controlBits);
         } else if (name == "prep_x") {
-            assert(!controlBits && "Prep cannot be conditional");
             for (auto q : operands.get_qubit_operands(0)) {
                 circuit.addInstruction(Circuit::PrepZ{
-                    core::QubitIndex{static_cast<std::size_t>(q->value)}});
+                    core::QubitIndex{static_cast<std::size_t>(q->value)}}, controlBits);
             }
             addGates<1>(gates::H, {operands.get_qubit_operands(0)},
                         controlBits);
         } else if (name == "prep_y") {
-            assert(!controlBits && "Prep cannot be conditional");
             for (auto q : operands.get_qubit_operands(0)) {
                 circuit.addInstruction(Circuit::PrepZ{
-                    core::QubitIndex{static_cast<std::size_t>(q->value)}});
+                    core::QubitIndex{static_cast<std::size_t>(q->value)}}, controlBits);
             }
             addGates<1>(gates::H, {operands.get_qubit_operands(0)},
                         controlBits);
             addGates<1>(gates::S, {operands.get_qubit_operands(0)},
                         controlBits);
         } else if (name == "prep_z") {
-            assert(!controlBits && "Prep cannot be conditional");
             for (auto q : operands.get_qubit_operands(0)) {
                 circuit.addInstruction(Circuit::PrepZ{
-                    core::QubitIndex{static_cast<std::size_t>(q->value)}});
+                    core::QubitIndex{static_cast<std::size_t>(q->value)}}, controlBits);
             }
         } else if (name == "measure" || name == "measure_z") {
-            assert(!controlBits && "Measure cannot be conditional");
             for (auto q : operands.get_qubit_operands(0)) {
                 circuit.addInstruction(Circuit::Measure{
-                    core::QubitIndex{static_cast<std::size_t>(q->value)}});
+                    core::QubitIndex{static_cast<std::size_t>(q->value)}}, controlBits);
             }
         } else if (name == "measure_all") {
-            assert(!controlBits && "Measure cannot be conditional");
-            circuit.addInstruction(Circuit::MeasureAll());
+            circuit.addInstruction(Circuit::MeasureAll(), controlBits);
         } else if (name == "measure_x") {
-            assert(!controlBits && "Measure cannot be conditional");
             addGates<1>(gates::H, {operands.get_qubit_operands(0)},
                         controlBits);
             for (auto q : operands.get_qubit_operands(0)) {
                 circuit.addInstruction(Circuit::Measure{
-                    core::QubitIndex{static_cast<std::size_t>(q->value)}});
+                    core::QubitIndex{static_cast<std::size_t>(q->value)}}, controlBits);
             }
         } else if (name == "measure_y") {
-            assert(!controlBits && "Measure cannot be conditional");
             addGates<1>(gates::SDAG, {operands.get_qubit_operands(0)},
                         controlBits);
             addGates<1>(gates::H, {operands.get_qubit_operands(0)},
                         controlBits);
             for (auto q : operands.get_qubit_operands(0)) {
                 circuit.addInstruction(Circuit::Measure{
-                    core::QubitIndex{static_cast<std::size_t>(q->value)}});
+                    core::QubitIndex{static_cast<std::size_t>(q->value)}}, controlBits);
             }
         } else if (name == "x90") {
             return addGates<1>(gates::X90, {operands.get_qubit_operands(0)},

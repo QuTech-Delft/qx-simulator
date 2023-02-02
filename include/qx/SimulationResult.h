@@ -14,17 +14,21 @@ class QuantumState;
 }
 
 struct SimulationResult {
+    using Results = std::vector<std::pair<std::string, std::uint64_t>>;
+    
     struct Complex {
         double real = 0;
         double imag = 0;
         double norm = 0;
     };
 
+    using State = std::vector<std::pair<std::string, Complex>>;
+
     std::uint64_t shots_requested = 0;
     std::uint64_t shots_done = 0;
 
-    std::vector<std::pair<std::string, std::uint64_t>> results;
-    std::vector<std::pair<std::string, Complex>> state;
+    Results results;
+    State state;
 
     std::string getJsonString();
 };
