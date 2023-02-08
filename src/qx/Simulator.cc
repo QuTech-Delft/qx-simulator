@@ -10,7 +10,7 @@
 
 namespace qx {
 
-bool Simulator::set(std::string filePath) {
+bool Simulator::set(std::string const& filePath) {
     auto analyzer = cqasm::v1::default_analyzer("1.2");
 
     try {
@@ -35,20 +35,20 @@ bool Simulator::set(std::string filePath) {
     return true;
 }
 
-bool Simulator::setString(std::string cqasmData) {
+bool Simulator::setString(std::string const& s) {
     auto analyzer = cqasm::v1::default_analyzer("1.2");
 
     try {
-        program = analyzer.analyze_string(cqasmData).unwrap();
+        program = analyzer.analyze_string(s).unwrap();
     } catch (const cqasm::v1::analyzer::AnalysisFailed &e) {
-        std::cerr << "Cannot parse and analyze string " << cqasmData
+        std::cerr << "Cannot parse and analyze string " << s
                   << std::endl;
         program.reset();
         return false;
     }
 
     if (program.empty()) {
-        std::cerr << "Cannot parse and analyze string " << cqasmData
+        std::cerr << "Cannot parse and analyze string " << s
                   << std::endl;
         return false;
     }
@@ -62,14 +62,14 @@ bool Simulator::setString(std::string cqasmData) {
     return true;
 }
 
-std::optional<SimulationResult> Simulator::execute(size_t numberOfRuns) {
+std::optional<SimulationResult> Simulator::execute(std::size_t iterations) const {
     if (program.empty()) {
         std::cerr << "No circuit successfully loaded, call set(...) first"
                   << std::endl;
         return {};
     }
 
-    if (numberOfRuns <= 0) {
+    if (iterations <= 0) {
         std::cerr << "Number of runs is 0" << std::endl;
         return {};
     }
@@ -86,7 +86,7 @@ std::optional<SimulationResult> Simulator::execute(size_t numberOfRuns) {
 
     SimulationResultAccumulator simulationResultAccumulator(quantumState);
 
-    for (size_t s = 0; s < numberOfRuns; ++s) {
+    for (std::size_t s = 0; s < iterations; ++s) {
         quantumState.reset();
         for (auto &perfectCircuit : perfectCircuits) {
             perfectCircuit->execute(quantumState);
@@ -97,15 +97,31 @@ std::optional<SimulationResult> Simulator::execute(size_t numberOfRuns) {
 
     auto simulationResult = simulationResultAccumulator.get();
 
-    std::cout << simulationResult << std::endl;
-
-    if (jsonOutputFilename != "") {
+    if (jsonOutputFilePath != "") {
         auto resultJson = simulationResult.getJsonString();
-        std::ofstream outfile(jsonOutputFilename);
+        std::ofstream outfile(jsonOutputFilePath);
         outfile << resultJson;
     }
 
     return simulationResult;
 }
+
+std::optional<SimulationResult> executeString(std::string const& s, std::size_t iterations) {
+    Simulator simulator;
+    if (!simulator.setString(s)) {
+        return {};
+    }
+
+    return simulator.execute(iterations);
+};
+
+std::optional<SimulationResult> executeFile(std::string const& filePath, std::size_t iterations) {
+    Simulator simulator;
+    if (!simulator.set(filePath)) {
+        return {};
+    }
+
+    return simulator.execute(iterations);
+};
 
 } // namespace qx

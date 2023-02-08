@@ -2,7 +2,6 @@
 
 #include "qasm_semantic.hpp"
 #include "qx/LibqasmInterface.h"
-#include "qx/Qxelarator.h"
 #include "qx/Version.h"
 
 void print_banner() {
@@ -23,7 +22,7 @@ void print_banner() {
 
 int main(int argc, char **argv) {
     std::string filePath = "";
-    size_t numberOfRuns = 1;
+    size_t iterations = 1;
     std::string jsonFilename = "";
     print_banner();
 
@@ -42,7 +41,7 @@ int main(int argc, char **argv) {
             if (argIndex + 1 >= argc) {
                 argParsingFailed = true;
             } else {
-                numberOfRuns = atoi(argv[++argIndex]);
+                iterations = atoi(argv[++argIndex]);
             }
         } else {
             if (argIndex + 1 < argc) {
@@ -65,22 +64,28 @@ int main(int argc, char **argv) {
         return -1;
     }
 
-    std::cout << "Will execute " << numberOfRuns << " time"
-              << (numberOfRuns > 1 ? "s" : "") << " file '" << filePath << "'..." << std::endl;
+    std::cout << "Will execute " << iterations << " time"
+              << (iterations > 1 ? "s" : "") << " file '" << filePath << "'..." << std::endl;
 
     if (jsonFilename != "") {
         std::cout << "Will output JSON simulation result to file '"
                   << jsonFilename << "'..." << std::endl;
     }
 
-    qx::QX qx;
+    qx::Simulator simulator;
 
-    if (!qx.set(filePath)) {
+    if (!simulator.set(filePath)) {
         std::cerr << "Failed to load cqasm file" << std::endl;
         return 1;
     }
-    qx.set_json_output_path(jsonFilename);
-    qx.execute(numberOfRuns);
+    simulator.setJSONOutputPath(jsonFilename);
+    auto simulationResult = simulator.execute(iterations);
 
+    if (!simulationResult) {
+        std::cerr << "Simulation failed." << std::endl;
+        return 1;
+    }
+
+    std::cout << *simulationResult << std::endl;
     return 0;
 }

@@ -9,7 +9,71 @@ Running the simulator from Python
 Python API
 ~~~~~~~~~~
 
-Create a simulator instance:
+
+The most straightforward way to execute a cQasm file is using the `qxelarator.execute_string` method:
+
+:: python
+
+    >>> import qxelarator
+    >>> r = qxelarator.execute_string("version 1.0;qubits 2;h q[0]")
+    >>> r
+    Shots requested: 1
+    Shots done: 1
+    Results: {'00': 1}
+    State: {'00': (0.7071067811865475+0j), '01': (0.7071067811865475+0j)}
+
+
+The return value is a `qxelarator.SimulationResult`` object and offers access to aggregated measurement register results and final quantum state:
+
+:: python
+
+    >>> isinstance(r, qxelarator.SimulationResult)
+    True
+    >>> r.results
+    {'00': 1}
+    >>> r.state["00"]
+    (0.7071067811865475+0j)
+
+
+You can also execute a cQasm file:
+
+:: python
+
+    >>> qxelarator.execute_file("bell_pair.qc")
+    Shots requested: 1
+    Shots done: 1
+    Results: {'11': 1}
+    State: {'11': (1+0j)}
+
+
+In case the parsing/analysis of the cqasm string or file fails, you end up with a `qxelarator.SimulationError` object:
+
+:: python
+
+    >>> r = qxelarator.execute_string("version 1.0;qubits 2;h q[0")
+    <unknown>:1:27: syntax error, unexpected end of file, expecting ',' or ']'
+    Failed to parse <unknown>
+    Cannot parse and analyze string version 1.0;qubits 2;h q[0
+    >>> r
+    Quantum simulation failed: Simulation failed!
+    >>> isinstance(r, qxelarator.SimulationError)
+    True
+
+
+To simulate a quantum circuit multiple times, pass an integer number of iterations to e.g. `execute_file`:
+
+:: python
+
+    >>> qxelarator.execute_file("bell_pair.qc", iterations = 10)
+    Shots requested: 10
+    Shots done: 10
+    Results: {'00': 3, '11': 7}
+    State: {'11': (1+0j)}
+
+
+To make sense of the output of QX-simulator, please visit :ref:`Output`
+
+Alternatively, you can use the "old" API by creating a `qxelarator.QX` instance:
 
 ::
 
@@ -18,122 +82,18 @@ Create a simulator instance:
     qx = qxelarator.QX()
 
 
-Then, load the cQasm file (e.g. `bell_pair.qc`):
+Then, load and execute a number of times the cQasm file (e.g. `bell_pair.qc`):
 
 ::
 
-    qx.set('bell_pair.qc')
-
-It contains the following cQasm circuit:
-
-::
-    
-    qubits 2
-    
-
-    .init
-    prep_z q[0]
-    prep_z q[1]
-
-    .entangle
-    h q[0] 
-    cnot q[0],q[1]
-
-    .measurement
-    measure q[0]
-    measure q[1]
-
-Alternatively, it is possible to load a string directly using ``qx.set_string(<cqasm string>)```.
-Should the parsing or analysis of the file fail, the above call will return ``false`` and print an error.
-If everything went well, you can execute the circuit (and obtain a json string with the output):
-
-::
-
-    >>> json_string = qx.execute()
-
-This will print the resulting final quantum state as well as the resulting measurement register:
-
-::
-
-    >>> json_string = qx.execute()
-    -------------------------------------------
-    Final quantum state
-    11       1.00000000 + 0.00000000 * i (1.00000000)
-
-    Measurement register averaging
-    11       1/1 (1.00000000)
-
-Since the circuit contains final measurements for all qubits, the quantum state is collapsed. If you execute the above command multiple times, you can notice
-that the final quantum state changes between runs, non-deterministically.
-
-When removing the measurement, you obtain a fixed quantum state:
-
-::
-    -------------------------------------------
-    Final quantum state
-    00       0.70710678 + 0.00000000 * i (0.50000000)
-    11       0.70710678 + 0.00000000 * i (0.50000000)
-
-    Measurement register averaging
-    00       1/1 (1.00000000)
-
-The quantum state shows as expected superposition of the two qubits in the bell state.
-Notice how the measurement register is then always 0, even if you repeat the execution.
-
-Add back the measurement and you can leverage measurement register averaging, by passing an integer number of iterations to ``execute()``:
-
-::
-
-    >>> qx.execute(100)
-    -------------------------------------------
-    Final quantum state
-    00       1.00000000 + 0.00000000 * i (1.00000000)
-
-    Measurement register averaging
-    00       54/100 (0.45000000)
-    11       46/100 (0.55000000)
-
-The quantum state is less relevant here, since it displays the very final quantum state after the last run of the 100 executions.
-The above "Measurement register averaging" section means that out of 100 executions of the bell pair circuit, the measurement register had a final state of "00" in 54 cases,
-and "11" in 46 cases. While this can be deducted from the final quantum state (and probabilities) obtained earlier on an uncollapsed state, this way to simulate circuits becomes
-way more interesting for non-deterministic circuits, that is, quantum program with mid-circuit measurements and conditional gates.
-
-For example, simulate the following circuit:
-
-::
-
-    qubits 3
-
-    .main
-        h q[0]
-        measure q[0]
-        cond(b[0]) h q[1]
-        measure q[1]
-        cond(b[1]) x q[2]
-
-and get:
-
-::
-
-    >>> qx.execute(1000)
-    -------------------------------------------
-    Final quantum state
-    001       1.00000000 + 0.00000000 * i (1.00000000)
-
-    Measurement register averaging
-    000       504/1000 (0.50400000)
-    001       257/1000 (0.25700000)
-    011       239/1000 (0.23900000)
-
-
-Note: when the circuit does not contain any measure operation, measurement register averaging will as expected return that the measurement register is always completely 0.
-Likewise, when some qubits are never measured, their corresponding bit will always be 0 in the measurement register averaging.
+    qx.set('bell_pair.qc') # Alternatively: qx.set_string('version 1.0;qubits 1;x q[0]')
+    json_string = qx.execute(3)
 
 
 JSON output
 ~~~~~~~~~~~
 
-The API provides a function to set a file to output JSON:
+The "old" API provides a function to set a file to output JSON:
 
 ::
 
@@ -146,7 +106,7 @@ After another ``execute(1000)`` call, that JSON output will look like this:
     > cat simulation_result.json 
     {
         "info": {
-            "shots_requested": 1000,
+            "shots requested": 1000,
             "shots_done": 1000
         },
         "results": {
@@ -163,10 +123,8 @@ After another ``execute(1000)`` call, that JSON output will look like this:
         }
     }
 
-Note 1: The json string ``json_string``` obtained as output of ``json_string = qx.execute(n)``` is equal to the content of this file.
+Note: The json string ``json_string``` obtained as output of ``json_string = qx.execute(n)``` is equal to the content of this file.
 
-Note 2: ``shots_done`` will always equal to ``shots_requested``. These two keys are distinct so that hardware backends can output the same JSON keys and optionally
-notify that they have failed to execute all requested runs.
 
 Running the binary built from source
 ------------------------------------
@@ -175,4 +133,4 @@ The following will result in the same runs using the executable binary instead o
 
 ::
 
-    ./qx-simulator -c 100 -j simulation_result.json ../tests/circuits/bell_pair.qc
+    ./qx-simulator -c 1000 -j simulation_result.json ../tests/circuits/bell_pair.qc
