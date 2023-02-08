@@ -120,10 +120,7 @@ add_library(qx
 )
 
 target_include_directories(qx
-    PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src/"
-    PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/src/"
     PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/"
-    PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/include/"
 )
 
 if(CMAKE_COMPILER_IS_GNUCXX)

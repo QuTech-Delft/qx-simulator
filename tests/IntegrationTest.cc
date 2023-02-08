@@ -7,8 +7,7 @@ namespace qx {
 class IntegrationTest {
 public:
     SimulationResult runFromString(std::string s, std::uint64_t iterations = 1) {
-        simulator.setString(s);
-        auto simulationResult = simulator.execute(iterations);
+        auto simulationResult = executeString(s, iterations);
         REQUIRE(simulationResult);
         return *simulationResult;
     }
