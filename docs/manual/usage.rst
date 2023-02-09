@@ -1,3 +1,5 @@
+.. _usage:
+
 =====
 Usage
 =====
@@ -10,7 +12,7 @@ Python API
 ~~~~~~~~~~
 
 
-The most straightforward way to execute a cQasm file is using the `qxelarator.execute_string` method:
+The most straightforward way to execute a cQasm file is using the ``qxelarator.execute_string`` method:
 
 :: python
 
@@ -23,7 +25,7 @@ The most straightforward way to execute a cQasm file is using the `qxelarator.ex
     State: {'00': (0.7071067811865475+0j), '01': (0.7071067811865475+0j)}
 
 
-The return value is a `qxelarator.SimulationResult`` object and offers access to aggregated measurement register results and final quantum state:
+The return value is a ``qxelarator.SimulationResult`` object and offers access to aggregated measurement register results and final quantum state:
 
 :: python
 
@@ -46,7 +48,7 @@ You can also execute a cQasm file:
     State: {'11': (1+0j)}
 
 
-In case the parsing/analysis of the cqasm string or file fails, you end up with a `qxelarator.SimulationError` object:
+In case the parsing/analysis of the cqasm string or file fails, you end up with a ``qxelarator.SimulationError`` object:
 
 :: python
 
@@ -60,7 +62,7 @@ In case the parsing/analysis of the cqasm string or file fails, you end up with 
     True
 
 
-To simulate a quantum circuit multiple times, pass an integer number of iterations to e.g. `execute_file`:
+To simulate a quantum circuit multiple times, pass an integer number of iterations to e.g. ``execute_file``:
 
 :: python
 
@@ -73,7 +75,7 @@ To simulate a quantum circuit multiple times, pass an integer number of iteratio
 
 To make sense of the output of QX-simulator, please visit :ref:`Output`
 
-Alternatively, you can use the "old" API by creating a `qxelarator.QX` instance:
+Alternatively, you can use the "old" API by creating a ``qxelarator.QX`` instance:
 
 ::
 
@@ -82,7 +84,7 @@ Alternatively, you can use the "old" API by creating a `qxelarator.QX` instance:
     qx = qxelarator.QX()
 
 
-Then, load and execute a number of times the cQasm file (e.g. `bell_pair.qc`):
+Then, load and execute a number of times the cQasm file (e.g. ``bell_pair.qc``):
 
 ::
 
@@ -123,7 +125,7 @@ After another ``execute(1000)`` call, that JSON output will look like this:
         }
     }
 
-Note: The json string ``json_string``` obtained as output of ``json_string = qx.execute(n)``` is equal to the content of this file.
+Note: The json string ``json_string`` obtained as output of ``json_string = qx.execute(n)`` is equal to the content of this file.
 
 
 Running the binary built from source
