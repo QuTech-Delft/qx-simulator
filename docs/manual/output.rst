@@ -73,7 +73,8 @@ However, the ``Results`` section takes all its meaning when using for instance c
 For example:
 
 ::
-
+    
+    version 1.0
     qubits 3
 
     h q[0]
