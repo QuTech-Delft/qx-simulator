@@ -69,6 +69,24 @@ cnot q[0:2], q[3:5]
     CHECK_EQ(actual.state, SimulationResult::State{{"111111", {1, 0, 1}}});
 }
 
+TEST_CASE_FIXTURE(IntegrationTest, "Repeated subcircuit") {
+    auto cqasm = R"(
+version 1.0
+
+qubits 1
+
+.subcircuit(3)
+    x q[0]
+
+.another_subcircuit(5)
+    h q[0]
+)";
+
+    auto actual = runFromString(cqasm, 2);
+
+    CHECK_EQ(actual.state, SimulationResult::State{{"0", {1/std::sqrt(2), 0, 0.5}}, {"1", {-1/std::sqrt(2), 0, 0.5}}});
+}
+
 TEST_CASE_FIXTURE(IntegrationTest, "Classical not gate") {
     auto cqasm = R"(
 version 1.0
