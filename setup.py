@@ -47,7 +47,7 @@ def get_version(verbose=0):
 
     matcher = re.compile('[\t ]*#define[\t ]+QX_VERSION[\t ]+"(.*)"')
     version = None
-    with open(os.path.join(inc_dir, "qx", "Version.h"), "r") as f:
+    with open(os.path.join(inc_dir, "qx", "Version.hpp"), "r") as f:
         for ln in f:
             m = matcher.match(ln)
             if m:

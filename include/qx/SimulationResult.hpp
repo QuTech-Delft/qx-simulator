@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "absl/container/btree_map.h"
-#include "qx/Common.h"
+#include "qx/Common.hpp"
 
 namespace qx {
 
@@ -15,7 +15,7 @@ class QuantumState;
 
 struct SimulationResult {
     using Results = std::vector<std::pair<std::string, std::uint64_t>>;
-    
+
     struct Complex {
         double real = 0;
         double imag = 0;

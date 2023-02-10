@@ -16,3 +16,4 @@ For questions and comments, please contact the current maintainer of the package
    manual/installation
    manual/usage
    manual/output
+   manual/error_models

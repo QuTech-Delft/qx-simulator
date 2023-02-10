@@ -1,5 +1,5 @@
-#include "qx/CompileTimeConfiguration.h"
-#include "qx/Utils.h"
+#include "qx/CompileTimeConfiguration.hpp"
+#include "qx/Utils.hpp"
 
 namespace qx {
 

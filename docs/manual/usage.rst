@@ -77,7 +77,7 @@ To make sense of the output of QX-simulator, please visit :ref:`Output`
 
 Alternatively, you can use the "old" API by creating a ``qxelarator.QX`` instance:
 
-::
+:: python
 
     import qxelarator
 
@@ -86,10 +86,23 @@ Alternatively, you can use the "old" API by creating a ``qxelarator.QX`` instanc
 
 Then, load and execute a number of times the cQasm file (e.g. ``bell_pair.qc``):
 
-::
+:: python
 
     qx.set('bell_pair.qc') # Alternatively: qx.set_string('version 1.0;qubits 1;x q[0]')
     json_string = qx.execute(3)
+
+
+Using a constant seed for random number generation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+By default QX-simulator will generate different random numbers for different executions of a given circuit.
+This means that ``measure``, ``prep_z`` and error models will make simulation results non-deterministic.
+
+In some cases this is not desired. To make the output of the simulator deterministic over different runs, you can pass a constant ``seed`` parameter:
+
+:: python
+
+    qxelarator.execute_string("version 1.0;qubits 2;h q[0];measure_all", iterations=1000, seed=123)
 
 
 JSON output
@@ -97,9 +110,9 @@ JSON output
 
 The "old" API provides a function to set a file to output JSON:
 
-::
+:: python
 
-    >>> qx.set_json_output_path("simulation_result.json")
+    qx.set_json_output_path("simulation_result.json")
 
 After another ``execute(1000)`` call, that JSON output will look like this:
 

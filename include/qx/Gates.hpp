@@ -1,6 +1,6 @@
 #pragma once
 
-#include "qx/Core.h"
+#include "qx/Core.hpp"
 
 namespace qx {
 namespace gates {
@@ -37,7 +37,7 @@ static __CONSTEXPR__ UnitaryMatrix<2>
 
 static __CONSTEXPR__ UnitaryMatrix<2> TDAG = T.dagger();
 
-__CONSTEXPR__ UnitaryMatrix<2> RX(double theta) {
+static __CONSTEXPR__ UnitaryMatrix<2> RX(double theta) {
     return UnitaryMatrix<2>(
         {{{std::cos(theta / 2), -1i * std::sin(theta / 2)},
           {-1i * std::sin(theta / 2), std::cos(theta / 2)}}});
@@ -46,7 +46,7 @@ __CONSTEXPR__ UnitaryMatrix<2> RX(double theta) {
 static __CONSTEXPR__ auto X90 = RX(PI / 2);
 static __CONSTEXPR__ auto MX90 = RX(-PI / 2);
 
-__CONSTEXPR__ UnitaryMatrix<2> RY(double theta) {
+static __CONSTEXPR__ UnitaryMatrix<2> RY(double theta) {
     return UnitaryMatrix<2>({{{std::cos(theta / 2), -std::sin(theta / 2)},
                               {std::sin(theta / 2), std::cos(theta / 2)}}});
 }
@@ -54,11 +54,14 @@ __CONSTEXPR__ UnitaryMatrix<2> RY(double theta) {
 static __CONSTEXPR__ auto Y90 = RY(PI / 2);
 static __CONSTEXPR__ auto MY90 = RY(-PI / 2);
 
-__CONSTEXPR__ UnitaryMatrix<2> RZ(double theta) {
+static __CONSTEXPR__ UnitaryMatrix<2> RZ(double theta) {
     return UnitaryMatrix<2>(
         {{{std::cos(theta / 2) - 1i * std::sin(theta / 2), 0},
           {0, std::cos(theta / 2) + 1i * std::sin(theta / 2)}}});
 }
+
+static __CONSTEXPR__ auto Z90 = RZ(PI / 2);
+static __CONSTEXPR__ auto MZ90 = RZ(-PI / 2);
 
 static __CONSTEXPR__ UnitaryMatrix<2>
     H({{{1 / SQRT_2, 1 / SQRT_2}, {1 / SQRT_2, -1 / SQRT_2}}});
@@ -72,7 +75,7 @@ static __CONSTEXPR__ UnitaryMatrix<4>
 static __CONSTEXPR__ UnitaryMatrix<4>
     CZ({{{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}, {0, 0, 0, -1}}});
 
-__CONSTEXPR__ UnitaryMatrix<4> CR(double theta) {
+static __CONSTEXPR__ UnitaryMatrix<4> CR(double theta) {
     return UnitaryMatrix<4>(
         {{{1, 0, 0, 0},
           {0, 1, 0, 0},

@@ -1,6 +1,6 @@
-#include "qx/SimulationResult.h"
+#include "qx/SimulationResult.hpp"
 
-#include "qx/Core.h"
+#include "qx/Core.hpp"
 #include <iomanip>
 #include <iostream>
 
@@ -16,7 +16,8 @@ public:
     std::string to_string(std::size_t level = 0) const {
         std::stringstream ss;
 
-        ss << std::fixed << std::setprecision(config::OUTPUT_DECIMALS) << "{" << std::endl;
+        ss << std::fixed << std::setprecision(config::OUTPUT_DECIMALS) << "{"
+           << std::endl;
 
         bool first = true;
         for (auto const &kv : m) {

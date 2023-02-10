@@ -110,13 +110,15 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 #=============================================================================#
 
 add_library(qx
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Core.cc"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/SimulationResult.cc"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Circuit.cc"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Qxelarator.cc"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Random.cc"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Simulator.cc"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/LibqasmInterface.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Core.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/SimulationResult.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Circuit.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/ErrorModels.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Qxelarator.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Random.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Simulator.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/LibqasmInterface.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Gates.cpp"
 )
 
 target_include_directories(qx
@@ -160,7 +162,7 @@ target_link_libraries(qx PUBLIC absl::flat_hash_map)
 # Executables                                                                 #
 #=============================================================================#
 
-add_executable("qx-simulator" "${CMAKE_CURRENT_SOURCE_DIR}/src/qx-simulator/Simulator.cc")
+add_executable("qx-simulator" "${CMAKE_CURRENT_SOURCE_DIR}/src/qx-simulator/Simulator.cpp")
 target_link_libraries(qx-simulator qx)
 
 #=============================================================================#
@@ -208,12 +210,12 @@ install(
 install(
     DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/"
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
-    FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN "*.cc"
+    FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN "*.cpp"
 )
 install(
     DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/include/"
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
-    FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN "*.cc"
+    FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN "*.cpp"
 )
 
 

@@ -1,8 +1,8 @@
-#include "qx/Simulator.h"
+#include "qx/Simulator.hpp"
 
 #include "qasm_semantic.hpp"
-#include "qx/LibqasmInterface.h"
-#include "qx/Version.h"
+#include "qx/LibqasmInterface.hpp"
+#include "qx/Version.hpp"
 
 void print_banner() {
     // clang-format off
@@ -65,7 +65,8 @@ int main(int argc, char **argv) {
     }
 
     std::cout << "Will execute " << iterations << " time"
-              << (iterations > 1 ? "s" : "") << " file '" << filePath << "'..." << std::endl;
+              << (iterations > 1 ? "s" : "") << " file '" << filePath << "'..."
+              << std::endl;
 
     if (jsonFilename != "") {
         std::cout << "Will output JSON simulation result to file '"

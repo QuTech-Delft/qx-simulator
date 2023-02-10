@@ -1,4 +1,4 @@
-#include "qx/Core.h"
+#include "qx/Core.hpp"
 
 namespace qx {
 namespace core {
