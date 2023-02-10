@@ -1,6 +1,6 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "qx/Utils.h"
 #include "doctest/doctest.h"
+#include "qx/Utils.hpp"
 // #include "absl/hash/hash_testing.h"
 
 namespace qx {
@@ -42,8 +42,11 @@ TEST_CASE_FIXTURE(BitsetTest, "Set/test with a lot of bits") {
     CHECK(victim.test(0));
     CHECK(victim.test(132));
     CHECK(!victim.test(149));
-    
-    CHECK_EQ(victim.toString(), "000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001");
+
+    CHECK_EQ(victim.toString(),
+             "00000000000000000100000000000000000000000000000000000000000000000"
+             "00000000000000000000000000000000000000000000000000000000000000000"
+             "00000000000000000001");
 }
 
 TEST_CASE_FIXTURE(BitsetTest, "From string") {
@@ -79,7 +82,7 @@ TEST_CASE_FIXTURE(BitsetTest, "toString") {
 TEST_CASE_FIXTURE(BitsetTest, "operator^") {
     SUBCASE("Small bitset") {
         Bitset<15> victim{"000010000010001"};
-        Bitset<15> mask  {"000011001000001"};
+        Bitset<15> mask{"000011001000001"};
 
         victim ^= mask;
         CHECK_EQ(victim.toString(), "000001001010000");
@@ -102,5 +105,5 @@ TEST_CASE_FIXTURE(BitsetTest, "operator^") {
     }
 }
 
-}
-}
+} // namespace utils
+} // namespace qx

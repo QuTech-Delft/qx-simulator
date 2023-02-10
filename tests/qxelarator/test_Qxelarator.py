@@ -73,6 +73,20 @@ qubits 1
         self.assertEqual(simulationResult.shots_done, 2)
         self.assertEqual(simulationResult.results, {"1": 2})
         self.assertEqual(simulationResult.state, {"1": complex(1., 0.)})
+    
+    def test_seed_deterministic(self):
+        cQasmString = \
+"""
+version 1.0
+
+qubits 1
+
+.myCircuit
+    h q[0]
+    measure q[0]
+"""
+        simulationResult = qxelarator.execute_string(cQasmString, iterations = 20, seed = 123)
+        self.assertEqual(simulationResult.results, {"0": 12, "1": 8})
 
 if __name__ == '__main__':
     unittest.main()

@@ -77,7 +77,7 @@ public:
         return data[0];
     }
 
-    std::string toString() {
+    std::string toString() const {
         std::string result;
         for (std::size_t i = 0; i < NumberOfBits; ++i) {
             result += test(NumberOfBits - i - 1) ? '1' : '0';

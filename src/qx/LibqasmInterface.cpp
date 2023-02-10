@@ -1,9 +1,9 @@
-#include "qx/LibqasmInterface.h"
+#include "qx/LibqasmInterface.hpp"
 
 #include "cqasm-v1-semantic-gen.hpp"
-#include "qx/Circuit.h"
-#include "qx/Core.h"
-#include "qx/Gates.h"
+#include "qx/Circuit.hpp"
+#include "qx/Core.hpp"
+#include "qx/Gates.hpp"
 
 namespace qx {
 
@@ -191,8 +191,10 @@ private:
                 mask.set(b->value);
             }
 
-            circuit.addInstruction(Circuit::MeasurementRegisterOperation{
-                [mask](auto &bitReg) { bitReg ^= mask; }}, controlBits);
+            circuit.addInstruction(
+                Circuit::MeasurementRegisterOperation{
+                    [mask](auto &bitReg) { bitReg ^= mask; }},
+                controlBits);
         } else if (name == "rx") {
             addGates<1>(gates::RX(operands.get_float_operand(1)),
                         {operands.get_qubit_operands(0)}, controlBits);
@@ -219,15 +221,17 @@ private:
                         controlBits);
         } else if (name == "prep_x") {
             for (auto q : operands.get_qubit_operands(0)) {
-                circuit.addInstruction(Circuit::PrepZ{
-                    core::QubitIndex{static_cast<std::size_t>(q->value)}}, controlBits);
+                circuit.addInstruction(Circuit::PrepZ{core::QubitIndex{
+                                           static_cast<std::size_t>(q->value)}},
+                                       controlBits);
             }
             addGates<1>(gates::H, {operands.get_qubit_operands(0)},
                         controlBits);
         } else if (name == "prep_y") {
             for (auto q : operands.get_qubit_operands(0)) {
-                circuit.addInstruction(Circuit::PrepZ{
-                    core::QubitIndex{static_cast<std::size_t>(q->value)}}, controlBits);
+                circuit.addInstruction(Circuit::PrepZ{core::QubitIndex{
+                                           static_cast<std::size_t>(q->value)}},
+                                       controlBits);
             }
             addGates<1>(gates::H, {operands.get_qubit_operands(0)},
                         controlBits);
@@ -235,13 +239,15 @@ private:
                         controlBits);
         } else if (name == "prep_z") {
             for (auto q : operands.get_qubit_operands(0)) {
-                circuit.addInstruction(Circuit::PrepZ{
-                    core::QubitIndex{static_cast<std::size_t>(q->value)}}, controlBits);
+                circuit.addInstruction(Circuit::PrepZ{core::QubitIndex{
+                                           static_cast<std::size_t>(q->value)}},
+                                       controlBits);
             }
         } else if (name == "measure" || name == "measure_z") {
             for (auto q : operands.get_qubit_operands(0)) {
-                circuit.addInstruction(Circuit::Measure{
-                    core::QubitIndex{static_cast<std::size_t>(q->value)}}, controlBits);
+                circuit.addInstruction(Circuit::Measure{core::QubitIndex{
+                                           static_cast<std::size_t>(q->value)}},
+                                       controlBits);
             }
         } else if (name == "measure_all") {
             circuit.addInstruction(Circuit::MeasureAll(), controlBits);
@@ -249,8 +255,9 @@ private:
             addGates<1>(gates::H, {operands.get_qubit_operands(0)},
                         controlBits);
             for (auto q : operands.get_qubit_operands(0)) {
-                circuit.addInstruction(Circuit::Measure{
-                    core::QubitIndex{static_cast<std::size_t>(q->value)}}, controlBits);
+                circuit.addInstruction(Circuit::Measure{core::QubitIndex{
+                                           static_cast<std::size_t>(q->value)}},
+                                       controlBits);
             }
         } else if (name == "measure_y") {
             addGates<1>(gates::SDAG, {operands.get_qubit_operands(0)},
@@ -258,8 +265,9 @@ private:
             addGates<1>(gates::H, {operands.get_qubit_operands(0)},
                         controlBits);
             for (auto q : operands.get_qubit_operands(0)) {
-                circuit.addInstruction(Circuit::Measure{
-                    core::QubitIndex{static_cast<std::size_t>(q->value)}}, controlBits);
+                circuit.addInstruction(Circuit::Measure{core::QubitIndex{
+                                           static_cast<std::size_t>(q->value)}},
+                                       controlBits);
             }
         } else if (name == "x90") {
             return addGates<1>(gates::X90, {operands.get_qubit_operands(0)},
@@ -293,12 +301,11 @@ private:
 };
 } // namespace
 
-std::shared_ptr<qx::Circuit> loadCqasmCode(cq::Subcircuit const &subcircuit) {
-    auto circuit =
-        std::make_shared<qx::Circuit>(subcircuit.name, subcircuit.iterations);
+qx::Circuit loadCqasmCode(cq::Subcircuit const &subcircuit) {
+    qx::Circuit circuit(subcircuit.name, subcircuit.iterations);
 
     for (const auto &statement : subcircuit.body->statements) {
-        GateConvertor gateConvertor(*circuit);
+        GateConvertor gateConvertor(circuit);
 
         statement->visit(gateConvertor);
     }

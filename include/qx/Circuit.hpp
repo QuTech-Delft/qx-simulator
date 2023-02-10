@@ -1,6 +1,7 @@
 #pragma once
 
-#include "qx/Core.h"
+#include "qx/Core.hpp"
+#include "qx/ErrorModels.hpp"
 
 #include <optional>
 #include <string>
@@ -32,9 +33,12 @@ public:
     using Instruction =
         std::variant<Measure, MeasureAll, PrepZ, MeasurementRegisterOperation,
                      Unitary<1>, Unitary<2>, Unitary<3>>;
-    
+
     struct ControlledInstruction {
-        ControlledInstruction(Instruction const& instr, std::shared_ptr<std::vector<core::QubitIndex>> ctrlB) : instruction(instr), controlBits(ctrlB) {};
+        ControlledInstruction(
+            Instruction const &instr,
+            std::shared_ptr<std::vector<core::QubitIndex>> ctrlB)
+            : instruction(instr), controlBits(ctrlB){};
 
         Instruction instruction;
         std::shared_ptr<std::vector<core::QubitIndex>> controlBits;
@@ -45,11 +49,14 @@ public:
     Circuit(std::string name = "", std::size_t iterations = 1)
         : name(name), iterations(iterations) {}
 
-    void addInstruction(Instruction const& instruction, std::shared_ptr<std::vector<core::QubitIndex>> controlBits) {
+    void
+    addInstruction(Instruction const &instruction,
+                   std::shared_ptr<std::vector<core::QubitIndex>> controlBits) {
         controlledInstructions.emplace_back(instruction, controlBits);
     }
 
-    void execute(core::QuantumState &quantumState) const;
+    void execute(core::QuantumState &quantumState,
+                 error_models::ErrorModel const &errorModel) const;
 
     std::string getName() const { return name; }
 

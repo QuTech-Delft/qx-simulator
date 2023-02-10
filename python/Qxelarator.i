@@ -6,6 +6,14 @@
 
 %include "std_string.i"
 
+%typemap(in) std::optional<std::uint_fast64_t> {
+    if($input == Py_None) {
+        $1 = std::nullopt;
+    } else {
+        $1 = PyLong_AsLong($input);
+    }
+}
+
 // Map the output of execute_string/execute_file to a simple Python class for user-friendliness.
 %typemap(out) std::optional<qx::SimulationResult> {
     if ($1) {
@@ -51,8 +59,8 @@
 }
 
 %{
-#include "qx/Qxelarator.h"
+#include "qx/Qxelarator.hpp"
 %}
 
 // Include the header file with above prototypes
-%include "qx/Qxelarator.h"
+%include "qx/Qxelarator.hpp"

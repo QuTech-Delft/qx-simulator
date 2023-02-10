@@ -1,6 +1,6 @@
-#include "qx/Circuit.h"
+#include "qx/Circuit.hpp"
 
-#include "qx/Random.h"
+#include "qx/Random.hpp"
 #include <algorithm>
 
 namespace qx {
@@ -10,17 +10,17 @@ public:
     InstructionExecutor(core::QuantumState &s) : quantumState(s){};
 
     void operator()(Circuit::Measure const &m) {
-        quantumState.measure(m.qubitIndex, [this]() { return rand.next(); });
+        quantumState.measure(m.qubitIndex, &random::randomZeroOneDouble);
     }
 
     void operator()(Circuit::MeasureAll const &) {
-        quantumState.measureAll([this]() { return rand.next(); });
+        quantumState.measureAll(&random::randomZeroOneDouble);
     }
 
     void operator()(Circuit::PrepZ const &r) {
-        quantumState.prep(r.qubitIndex, [this]() { return rand.next(); });
+        quantumState.prep(r.qubitIndex, &random::randomZeroOneDouble);
     }
-    
+
     void operator()(Circuit::MeasurementRegisterOperation const &op) {
         op.operation(quantumState.getMeasurementRegister());
     }
@@ -31,25 +31,38 @@ public:
 
 private:
     core::QuantumState &quantumState;
-    random::UniformRandomNumberGenerator rand{0.0, 1.0};
 };
 } // namespace
 
-void Circuit::execute(core::QuantumState &quantumState) const {
+void Circuit::execute(core::QuantumState &quantumState,
+                      error_models::ErrorModel const &errorModel) const {
     std::size_t it = iterations;
     InstructionExecutor instructionExecutor(quantumState);
     while (it-- > 0) {
-        for (auto const& controlledInstruction : controlledInstructions) {
-            auto const& controlBits = controlledInstruction.controlBits;
+        for (auto const &controlledInstruction : controlledInstructions) {
+            if (auto *depolarizing_channel =
+                    std::get_if<error_models::DepolarizingChannel>(
+                        &errorModel)) {
+                depolarizing_channel->addError(quantumState);
+            } else {
+                assert(std::get_if<std::monostate>(&errorModel) &&
+                       "Unimplemented error model");
+            }
+
+            auto const &controlBits = controlledInstruction.controlBits;
             if (controlBits) {
-                auto measurementRegister = quantumState.getMeasurementRegister();
-                auto isBitNotSet = [&measurementRegister](auto const& cb) { return !measurementRegister.test(cb.value); };
-                if (std::any_of(controlBits->begin(), controlBits->end(), isBitNotSet)) {
-                        continue;
+                auto measurementRegister =
+                    quantumState.getMeasurementRegister();
+                auto isBitNotSet = [&measurementRegister](auto const &cb) {
+                    return !measurementRegister.test(cb.value);
+                };
+                if (std::any_of(controlBits->begin(), controlBits->end(),
+                                isBitNotSet)) {
+                    continue;
                 }
             }
 
-            auto const& instruction = controlledInstruction.instruction;
+            auto const &instruction = controlledInstruction.instruction;
 
             // AppleClang doesn't support std::visit
             // std::visit(instructionExecutor, instruction);

@@ -5,8 +5,8 @@
 #include <complex>
 #include <limits>
 
-#include "qx/Common.h"
-#include "qx/CompileTimeConfiguration.h"
+#include "qx/Common.hpp"
+#include "qx/CompileTimeConfiguration.hpp"
 
 namespace qx {
 namespace core {
