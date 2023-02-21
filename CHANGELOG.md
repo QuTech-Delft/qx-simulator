@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [ 0.6.2 ] - [ 2023-02-21 ]
+
+### Added
+
+- depolarizing_channel error model and docs
+- ability to pass constant seed for deterministic simulation
+- RandomTest doing Kolmogorov-Smirnov statistical test to match random numbers with their ideal probability distribution
+
+### Changed
+
+- fixed docs
+- source files use .hpp/.cpp extensions
+- random number distributions (integer min/max and real 0-1) are done in-house for portability and consistency of results
+
+### Removed
+
+- 
+
+
 ## [ 0.6.1 ] - [ 2023-02-01 ]
 
 ### Added
