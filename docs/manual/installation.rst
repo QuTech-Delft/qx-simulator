@@ -43,6 +43,7 @@ To build QXelarator yourself from source and add it to your local Python package
 
     NPROCS=16 python3 -m pip install -v -e .
 
+You will need to have SWIG installed for the above to work.
 
 Building the C++ executable from source
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
