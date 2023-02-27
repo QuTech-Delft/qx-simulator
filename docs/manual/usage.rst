@@ -14,7 +14,7 @@ Python API
 
 The most straightforward way to execute a cQasm file is using the ``qxelarator.execute_string`` method:
 
-:: python
+.. code-block:: pycon
 
     >>> import qxelarator
     >>> r = qxelarator.execute_string("version 1.0;qubits 2;h q[0]")
@@ -27,7 +27,7 @@ The most straightforward way to execute a cQasm file is using the ``qxelarator.e
 
 The return value is a ``qxelarator.SimulationResult`` object and offers access to aggregated measurement register results and final quantum state:
 
-:: python
+.. code-block:: pycon
 
     >>> isinstance(r, qxelarator.SimulationResult)
     True
@@ -39,7 +39,7 @@ The return value is a ``qxelarator.SimulationResult`` object and offers access t
 
 You can also execute a cQasm file:
 
-:: python
+.. code-block:: pycon
 
     >>> qxelarator.execute_file("bell_pair.qc")
     Shots requested: 1
@@ -50,7 +50,7 @@ You can also execute a cQasm file:
 
 In case the parsing/analysis of the cqasm string or file fails, you end up with a ``qxelarator.SimulationError`` object:
 
-:: python
+.. code-block:: pycon
 
     >>> r = qxelarator.execute_string("version 1.0;qubits 2;h q[0")
     <unknown>:1:27: syntax error, unexpected end of file, expecting ',' or ']'
@@ -64,7 +64,7 @@ In case the parsing/analysis of the cqasm string or file fails, you end up with 
 
 To simulate a quantum circuit multiple times, pass an integer number of iterations to e.g. ``execute_file``:
 
-:: python
+.. code-block:: pycon
 
     >>> qxelarator.execute_file("bell_pair.qc", iterations = 10)
     Shots requested: 10
@@ -77,7 +77,7 @@ To make sense of the output of QX-simulator, please visit :ref:`Output`
 
 Alternatively, you can use the "old" API by creating a ``qxelarator.QX`` instance:
 
-:: python
+.. code-block:: python
 
     import qxelarator
 
@@ -86,7 +86,7 @@ Alternatively, you can use the "old" API by creating a ``qxelarator.QX`` instanc
 
 Then, load and execute a number of times the cQasm file (e.g. ``bell_pair.qc``):
 
-:: python
+.. code-block:: python
 
     qx.set('bell_pair.qc') # Alternatively: qx.set_string('version 1.0;qubits 1;x q[0]')
     json_string = qx.execute(3)
@@ -100,7 +100,7 @@ This means that ``measure``, ``prep_z`` and error models will make simulation re
 
 In some cases this is not desired. To make the output of the simulator deterministic over different runs, you can pass a constant ``seed`` parameter:
 
-:: python
+.. code-block:: python
 
     qxelarator.execute_string("version 1.0;qubits 2;h q[0];measure_all", iterations=1000, seed=123)
 
@@ -110,13 +110,13 @@ JSON output
 
 The "old" API provides a function to set a file to output JSON:
 
-:: python
+.. code-block:: python
 
     qx.set_json_output_path("simulation_result.json")
 
 After another ``execute(1000)`` call, that JSON output will look like this:
 
-::
+.. code-block:: bash
 
     > cat simulation_result.json 
     {
@@ -146,6 +146,6 @@ Running the binary built from source
 
 The following will result in the same runs using the executable binary instead of the Python package:
 
-::
+.. code-block:: bash
 
     ./qx-simulator -c 1000 -j simulation_result.json ../tests/circuits/bell_pair.qc
