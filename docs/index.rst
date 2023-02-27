@@ -17,3 +17,4 @@ For questions and comments, please contact the current maintainer of the package
    manual/usage
    manual/output
    manual/error_models
+   manual/internals
