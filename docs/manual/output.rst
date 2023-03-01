@@ -30,8 +30,7 @@ This will result in:
 
 
 - ``Shots requested`` and ``Shots done`` are always equal to the number of iterations.
-- The ``Results`` section contains how many times a given measurement register is captured when running the iterations. In this case, the circuit doesn't contain
-any measurement, and therefore the measurement registers are always 00, and this occurred 100 times.
+- The ``Results`` section contains how many times a given measurement register is captured when running the iterations. In this case, the circuit doesn't contain any measurement, and therefore the measurement registers are always 00, and this occurred 100 times.
 - The ``State`` section contains the full quantum state at the end of the very last iteration. It maps quantum kets to complex amplitudes. Here you can recognize
 the usual bell pair state: ``1/sqrt(2) ( |00> + |11> )``.
 
