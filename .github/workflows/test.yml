@@ -53,7 +53,7 @@ jobs:
           submodules: recursive
       - name: Install dependencies
         run: |
-          sudo yum install -y flex bison swig cmake clang gcc
+          sudo apt-get install -y flex bison swig cmake clang gcc
       - name: Create build directory
         run: mkdir -p build-g++-Release
       - name: Configure
