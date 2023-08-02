@@ -25,7 +25,7 @@ public:
 
 private:
     std::string jsonOutputFilePath = "";
-    cqasm::v1::ast::One<cqasm::v1::semantic::Program> program;
+    cqasm::v1x::ast::One<cqasm::v1x::semantic::Program> program;
 };
 
 // New API.

@@ -13,11 +13,11 @@
 namespace qx {
 
 bool Simulator::set(std::string const &filePath) {
-    auto analyzer = cqasm::v1::default_analyzer("1.2");
+    auto analyzer = cqasm::v1x::default_analyzer("1.2");
 
     try {
         program = analyzer.analyze(filePath).unwrap();
-    } catch (const cqasm::v1::analyzer::AnalysisFailed &e) {
+    } catch (const cqasm::v1x::analyzer::AnalysisFailed &e) {
         std::cerr << "Cannot parse and analyze file " << filePath << std::endl;
         program.reset();
         return false;
@@ -40,11 +40,11 @@ bool Simulator::set(std::string const &filePath) {
 }
 
 bool Simulator::setString(std::string const &s) {
-    auto analyzer = cqasm::v1::default_analyzer("1.2");
+    auto analyzer = cqasm::v1x::default_analyzer("1.2");
 
     try {
         program = analyzer.analyze_string(s).unwrap();
-    } catch (const cqasm::v1::analyzer::AnalysisFailed &e) {
+    } catch (const cqasm::v1x::analyzer::AnalysisFailed &e) {
         std::cerr << "Cannot parse and analyze string " << s << std::endl;
         program.reset();
         return false;

@@ -1,14 +1,14 @@
 #include "qx/LibqasmInterface.hpp"
 
-#include "cqasm-v1-semantic-gen.hpp"
 #include "qx/Circuit.hpp"
 #include "qx/Core.hpp"
 #include "qx/Gates.hpp"
+#include "v1x/cqasm-semantic-gen.hpp"
 
 namespace qx {
 
-namespace cq = ::cqasm::v1::semantic;
-namespace values = ::cqasm::v1::values;
+namespace cq = ::cqasm::v1x::semantic;
+namespace values = ::cqasm::v1x::values;
 
 namespace {
 class OperandsHelper {
