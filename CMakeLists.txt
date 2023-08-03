@@ -191,25 +191,9 @@ target_link_libraries(qx-simulator qx)
 
 if(QX_BUILD_TESTS)
     enable_testing()
-
-    message(STATUS "Fetching doctest")
-    FetchContent_Declare(doctest
-        GIT_REPOSITORY https://github.com/doctest/doctest.git
-        GIT_TAG ""ae7a13539fb71f270b87eb2e874fbac80bc8dda2
-    )
-    FetchContent_MakeAvailable(doctest)
-
-    function(add_qx_test name source workdir)
-        add_executable("${name}" "${CMAKE_CURRENT_SOURCE_DIR}/${source}")
-        target_include_directories("${name}" PRIVATE ${doctest_SOURCE_DIR})
-        target_link_libraries("${name}" PRIVATE qx doctest)
-        add_test(
-            NAME "${name}"
-            WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${workdir}"
-            COMMAND "${name}"
-        )
-    endfunction()
-
+    include(CTest)
+    include(GoogleTest)
+    set(CMAKE_CTEST_ARGUMENTS "--output-on-failure")
     add_subdirectory(tests)
 endif()
 
@@ -245,4 +229,4 @@ install(
 )
 
 
-endif() # NOT TARGET qx
+endif()  # NOT TARGET qx

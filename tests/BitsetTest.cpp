@@ -1,109 +1,101 @@
-#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "doctest/doctest.h"
 #include "qx/Utils.hpp"
-// #include "absl/hash/hash_testing.h"
 
-namespace qx {
-namespace utils {
+#include <gtest/gtest.h>
 
-class BitsetTest {
-public:
-};
 
-TEST_CASE_FIXTURE(BitsetTest, "Set/test") {
+namespace qx::utils {
+
+TEST(bitset, set_test) {
     Bitset<15> victim{};
-    CHECK(!victim.test(1));
-    CHECK(!victim.test(13));
+    EXPECT_FALSE(victim.test(1));
+    EXPECT_FALSE(victim.test(13));
 
-    CHECK_EQ(victim.toSizeT(), 0);
+    EXPECT_EQ(victim.toSizeT(), 0);
     victim.set(0);
-    CHECK(!victim.test(1));
-    CHECK_EQ(victim.toSizeT(), 1);
+    EXPECT_FALSE(victim.test(1));
+    EXPECT_EQ(victim.toSizeT(), 1);
     victim.set(1);
-    CHECK_EQ(victim.toSizeT(), 3);
-    CHECK(victim.test(1));
-    CHECK(victim.test(0));
-    CHECK(!victim.test(10));
+    EXPECT_EQ(victim.toSizeT(), 3);
+    EXPECT_TRUE(victim.test(1));
+    EXPECT_TRUE(victim.test(0));
+    EXPECT_FALSE(victim.test(10));
 
     victim.set(3);
-    CHECK(victim.test(3));
-    CHECK_EQ(victim.toSizeT(), 11);
+    EXPECT_TRUE(victim.test(3));
+    EXPECT_EQ(victim.toSizeT(), 11);
 }
 
-TEST_CASE_FIXTURE(BitsetTest, "Set/test with a lot of bits") {
+TEST(bitset, set_test_with_a_lot_of_bits) {
     Bitset<150> victim{};
-    CHECK(!victim.test(120));
-    CHECK(!victim.test(130));
+    EXPECT_FALSE(victim.test(120));
+    EXPECT_FALSE(victim.test(130));
 
     victim.set(0);
-    CHECK(victim.test(0));
-    CHECK(!victim.test(1));
+    EXPECT_TRUE(victim.test(0));
+    EXPECT_FALSE(victim.test(1));
     victim.set(132);
-    CHECK(victim.test(0));
-    CHECK(victim.test(132));
-    CHECK(!victim.test(149));
+    EXPECT_TRUE(victim.test(0));
+    EXPECT_TRUE(victim.test(132));
+    EXPECT_FALSE(victim.test(149));
 
-    CHECK_EQ(victim.toString(),
-             "00000000000000000100000000000000000000000000000000000000000000000"
-             "00000000000000000000000000000000000000000000000000000000000000000"
-             "00000000000000000001");
+    EXPECT_EQ(victim.toString(),
+              "00000000000000000100000000000000000000000000000000000000000000000"
+              "00000000000000000000000000000000000000000000000000000000000000000"
+              "00000000000000000001");
 }
 
-TEST_CASE_FIXTURE(BitsetTest, "From string") {
+TEST(bitset, from_string) {
     Bitset<5> victim{"1010"};
-    CHECK(!victim.test(0));
-    CHECK(victim.test(1));
-    CHECK(!victim.test(2));
-    CHECK(victim.test(3));
-    CHECK(!victim.test(4));
-    CHECK_EQ(victim.toSizeT(), 10);
+    EXPECT_FALSE(victim.test(0));
+    EXPECT_TRUE(victim.test(1));
+    EXPECT_FALSE(victim.test(2));
+    EXPECT_TRUE(victim.test(3));
+    EXPECT_FALSE(victim.test(4));
+    EXPECT_EQ(victim.toSizeT(), 10);
 }
 
-TEST_CASE_FIXTURE(BitsetTest, "toString") {
+TEST(bitset, to_string) {
     Bitset<15> victim{};
     victim.set(0);
-    CHECK_EQ(victim.toString(), "000000000000001");
+    EXPECT_EQ(victim.toString(), "000000000000001");
 
     victim.set(13);
-    CHECK_EQ(victim.toString(), "010000000000001");
+    EXPECT_EQ(victim.toString(), "010000000000001");
 }
 
 // Requires GMock
-// TEST_CASE_FIXTURE(BitsetTest, "Hash") {
+// TEST(bitset, hash) {
 //     Bitset<15> victim1{};
-//     CHECK(absl::VerifyTypeImplementsAbslHashCorrectly({victim1}));
+//     EXPECT_TRUE(absl::VerifyTypeImplementsAbslHashCorrectly({victim1}));
 
 //     Bitset<15456> victim2{};
 //     victim2.set(4542);
 //     victim2.set(8945);
-//     CHECK(absl::VerifyTypeImplementsAbslHashCorrectly({victim2}));
+//     EXPECT_TRUE(absl::VerifyTypeImplementsAbslHashCorrectly({victim2}));
 // }
 
-TEST_CASE_FIXTURE(BitsetTest, "operator^") {
-    SUBCASE("Small bitset") {
-        Bitset<15> victim{"000010000010001"};
-        Bitset<15> mask{"000011001000001"};
+TEST(bitset, operator_xor__small_bitset) {
+    Bitset<15> victim{"000010000010001"};
+    Bitset<15> mask{"000011001000001"};
 
-        victim ^= mask;
-        CHECK_EQ(victim.toString(), "000001001010000");
-    }
-
-    SUBCASE("Large bitset") {
-        Bitset<123456> victim{};
-        victim.set(457);
-
-        Bitset<123456> mask{};
-
-        mask.set(457);
-        mask.set(654);
-
-        victim ^= mask;
-
-        CHECK(!victim.test(457));
-        CHECK(victim.test(654));
-        CHECK(!victim.test(875));
-    }
+    victim ^= mask;
+    EXPECT_EQ(victim.toString(), "000001001010000");
 }
 
-} // namespace utils
-} // namespace qx
+TEST(bitset, operator_xor__large_bitset) {
+    Bitset<123456> victim{};
+    victim.set(457);
+
+    Bitset<123456> mask{};
+
+    mask.set(457);
+    mask.set(654);
+
+    victim ^= mask;
+
+    EXPECT_FALSE(victim.test(457));
+    EXPECT_TRUE(victim.test(654));
+    EXPECT_FALSE(victim.test(875));
+}
+
+} // namespace qx::utils
