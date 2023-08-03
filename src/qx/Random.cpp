@@ -54,7 +54,7 @@ std::uint_fast64_t randomInteger(std::uint_fast64_t min,
     std::uint_fast64_t bucketSize = UINT_FAST64_MAX / numberOfBuckets;
     std::uint_fast64_t limit = numberOfBuckets * bucketSize;
 
-    assert(limit = numberOfBuckets * bucketSize);
+    assert(limit == numberOfBuckets * bucketSize);
     assert(limit <= UINT_FAST64_MAX);
 
     std::uint_fast64_t r = 0;

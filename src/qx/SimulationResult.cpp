@@ -78,7 +78,7 @@ std::string SimulationResult::getJsonString() {
 }
 
 void SimulationResultAccumulator::append(BasisVector measuredState) {
-    assert(measuredStates.size() <= (1 << quantumState.getNumberOfQubits()));
+    assert(measuredStates.size() <= (1u << quantumState.getNumberOfQubits()));
     measuredStates[measuredState]++;
     nMeasurements++;
 }
