@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
 
 project(QX C CXX)
 
-# If QX was already included elsewhere in the project, don't include it
-# again. There should be only one place for it and one version per project.
+# If QX was already included elsewhere in the project, don't include it again.
+# There should be only one place for it and one version per project.
 if(NOT TARGET qx)
 
 # Loads up the appropriate directories for installing stuff.
@@ -17,13 +17,12 @@ include(FetchContent)
 # Configuration options                                                       #
 #=============================================================================#
 
-# Library type option. Default is a shared object, because for CMake it doesn't
-# matter, but outside of CMake dependency information is lost for static
-# libraries. That requires the user to link all of QX's direct and transitive
-# dependencies as well, which is terribly ugly. setup.py *has* to do this
-# however, because "pip install ." builds this in a temporary directory, so the
-# shared objects that get built and installed and are then depended on by the
-# Python lib get deleted by pip after the install.
+# Library type option. Default is a shared object, because for CMake it doesn't matter,
+# but outside of CMake dependency information is lost for static libraries.
+# That requires the user to link all of QX's direct and transitive dependencies as well, which is terribly ugly.
+# setup.py *has* to do this however, because "pip install ." builds this in a temporary directory,
+# so the shared objects that get built and installed and are then depended on by the Python lib
+# get deleted by pip after the install.
 option(
     BUILD_SHARED_LIBS
     "Whether libraries should be built as a shared object or as a static library"
@@ -70,13 +69,12 @@ mark_as_advanced(QX_PYTHON_EXT)
 # CMake weirdness and compatibility                                           #
 #=============================================================================#
 
-# On Windows builds, CMake complains that the CMake internal variable
-# "CMAKE_MODULE_LINKER_FLAGS_MAINTAINER" is not defined *the first time you
-# configure*. Weirdly, all is good with the world if you then just try again.
-# It seems to have to do with the "maintainer" build type in MSVC, but there
-# is no documentation whatsoever. In any case, this just mimics what CMake
-# does automatically the second time you invoke it, so it works around the
-# issue.
+# On Windows builds, CMake complains that the CMake internal variable "CMAKE_MODULE_LINKER_FLAGS_MAINTAINER"
+# is not defined *the first time you configure*.
+# Weirdly, all is good with the world if you then just try again.
+# It seems to have to do with the "maintainer" build type in MSVC, but there is no documentation whatsoever.
+# In any case, this just mimics what CMake does automatically the second time you invoke it,
+# so it works around the issue.
 if(NOT DEFINED CMAKE_MODULE_LINKER_FLAGS_MAINTAINER)
     set(
         CMAKE_MODULE_LINKER_FLAGS_MAINTAINER ""
@@ -89,8 +87,8 @@ endif()
 # Global build configuration                                                  #
 #=============================================================================#
 
-# Since we have multiple libraries to link together, we unfortunately have to
-# worry about RPATH handling on Linux and OSX. See
+# Since we have multiple libraries to link together,
+# we unfortunately have to worry about RPATH handling on Linux and OSX. See
 # https://gitlab.kitware.com/cmake/community/-/wikis/doc/cmake/RPATH-handling
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
@@ -102,8 +100,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-# Windows weirdness: need a .lib file to link against a DLL at compile-time
-# (I think), but only the .dll is generated when there are no exported symbols.
+# Windows weirdness: need a .lib file to link against a DLL at compile-time (I think),
+# but only the .dll is generated when there are no exported symbols.
 # This sort of fixes that (https://stackoverflow.com/questions/1941443)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
@@ -148,22 +146,36 @@ target_include_directories(qx
 )
 
 if(CMAKE_COMPILER_IS_GNUCXX)
-    target_compile_options(qx PRIVATE -Wall -Wfatal-errors)
+    target_compile_options(qx PRIVATE
+        -Wall -Wextra -Werror -Wfatal-errors
+    )
 elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    target_compile_options(qx PRIVATE -Wall -Wfatal-errors -Wno-unused-local-typedef)
+    target_compile_options(qx PRIVATE
+        -Wall -Wextra -Werror -Wfatal-errors
+        -Wno-unused-function
+        -Wno-unused-local-typedef
+    )
 elseif(MSVC)
-    target_compile_options(qx PRIVATE /MP /EHsc /bigobj)
+    target_compile_options(qx PRIVATE
+        /MP /EHsc /bigobj
+    )
 else()
     message(SEND_ERROR "Unknown compiler!")
 endif()
 
 if(!${QX_CPU_COMPATIBILITY_MODE})
     if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
-        target_compile_options(qx PUBLIC -march=native)
+        target_compile_options(qx PUBLIC
+            -march=native
+        )
     elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel")
-        target_compile_options(qx PUBLIC -ipo -xHost -no-prec-div)
+        target_compile_options(qx PUBLIC
+            -ipo -xHost -no-prec-div
+        )
     elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-        target_compile_options(qx PUBLIC -march=native)
+        target_compile_options(qx PUBLIC
+            -march=native
+        )
     endif()
 endif()
 

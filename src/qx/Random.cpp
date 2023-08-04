@@ -64,7 +64,7 @@ std::uint_fast64_t randomInteger(std::uint_fast64_t min,
 
     std::uint_fast64_t bucketIndex = r / bucketSize;
 
-    assert(0 <= bucketIndex && bucketIndex < numberOfBuckets);
+    assert(bucketIndex < numberOfBuckets);
 
     std::size_t result = min + bucketIndex;
 

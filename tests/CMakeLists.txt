@@ -26,24 +26,21 @@ target_sources(${PROJECT_NAME}_test PRIVATE
 # Target options
 target_link_libraries(${PROJECT_NAME}_test
     PRIVATE qx
-    PUBLIC GTest::gmock
-    PUBLIC GTest::gtest
+    PRIVATE GTest::gmock
+    PRIVATE GTest::gtest
 )
 if(CMAKE_COMPILER_IS_GNUCXX)
     target_compile_options(${PROJECT_NAME}_test PRIVATE
         -Wall -Wextra -Werror -Wfatal-errors
-        -Wno-error=restrict
-        -Wno-error=deprecated-declarations
     )
 elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     target_compile_options(${PROJECT_NAME}_test PRIVATE
         -Wall -Wextra -Werror -Wfatal-errors
-        -Wno-error=unused-private-field
-        -Wno-error=unused-but-set-variable
+        -Wno-unused-function
     )
 elseif(MSVC)
     target_compile_options(${PROJECT_NAME}_test PRIVATE
-        /MP /D_USE_MATH_DEFINES /EHsc /bigobj
+        /MP /EHsc /bigobj
     )
 else()
     message(SEND_ERROR "Unknown compiler!")
