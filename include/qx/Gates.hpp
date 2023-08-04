@@ -75,7 +75,7 @@ static __CONSTEXPR__ UnitaryMatrix<4>
 static __CONSTEXPR__ UnitaryMatrix<4>
     CZ({{{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}, {0, 0, 0, -1}}});
 
-[[maybe_unused]] static __CONSTEXPR__ UnitaryMatrix<4> CR(double theta) {
+static __CONSTEXPR__ UnitaryMatrix<4> CR(double theta) {
     return UnitaryMatrix<4>(
         {{{1, 0, 0, 0},
           {0, 1, 0, 0},

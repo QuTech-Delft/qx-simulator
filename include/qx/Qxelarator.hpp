@@ -15,7 +15,7 @@ public:
 
     bool set(const std::string &filePath) { return simulator.set(filePath); }
 
-    [[maybe_unused]] bool set_string(const std::string &s) { return simulator.setString(s); }
+    bool set_string(const std::string &s) { return simulator.setString(s); }
 
     std::string execute(std::size_t iterations = 1) {
         auto simulationResult = simulator.execute(iterations);

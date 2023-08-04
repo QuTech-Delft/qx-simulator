@@ -13,7 +13,7 @@ static inline bool getBit(std::size_t x, std::size_t index) {
 }
 
 static inline void setBit(std::size_t &x, std::size_t index, bool value) {
-    x = (x & ~(1uz << index)) | (value << index);
+    x = (x & ~(static_cast<size_t>(1) << index)) | (value << index);
 }
 
 // std::bitset is slightly slower than this.

@@ -188,22 +188,20 @@ public:
         : numberOfQubits(n), data(1 << numberOfQubits) {
         assert(numberOfQubits > 0 && "QuantumState needs at least one qubit");
         assert(numberOfQubits <= config::MAX_QUBIT_NUMBER &&
-               "QuantumState currently cannot support that many qubits with "
-               "this version of OpenQL");
-        data.set(BasisVector{}, 1); // Start initialized in state 00...000
+               "QuantumState currently cannot support that many qubits with this version of OpenQL");
+        data.set(BasisVector{}, 1);  // Start initialized in state 00...000
     };
 
     [[nodiscard]] std::size_t getNumberOfQubits() const { return numberOfQubits; }
 
     void reset() {
         data.clear();
-        data.set(BasisVector{}, 1); // Start initialized in state 00...000
+        data.set(BasisVector{}, 1);  // Start initialized in state 00...000
         measurementRegister.reset();
     }
 
     void testInitialize(
-        std::initializer_list<std::pair<std::string, std::complex<double>>>
-            values);
+        std::initializer_list<std::pair<std::string, std::complex<double>>> values);
 
     template <std::size_t NumberOfOperands>
     QuantumState &
