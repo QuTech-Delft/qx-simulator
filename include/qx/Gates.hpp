@@ -2,8 +2,8 @@
 
 #include "qx/Core.hpp"
 
-namespace qx {
-namespace gates {
+
+namespace qx::gates {
 
 template <std::size_t N> using UnitaryMatrix = core::DenseUnitaryMatrix<N>;
 
@@ -75,7 +75,7 @@ static __CONSTEXPR__ UnitaryMatrix<4>
 static __CONSTEXPR__ UnitaryMatrix<4>
     CZ({{{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}, {0, 0, 0, -1}}});
 
-static __CONSTEXPR__ UnitaryMatrix<4> CR(double theta) {
+[[maybe_unused]] static __CONSTEXPR__ UnitaryMatrix<4> CR(double theta) {
     return UnitaryMatrix<4>(
         {{{1, 0, 0, 0},
           {0, 1, 0, 0},
@@ -101,5 +101,4 @@ static_assert(H * H == UnitaryMatrix<2>::identity());
 static_assert(S * S == Z);
 #endif
 
-} // namespace gates
-} // namespace qx
+} // namespace qx::gates
