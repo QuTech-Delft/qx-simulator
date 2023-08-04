@@ -154,6 +154,7 @@ elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
         -Wall -Wextra -Werror -Wfatal-errors
         -Wno-unused-function
         -Wno-unused-local-typedef
+        -Wunused-but-set-variable
     )
 elseif(MSVC)
     target_compile_options(qx PRIVATE
