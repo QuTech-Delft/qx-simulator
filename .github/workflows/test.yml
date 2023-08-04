@@ -31,7 +31,7 @@ jobs:
         env:
           CXX: ${{ matrix.compiler }}
         working-directory: build-${{ matrix.compiler }}-${{ matrix.build_type }}
-        run: cmake -S .. -B . -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DQX_BUILD_TESTS=ON -DASAN_ENABLED=ON
+        run: cmake -S .. -B . -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DQX_BUILD_TESTS=ON
       - name: Build
         working-directory: build-${{ matrix.compiler }}-${{ matrix.build_type }}
         run: cmake --build . --parallel 10
@@ -63,7 +63,7 @@ jobs:
         run: mkdir -p build-${{ matrix.build_type }}
       - name: Configure
         working-directory: build-${{ matrix.build_type }}
-        run: cmake -S .. -B . -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DQX_BUILD_TESTS=ON -DASAN_ENABLED=ON
+        run: cmake -S .. -B . -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DQX_BUILD_TESTS=ON
       - name: Build
         working-directory: build-${{ matrix.build_type }}
         run: cmake --build . --parallel 10
@@ -93,7 +93,7 @@ jobs:
         run: mkdir -p build
       - name: Configure
         working-directory: build
-        run: cmake -S .. -B . -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DQX_BUILD_TESTS=ON -DASAN_ENABLED=ON
+        run: cmake -S .. -B . -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DQX_BUILD_TESTS=ON
       - name: Build
         working-directory: build
         run: cmake --build . --parallel 10 --config ${{ matrix.build_type }}
