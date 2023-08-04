@@ -304,4 +304,4 @@ private:
     BasisVector measurementRegister{};
 };
 
-} // namespace qx::core
+}  // namespace qx::core

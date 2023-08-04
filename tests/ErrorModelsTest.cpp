@@ -34,15 +34,15 @@ TEST_F(ErrorModelsTest, depolarizing_channel__probability_1) {
     DepolarizingChannel const channel(1.);
     addError(channel);
     // X is applied to qubit 1.
-    checkState({{{"010"}, 1. + 0.i}});
+    checkState({{BasisVector{"010"}, 1. + 0.i}});
 
     addError(channel);
     // Z is applied to qubit 2.
-    checkState({{{"010"}, 1. + 0.i}});
+    checkState({{BasisVector{"010"}, 1. + 0.i}});
 
     addError(channel);
     // X is applied to qubit 0.
-    checkState({{{"011"}, 1. + 0.i}});
+    checkState({{BasisVector{"011"}, 1. + 0.i}});
 }
 
 TEST_F(ErrorModelsTest, depolarizing_channel_probability_0) {
@@ -53,7 +53,7 @@ TEST_F(ErrorModelsTest, depolarizing_channel_probability_0) {
     addError(channel);
     addError(channel);
 
-    checkState({{{"000"}, 1. + 0.i}});
+    checkState({{BasisVector{"000"}, 1. + 0.i}});
 }
 
 }  // namespace qx::error_models

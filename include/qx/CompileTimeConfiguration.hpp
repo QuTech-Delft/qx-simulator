@@ -1,7 +1,6 @@
 #pragma once
 
-namespace qx {
-namespace config {
+namespace qx::config {
 
 // Epsilon for double comparison
 static constexpr double EPS = 0.000000000001;
@@ -18,6 +17,4 @@ static constexpr std::uint64_t ZERO_CYCLE_SIZE = 100;
 // used based on the runtime number of qubits.
 static constexpr std::size_t MAX_QUBIT_NUMBER = 64;
 
-} // namespace config
-
-} // namespace qx
+}  // namespace qx::config

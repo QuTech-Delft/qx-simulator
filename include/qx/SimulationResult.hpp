@@ -7,6 +7,7 @@
 #include "absl/container/btree_map.h"
 #include "qx/Common.hpp"
 
+
 namespace qx {
 
 namespace core {
@@ -55,4 +56,4 @@ private:
     std::uint64_t nMeasurements = 0;
 };
 
-} // namespace qx
+}  // namespace qx

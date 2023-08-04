@@ -10,6 +10,7 @@
 #include <iostream>
 #include <vector>
 
+
 namespace qx {
 
 bool Simulator::set(std::string const &filePath) {
@@ -109,7 +110,7 @@ Simulator::execute(std::size_t iterations,
 
     auto simulationResult = simulationResultAccumulator.get();
 
-    if (jsonOutputFilePath != "") {
+    if (!jsonOutputFilePath.empty()) {
         auto resultJson = simulationResult.getJsonString();
         std::ofstream outfile(jsonOutputFilePath);
         outfile << resultJson;
@@ -127,7 +128,7 @@ executeString(std::string const &s, std::size_t iterations,
     }
 
     return simulator.execute(iterations, seed);
-};
+}
 
 std::optional<SimulationResult>
 executeFile(std::string const &filePath, std::size_t iterations,
@@ -138,6 +139,6 @@ executeFile(std::string const &filePath, std::size_t iterations,
     }
 
     return simulator.execute(iterations, seed);
-};
+}
 
 } // namespace qx

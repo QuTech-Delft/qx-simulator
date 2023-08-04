@@ -2,8 +2,8 @@
 
 #include <random>
 
-namespace qx {
-namespace random {
+
+namespace qx::random {
 
 namespace {
 class RandomNumberGenerator {
@@ -38,7 +38,7 @@ double randomZeroOneDouble() {
     // across platforms, so use this instead.
 
     double result = uniformMinMaxIntegerDistribution(
-        0, UINT_FAST64_MAX, RandomNumberGenerator::getInstance()());
+        0, UINT_FAST64_MAX, static_cast<double>(RandomNumberGenerator::getInstance()()));
     assert(0. <= result && result <= 1.);
     return result;
 }
@@ -57,7 +57,7 @@ std::uint_fast64_t randomInteger(std::uint_fast64_t min,
     assert(limit == numberOfBuckets * bucketSize);
     assert(limit <= UINT_FAST64_MAX);
 
-    std::uint_fast64_t r = 0;
+    std::uint_fast64_t r;
     do {
         r = RandomNumberGenerator::getInstance()();
     } while (r >= limit);
@@ -77,15 +77,15 @@ double uniformMinMaxIntegerDistribution(std::uint_fast64_t min,
                                         std::uint_fast64_t max, double x) {
     assert(min <= max);
 
-    if (x < min) {
+    if (x < static_cast<double>(min)) {
         return 0.;
     }
 
-    if (x >= max) {
+    if (x >= static_cast<double>(max)) {
         return 1.;
     }
 
-    return (std::floor(x - min) + 1) / (static_cast<double>(max - min) + 1);
+    return (std::floor(x - static_cast<double>(min)) + 1) / (static_cast<double>(max - min) + 1);
 }
 
 double uniformZeroOneContinuousDistribution(double x) {
@@ -100,5 +100,4 @@ double uniformZeroOneContinuousDistribution(double x) {
     return x;
 }
 
-} // namespace random
-} // namespace qx
+} // namespace qx::random

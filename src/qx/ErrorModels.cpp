@@ -3,8 +3,8 @@
 #include "qx/Gates.hpp"
 #include "qx/Random.hpp"
 
-namespace qx {
-namespace error_models {
+
+namespace qx::error_models {
 
 void DepolarizingChannel::addError(qx::core::QuantumState &quantumState) const {
     auto random = random::randomZeroOneDouble();
@@ -25,5 +25,4 @@ void DepolarizingChannel::addError(qx::core::QuantumState &quantumState) const {
     }
 }
 
-} // namespace error_models
-} // namespace qx
+} // namespace qx::error_models

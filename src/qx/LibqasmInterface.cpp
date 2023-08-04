@@ -5,6 +5,7 @@
 #include "qx/Gates.hpp"
 #include "v1x/cqasm-semantic-gen.hpp"
 
+
 namespace qx {
 
 namespace cq = ::cqasm::v1x::semantic;
@@ -13,22 +14,22 @@ namespace values = ::cqasm::v1x::values;
 namespace {
 class OperandsHelper {
 public:
-    OperandsHelper(const cq::Instruction &instruction)
+    explicit OperandsHelper(const cq::Instruction &instruction)
         : instruction(instruction) {}
 
-    cq::Many<values::ConstInt> get_qubit_operands(int id) const {
+    [[nodiscard]] cq::Many<values::ConstInt> get_qubit_operands(int id) const {
         return instruction.operands[id]->as_qubit_refs()->index;
     }
 
-    cq::Many<values::ConstInt> get_bit_operands(int id) const {
+    [[nodiscard]] cq::Many<values::ConstInt> get_bit_operands(int id) const {
         return instruction.operands[id]->as_bit_refs()->index;
     }
 
-    double get_float_operand(int id) const {
+    [[nodiscard]] double get_float_operand(int id) const {
         return instruction.operands[id]->as_const_real()->value;
     }
 
-    std::int64_t get_int_operand(int id) const {
+    [[nodiscard]] std::int64_t get_int_operand(int id) const {
         return instruction.operands[id]->as_const_int()->value;
     }
 
@@ -87,7 +88,7 @@ std::string to_string(cq::NodeType nodeType) {
 
 class GateConvertor : public cq::RecursiveVisitor {
 public:
-    GateConvertor(qx::Circuit &c) : circuit(c) {}
+    explicit GateConvertor(qx::Circuit &c) : circuit(c) {}
 
     void visit_instruction(cq::Instruction &instr) override { addGates(instr); }
 
@@ -96,8 +97,7 @@ public:
     }
 
     void visit_node(cq::Node &node) override {
-        throw std::runtime_error("Statements of the following type are not "
-                                 "supported by the simulator: " +
+        throw std::runtime_error("Statements of the following type are not supported by the simulator: " +
                                  to_string(node.type()));
     }
 
@@ -110,11 +110,11 @@ private:
 
         std::shared_ptr<std::vector<core::QubitIndex>> controlBits;
 
-        if (auto bitref = instruction.condition->as_bit_refs()) {
+        if (auto bit_ref = instruction.condition->as_bit_refs()) {
             controlBits = std::make_shared<std::vector<core::QubitIndex>>();
-            for (auto const &b : bitref->index) {
+            for (auto const &index : bit_ref->index) {
                 controlBits->push_back(
-                    core::QubitIndex{static_cast<std::size_t>(b->value)});
+                    core::QubitIndex{static_cast<std::size_t>(index->value)});
             }
         }
 
@@ -125,7 +125,7 @@ private:
     void addGates(
         core::DenseUnitaryMatrix<1 << NumberOfQubitOperands> matrix,
         std::array<cq::Many<values::ConstInt>, NumberOfQubitOperands> operands,
-        std::shared_ptr<std::vector<core::QubitIndex>> controlBits) {
+        const std::shared_ptr<std::vector<core::QubitIndex>> &controlBits) {
         static_assert(NumberOfQubitOperands > 0);
 
 #ifndef NDEBUG
@@ -136,7 +136,7 @@ private:
 #endif
 
         for (std::size_t i = 0; i < operands[0].size(); ++i) {
-            std::array<core::QubitIndex, NumberOfQubitOperands> ops;
+            std::array<core::QubitIndex, NumberOfQubitOperands> ops{};
             for (std::size_t op = 0; op < NumberOfQubitOperands; ++op) {
                 ops[op] = core::QubitIndex{
                     static_cast<std::size_t>(operands[op][i]->value)};
@@ -148,7 +148,7 @@ private:
     }
 
     void addGates(const cq::Instruction &instruction,
-                  std::shared_ptr<std::vector<core::QubitIndex>> controlBits) {
+                  const std::shared_ptr<std::vector<core::QubitIndex>> &controlBits) {
         auto &name = instruction.instruction->name;
         OperandsHelper operands(instruction);
 
@@ -187,7 +187,7 @@ private:
                         controlBits);
         } else if (name == "not") {
             BasisVector mask{};
-            for (auto b : operands.get_bit_operands(0)) {
+            for (const auto &b : operands.get_bit_operands(0)) {
                 mask.set(b->value);
             }
 
@@ -220,7 +220,7 @@ private:
                          operands.get_qubit_operands(1)},
                         controlBits);
         } else if (name == "prep_x") {
-            for (auto q : operands.get_qubit_operands(0)) {
+            for (const auto &q : operands.get_qubit_operands(0)) {
                 circuit.addInstruction(Circuit::PrepZ{core::QubitIndex{
                                            static_cast<std::size_t>(q->value)}},
                                        controlBits);
@@ -228,7 +228,7 @@ private:
             addGates<1>(gates::H, {operands.get_qubit_operands(0)},
                         controlBits);
         } else if (name == "prep_y") {
-            for (auto q : operands.get_qubit_operands(0)) {
+            for (const auto &q : operands.get_qubit_operands(0)) {
                 circuit.addInstruction(Circuit::PrepZ{core::QubitIndex{
                                            static_cast<std::size_t>(q->value)}},
                                        controlBits);
@@ -238,13 +238,13 @@ private:
             addGates<1>(gates::S, {operands.get_qubit_operands(0)},
                         controlBits);
         } else if (name == "prep_z") {
-            for (auto q : operands.get_qubit_operands(0)) {
+            for (const auto &q : operands.get_qubit_operands(0)) {
                 circuit.addInstruction(Circuit::PrepZ{core::QubitIndex{
                                            static_cast<std::size_t>(q->value)}},
                                        controlBits);
             }
         } else if (name == "measure" || name == "measure_z") {
-            for (auto q : operands.get_qubit_operands(0)) {
+            for (const auto &q : operands.get_qubit_operands(0)) {
                 circuit.addInstruction(Circuit::Measure{core::QubitIndex{
                                            static_cast<std::size_t>(q->value)}},
                                        controlBits);
@@ -254,7 +254,7 @@ private:
         } else if (name == "measure_x") {
             addGates<1>(gates::H, {operands.get_qubit_operands(0)},
                         controlBits);
-            for (auto q : operands.get_qubit_operands(0)) {
+            for (const auto &q : operands.get_qubit_operands(0)) {
                 circuit.addInstruction(Circuit::Measure{core::QubitIndex{
                                            static_cast<std::size_t>(q->value)}},
                                        controlBits);
@@ -264,7 +264,7 @@ private:
                         controlBits);
             addGates<1>(gates::H, {operands.get_qubit_operands(0)},
                         controlBits);
-            for (auto q : operands.get_qubit_operands(0)) {
+            for (const auto &q : operands.get_qubit_operands(0)) {
                 circuit.addInstruction(Circuit::Measure{core::QubitIndex{
                                            static_cast<std::size_t>(q->value)}},
                                        controlBits);
@@ -287,7 +287,7 @@ private:
                          operands.get_qubit_operands(1)},
                         controlBits);
         } else if (name == "crk") {
-            addGates<2>(gates::CR(gates::PI /
+            addGates<2>(gates::CR(static_cast<double>(gates::PI) /
                                   std::pow(2, operands.get_int_operand(2) - 1)),
                         {operands.get_qubit_operands(0),
                          operands.get_qubit_operands(1)},

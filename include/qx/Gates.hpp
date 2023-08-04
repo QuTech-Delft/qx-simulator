@@ -101,4 +101,4 @@ static_assert(H * H == UnitaryMatrix<2>::identity());
 static_assert(S * S == Z);
 #endif
 
-} // namespace qx::gates
+}  // namespace qx::gates

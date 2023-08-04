@@ -6,6 +6,7 @@
 #include <optional>
 #include <string>
 
+
 namespace qx {
 
 // Old API (deprecated).
@@ -19,12 +20,12 @@ public:
 
     bool setString(std::string const &s);
 
-    std::optional<SimulationResult>
+    [[nodiscard]] std::optional<SimulationResult>
     execute(std::size_t iterations = 1,
             std::optional<std::uint_fast64_t> seed = std::nullopt) const;
 
 private:
-    std::string jsonOutputFilePath = "";
+    std::string jsonOutputFilePath;
     cqasm::v1x::ast::One<cqasm::v1x::semantic::Program> program;
 };
 
@@ -37,4 +38,4 @@ std::optional<SimulationResult>
 executeFile(std::string const &filePath, std::size_t iterations = 1,
             std::optional<std::uint_fast64_t> seed = std::nullopt);
 
-} // namespace qx
+}  // namespace qx
