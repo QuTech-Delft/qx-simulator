@@ -110,7 +110,7 @@ TEST_F(RandomTest, test_that_the_test_statistic_is_properly_computed) {
         4. / 5.);
 }
 
-TEST_F(RandomTestFirstSeedTest, Kolmogorov_Smirnov_test_for_uniform_random_double_between_0_and_1) {
+TEST_F(RandomTestFirstSeedTest, kolmogorov_smirnov_test_for_uniform_random_double_between_0_and_1) {
     std::size_t sampleSize = 100000;
     std::vector<double> samples(sampleSize);
     std::generate(samples.begin(), samples.end(), randomZeroOneDouble);
@@ -134,7 +134,7 @@ TEST_F(RandomTestThirdSeedTest, kolmogorov_smirnov_test_for_uniform_random_doubl
     checkKolmogorovSmirnov(samples, uniformZeroOneContinuousDistribution);
 }
 
-TEST_F(RandomTestFirstSeedTest, Kolmogorov_Smirnov_test_for_random_integer) {
+TEST_F(RandomTestFirstSeedTest, kolmogorov_smirnov_test_for_random_integer) {
     std::size_t sampleSize = 1000000;
     std::size_t min = 63;
     std::size_t max = 125;
@@ -145,7 +145,7 @@ TEST_F(RandomTestFirstSeedTest, Kolmogorov_Smirnov_test_for_random_integer) {
         [&min, &max](double x) { return uniformMinMaxIntegerDistribution(min, max, x); });
 }
 
-TEST_F(RandomTestSecondSeedTest, Kolmogorov_Smirnov_test_for_random_integer) {
+TEST_F(RandomTestSecondSeedTest, kolmogorov_smirnov_test_for_random_integer) {
     std::size_t sampleSize = 1000000;
     std::size_t min = 63;
     std::size_t max = 125;
@@ -156,7 +156,7 @@ TEST_F(RandomTestSecondSeedTest, Kolmogorov_Smirnov_test_for_random_integer) {
         [&min, &max](double x) { return uniformMinMaxIntegerDistribution(min, max, x); });
 }
 
-TEST_F(RandomTestThirdSeedTest, Kolmogorov_Smirnov_test_for_random_integer) {
+TEST_F(RandomTestThirdSeedTest, kolmogorov_smirnov_test_for_random_integer) {
     std::size_t sampleSize = 1000000;
     std::size_t min = 63;
     std::size_t max = 125;

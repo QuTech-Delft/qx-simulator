@@ -45,7 +45,7 @@ TEST_F(ErrorModelsTest, depolarizing_channel__probability_1) {
     checkState({{BasisVector{"011"}, 1. + 0.i}});
 }
 
-TEST_F(ErrorModelsTest, depolarizing_channel_probability_0) {
+TEST_F(ErrorModelsTest, depolarizing_channel__probability_0) {
     DepolarizingChannel const channel(0.);
 
     addError(channel);
