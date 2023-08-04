@@ -148,13 +148,14 @@ target_include_directories(qx
 if(CMAKE_COMPILER_IS_GNUCXX)
     target_compile_options(qx PRIVATE
         -Wall -Wextra -Werror -Wfatal-errors
+        -Wno-error=restrict
     )
 elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     target_compile_options(qx PRIVATE
         -Wall -Wextra -Werror -Wfatal-errors
-        -Wno-unused-function
-        -Wno-unused-local-typedef
-        -Wunused-but-set-variable
+        -Wno-error=unused-but-set-variable
+        -Wno-error=unused-function
+        -Wno-error=unused-local-typedef
     )
 elseif(MSVC)
     target_compile_options(qx PRIVATE
@@ -177,6 +178,21 @@ if(!${QX_CPU_COMPATIBILITY_MODE})
         target_compile_options(qx PUBLIC
             -march=native
         )
+    endif()
+endif()
+
+# Address sanitizer
+if(ASAN_ENABLED)
+    if(MSVC AND CMAKE_BUILD_TYPE STREQUAL "Debug")
+        string(REGEX REPLACE "/RTC(su|[1su])" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+        message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}\n")
+
+        # /MTd is needed to link clang_rt.asan-i386.lib statically
+        # Otherwise the path to clang_rt.asan-i386.dll should be provided
+        add_compile_options(/fsanitize=address /MTd)
+    elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+        add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer)
+        add_link_options(-fsanitize=address,undefined)
     endif()
 endif()
 
