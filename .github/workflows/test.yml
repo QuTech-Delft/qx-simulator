@@ -20,9 +20,8 @@ jobs:
           - clang++
           - g++
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Get latest CMake
         uses: lukka/get-cmake@latest
       - name: Create build directory
@@ -49,9 +48,8 @@ jobs:
           - Debug
           - Release
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Install flex/bison
         run: |
           brew install flex bison
@@ -81,24 +79,23 @@ jobs:
           - Debug
           - Release
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Install Winflexbison3
         shell: powershell
         run: choco install winflexbison3 --version 2.5.24.20210105
       - name: Get latest CMake
         uses: lukka/get-cmake@latest
       - name: Create build directory
-        run: mkdir -p build
+        run: mkdir -p build-${{ matrix.build_type }}
       - name: Configure
-        working-directory: build
+        working-directory: build-${{ matrix.build_type }}
         run: cmake -S .. -B . -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DQX_BUILD_TESTS=ON
       - name: Build
-        working-directory: build
+        working-directory: build-${{ matrix.build_type }}
         run: cmake --build . --parallel 10 --config ${{ matrix.build_type }}
       - name: Test
-        working-directory: build
+        working-directory: build-${{ matrix.build_type }}
         run: ctest -C ${{ matrix.build_type }} --output-on-failure
 
   cpp-arm64:
@@ -125,9 +122,8 @@ jobs:
           echo "$(brew --prefix flex)/bin" >> $GITHUB_PATH
           echo "$(brew --prefix bison)/bin" >> $GITHUB_PATH
         shell: bash
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Get latest CMake
         uses: lukka/get-cmake@latest
       - name: Create build directory
@@ -153,9 +149,8 @@ jobs:
           - macos-latest
           - windows-latest
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - name: Checkout
+        uses: actions/checkout@v3
       - uses: actions/setup-python@v4
         with:
           python-version: "3.11"
