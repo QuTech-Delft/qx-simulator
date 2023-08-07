@@ -1,22 +1,54 @@
-cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
+# Packages
+include(FetchContent)
 
-add_qx_test(BitsetTest BitsetTest.cpp .)
-target_link_libraries(BitsetTest PRIVATE doctest)
+message(STATUS "Fetching googletest")
+FetchContent_Declare(googletest
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG "f8d7d77c06936315286eb55f8de22cd23c188571"
+)
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
 
-add_qx_test(DenseUnitaryMatrixTest DenseUnitaryMatrixTest.cpp .)
-target_link_libraries(DenseUnitaryMatrixTest PRIVATE doctest)
+# Test executable
+add_executable(${PROJECT_NAME}_test)
 
-add_qx_test(SparseArrayTest SparseArrayTest.cpp .)
-target_link_libraries(SparseArrayTest PRIVATE doctest)
+# Test sources
+target_sources(${PROJECT_NAME}_test PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/BitsetTest.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/DenseUnitaryMatrixTest.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/ErrorModelsTest.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/IntegrationTest.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/QuantumStateTest.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/SparseArrayTest.cpp"
+)
 
-add_qx_test(QuantumStateTest QuantumStateTest.cpp .)
-target_link_libraries(QuantumStateTest PRIVATE doctest)
+# Target options
+target_link_libraries(${PROJECT_NAME}_test
+    PRIVATE qx
+    PRIVATE GTest::gmock
+    PRIVATE GTest::gtest
+)
+if(CMAKE_COMPILER_IS_GNUCXX)
+    target_compile_options(${PROJECT_NAME}_test PRIVATE
+        -Wall -Wextra -Werror -Wfatal-errors
+        -Wno-error=restrict
+    )
+elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+    target_compile_options(${PROJECT_NAME}_test PRIVATE
+        -Wall -Wextra -Werror -Wfatal-errors
+        -Wno-error=unused-but-set-variable
+        -Wno-error=unused-function
+        -Wno-error=unused-local-typedef
+    )
+elseif(MSVC)
+    target_compile_options(${PROJECT_NAME}_test PRIVATE
+        /MP /EHsc /bigobj
+    )
+else()
+    message(SEND_ERROR "Unknown compiler!")
+endif()
 
-add_qx_test(ErrorModelsTest ErrorModelsTest.cpp .)
-target_link_libraries(ErrorModelsTest PRIVATE doctest)
-
-add_qx_test(RandomTest RandomTest.cpp .)
-target_link_libraries(RandomTest PRIVATE doctest)
-
-add_qx_test(IntegrationTest IntegrationTest.cpp .)
-target_link_libraries(IntegrationTest PRIVATE doctest)
+gtest_discover_tests(${PROJECT_NAME}_test
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+)

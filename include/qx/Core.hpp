@@ -8,8 +8,8 @@
 #include "qx/Common.hpp"
 #include "qx/CompileTimeConfiguration.hpp"
 
-namespace qx {
-namespace core {
+
+namespace qx::core {
 
 inline constexpr bool isNotNull(std::complex<double> c) {
 #if defined(_MSC_VER)
@@ -42,8 +42,7 @@ public:
     explicit constexpr DenseUnitaryMatrix(Matrix const &m)
         : DenseUnitaryMatrix(m, true) {}
 
-    inline constexpr std::complex<double> at(std::size_t i,
-                                             std::size_t j) const {
+    [[nodiscard]] inline constexpr const std::complex<double>& at(std::size_t i, std::size_t j) const {
         return matrix[i][j];
     }
 
@@ -93,9 +92,9 @@ private:
     }
 
     constexpr void checkUnitary() const {
-        if (!(*this * dagger() == identity())) {
+        if (*this * dagger() != identity()) {
             throw std::runtime_error("Matrix is not unitary");
-        };
+        }
     }
 
     std::array<std::array<std::complex<double>, N>, N> const matrix;
@@ -112,9 +111,9 @@ public:
 
     explicit SparseArray(std::size_t s) : size(s){};
 
-    std::size_t getSize() const { return size; }
+    [[nodiscard]] std::size_t getSize() const { return size; }
 
-    std::vector<std::complex<double>> testToVector() const {
+    [[nodiscard]] std::vector<std::complex<double>> testToVector() const {
         std::vector<std::complex<double>> result(getSize(), 0);
 
         for (auto const &kv : *this) {
@@ -124,9 +123,9 @@ public:
         return result;
     }
 
-    Iterator begin() const { return data.cbegin(); }
+    [[nodiscard]] Iterator begin() const { return data.cbegin(); }
 
-    Iterator end() const { return data.cend(); }
+    [[nodiscard]] Iterator end() const { return data.cend(); }
 
     void set(BasisVector index, std::complex<double> value);
 
@@ -189,22 +188,20 @@ public:
         : numberOfQubits(n), data(1 << numberOfQubits) {
         assert(numberOfQubits > 0 && "QuantumState needs at least one qubit");
         assert(numberOfQubits <= config::MAX_QUBIT_NUMBER &&
-               "QuantumState currently cannot support that many qubits with "
-               "this version of OpenQL");
-        data.set(BasisVector{}, 1); // Start initialized in state 00...000
+               "QuantumState currently cannot support that many qubits with this version of OpenQL");
+        data.set(BasisVector{}, 1);  // Start initialized in state 00...000
     };
 
-    std::size_t getNumberOfQubits() const { return numberOfQubits; }
+    [[nodiscard]] std::size_t getNumberOfQubits() const { return numberOfQubits; }
 
     void reset() {
         data.clear();
-        data.set(BasisVector{}, 1); // Start initialized in state 00...000
+        data.set(BasisVector{}, 1);  // Start initialized in state 00...000
         measurementRegister.reset();
     }
 
     void testInitialize(
-        std::initializer_list<std::pair<std::string, std::complex<double>>>
-            values);
+        std::initializer_list<std::pair<std::string, std::complex<double>>> values);
 
     template <std::size_t NumberOfOperands>
     QuantumState &
@@ -213,7 +210,7 @@ public:
 
     template <typename F> void forEach(F &&f) { data.forEachSorted(f); }
 
-    BasisVector getMeasurementRegister() const { return measurementRegister; }
+    [[nodiscard]] BasisVector getMeasurementRegister() const { return measurementRegister; }
 
     BasisVector &getMeasurementRegister() { return measurementRegister; }
 
@@ -305,5 +302,4 @@ private:
     BasisVector measurementRegister{};
 };
 
-} // namespace core
-} // namespace qx
+}  // namespace qx::core

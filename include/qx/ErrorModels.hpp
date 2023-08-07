@@ -4,6 +4,7 @@
 
 #include <variant>
 
+
 namespace qx {
 
 class Circuit;
@@ -12,7 +13,7 @@ namespace error_models {
 
 class DepolarizingChannel {
 public:
-    DepolarizingChannel(double p) : probability(p) {
+    explicit DepolarizingChannel(double p) : probability(p) {
         assert(0. <= p && p <= 1.);
     }
 
@@ -38,5 +39,5 @@ ErrorModel getErrorModel(ErrorModelDef errorModelDef) {
         errorModelDef->parameters[0]->as_const_real()->value);
 }
 
-} // namespace error_models
-} // namespace qx
+}  // namespace error_models
+}  // namespace qx

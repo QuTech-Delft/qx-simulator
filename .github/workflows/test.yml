@@ -3,12 +3,12 @@ name: Test
 on:
   push:
     branches:
-      - develop
+    - develop
   pull_request:
 
 jobs:
   cpp-linux:
-    name: "C++ tests on Linux (x64)"
+    name: 'C++ tests (gcc-clang/Linux/x64)'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -20,58 +20,26 @@ jobs:
           - clang++
           - g++
     steps:
-      - name: Checkout with submodules
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Get latest CMake
+        uses: lukka/get-cmake@latest
       - name: Create build directory
         run: mkdir -p build-${{ matrix.compiler }}-${{ matrix.build_type }}
       - name: Configure
-        working-directory: build-${{ matrix.compiler }}-${{ matrix.build_type }}
         env:
           CXX: ${{ matrix.compiler }}
+        working-directory: build-${{ matrix.compiler }}-${{ matrix.build_type }}
         run: cmake -S .. -B . -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DQX_BUILD_TESTS=ON
       - name: Build
         working-directory: build-${{ matrix.compiler }}-${{ matrix.build_type }}
-        env:
-          CXX: ${{ matrix.compiler }}
         run: cmake --build . --parallel 10
       - name: Test
         working-directory: build-${{ matrix.compiler }}-${{ matrix.build_type }}
-        run: ctest --output-on-failure
-
-  cpp-linux-arm64:
-    name: "C++ tests on Linux (arm64)"
-    runs-on:
-      - "self-hosted"
-      - "ARM64"
-      - "Linux"
-    steps:
-      - name: Checkout with submodules
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
-      - name: Install dependencies
-        run: |
-          sudo yum install -y flex bison swig cmake clang gcc
-      - name: Create build directory
-        run: mkdir -p build-g++-Release
-      - name: Configure
-        working-directory: build-g++-Release
-        env:
-          CXX: g++
-        run: cmake -S .. -B . -DCMAKE_BUILD_TYPE=Release -DQX_BUILD_TESTS=ON
-      - name: Build
-        working-directory: build-g++-Release
-        env:
-          CXX: g++
-        run: cmake --build . --parallel 10
-      - name: Test
-        working-directory: build-g++-Release
-        run: ctest --output-on-failure
+        run: ctest -C ${{ matrix.build_type }} --output-on-failure
 
   cpp-macos:
-    name: "C++ tests on MacOS with Clang"
+    name: 'C++ tests (clang/MacOS/x64)'
     runs-on: macos-latest
     strategy:
       fail-fast: false
@@ -80,15 +48,15 @@ jobs:
           - Debug
           - Release
     steps:
-      - name: Checkout with submodules
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
-      - name: Install Bison and Flex
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install flex/bison
         run: |
-          brew install bison flex
-          echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
-          echo "/usr/local/opt/flex/bin" >> $GITHUB_PATH
+          brew install flex bison
+          echo "$(brew --prefix flex)/bin" >> $GITHUB_PATH
+          echo "$(brew --prefix bison)/bin" >> $GITHUB_PATH
+      - name: Get latest CMake
+        uses: lukka/get-cmake@latest
       - name: Create build directory
         run: mkdir -p build-${{ matrix.build_type }}
       - name: Configure
@@ -99,10 +67,10 @@ jobs:
         run: cmake --build . --parallel 10
       - name: Test
         working-directory: build-${{ matrix.build_type }}
-        run: ctest --output-on-failure
+        run: ctest -C ${{ matrix.build_type }} --output-on-failure
 
   cpp-windows:
-    name: "C++ tests on Windows"
+    name: 'C++ tests (msvc/Windows/x64)'
     runs-on: windows-latest
     strategy:
       fail-fast: false
@@ -111,24 +79,64 @@ jobs:
           - Debug
           - Release
     steps:
-      - name: Checkout with submodules
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Install Winflexbison3
         shell: powershell
         run: choco install winflexbison3 --version 2.5.24.20210105
+      - name: Get latest CMake
+        uses: lukka/get-cmake@latest
       - name: Create build directory
         run: mkdir -p build-${{ matrix.build_type }}
       - name: Configure
         working-directory: build-${{ matrix.build_type }}
-        run: cmake -S .. -B . -DQX_BUILD_TESTS=ON
+        run: cmake -S .. -B . -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DQX_BUILD_TESTS=ON
       - name: Build
         working-directory: build-${{ matrix.build_type }}
         run: cmake --build . --parallel 10 --config ${{ matrix.build_type }}
       - name: Test
         working-directory: build-${{ matrix.build_type }}
         run: ctest -C ${{ matrix.build_type }} --output-on-failure
+
+  cpp-arm64:
+    name: 'C++ tests (gcc/Linux/ARM64, clang/MacOS/ARM64)'
+    runs-on: [self-hosted, ARM64, "${{ matrix.os }}"]
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - Linux
+          - macOS
+    steps:
+      - if: matrix.os == 'Linux'
+        name: Install flex/bison, and gcc (Linux)
+        run: |
+          sudo apt-get -y update
+          sudo apt-get -y upgrade
+          sudo apt-get -y install flex bison gcc
+        shell: bash
+      - if: matrix.os == 'macOS'
+        name: Install flex/bison, and gcc (MacOS)
+        run: |
+          brew install flex bison gcc
+          echo "$(brew --prefix flex)/bin" >> $GITHUB_PATH
+          echo "$(brew --prefix bison)/bin" >> $GITHUB_PATH
+        shell: bash
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Get latest CMake
+        uses: lukka/get-cmake@latest
+      - name: Create build directory
+        run: mkdir -p build
+      - name: Configure
+        working-directory: build
+        run: cmake -S .. -B . -DCMAKE_BUILD_TYPE=Release -DQX_BUILD_TESTS=ON
+      - name: Build
+        working-directory: build
+        run: cmake --build . --parallel 10
+      - name: Test
+        working-directory: build
+        run: ctest -C Release --output-on-failure
 
   python:
     name: Python
@@ -141,19 +149,18 @@ jobs:
           - macos-latest
           - windows-latest
     steps:
-      - name: Checkout with submodules
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
-      - uses: actions/setup-python@v2
+      - name: Checkout
+        uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         with:
           python-version: "3.11"
       - name: Install Python dependencies
         run: python -m pip install --upgrade pip setuptools wheel pytest
       - name: Install SWIG
         if: matrix.os == 'ubuntu-latest'
-        run: sudo apt-get install -y swig
-      - name: Install Bison, Flex and SWIG
+        run: |
+          sudo apt-get install -y swig
+      - name: Install flex/bison and SWIG
         if: matrix.os == 'macos-latest'
         run: |
           brew install bison flex swig
@@ -162,12 +169,15 @@ jobs:
       - name: Install Winflexbison3
         if: matrix.os == 'windows-latest'
         shell: powershell
-        run: choco install winflexbison3 --version 2.5.24.20210105
-      - name: Build the Qxelarator module
+        run: |
+          choco install winflexbison3 --version 2.5.24.20210105
+      - name: Get latest CMake
+        uses: lukka/get-cmake@latest
+      - name: Build
         env:
           QX_CPU_COMPATIBILITY_MODE: ON
           NPROCS: 10
         run: python -m pip install --verbose .
-      - name: Python tests
+      - name: Test
         working-directory: tests/qxelarator
         run: python -m pytest

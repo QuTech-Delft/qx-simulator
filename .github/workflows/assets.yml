@@ -20,11 +20,9 @@ jobs:
           - "3.10"
           - "3.11"
     steps:
-      - name: Checkout with submodules
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
-      - uses: actions/setup-python@v2
+      - name: Checkout
+        uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python }}
       - name: Install dependencies
@@ -42,7 +40,7 @@ jobs:
         id: wheel
         working-directory: pybuild/dist/
         run: echo "##[set-output name=wheel;]$(ls *.whl)"
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: pypi-macos-py${{ matrix.python }}
           path: pybuild/dist/${{ steps.wheel.outputs.wheel }}
@@ -73,10 +71,8 @@ jobs:
           - "cp310-cp310"
           - "cp311-cp311"
     steps:
-      - name: Checkout with submodules
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Install dependencies
         run: |
           yum install -y flex bison-$BISON_VERSION swig3-$SWIG_VERSION cmake
@@ -92,7 +88,7 @@ jobs:
         id: wheel
         working-directory: wheelhouse
         run: echo "##[set-output name=wheel;]$(ls *.whl)"
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: pypi-linux-${{ matrix.cpython_version }}
           path: wheelhouse/${{ steps.wheel.outputs.wheel }}
@@ -125,10 +121,8 @@ jobs:
           - "cp310-cp310"
           - "cp311-cp311"
     steps:
-      - name: Checkout with submodules
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Install dependencies
         run: |
           sudo yum install -y flex bison swig cmake
@@ -144,7 +138,7 @@ jobs:
         id: wheel
         working-directory: wheelhouse
         run: echo "##[set-output name=wheel;]$(ls *.whl)"
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: pypi-linux-${{ matrix.cpython_version }}
           path: wheelhouse/${{ steps.wheel.outputs.wheel }}
@@ -169,14 +163,12 @@ jobs:
           - "3.10"
           - "3.11"
     steps:
-      - name: Checkout with submodules
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
-      - uses: actions/setup-python@v2
+      - name: Checkout
+        uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python }}
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: C:\Users\runneradmin\AppData\Local\Temp\chocolatey
           key: ${{ runner.os }}-chocolatey-python-1
@@ -196,7 +188,7 @@ jobs:
         id: wheel
         working-directory: pybuild/dist/
         run: echo "##[set-output name=wheel;]$(Get-ChildItem -name *.whl)"
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: pypi-windows-py${{ matrix.python }}
           path: pybuild/dist/${{ steps.wheel.outputs.wheel }}
@@ -221,7 +213,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         id: download
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@v1.3.1

@@ -1,9 +1,0 @@
-[submodule "deps/libqasm"]
-	path = deps/libqasm
-	url = https://github.com/QuTech-Delft/libqasm.git
-[submodule "deps/doctest"]
-	path = deps/doctest
-	url = https://github.com/doctest/doctest.git
-[submodule "deps/abseil-cpp"]
-	path = deps/abseil-cpp
-	url = https://github.com/abseil/abseil-cpp.git

@@ -1,8 +1,9 @@
 #include "qx/Core.hpp"
 
-namespace qx {
-namespace core {
+namespace qx::core {
+
 namespace {
+
 template <std::size_t NumberOfOperands>
 void applyImpl(DenseUnitaryMatrix<1 << NumberOfOperands> const &matrix,
                std::array<QubitIndex, NumberOfOperands> const &operands,
@@ -10,20 +11,17 @@ void applyImpl(DenseUnitaryMatrix<1 << NumberOfOperands> const &matrix,
                SparseArray::Map &storage) {
     utils::Bitset<NumberOfOperands> reducedIndex;
     for (std::size_t i = 0; i < NumberOfOperands; ++i) {
-        reducedIndex.set(i,
-                         index.test(operands[NumberOfOperands - i - 1].value));
+        reducedIndex.set(i, index.test(operands[NumberOfOperands - i - 1].value));
     }
 
     for (std::size_t i = 0; i < (1 << NumberOfOperands); ++i) {
-        std::complex<double> addedValue =
-            value * matrix.at(i, reducedIndex.toSizeT());
+        std::complex<double> addedValue = value * matrix.at(i, reducedIndex.toSizeT());
 
         if (isNotNull(addedValue)) {
             auto newIndex = index;
 
             for (std::size_t k = 0; k < NumberOfOperands; ++k) {
-                newIndex.set(operands[NumberOfOperands - k - 1].value,
-                             utils::getBit(i, k));
+                newIndex.set(operands[NumberOfOperands - k - 1].value, utils::getBit(i, k));
             }
 
             auto it = storage.try_emplace(newIndex, 0);
@@ -32,6 +30,7 @@ void applyImpl(DenseUnitaryMatrix<1 << NumberOfOperands> const &matrix,
         }
     }
 }
+
 } // namespace
 
 void SparseArray::set(BasisVector index, std::complex<double> value) {
@@ -54,8 +53,7 @@ void SparseArray::cleanupZeros() {
 }
 
 void QuantumState::testInitialize(
-    std::initializer_list<std::pair<std::string, std::complex<double>>>
-        values) {
+    std::initializer_list<std::pair<std::string, std::complex<double>>> values) {
     data.clear();
     double norm = 0;
     for (auto const &kv : values) {
@@ -64,7 +62,7 @@ void QuantumState::testInitialize(
         norm += std::norm(kv.second);
     }
     assert(!isNotNull(norm - 1));
-};
+}
 
 template <std::size_t NumberOfOperands>
 QuantumState &
@@ -79,9 +77,8 @@ QuantumState::apply(DenseUnitaryMatrix<1 << NumberOfOperands> const &m,
                         }) == operands.end() &&
            "Operand refers to a non-existing qubit");
 
-    data.applyLinear(std::bind(&applyImpl<NumberOfOperands>, m, operands,
-                               std::placeholders::_1, std::placeholders::_2,
-                               std::placeholders::_3));
+    data.applyLinear([&m, &operands](auto index, auto value, auto &storage) {
+        applyImpl<NumberOfOperands>(m, operands, index, value, storage); });
 
     return *this;
 }
@@ -100,5 +97,4 @@ template QuantumState &
 QuantumState::apply<3>(DenseUnitaryMatrix<1 << 3> const &m,
                        std::array<QubitIndex, 3> const &operands);
 
-} // namespace core
-} // namespace qx
+} // namespace qx::core

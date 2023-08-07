@@ -2,6 +2,7 @@
 
 #include "qx/Simulator.hpp"
 
+
 namespace qxelarator {
 
 // Old API (deprecated).
@@ -12,9 +13,9 @@ public:
         simulator.setJSONOutputPath(filePath);
     }
 
-    bool set(std::string filePath) { return simulator.set(filePath); }
+    bool set(const std::string &filePath) { return simulator.set(filePath); }
 
-    bool set_string(std::string s) { return simulator.setString(s); }
+    bool set_string(const std::string &s) { return simulator.setString(s); }
 
     std::string execute(std::size_t iterations = 1) {
         auto simulationResult = simulator.execute(iterations);
@@ -40,4 +41,4 @@ execute_file(std::string const &filePath, std::size_t iterations = 1,
     return qx::executeFile(filePath, iterations, seed);
 }
 
-} // namespace qxelarator
+}  // namespace qxelarator

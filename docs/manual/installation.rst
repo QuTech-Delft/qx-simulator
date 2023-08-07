@@ -48,7 +48,7 @@ You will need to have SWIG installed for the above to work.
 Building the C++ executable from source
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This is particularily useful for debugging purposes, as the executable can then be run under ``gdb``, for instance. To do so,
+This is particularly useful for debugging purposes, as the executable can then be run under ``gdb``, for instance. To do so,
 do not forget to build it in debug mode, otherwise compiler optimizations will make debugging more difficult.
 
 ::

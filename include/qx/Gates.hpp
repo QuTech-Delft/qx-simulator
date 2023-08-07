@@ -2,8 +2,8 @@
 
 #include "qx/Core.hpp"
 
-namespace qx {
-namespace gates {
+
+namespace qx::gates {
 
 template <std::size_t N> using UnitaryMatrix = core::DenseUnitaryMatrix<N>;
 
@@ -101,5 +101,4 @@ static_assert(H * H == UnitaryMatrix<2>::identity());
 static_assert(S * S == Z);
 #endif
 
-} // namespace gates
-} // namespace qx
+}  // namespace qx::gates

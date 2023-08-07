@@ -4,16 +4,17 @@
 #include <iomanip>
 #include <iostream>
 
+
 namespace qx {
 
 namespace {
 class JsonDict {
 public:
     template <typename V> void add(std::string key, V value) {
-        m.push_back(std::make_pair(key, ValueType(value)));
+        m.emplace_back(std::move(key), ValueType(value));
     }
 
-    std::string to_string(std::size_t level = 0) const {
+    [[nodiscard]] std::string to_string(std::size_t level = 0) const {
         std::stringstream ss;
 
         ss << std::fixed << std::setprecision(config::OUTPUT_DECIMALS) << "{"
@@ -29,8 +30,8 @@ public:
 
             ss << std::string((level + 1) * 4, ' ') << '"' << kv.first
                << "\": ";
-            if (auto const *d = std::get_if<JsonDict>(&kv.second)) {
-                ss << d->to_string(level + 1);
+            if (auto const *jd = std::get_if<JsonDict>(&kv.second)) {
+                ss << jd->to_string(level + 1);
             } else if (auto const *d = std::get_if<double>(&kv.second)) {
                 ss << *d;
             } else if (auto const *i = std::get_if<std::uint64_t>(&kv.second)) {
@@ -78,7 +79,7 @@ std::string SimulationResult::getJsonString() {
 }
 
 void SimulationResultAccumulator::append(BasisVector measuredState) {
-    assert(measuredStates.size() <= (1 << quantumState.getNumberOfQubits()));
+    assert(measuredStates.size() <= (1u << quantumState.getNumberOfQubits()));
     measuredStates[measuredState]++;
     nMeasurements++;
 }
@@ -103,7 +104,7 @@ std::ostream &operator<<(std::ostream &os, SimulationResult const &r) {
         const auto &stateString = kv.first;
         const auto &count = kv.second;
         os << stateString << "       " << count << "/" << r.shots_done << " ("
-           << static_cast<double>(count) / r.shots_done << ")" << std::endl;
+           << static_cast<double>(count) / static_cast<double>(r.shots_done) << ")" << std::endl;
     }
     return os;
 }
@@ -119,8 +120,7 @@ SimulationResult SimulationResultAccumulator::get() {
         const auto &state = kv.first;
         const auto &count = kv.second;
 
-        simulationResult.results.push_back(
-            std::make_pair(getStateString(state), count));
+        simulationResult.results.emplace_back(getStateString(state), count);
     }
 
     forAllNonZeroStates([&simulationResult](auto stateString, auto c) {

@@ -7,7 +7,9 @@
 #include <string>
 #include <vector>
 
+
 namespace qx {
+
 class Circuit {
 public:
     struct Measure {
@@ -36,9 +38,9 @@ public:
 
     struct ControlledInstruction {
         ControlledInstruction(
-            Instruction const &instr,
+            Instruction instr,
             std::shared_ptr<std::vector<core::QubitIndex>> ctrlB)
-            : instruction(instr), controlBits(ctrlB){};
+            : instruction(std::move(instr)), controlBits(std::move(ctrlB)){};
 
         Instruction instruction;
         std::shared_ptr<std::vector<core::QubitIndex>> controlBits;
@@ -46,23 +48,23 @@ public:
 
     // We could in the future add loops and if/else...
 
-    Circuit(std::string name = "", std::size_t iterations = 1)
-        : name(name), iterations(iterations) {}
+    explicit Circuit(std::string name = "", std::size_t iterations = 1)
+        : name(std::move(name)), iterations(iterations) {}
 
     void
-    addInstruction(Instruction const &instruction,
+    addInstruction(Instruction instruction,
                    std::shared_ptr<std::vector<core::QubitIndex>> controlBits) {
-        controlledInstructions.emplace_back(instruction, controlBits);
+        controlledInstructions.emplace_back(std::move(instruction), std::move(controlBits));
     }
 
     void execute(core::QuantumState &quantumState,
                  error_models::ErrorModel const &errorModel) const;
 
-    std::string getName() const { return name; }
+    [[nodiscard]] std::string getName() const { return name; }
 
 private:
     std::vector<ControlledInstruction> controlledInstructions;
     std::string const name;
     std::size_t const iterations = 1;
 };
-} // namespace qx
+}  // namespace qx

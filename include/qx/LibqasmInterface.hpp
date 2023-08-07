@@ -2,7 +2,8 @@
 
 #include <memory>
 
-namespace cqasm::v1::semantic {
+
+namespace cqasm::v1x::semantic {
 class Subcircuit;
 }
 
@@ -10,6 +11,6 @@ namespace qx {
 
 class Circuit;
 
-qx::Circuit loadCqasmCode(cqasm::v1::semantic::Subcircuit const &subcircuit);
+qx::Circuit loadCqasmCode(cqasm::v1x::semantic::Subcircuit const &subcircuit);
 
-} // namespace qx
+}  // namespace qx
