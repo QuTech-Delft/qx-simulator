@@ -111,6 +111,7 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 #=============================================================================#
 
 message(STATUS "Fetching abseil")
+set(ABSL_PROPAGATE_CXX_STD ON)
 FetchContent_Declare(abseil
     GIT_REPOSITORY https://github.com/abseil/abseil-cpp.git
     GIT_TAG "c2435f8342c2d0ed8101cb43adfd605fdc52dca2"
@@ -118,6 +119,7 @@ FetchContent_Declare(abseil
 FetchContent_MakeAvailable(abseil)
 
 message(STATUS "Fetching cqasm")
+option(LIBQASM_COMPAT "" ON)
 FetchContent_Declare(cqasm
     GIT_REPOSITORY https://github.com/QuTech-Delft/libqasm.git
     GIT_TAG "8d0b4ed5e3a30aa6fde3b3aaf20a207b5d07876e"
@@ -201,11 +203,10 @@ endif()
 # Configure, build, and link dependencies                                     #
 #=============================================================================#
 
-option(LIBQASM_COMPAT "" ON)
-target_link_libraries(qx PUBLIC cqasm)
-
-set(ABSL_PROPAGATE_CXX_STD ON)
-target_link_libraries(qx PUBLIC absl::flat_hash_map)
+target_link_libraries(qx PUBLIC
+    absl::flat_hash_map
+    cqasm
+)
 
 #=============================================================================#
 # Executables                                                                 #

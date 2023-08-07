@@ -42,7 +42,7 @@ public:
     explicit constexpr DenseUnitaryMatrix(Matrix const &m)
         : DenseUnitaryMatrix(m, true) {}
 
-    [[nodiscard]] inline constexpr std::complex<double> at(std::size_t i, std::size_t j) const {
+    [[nodiscard]] inline constexpr const std::complex<double>& at(std::size_t i, std::size_t j) const {
         return matrix[i][j];
     }
 
