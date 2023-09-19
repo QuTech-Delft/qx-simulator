@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [ 0.6.3 ] - [ 2023-09-19 ]
+
+### Added
+
+- Address sanitizer CMake mode
+
+### Changed
+
+- Removed submodules and deps/ folder, replaced with CMake FetchContent
+- C++23
+- gtest instead of doctest
+- Various fixes to Github actions
+- Fixed bug in bitset due to bool automatic casting to 32 bits
+- Documentation formatting fixes
+- Doc chapter about internals
+
+### Removed
+
+-
+
+
 ## [ 0.6.2 ] - [ 2023-02-21 ]
 
 ### Added
