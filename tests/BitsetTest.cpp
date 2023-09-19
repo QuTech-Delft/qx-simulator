@@ -25,6 +25,19 @@ TEST(bitset, set_test) {
     EXPECT_EQ(victim.toSizeT(), 11);
 }
 
+TEST(bitset, set_test_64) {
+    Bitset<64> victim{};
+
+    victim.set(31);
+
+    EXPECT_TRUE(victim.test(31));
+    for (auto i = 0; i < 64; ++i) {
+        if (i != 31) {
+            EXPECT_FALSE(victim.test(i));
+        }
+    }
+}
+
 TEST(bitset, set_test_with_a_lot_of_bits) {
     Bitset<150> victim{};
     EXPECT_FALSE(victim.test(120));
