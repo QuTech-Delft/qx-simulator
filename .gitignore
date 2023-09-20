@@ -9,3 +9,5 @@ __pycache__
 # CLion files
 /.idea
 /cmake-build-*
+
+*.code-workspace
