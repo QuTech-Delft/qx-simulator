@@ -39,7 +39,7 @@ class QxelaratorTest(unittest.TestCase):
         self.assertEqual(simulationResult.results, {"00": 23})
         self.assertEqual(simulationResult.state, {"11": complex(1., 0.)})
 
-    def test_execute_string_fails_returns_none(self):
+    def test_execute_string_fails_returns_simulation_error(self):
         cQasmString = \
 """
 version 1.0
@@ -53,7 +53,18 @@ qubits 1
         simulationError = qxelarator.execute_string(cQasmString, iterations = 2)
 
         self.assertIsInstance(simulationError, qxelarator.SimulationError)
-        self.assertEqual(simulationError.message, "Simulation failed!")
+        self.assertEqual(simulationError.message, """\
+Cannot parse and analyze string 
+version 1.0
+
+qubits 1
+
+.myCircuit
+    x q[0],
+    measure q[0]
+: 
+<unknown>:7:12: syntax error, unexpected NEWLINE
+""")
 
     def test_execute_string(self):
         cQasmString = \

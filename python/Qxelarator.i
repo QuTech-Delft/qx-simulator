@@ -15,8 +15,8 @@
 }
 
 // Map the output of execute_string/execute_file to a simple Python class for user-friendliness.
-%typemap(out) std::optional<qx::SimulationResult> {
-    if ($1) {
+%typemap(out) std::variant<qx::SimulationResult, qx::SimulationError> {
+    if (std::holds_alternative<qx::SimulationResult>($1)) {
         auto pmod = PyImport_ImportModule("qxelarator");
         auto pclass = PyObject_GetAttrString(pmod, "SimulationResult");
         Py_DECREF(pmod);
@@ -24,17 +24,19 @@
         auto simulationResult = PyObject_CallObject(pclass, NULL);
         Py_DECREF(pclass);
 
-        PyObject_SetAttrString(simulationResult, "shots_done", PyLong_FromUnsignedLongLong($1->shots_done));
-        PyObject_SetAttrString(simulationResult, "shots_requested", PyLong_FromUnsignedLongLong($1->shots_requested));
+        auto const* cppSimulationResult = std::get_if<qx::SimulationResult>(&$1);
+
+        PyObject_SetAttrString(simulationResult, "shots_done", PyLong_FromUnsignedLongLong(cppSimulationResult->shots_done));
+        PyObject_SetAttrString(simulationResult, "shots_requested", PyLong_FromUnsignedLongLong(cppSimulationResult->shots_requested));
 
         auto results = PyDict_New();
-        for(auto const& x: $1->results) {
+        for(auto const& x: cppSimulationResult->results) {
             PyDict_SetItemString(results, x.first.c_str(), PyLong_FromUnsignedLongLong(x.second));
         }
         PyObject_SetAttrString(simulationResult, "results", results);
 
         auto state = PyDict_New();
-        for(auto const& x: $1->state) {
+        for(auto const& x: cppSimulationResult->state) {
             PyDict_SetItemString(state, x.first.c_str(), PyComplex_FromCComplex({ .real = x.second.real, .imag = x.second.imag }));
         }
         PyObject_SetAttrString(simulationResult, "state", state);
@@ -45,8 +47,7 @@
         auto pclass = PyObject_GetAttrString(pmod, "SimulationError");
         Py_DECREF(pmod);
 
-        // TODO: return meaningful error message.
-        auto errorString = PyUnicode_FromString("Simulation failed!");
+        auto errorString = PyUnicode_FromString(std::get_if<qx::SimulationError>(&$1)->message.c_str());
         auto args = PyTuple_Pack(1, errorString);
 
         auto simulationError = PyObject_CallObject(pclass, args);

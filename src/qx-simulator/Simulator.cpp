@@ -82,11 +82,11 @@ int main(int argc, char **argv) {
     simulator.setJSONOutputPath(jsonFilename);
     auto simulationResult = simulator.execute(iterations);
 
-    if (!simulationResult) {
-        std::cerr << "Simulation failed." << std::endl;
+    if (auto* error = std::get_if<qx::SimulationError>(&simulationResult)) {
+        std::cerr << error->message << std::endl;
         return 1;
     }
 
-    std::cout << *simulationResult << std::endl;
+    std::cout << *std::get_if<qx::SimulationResult>(&simulationResult) << std::endl;
     return 0;
 }
