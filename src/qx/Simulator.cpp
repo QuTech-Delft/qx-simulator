@@ -86,6 +86,11 @@ Simulator::execute(std::size_t iterations,
     }
 
     std::size_t qubitCount = program->num_qubits;
+
+    if (qubitCount > config::MAX_QUBIT_NUMBER) {
+        return {};
+    }
+
     std::vector<qx::Circuit> perfectCircuits;
 
     qx::core::QuantumState quantumState(qubitCount);
