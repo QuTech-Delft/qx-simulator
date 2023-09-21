@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [ 0.6.4 ] - [ 2023-09-21 ]
+
+### Added
+
+- Meaningful error message when parsing or simulation fails
+
+### Changed
+
+- Does not crash when too many qubits asked
+
+### Removed
+
+-
+
 ## [ 0.6.3 ] - [ 2023-09-19 ]
 
 ### Added
