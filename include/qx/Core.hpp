@@ -188,7 +188,7 @@ public:
         : numberOfQubits(n), data(1 << numberOfQubits) {
         assert(numberOfQubits > 0 && "QuantumState needs at least one qubit");
         assert(numberOfQubits <= config::MAX_QUBIT_NUMBER &&
-               "QuantumState currently cannot support that many qubits with this version of OpenQL");
+               "QuantumState currently cannot support that many qubits with this version of QX-simulator");
         data.set(BasisVector{}, 1);  // Start initialized in state 00...000
     };
 

@@ -183,6 +183,14 @@ measure_z q[9:16]
                   {"00001000111111100", {1 / std::sqrt(8), 0, 0.125}}}));
 }
 
+TEST_F(IntegrationTest, too_many_qubits) {
+    EXPECT_TRUE(executeString("version 1.0; qubits 62"));
+    EXPECT_TRUE(executeString("version 1.0; qubits 63"));
+    EXPECT_TRUE(executeString("version 1.0; qubits 64"));
+    EXPECT_FALSE(executeString("version 1.0; qubits 65"));
+    EXPECT_FALSE(executeString("version 1.0; qubits 66"));
+}
+
 TEST_F(IntegrationTest, unknown_error_model) {
     auto cqasm = R"(
 version 1.0
