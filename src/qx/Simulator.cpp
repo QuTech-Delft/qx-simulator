@@ -13,72 +13,69 @@
 
 namespace qx {
 
-bool Simulator::set(std::string const &filePath) {
+std::optional<SimulationError> Simulator::set(std::string const &filePath) {
     auto analyzer = cqasm::v1x::default_analyzer("1.2");
 
-    try {
-        program = analyzer.analyze(filePath).unwrap();
-    } catch (const cqasm::v1x::analyzer::AnalysisFailed &e) {
-        std::cerr << "Cannot parse and analyze file " << filePath << std::endl;
+    auto analysisResult = analyzer.analyze(filePath);
+    if (!analysisResult.errors.empty()) {
         program.reset();
-        return false;
+        std::stringstream error;
+        error << "Cannot parse and analyze file " << filePath << ":";
+
+        std::for_each(analysisResult.errors.begin(), analysisResult.errors.end(), [&error](auto const& s) { error << "\n" << s; });
+
+        return SimulationError{error.str()};
     }
 
-    if (program.empty()) {
-        std::cerr << "Cannot parse and analyze file " << filePath << std::endl;
-        return false;
+    program = analysisResult.root;
+    assert(!program.empty());
+
+    if (!program->error_model.empty() &&
+        program->error_model->name != "depolarizing_channel") {
+        program.reset();
+        return SimulationError{"Unknown error model: " + program->error_model->name};
     }
+
+    return std::nullopt;
+}
+
+std::optional<SimulationError> Simulator::setString(std::string const &s) {
+    auto analyzer = cqasm::v1x::default_analyzer("1.2");
+
+    auto analysisResult = analyzer.analyze_string(s);
+    if (!analysisResult.errors.empty()) {
+        program.reset();
+        std::stringstream error;
+        error << "Cannot parse and analyze string " << s << ": \n";
+
+        std::for_each(analysisResult.errors.begin(), analysisResult.errors.end(), [&error](auto const& x) { error << x << "\n"; });
+
+        return SimulationError{error.str()};
+    }
+
+    program = analysisResult.root;
+    assert(!program.empty());
 
     if (!program->error_model.empty() &&
         program->error_model->name != "depolarizing_channel") {
         std::cerr << "Unknown error model: " << program->error_model->name
                   << std::endl;
         program.reset();
-        return false;
+        return SimulationError{"Unknown error model: " + program->error_model->name};
     }
 
-    return true;
+    return std::nullopt;
 }
 
-bool Simulator::setString(std::string const &s) {
-    auto analyzer = cqasm::v1x::default_analyzer("1.2");
-
-    try {
-        program = analyzer.analyze_string(s).unwrap();
-    } catch (const cqasm::v1x::analyzer::AnalysisFailed &e) {
-        std::cerr << "Cannot parse and analyze string " << s << std::endl;
-        program.reset();
-        return false;
-    }
-
-    if (program.empty()) {
-        std::cerr << "Cannot parse and analyze string " << s << std::endl;
-        return false;
-    }
-
-    if (!program->error_model.empty() &&
-        program->error_model->name != "depolarizing_channel") {
-        std::cerr << "Unknown error model: " << program->error_model->name
-                  << std::endl;
-        program.reset();
-        return false;
-    }
-
-    return true;
-}
-
-std::optional<SimulationResult>
+std::variant<SimulationResult, SimulationError>
 Simulator::execute(std::size_t iterations,
                    std::optional<std::uint_fast64_t> seed) const {
     if (program.empty()) {
-        std::cerr << "No circuit successfully loaded, call set(...) first"
-                  << std::endl;
-        return {};
+        return SimulationError{"No circuit successfully loaded, call set(...) first"};
     }
 
     if (iterations <= 0) {
-        std::cerr << "Number of runs is 0" << std::endl;
-        return {};
+        return SimulationError{"Invalid number of iterations"};
     }
 
     if (seed) {
@@ -88,7 +85,7 @@ Simulator::execute(std::size_t iterations,
     std::size_t qubitCount = program->num_qubits;
 
     if (qubitCount > config::MAX_QUBIT_NUMBER) {
-        return {};
+        return SimulationError{"Cannot run that many qubits in this version of QX-simulator"};
     }
 
     std::vector<qx::Circuit> perfectCircuits;
@@ -124,23 +121,23 @@ Simulator::execute(std::size_t iterations,
     return simulationResult;
 }
 
-std::optional<SimulationResult>
+std::variant<SimulationResult, SimulationError>
 executeString(std::string const &s, std::size_t iterations,
               std::optional<std::uint_fast64_t> seed) {
     Simulator simulator;
-    if (!simulator.setString(s)) {
-        return {};
+    if (auto error = simulator.setString(s)) {
+        return *error;
     }
 
     return simulator.execute(iterations, seed);
 }
 
-std::optional<SimulationResult>
+std::variant<SimulationResult, SimulationError>
 executeFile(std::string const &filePath, std::size_t iterations,
             std::optional<std::uint_fast64_t> seed) {
     Simulator simulator;
-    if (!simulator.set(filePath)) {
-        return {};
+    if (auto error = simulator.set(filePath)) {
+        return *error;
     }
 
     return simulator.execute(iterations, seed);

@@ -3,11 +3,15 @@
 #include "cqasm.hpp"
 #include "qx/SimulationResult.hpp"
 
-#include <optional>
+#include <variant>
 #include <string>
 
 
 namespace qx {
+
+struct SimulationError {
+    std::string message = "Simulation error";
+};
 
 // Old API (deprecated).
 class Simulator {
@@ -16,11 +20,11 @@ public:
         jsonOutputFilePath = filePath;
     }
 
-    bool set(std::string const &filePath);
+    std::optional<SimulationError> set(std::string const &filePath);
 
-    bool setString(std::string const &s);
+    std::optional<SimulationError> setString(std::string const &s);
 
-    [[nodiscard]] std::optional<SimulationResult>
+    [[nodiscard]] std::variant<SimulationResult, SimulationError>
     execute(std::size_t iterations = 1,
             std::optional<std::uint_fast64_t> seed = std::nullopt) const;
 
@@ -30,11 +34,11 @@ private:
 };
 
 // New API.
-std::optional<SimulationResult>
+std::variant<SimulationResult, SimulationError>
 executeString(std::string const &s, std::size_t iterations = 1,
               std::optional<std::uint_fast64_t> seed = std::nullopt);
 
-std::optional<SimulationResult>
+std::variant<SimulationResult, SimulationError>
 executeFile(std::string const &filePath, std::size_t iterations = 1,
             std::optional<std::uint_fast64_t> seed = std::nullopt);
 
