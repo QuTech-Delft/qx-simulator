@@ -3,6 +3,7 @@
 
 #include <cassert>
 #include <gtest/gtest.h>
+#include <gmock/gmock.h>
 
 
 namespace qx {
@@ -11,9 +12,9 @@ class IntegrationTest : public ::testing::Test {
 public:
     static SimulationResult runFromString(const std::string &s,
                                           std::uint64_t iterations = 1) {
-        auto simulationResult = executeString(s, iterations);
-        assert(simulationResult.has_value());
-        return *simulationResult;
+        auto result = executeString(s, iterations);
+        EXPECT_TRUE(std::holds_alternative<SimulationResult>(result));
+        return *std::get_if<SimulationResult>(&result);
     }
 
 private:
@@ -183,6 +184,30 @@ measure_z q[9:16]
                   {"00001000111111100", {1 / std::sqrt(8), 0, 0.125}}}));
 }
 
+TEST_F(IntegrationTest, too_many_qubits) {
+    EXPECT_TRUE(std::holds_alternative<SimulationResult>(executeString("version 1.0; qubits 62")));
+    EXPECT_TRUE(std::holds_alternative<SimulationResult>(executeString("version 1.0; qubits 63")));
+    EXPECT_TRUE(std::holds_alternative<SimulationResult>(executeString("version 1.0; qubits 64")));
+    EXPECT_TRUE(std::holds_alternative<SimulationError>(executeString("version 1.0; qubits 65")));
+    EXPECT_TRUE(std::holds_alternative<SimulationError>(executeString("version 1.0; qubits 66")));
+}
+
+TEST_F(IntegrationTest, syntax_error) {
+    auto cqasm = R"(
+version 1.0
+
+qubits 1
+
+h q[0
+)";
+
+    auto result = executeString(cqasm);
+    EXPECT_TRUE(std::holds_alternative<SimulationError>(result));
+    EXPECT_THAT(std::get_if<SimulationError>(&result)->message, ::testing::StartsWith("""\
+Cannot parse and analyze string \nversion 1.0\n\nqubits 1\n\nh q[0\n: \n\
+<unknown>:6:6: syntax error, unexpected NEWLINE"""));
+}
+
 TEST_F(IntegrationTest, unknown_error_model) {
     auto cqasm = R"(
 version 1.0
@@ -192,7 +217,7 @@ qubits 1
 error_model amplitude_damping, 0.1
 )";
 
-    EXPECT_FALSE(executeString(cqasm));
+    EXPECT_TRUE(std::holds_alternative<SimulationError>(executeString(cqasm)));
 }
 
 TEST_F(IntegrationTest, depolarizing_channel_with_constant_seed) {

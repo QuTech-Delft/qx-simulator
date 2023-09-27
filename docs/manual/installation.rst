@@ -8,7 +8,7 @@ Installation of the Python package
 
 To install QXelarator easily, you can use pip directly:
 
-::
+.. code-block:: bash
 
     pip install qxelarator
 
@@ -27,7 +27,7 @@ QX-simulator can be built from source, provided you have installed some dependen
 
 On top of that, you will need a C++ compiler with support for C++20, ``make`` (for Linux) and ``cmake``.
 
-::
+.. code-block:: bash
     
     git clone https://github.com/QuTech-Delft/qx-simulator.git
 
@@ -39,7 +39,7 @@ Building the Python package
 
 To build QXelarator yourself from source and add it to your local Python packages, inside the repo:
 
-::
+.. code-block:: bash
 
     NPROCS=16 python3 -m pip install -v -e .
 
@@ -51,7 +51,7 @@ Building the C++ executable from source
 This is particularly useful for debugging purposes, as the executable can then be run under ``gdb``, for instance. To do so,
 do not forget to build it in debug mode, otherwise compiler optimizations will make debugging more difficult.
 
-::
+.. code-block:: bash
 
     mkdir build
 

@@ -55,16 +55,13 @@ jobs:
           asset_content_type: application/zip
 
   manylinux-x64:
-    name: PyPI wheels for Manylinux
+    name: PyPI wheels for Manylinux (x64)
     runs-on: ubuntu-latest
     container: quay.io/pypa/manylinux${{ matrix.manylinux }}_x86_64:latest
-    env:
-      BISON_VERSION: "3.0.4-2.el7"
-      SWIG_VERSION: "3.0.12-17.el7"
     strategy:
       matrix:
         manylinux:
-          - 2014
+          - "_2_28"
         cpython_version:
           - "cp38-cp38"
           - "cp39-cp39"
@@ -75,7 +72,7 @@ jobs:
         uses: actions/checkout@v3
       - name: Install dependencies
         run: |
-          yum install -y flex bison-$BISON_VERSION swig3-$SWIG_VERSION cmake
+          dnf install -y flex bison swig cmake
           /opt/python/${{ matrix.cpython_version }}/bin/python -m pip install auditwheel
       - name: Build wheel
         env:
@@ -102,55 +99,56 @@ jobs:
           asset_name: ${{ steps.wheel.outputs.wheel }}
           asset_content_type: application/zip
 
-  manylinux-arm64:
-    name: PyPI wheels for Manylinux
-    runs-on:
-      - "self-hosted"
-      - "ARM64"
-      - "Linux"
-    env:
-      BISON_VERSION: "3.0.4-2.el7"
-      SWIG_VERSION: "3.0.12-17.el7"
-    strategy:
-      matrix:
-        manylinux:
-          - 2014
-        cpython_version:
-          - "cp38-cp38"
-          - "cp39-cp39"
-          - "cp310-cp310"
-          - "cp311-cp311"
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Install dependencies
-        run: |
-          sudo yum install -y flex bison swig cmake
-          /opt/python/${{ matrix.cpython_version }}/bin/python -m pip install auditwheel
-      - name: Build wheel
-        env:
-          QX_CPU_COMPATIBILITY_MODE: ON
-          NPROCS: 5
-        run: |
-          /opt/python/${{ matrix.cpython_version }}/bin/python setup.py bdist_wheel
-          /opt/python/${{ matrix.cpython_version }}/bin/python -m auditwheel repair pybuild/dist/*.whl
-      - name: Wheel path
-        id: wheel
-        working-directory: wheelhouse
-        run: echo "##[set-output name=wheel;]$(ls *.whl)"
-      - uses: actions/upload-artifact@v3
-        with:
-          name: pypi-linux-${{ matrix.cpython_version }}
-          path: wheelhouse/${{ steps.wheel.outputs.wheel }}
-      - uses: actions/upload-release-asset@v1
-        if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: wheelhouse/${{ steps.wheel.outputs.wheel }}
-          asset_name: ${{ steps.wheel.outputs.wheel }}
-          asset_content_type: application/zip
+
+  # Disabled because the ARM runner doesn't have Docker. Building multi-python wheel outside of manylinux image is a pain.
+
+  # manylinux-arm64:
+  #   name: PyPI wheels for Manylinux (arm64)
+  #   runs-on:
+  #     - "self-hosted"
+  #     - "ARM64"
+  #     - "Linux"
+  #   container: quay.io/pypa/manylinux${{ matrix.manylinux }}_x86_64:latest
+  #   strategy:
+  #     matrix:
+  #       manylinux:
+  #         - "_2_28"
+  #       cpython_version:
+  #         - "cp38-cp38"
+  #         - "cp39-cp39"
+  #         - "cp310-cp310"
+  #         - "cp311-cp311"
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #     - name: Install dependencies
+  #       run: |
+  #         dnf install -y flex bison swig cmake
+  #         python${{ matrix.cpython_version }} -m pip install auditwheel
+  #     - name: Build wheel
+  #       env:
+  #         QX_CPU_COMPATIBILITY_MODE: ON
+  #         NPROCS: 5
+  #       run: |
+  #         python${{ matrix.cpython_version }} setup.py bdist_wheel
+  #         python${{ matrix.cpython_version }} -m auditwheel repair pybuild/dist/*.whl
+  #     - name: Wheel path
+  #       id: wheel
+  #       working-directory: wheelhouse
+  #       run: echo "##[set-output name=wheel;]$(ls *.whl)"
+  #     - uses: actions/upload-artifact@v3
+  #       with:
+  #         name: pypi-linux-${{ matrix.cpython_version }}
+  #         path: wheelhouse/${{ steps.wheel.outputs.wheel }}
+  #     - uses: actions/upload-release-asset@v1
+  #       if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       with:
+  #         upload_url: ${{ github.event.release.upload_url }}
+  #         asset_path: wheelhouse/${{ steps.wheel.outputs.wheel }}
+  #         asset_name: ${{ steps.wheel.outputs.wheel }}
+  #         asset_content_type: application/zip
 
   windows-x64:
     name: PyPI wheels for Windows
@@ -208,7 +206,7 @@ jobs:
     needs:
       - macos-x64
       - manylinux-x64
-      - manylinux-arm64
+      # - manylinux-arm64
       - windows-x64
     runs-on: ubuntu-latest
     steps:

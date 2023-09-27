@@ -2,7 +2,6 @@
 
 #include "qx/Simulator.hpp"
 
-
 namespace qxelarator {
 
 // Old API (deprecated).
@@ -13,14 +12,17 @@ public:
         simulator.setJSONOutputPath(filePath);
     }
 
-    bool set(const std::string &filePath) { return simulator.set(filePath); }
+    std::optional<qx::SimulationError> set(const std::string &filePath) { return simulator.set(filePath); }
 
-    bool set_string(const std::string &s) { return simulator.setString(s); }
+    std::optional<qx::SimulationError> set_string(const std::string &s) { return simulator.setString(s); }
 
     std::string execute(std::size_t iterations = 1) {
-        auto simulationResult = simulator.execute(iterations);
-        assert(simulationResult);
-        return simulationResult->getJsonString();
+        auto result = simulator.execute(iterations);
+        if (auto* simulationError = std::get_if<qx::SimulationError>(&result)) {
+            return simulationError->message;
+        }
+
+        return std::get_if<qx::SimulationResult>(&result)->getJsonString();
     }
 
 private:
@@ -29,13 +31,13 @@ private:
 
 // New API.
 
-std::optional<qx::SimulationResult>
+std::variant<qx::SimulationResult, qx::SimulationError>
 execute_string(std::string const &s, std::size_t iterations = 1,
                std::optional<std::uint_fast64_t> seed = std::nullopt) {
     return qx::executeString(s, iterations, seed);
 }
 
-std::optional<qx::SimulationResult>
+std::variant<qx::SimulationResult, qx::SimulationError>
 execute_file(std::string const &filePath, std::size_t iterations = 1,
              std::optional<std::uint_fast64_t> seed = std::nullopt) {
     return qx::executeFile(filePath, iterations, seed);
