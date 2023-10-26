@@ -1,0 +1,35 @@
+name: Compile QX
+description: Install toosl and compile QX
+inputs:
+  commpiler:
+    required: true
+    description: Which compiler to use
+  build_type:
+    required: true
+    description: Is the build a debug or release version
+  shell:
+    required: true
+    description: Which shell to use for the `run` command
+
+runs:
+  using: composite
+  steps:
+    - name: Get latest CMake
+      uses: lukka/get-cmake@latest
+    - name: Create build directory
+      run: mkdir -p build-${{ inputs.compiler }}-${{ inputs.build_type }}
+      shell: ${{ inputs.shell }}
+    - name: Configure
+      env:
+        CXX: ${{ inputs.compiler }}
+      working-directory: build-${{ inputs.compiler }}-${{ inputs.build_type }}
+      run: cmake -S .. -B . -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} -DQX_BUILD_TESTS=ON
+      shell: ${{ inputs.shell }}
+    - name: Build
+      working-directory: build-${{ inputs.compiler }}-${{ inputs.build_type }}
+      run: cmake --build . --parallel 10 --config ${{ inputs.build_type }}
+      shell: ${{ inputs.shell }}
+    - name: Test
+      working-directory: build-${{ inputs.compiler }}-${{ inputs.build_type }}
+      run: ctest -C ${{ inputs.build_type }} --output-on-failure
+      shell: ${{ inputs.shell }}
