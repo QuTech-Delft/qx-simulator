@@ -1,7 +1,7 @@
 name: Compile QX
 description: Install toosl and compile QX
 inputs:
-  commpiler:
+  compiler:
     required: true
     description: Which compiler to use
   build_type:
