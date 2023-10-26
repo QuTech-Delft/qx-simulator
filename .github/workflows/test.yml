@@ -10,6 +10,7 @@ jobs:
   cpp-linux-x64:
     name: "C++ tests (gcc-clang/Linux/x64)"
     runs-on: ubuntu-latest
+    if: false
     strategy:
       fail-fast: false
       matrix:
@@ -27,6 +28,37 @@ jobs:
           compiler: ${{ matrix.compiler }}
           build_type: ${{ matrix.build_type }}
           shell: bash
+
+  cpp-linux:
+    name: "C++ tests (gcc-clang/Linux/x64)"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        build_type:
+          - Debug
+          - Release
+        compiler:
+          - clang++
+          - g++
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Get latest CMake
+        uses: lukka/get-cmake@latest
+      - name: Create build directory
+        run: mkdir -p build-${{ matrix.compiler }}-${{ matrix.build_type }}
+      - name: Configure
+        env:
+          CXX: ${{ matrix.compiler }}
+        working-directory: build-${{ matrix.compiler }}-${{ matrix.build_type }}
+        run: cmake -S .. -B . -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DQX_BUILD_TESTS=ON
+      - name: Build
+        working-directory: build-${{ matrix.compiler }}-${{ matrix.build_type }}
+        run: cmake --build . --parallel 10
+      - name: Test
+        working-directory: build-${{ matrix.compiler }}-${{ matrix.build_type }}
+        run: ctest -C ${{ matrix.build_type }} --output-on-failure
 
   cpp-macos-x64:
     name: "C++ tests (clang/MacOS/x64)"
