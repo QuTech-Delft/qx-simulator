@@ -115,14 +115,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.11"
       - name: Install SWIG
         run: |
           sudo apt-get install -y swig
         shell: bash
-      - uses: ./.github/actions/cpp-tests
+      - uses: ./.github/actions/python-tests
         with:
           shell: bash
 
@@ -132,16 +129,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.11"
       - name: Install SWIG
         run: |
           brew install bison flex swig
           echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
           echo "/usr/local/opt/flex/bin" >> $GITHUB_PATH
         shell: bash
-      - uses: ./.github/actions/cpp-tests
+      - uses: ./.github/actions/python-tests
         with:
           shell: bash
 
@@ -151,14 +145,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.11"
       - name: Install SWIG
         run: |
           choco install winflexbison3 --version 2.5.24.20210105
         shell: powershell
-      - uses: ./.github/actions/cpp-tests
+      - uses: ./.github/actions/python-tests
         with:
           shell: powershell
 
