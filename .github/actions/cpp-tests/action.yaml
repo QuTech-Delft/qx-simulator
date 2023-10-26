@@ -27,7 +27,7 @@ runs:
       shell: ${{ inputs.shell }}
     - name: Build
       working-directory: build-${{ inputs.compiler }}-${{ inputs.build_type }}
-      run: cmake --build . --parallel 10 --config ${{ inputs.build_type }}
+      run: cmake --build . --parallel 10
       shell: ${{ inputs.shell }}
     - name: Test
       working-directory: build-${{ inputs.compiler }}-${{ inputs.build_type }}
