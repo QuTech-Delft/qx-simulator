@@ -109,8 +109,8 @@ class build_ext(_build_ext):
         # Configure and build using Conan
         with local.cwd(cbuild_dir):
             build_type = os.environ.get("CMAKE_BUILD_TYPE", "Release")
-            build_tests = os.environ["QX_BUILD_TESTS", "False"]
-            cpu_compatibility_mode = os.environ["QX_CPU_COMPATIBILITY_MODE", "False"]
+            build_tests = os.environ.get("QX_BUILD_TESTS", "False")
+            cpu_compatibility_mode = os.environ.get("QX_CPU_COMPATIBILITY_MODE", "False")
 
             cmd = local['conan']['profile']['detect']['--force']
             cmd & FG
