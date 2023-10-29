@@ -1,0 +1,12 @@
+include(default)
+
+[settings]
+compiler.cppstd=23
+qx/*:build_type=Debug
+
+[options]
+qx/*:asan_enabled=False
+qx/*:build_python=False
+qx/*:build_tests=False
+qx/*:cpu_compatibility_mode=False
+qx/*:libqasm_compat=True
