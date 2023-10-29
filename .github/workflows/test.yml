@@ -131,7 +131,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        shell: powershell
       - uses: ./.github/actions/python-tests
         with:
           shell: powershell
