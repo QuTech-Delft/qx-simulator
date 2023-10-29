@@ -62,7 +62,7 @@ jobs:
         with:
           compiler: msvc
           build_type: ${{ matrix.build_type }}
-          shell: powershell
+          shell: bash
 
   cpp-linux-arm64:
     name: "C++ tests (gcc/Linux/ARM64)"
