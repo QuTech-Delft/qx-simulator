@@ -19,9 +19,7 @@ src_dir = root_dir + os.sep + "src"  # C++ source directory
 inc_dir = root_dir + os.sep + "include"  # C++ include directory
 pysrc_dir = root_dir + os.sep + "python"  # Python source files
 target_dir = root_dir + os.sep + "pybuild"  # python-specific build directory
-build_dir = (
-    target_dir + os.sep + "build"
-)  # directory for setuptools to dump various files into
+build_dir = target_dir + os.sep + "build"  # directory for setuptools to dump various files into
 dist_dir = target_dir + os.sep + "dist"  # wheel output directory
 cbuild_dir = target_dir + os.sep + "cbuild"  # cmake build directory
 prefix_dir = target_dir + os.sep + "prefix"  # cmake install prefix
@@ -76,9 +74,9 @@ class build_ext(_build_ext):
     def run(self):
         from plumbum import local, FG, ProcessExecutionError
 
-        # If we were previously built in a different directory, nuke the cbuild
-        # dir to prevent inane CMake errors. This happens when the user does
-        # pip install . after building locally.
+        # If we were previously built in a different directory,
+        # nuke the cbuild dir to prevent inane CMake errors.
+        # This happens when the user does pip install . after building locally
         if os.path.exists(cbuild_dir + os.sep + "CMakeCache.txt"):
             with open(cbuild_dir + os.sep + "CMakeCache.txt", "r") as f:
                 for line in f.read().split("\n"):
@@ -107,7 +105,7 @@ class build_ext(_build_ext):
             os.makedirs(cbuild_dir)
 
         # Configure and build using Conan
-        with local.cwd(cbuild_dir):
+        with local.cwd(root_dir):
             build_type = os.environ.get("CMAKE_BUILD_TYPE", "Release")
             build_tests = os.environ.get("QX_BUILD_TESTS", "False")
             cpu_compatibility_mode = os.environ.get("QX_CPU_COMPATIBILITY_MODE", "False")
@@ -118,7 +116,7 @@ class build_ext(_build_ext):
             cmd = (local['conan']['create']['.']
                 ['--version']['0.6.5']
                 ['-s:h']['compiler.cppstd=23']
-                ['-s:h']["qx/*:build_type=" + build_type]
+                ['-s:h']["build_type=" + build_type]
 
                 ['-o']['qx/*:build_python=True']
                 ['-o']['qx/*:build_tests=' + build_tests]
