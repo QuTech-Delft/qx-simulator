@@ -102,140 +102,41 @@ class build_ext(_build_ext):
         # it wants to place it.
         target = os.path.abspath(self.get_ext_fullpath("qxelarator._qxelarator"))
 
-        # Build the Python extension and "install" it where setuptools expects
-        # it.
+        # Build the Python extension and "install" it where setuptools expects it.
         if not os.path.exists(cbuild_dir):
             os.makedirs(cbuild_dir)
+
+        # Configure and build using Conan
         with local.cwd(cbuild_dir):
             build_type = os.environ.get("CMAKE_BUILD_TYPE", "Release")
+            build_tests = os.environ["QX_BUILD_TESTS", "False"]
+            cpu_compatibility_mode = os.environ["QX_CPU_COMPATIBILITY_MODE", "False"]
 
-            cmd = (
-                local["cmake"][root_dir]["-DQX_BUILD_PYTHON=YES"][
-                    "-DCMAKE_INSTALL_PREFIX=" + prefix_dir
-                ]["-DQX_PYTHON_DIR=" + os.path.dirname(target)][
-                    "-DQX_PYTHON_EXT=" + os.path.basename(target)
-                ]
-                # Make sure CMake uses the Python installation corresponding
-                # with the the Python version we're building with now.
-                ["-DPYTHON_EXECUTABLE=" + sys.executable]
-                # Build type can be set using an environment variable.
-                ["-DCMAKE_BUILD_TYPE=" + build_type]
+            cmd = local['conan']['profile']['detect']['--force']
+            cmd & FG
+
+            cmd = (local['conan']['create']['.']
+                ['--version']['0.6.5']
+                ['-s:h']['compiler.cppstd=23']
+                ['-s:h']["qx/*:build_type=" + build_type]
+
+                ['-o']['qx/*:build_python=True']
+                ['-o']['qx/*:build_tests=' + build_tests]
+                ['-o']['qx/*:cpu_compatibility_mode=' + cpu_compatibility_mode]
+                # The Python library needs the compatibility headers
+                ['-o']["qx/*:libqasm_compat=True"]
+                ['-o']['qx/*:python_dir=' + re.escape(os.path.dirname(target))]
+                ['-o']['qx/*:python_ext=' + re.escape(os.path.basename(target))]
+                # (Ab)use static libs for the intermediate libraries
+                # to avoid dealing with R(UN)PATH nonsense on Linux/OSX as much as possible
+                ['-o']["qx/*:shared=False"]
+
+                ['-b']['missing']
+                ['-tf']['']
             )
-
-            # If we're on Windows, we're probably building with MSVC. In that
-            # case, we might have to tell CMake whether we want to build for
-            # x86 or x64, but depending on how MSVC is configured, that same
-            # command-line option could also return an error. So we need to be
-            # careful here.
-            if platform.system() == "Windows":
-                log.info("Trying to figure out bitness...")
-
-                # Figure out what CMake is doing by default.
-                if not os.path.exists("test-cmake-config"):
-                    os.makedirs("test-cmake-config")
-                with local.cwd("test-cmake-config"):
-                    (
-                        local["cmake"][
-                            pysrc_dir + os.sep + "compat" + os.sep + "test-cmake-config"
-                        ]
-                        & FG
-                    )
-                    with open("values.cfg", "r") as f:
-                        void_ptr_size, generator, *_ = f.read().split("\n")
-                        cmake_is_64 = int(void_ptr_size.strip()) == 8
-                        cmake_is_msvc = "Visual Studio" in generator
-                        msvc_is_fixed_to_64 = cmake_is_msvc and (
-                            "Win64" in generator or "IA64" in generator
-                        )
-
-                # Figure out what Python needs.
-                python_is_64 = sys.maxsize > 2**32
-
-                log.info("Figured out the following things:")
-                log.info(" - Python is {}-bit".format(64 if python_is_64 else 32))
-                log.info(
-                    " - CMake is building {}-bit by default".format(
-                        64 if cmake_is_64 else 32
-                    )
-                )
-                log.info(
-                    " - CMake {} building using MSVC".format(
-                        "IS" if cmake_is_msvc else "is NOT"
-                    )
-                )
-                log.info(
-                    " - MSVC {} fixed to 64-bit".format(
-                        "IS" if msvc_is_fixed_to_64 else "is NOT"
-                    )
-                )
-
-                # If there's a mismatch, see what we can do.
-                if python_is_64 != cmake_is_64:
-                    if msvc_is_fixed_to_64 and not python_is_64:
-                        raise RuntimeError(
-                            "MSVC is configured to build 64-bit binaries, but Python is 32-bit!"
-                        )
-                    if not cmake_is_msvc:
-                        raise RuntimeError(
-                            "Mismatch in 32-bit/64-bit between CMake defaults ({}) and Python install ({})!".format(
-                                "64-bit" if cmake_is_64 else "32-bit",
-                                "64-bit" if python_is_64 else "32-bit",
-                            )
-                        )
-
-                    # Looks like we're compiling with MSVC, and MSVC is merely
-                    # defaulting to the wrong bitness, which means we should be
-                    # able to change it with the -A flag.
-                    if python_is_64:
-                        cmd = cmd["-A"]["x64"]
-                    else:
-                        cmd = cmd["-A"]["win32"]
-
-            # C++ tests can be enabled using an environment variable. They'll
-            # be run before the install.
-            if "QX_BUILD_TESTS" in os.environ:
-                cmd = cmd["-DQX_BUILD_TESTS=" + os.environ["QX_BUILD_TESTS"]]
-
-            # Enable CPU extension compatibility mode when requested.
-            if "QX_CPU_COMPATIBILITY_MODE" in os.environ:
-                cmd = cmd[
-                    "-DQX_CPU_COMPATIBILITY_MODE="
-                    + os.environ["QX_CPU_COMPATIBILITY_MODE"]
-                ]
-
-            # Run cmake configuration.
+            if platform.system() == "Darwin":
+                cmd = cmd['-c']['tools.build:defines=["_LIBCPP_DISABLE_AVAILABILITY"]']
             cmd & FG
-
-            # Do the build with the given number of parallel threads.
-            build_cmd = local["cmake"]["--build"]["."]["--config"][build_type]
-            cmd = build_cmd
-            if nprocs != "1":
-                try:
-                    parallel_supported = tuple(
-                        local["cmake"]("--version")
-                        .split("\n")[0]
-                        .split()[-1]
-                        .split(".")
-                    ) >= (3, 12)
-                except:
-                    parallel_supported = False
-                if parallel_supported:
-                    cmd = cmd["--parallel"][nprocs]
-                elif not sys.platform.startswith("win"):
-                    cmd = cmd["--"]["-j"][nprocs]
-            cmd & FG
-
-            # Run the C++ tests if requested.
-            if "QX_BUILD_TESTS" in os.environ:
-                cmd = build_cmd["--target"]["test"] & FG
-
-            # Do the install.
-            try:
-                # install target for makefiles
-                build_cmd["--target"]["install"] & FG
-            except ProcessExecutionError:
-                # install target for MSVC
-                build_cmd["--target"]["INSTALL"] & FG
 
             # Update data_files for the installed files.
             file_dict = {}
@@ -369,6 +270,7 @@ setup(
         "sdist": sdist,
     },
     setup_requires=[
+        'conan',
         "plumbum",
         'delocate; platform_system == "Darwin"',
     ],
