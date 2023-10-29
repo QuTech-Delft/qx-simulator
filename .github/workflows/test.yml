@@ -58,7 +58,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        shell: powershell
       - uses: ./.github/actions/cpp-tests
         with:
           compiler: msvc
