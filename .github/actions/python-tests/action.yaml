@@ -14,7 +14,7 @@ runs:
     - name: Get latest CMake
       uses: lukka/get-cmake@latest
     - name: Install Python dependencies
-      run: python -m pip install --upgrade pip setuptools wheel pytest
+      run: python -m pip install --upgrade pip conan pytest setuptools wheel
       shell: ${{ inputs.shell }}
     - name: Build
       env:
