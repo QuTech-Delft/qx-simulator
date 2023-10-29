@@ -2,7 +2,7 @@ include(default)
 
 [settings]
 compiler.cppstd=23
-qx/*:build_type=Debug
+build_type=Debug
 
 [options]
 qx/*:asan_enabled=False
