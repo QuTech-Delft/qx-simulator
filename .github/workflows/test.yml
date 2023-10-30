@@ -68,6 +68,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Add Python symlink
+        run: ln -sf /usr/local/bin/python3.11 /usr/bin/python3
+        shell: bash
       - uses: ./.github/actions/cpp-tests
         with:
           build_type: Release
