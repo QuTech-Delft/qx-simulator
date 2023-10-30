@@ -116,7 +116,7 @@ class build_ext(_build_ext):
             cmd = (local['conan']['create']['.']
                 ['--version']['0.6.5']
                 ['-s:h']['compiler.cppstd=23']
-                ['-s:h']["qx/*:build_type=" + build_type]
+                ['-s:h']["build_type=" + build_type]
 
                 ['-o']['qx/*:build_python=True']
                 ['-o']['qx/*:build_tests=' + build_tests]
