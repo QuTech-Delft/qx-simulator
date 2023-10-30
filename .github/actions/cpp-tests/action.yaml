@@ -11,10 +11,6 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Install Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.11"
     - name: Install conan
       run: python -m pip install --upgrade pip conan
       shell: ${{ inputs.shell }}
