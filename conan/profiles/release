@@ -2,7 +2,7 @@ include(default)
 
 [settings]
 compiler.cppstd=23
-build_type=Release
+qx/*:build_type=Release
 
 [options]
 qx/*:asan_enabled=False
