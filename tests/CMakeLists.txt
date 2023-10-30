@@ -15,6 +15,10 @@ target_sources(${PROJECT_NAME}_test PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/SparseArrayTest.cpp"
 )
 
+target_compile_features(${PROJECT_NAME}_test PRIVATE
+    cxx_std_23
+)
+
 # Target options
 target_link_libraries(${PROJECT_NAME}_test
     PRIVATE qx
