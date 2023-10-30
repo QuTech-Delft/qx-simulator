@@ -1,5 +1,5 @@
 name: Compile QX
-description: Install toosl and compile QX
+description: Install tools and compile QX
 inputs:
   build_type:
     required: true
@@ -24,6 +24,6 @@ runs:
         conan build . -pr=conan/profiles/tests-${lowercase_build_type} -b missing
       shell: ${{ inputs.shell }}
     - name: Test
-      working-directory: build/${{ matrix.build_type }}
-      run: ctest -C ${{ matrix.build_type }} --output-on-failure
+      working-directory: build/${{ inputs.build_type }}
+      run: ctest -C ${{ inputs.build_type }} --output-on-failure
       shell: ${{ inputs.shell }}
