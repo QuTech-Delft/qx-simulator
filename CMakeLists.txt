@@ -137,6 +137,10 @@ add_library(qx
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Gates.cpp"
 )
 
+target_compile_features(qx PRIVATE
+    cxx_std_23
+)
+
 target_include_directories(qx
     PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/"
 )
