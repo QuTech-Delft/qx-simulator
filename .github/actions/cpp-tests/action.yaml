@@ -1,9 +1,6 @@
 name: Compile QX
 description: Install toosl and compile QX
 inputs:
-  compiler:
-    required: true
-    description: Which compiler to use
   build_type:
     required: true
     description: Is the build a debug or release version
@@ -26,7 +23,7 @@ runs:
     - name: Configure and build
       run: |
         conan profile detect
-        build_type=${{ matrix.build_type }}
+        build_type=${{ inputs.build_type }}
         lowercase_build_type=$(echo ${build_type} | tr '[:upper:]' '[:lower:]')
         conan build . -pr=conan/profiles/tests-${lowercase_build_type} -b missing
       shell: ${{ inputs.shell }}
