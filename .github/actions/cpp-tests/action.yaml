@@ -21,6 +21,7 @@ runs:
         conan profile detect
         build_type=${{ inputs.build_type }}
         lowercase_build_type=$(echo ${build_type} | tr '[:upper:]' '[:lower:]')
+        echo "conan build . -pr=conan/profiles/tests-${lowercase_build_type} -b missing"
         conan build . -pr=conan/profiles/tests-${lowercase_build_type} -b missing
       shell: ${{ inputs.shell }}
     - name: Test
