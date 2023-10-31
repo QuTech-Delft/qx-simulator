@@ -64,7 +64,7 @@ jobs:
   cpp-linux-arm64:
     name: "C++ tests (gcc/Linux/ARM64)"
     runs-on: [self-hosted, ARM64, Linux]
-    container: quay.io/pypa/manylinux_2_28_aarch64:latest
+    container: python:3.11
     steps:
       - name: Checkout
         uses: actions/checkout@v4
