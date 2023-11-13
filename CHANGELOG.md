@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [ 0.6.5 ] - [ 2023-11-13 ]
+
+### Added
+
+- 
+
+### Changed
+
+- Uses Conan
+- New Github workflows
+- Working ARM runners in the CI
+
+### Removed
+
+-
+
 ## [ 0.6.4 ] - [ 2023-09-21 ]
 
 ### Added
