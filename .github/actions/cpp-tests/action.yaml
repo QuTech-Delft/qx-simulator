@@ -18,7 +18,7 @@ runs:
       uses: lukka/get-cmake@latest
     - name: Configure and build
       run: |
-        conan profile detect
+        conan profile detect --force
         build_type=${{ inputs.build_type }}
         lowercase_build_type=$(echo ${build_type} | tr '[:upper:]' '[:lower:]')
         conan build . -pr=conan/profiles/tests-${lowercase_build_type} -b missing
