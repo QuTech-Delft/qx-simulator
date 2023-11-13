@@ -114,7 +114,7 @@ class build_ext(_build_ext):
             cmd & FG
 
             cmd = (local['conan']['create']['.']
-                ['--version']['0.6.5']
+                ['--version'][get_version()]
                 ['-s:h']['compiler.cppstd=23']
                 ['-s:h']["build_type=" + build_type]
 
