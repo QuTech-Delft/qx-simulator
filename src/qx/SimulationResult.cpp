@@ -3,6 +3,7 @@
 #include "qx/Core.hpp"
 #include <iomanip>
 #include <iostream>
+#include <variant>
 
 
 namespace qx {
