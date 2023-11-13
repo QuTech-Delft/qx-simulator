@@ -142,8 +142,8 @@ jobs:
       - cpp-linux-x64
       - cpp-macos-x64
       - cpp-windows-x64
-      # - cpp-linux-arm64
-      # - cpp-macos-arm64
+      - cpp-linux-arm64
+      - cpp-macos-arm64
       - python-linux-x64
       - python-macos-x64
       - python-windows-x64
