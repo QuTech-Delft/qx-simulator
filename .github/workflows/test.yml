@@ -71,6 +71,10 @@ jobs:
       - name: Add Python symlink
         run: ln -sf /usr/local/bin/python3.11 /usr/bin/python3
         shell: bash
+      - name: Install bison and flex
+        run: |
+          apt-get update
+          apt-get install -y bison flex default-jre
       - uses: ./.github/actions/cpp-tests
         with:
           build_type: Release
@@ -82,6 +86,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Install bison 3.8
+        run: |
+          brew install bison@3.8 java
+          echo "$(brew --prefix bison)/bin" >> $GITHUB_PATH
+          echo "$(brew --prefix java)/bin" >> $GITHUB_PATH
+        shell: bash
       - uses: ./.github/actions/cpp-tests
         with:
           build_type: Release
