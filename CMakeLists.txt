@@ -116,7 +116,7 @@ message(STATUS "Fetching cqasm")
 option(LIBQASM_COMPAT "" ON)
 FetchContent_Declare(cqasm
     GIT_REPOSITORY https://github.com/QuTech-Delft/libqasm.git
-    GIT_TAG "ea8c259c6cd685e7e2fe7a11868e6e41ce033ba4"
+    GIT_TAG "6363d273db4663fd2ddd114b41ee74f24f734ce3"
 )
 FetchContent_MakeAvailable(cqasm)
 
@@ -133,7 +133,8 @@ add_library(qx
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Qxelarator.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Random.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Simulator.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/LibqasmInterface.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/V1xLibqasmInterface.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/V3xLibqasmInterface.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Gates.cpp"
 )
 

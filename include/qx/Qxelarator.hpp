@@ -6,14 +6,16 @@ namespace qxelarator {
 
 std::variant<qx::SimulationResult, qx::SimulationError>
 execute_string(std::string const &s, std::size_t iterations = 1,
-               std::optional<std::uint_fast64_t> seed = std::nullopt) {
-    return qx::executeString(s, iterations, seed);
+               std::optional<std::uint_fast64_t> seed = std::nullopt,
+               std::string version = "1.0") {
+    return qx::executeString(s, iterations, seed, version);
 }
 
 std::variant<qx::SimulationResult, qx::SimulationError>
 execute_file(std::string const &filePath, std::size_t iterations = 1,
-             std::optional<std::uint_fast64_t> seed = std::nullopt) {
-    return qx::executeFile(filePath, iterations, seed);
+             std::optional<std::uint_fast64_t> seed = std::nullopt,
+             std::string version = "1.0") {
+    return qx::executeFile(filePath, iterations, seed, version);
 }
 
 }  // namespace qxelarator

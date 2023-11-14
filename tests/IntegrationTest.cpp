@@ -11,8 +11,9 @@ namespace qx {
 class IntegrationTest : public ::testing::Test {
 public:
     static SimulationResult runFromString(const std::string &s,
-                                          std::uint64_t iterations = 1) {
-        auto result = executeString(s, iterations);
+                                          std::uint64_t iterations = 1,
+                                          std::string cqasm_version = "1.0") {
+        auto result = executeString(s, iterations, std::nullopt, cqasm_version);
         EXPECT_TRUE(std::holds_alternative<SimulationResult>(result));
         return *std::get_if<SimulationResult>(&result);
     }
@@ -35,6 +36,25 @@ h q[0]
 cnot q[0], q[1]
 )";
     auto actual = runFromString(cqasm);
+
+    EXPECT_EQ(actual.shots_requested, 1);
+    EXPECT_EQ(actual.shots_done, 1);
+    EXPECT_EQ(actual.results, (SimulationResult::Results{{"00", 1}}));
+    EXPECT_EQ(actual.state,
+              (SimulationResult::State{{"00", {1 / std::sqrt(2), 0, 0.5}},
+                                       {"11", {1 / std::sqrt(2), 0, 0.5}}}));
+}
+
+TEST_F(IntegrationTest, bell_pair_v3) {
+    auto cqasm = R"(
+version 3.0
+
+qubit[2] q
+
+h q[0]
+cnot q[0], q[1]
+)";
+    auto actual = runFromString(cqasm, 1, "3.0");
 
     EXPECT_EQ(actual.shots_requested, 1);
     EXPECT_EQ(actual.shots_done, 1);
@@ -201,7 +221,7 @@ h q[0
     auto result = executeString(cqasm);
     EXPECT_TRUE(std::holds_alternative<SimulationError>(result));
     EXPECT_THAT(std::get_if<SimulationError>(&result)->message, ::testing::StartsWith("""\
-Cannot parse and analyze cQASM: \n\
+Cannot parse and analyze cQASM v1: \n\
 <unknown>:6:6: syntax error, unexpected NEWLINE"""));
 }
 

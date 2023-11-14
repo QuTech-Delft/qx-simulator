@@ -1,4 +1,3 @@
-#include "qx/LibqasmInterface.hpp"
 #include "qx/Simulator.hpp"
 #include "qx/Version.hpp"
 #include "v10/qasm_semantic.hpp"

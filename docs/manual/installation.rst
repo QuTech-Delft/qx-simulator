@@ -20,12 +20,20 @@ For normal users, this is the only thing you have to do, so you can stop reading
 Installation from source
 -----------
 
-QX-simulator can be built from source, provided you have installed some dependencies:
+QX-simulator can be built from source.
+On the ARM platform, you need to install yourself some dependencies:
 
 * Bison (for building libqasm)
 * Flex (for building libqasm)
 
-On top of that, you will need a C++ compiler with support for C++20, ``make`` (for Linux) and ``cmake``.
+On top of that, you will need a C++ compiler with support for C++20, ``make`` (for Linux), ``cmake`` and ``conan``:
+
+.. code-block:: bash
+
+    python3 -m pip install --upgrade pip conan
+
+
+First and foremost, clone and visit the sources:
 
 .. code-block:: bash
     
@@ -53,8 +61,7 @@ do not forget to build in debug mode.
 
 .. code-block:: bash
 
-    python3 -m pip install --upgrade pip conan
-
+    conan profile detect
     conan build . -pr=conan/profiles/tests-Debug -b missing
 
 
