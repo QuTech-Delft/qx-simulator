@@ -16,9 +16,6 @@ public:
         EXPECT_TRUE(std::holds_alternative<SimulationResult>(result));
         return *std::get_if<SimulationResult>(&result);
     }
-
-private:
-    Simulator simulator;
 };
 
 bool operator==(SimulationResult::Complex const &left,
@@ -204,7 +201,7 @@ h q[0
     auto result = executeString(cqasm);
     EXPECT_TRUE(std::holds_alternative<SimulationError>(result));
     EXPECT_THAT(std::get_if<SimulationError>(&result)->message, ::testing::StartsWith("""\
-Cannot parse and analyze string \nversion 1.0\n\nqubits 1\n\nh q[0\n: \n\
+Cannot parse and analyze cQASM: \n\
 <unknown>:6:6: syntax error, unexpected NEWLINE"""));
 }
 

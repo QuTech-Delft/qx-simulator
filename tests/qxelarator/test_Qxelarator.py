@@ -3,32 +3,6 @@ import os
 import qxelarator
 
 class QxelaratorTest(unittest.TestCase):
-    def test_oldAPI(self):
-        qx = qxelarator.QX()
-
-        cQasmFileName = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'bell_pair.qasm')
-        qx.set(cQasmFileName)
-        simulationResult = qx.execute(23)
-
-        expected = \
-"""{
-    "info": {
-        "shots_requested": 23,
-        "shots_done": 23
-    },
-    "results": {
-        "00": 23
-    },
-    "state": {
-        "11": {
-            "real": 1.00000000,
-            "imag": 0.00000000,
-            "norm": 1.00000000
-        }
-    }
-}"""
-        self.assertEqual(simulationResult, expected)
-
     def test_execute_file(self):
         cQasmFileName = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'bell_pair.qasm')
         simulationResult = qxelarator.execute_file(cQasmFileName, iterations = 23)
@@ -54,15 +28,7 @@ qubits 1
 
         self.assertIsInstance(simulationError, qxelarator.SimulationError)
         self.assertEqual(simulationError.message, """\
-Cannot parse and analyze string 
-version 1.0
-
-qubits 1
-
-.myCircuit
-    x q[0],
-    measure q[0]
-: 
+Cannot parse and analyze cQASM: 
 <unknown>:7:12: syntax error, unexpected NEWLINE
 """)
 

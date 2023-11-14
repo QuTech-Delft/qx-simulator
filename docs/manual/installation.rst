@@ -45,24 +45,17 @@ To build QXelarator yourself from source and add it to your local Python package
 
 You will need to have SWIG installed for the above to work.
 
-Building the C++ executable from source
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Building the C++ executable from source with Conan
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This is particularly useful for debugging purposes, as the executable can then be run under ``gdb``, for instance. To do so,
-do not forget to build it in debug mode, otherwise compiler optimizations will make debugging more difficult.
+do not forget to build in debug mode.
 
 .. code-block:: bash
 
-    mkdir build
+    python3 -m pip install --upgrade pip conan
 
-    cd build
-
-    cmake -S .. -B . -DCMAKE_BUILD_TYPE=Release
-
-    make -j16 qx-simulator
+    conan build . -pr=conan/profiles/tests-Debug -b missing
 
 
-This will produced an optimized binary ``qx-simulator`` (``-DCMAKE_BUILD_TYPE=Debug`` to disable optimizations).
-
-To build the C++ tests, add the following option to the ``cmake`` call: ``-DQX_BUILD_TESTS=ON``. To run them,
-call ``ctest``.
+Look into `conan/profiles/` to find other profiles to build with.

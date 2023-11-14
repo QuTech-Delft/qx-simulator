@@ -23,7 +23,6 @@ void print_banner() {
 int main(int argc, char **argv) {
     std::string filePath;
     size_t iterations = 1;
-    std::string jsonFilename;
     print_banner();
 
     int argIndex = 1;
@@ -31,13 +30,7 @@ int main(int argc, char **argv) {
     while (argIndex < argc) {
         auto currentArg = argv[argIndex];
 
-        if (std::string(currentArg) == "-j") {
-            if (argIndex + 1 >= argc) {
-                argParsingFailed = true;
-            } else {
-                jsonFilename = std::string(argv[++argIndex]);
-            }
-        } else if (std::string(currentArg) == "-c") {
+        if (std::string(currentArg) == "-c") {
             if (argIndex + 1 >= argc) {
                 argParsingFailed = true;
             } else {
@@ -60,7 +53,7 @@ int main(int argc, char **argv) {
 
     if (filePath.empty() || argParsingFailed) {
         std::cerr << "Usage: \n   " << argv[0]
-                  << " [-j filename.json] [-c iterations] file.qc" << std::endl;
+                  << " [-c iterations] file.qc" << std::endl;
         return -1;
     }
 
@@ -68,25 +61,13 @@ int main(int argc, char **argv) {
               << (iterations > 1 ? "s" : "") << " file '" << filePath << "'..."
               << std::endl;
 
-    if (!jsonFilename.empty()) {
-        std::cout << "Will output JSON simulation result to file '"
-                  << jsonFilename << "'..." << std::endl;
-    }
-
-    qx::Simulator simulator;
-
-    if (!simulator.set(filePath)) {
-        std::cerr << "Failed to load cqasm file" << std::endl;
-        return 1;
-    }
-    simulator.setJSONOutputPath(jsonFilename);
-    auto simulationResult = simulator.execute(iterations);
+    auto simulationResult = qx::executeFile(filePath, iterations);
 
     if (auto* error = std::get_if<qx::SimulationError>(&simulationResult)) {
         std::cerr << error->message << std::endl;
         return 1;
     }
 
-    std::cout << *std::get_if<qx::SimulationResult>(&simulationResult) << std::endl;
+    std::cout << std::get<qx::SimulationResult>(simulationResult) << std::endl;
     return 0;
 }
