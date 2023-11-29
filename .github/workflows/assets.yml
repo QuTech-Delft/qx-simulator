@@ -26,14 +26,10 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - name: Install dependencies
-        run: |
-          brew install bison flex swig
-          echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
-          echo "/usr/local/opt/flex/bin" >> $GITHUB_PATH
-          python -m pip install --upgrade pip setuptools wheel
+        run: python -m pip install --upgrade pip conan setuptools wheel
       - name: Build wheel
         env:
-          QX_CPU_COMPATIBILITY_MODE: ON
+          QX_CPU_COMPATIBILITY_MODE: "True"
           NPROCS: 10
         run: python setup.py bdist_wheel
       - name: Wheel path
@@ -72,13 +68,13 @@ jobs:
         uses: actions/checkout@v3
       - name: Install dependencies
         run: |
-          dnf install -y flex bison swig cmake
-          /opt/python/${{ matrix.cpython_version }}/bin/python -m pip install auditwheel
+          /opt/python/${{ matrix.cpython_version }}/bin/python -m pip install --upgrade pip conan wheel auditwheel
       - name: Build wheel
         env:
-          QX_CPU_COMPATIBILITY_MODE: ON
+          QX_CPU_COMPATIBILITY_MODE: "True"
           NPROCS: 5
         run: |
+          export PATH="/opt/python/${{ matrix.cpython_version }}/bin:$PATH"
           /opt/python/${{ matrix.cpython_version }}/bin/python setup.py bdist_wheel
           /opt/python/${{ matrix.cpython_version }}/bin/python -m auditwheel repair pybuild/dist/*.whl
       - name: Wheel path
@@ -99,56 +95,55 @@ jobs:
           asset_name: ${{ steps.wheel.outputs.wheel }}
           asset_content_type: application/zip
 
-
-  # Disabled because the ARM runner doesn't have Docker. Building multi-python wheel outside of manylinux image is a pain.
-
-  # manylinux-arm64:
-  #   name: PyPI wheels for Manylinux (arm64)
-  #   runs-on:
-  #     - "self-hosted"
-  #     - "ARM64"
-  #     - "Linux"
-  #   container: quay.io/pypa/manylinux${{ matrix.manylinux }}_x86_64:latest
-  #   strategy:
-  #     matrix:
-  #       manylinux:
-  #         - "_2_28"
-  #       cpython_version:
-  #         - "cp38-cp38"
-  #         - "cp39-cp39"
-  #         - "cp310-cp310"
-  #         - "cp311-cp311"
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v3
-  #     - name: Install dependencies
-  #       run: |
-  #         dnf install -y flex bison swig cmake
-  #         python${{ matrix.cpython_version }} -m pip install auditwheel
-  #     - name: Build wheel
-  #       env:
-  #         QX_CPU_COMPATIBILITY_MODE: ON
-  #         NPROCS: 5
-  #       run: |
-  #         python${{ matrix.cpython_version }} setup.py bdist_wheel
-  #         python${{ matrix.cpython_version }} -m auditwheel repair pybuild/dist/*.whl
-  #     - name: Wheel path
-  #       id: wheel
-  #       working-directory: wheelhouse
-  #       run: echo "##[set-output name=wheel;]$(ls *.whl)"
-  #     - uses: actions/upload-artifact@v3
-  #       with:
-  #         name: pypi-linux-${{ matrix.cpython_version }}
-  #         path: wheelhouse/${{ steps.wheel.outputs.wheel }}
-  #     - uses: actions/upload-release-asset@v1
-  #       if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #       with:
-  #         upload_url: ${{ github.event.release.upload_url }}
-  #         asset_path: wheelhouse/${{ steps.wheel.outputs.wheel }}
-  #         asset_name: ${{ steps.wheel.outputs.wheel }}
-  #         asset_content_type: application/zip
+  manylinux-arm64:
+    name: PyPI wheels for Manylinux (arm64)
+    runs-on:
+      - "self-hosted"
+      - "ARM64"
+      - "Linux"
+    container: quay.io/pypa/manylinux${{ matrix.manylinux }}_aarch64:latest
+    strategy:
+      matrix:
+        manylinux:
+          - "_2_28"
+        cpython_version:
+          - "cp38-cp38"
+          - "cp39-cp39"
+          - "cp310-cp310"
+          - "cp311-cp311"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install dependencies
+        run: |
+          dnf install -y bison flex java-17-openjdk
+          /opt/python/${{ matrix.cpython_version }}/bin/python -m pip install --upgrade pip conan wheel auditwheel
+      - name: Build wheel
+        env:
+          QX_CPU_COMPATIBILITY_MODE: "True"
+          NPROCS: 5
+        run: |
+          export PATH="/opt/python/${{ matrix.cpython_version }}/bin:$PATH"
+          conan remove -c "qx/*"
+          /opt/python/${{ matrix.cpython_version }}/bin/python setup.py bdist_wheel
+          /opt/python/${{ matrix.cpython_version }}/bin/python -m auditwheel repair pybuild/dist/*.whl
+      - name: Wheel path
+        id: wheel
+        working-directory: wheelhouse
+        run: echo "##[set-output name=wheel;]$(ls *.whl)"
+      - uses: actions/upload-artifact@v3
+        with:
+          name: pypi-linux-${{ matrix.cpython_version }}
+          path: wheelhouse/${{ steps.wheel.outputs.wheel }}
+      - uses: actions/upload-release-asset@v1
+        if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: wheelhouse/${{ steps.wheel.outputs.wheel }}
+          asset_name: ${{ steps.wheel.outputs.wheel }}
+          asset_content_type: application/zip
 
   windows-x64:
     name: PyPI wheels for Windows
@@ -166,20 +161,11 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python }}
-      - uses: actions/cache@v3
-        with:
-          path: C:\Users\runneradmin\AppData\Local\Temp\chocolatey
-          key: ${{ runner.os }}-chocolatey-python-1
-          restore-keys: |
-            ${{ runner.os }}-chocolatey-python-
-            ${{ runner.os }}-chocolatey-
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip setuptools wheel
-          choco install winflexbison3 --version 2.5.24.20210105
+        run: python -m pip install --upgrade pip conan setuptools wheel
       - name: Build wheel
         env:
-          QX_CPU_COMPATIBILITY_MODE: ON
+          QX_CPU_COMPATIBILITY_MODE: "True"
           NPROCS: 5
         run: python setup.py bdist_wheel
       - name: Wheel path
@@ -206,7 +192,7 @@ jobs:
     needs:
       - macos-x64
       - manylinux-x64
-      # - manylinux-arm64
+      - manylinux-arm64
       - windows-x64
     runs-on: ubuntu-latest
     steps:
