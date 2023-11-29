@@ -7,7 +7,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- 
+- Python 3.12 support
 
 ### Changed
 
