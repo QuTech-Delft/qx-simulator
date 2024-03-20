@@ -1,4 +1,4 @@
-#include "qx/LibqasmInterface.hpp"
+#include "qx/V1xLibqasmInterface.hpp"
 
 #include "qx/Circuit.hpp"
 #include "qx/Core.hpp"
@@ -8,20 +8,21 @@
 
 namespace qx {
 
-namespace cq = ::cqasm::v1x::semantic;
-namespace values = ::cqasm::v1x::values;
+namespace v1cq = ::cqasm::v1x::semantic;
+namespace v1values = ::cqasm::v1x::values;
+
 
 namespace {
 class OperandsHelper {
 public:
-    explicit OperandsHelper(const cq::Instruction &instruction)
+    explicit OperandsHelper(const v1cq::Instruction &instruction)
         : instruction(instruction) {}
 
-    [[nodiscard]] cq::Many<values::ConstInt> get_qubit_operands(int id) const {
+    [[nodiscard]] v1cq::Many<v1values::ConstInt> get_qubit_operands(int id) const {
         return instruction.operands[id]->as_qubit_refs()->index;
     }
 
-    [[nodiscard]] cq::Many<values::ConstInt> get_bit_operands(int id) const {
+    [[nodiscard]] v1cq::Many<v1values::ConstInt> get_bit_operands(int id) const {
         return instruction.operands[id]->as_bit_refs()->index;
     }
 
@@ -34,75 +35,75 @@ public:
     }
 
 private:
-    const cq::Instruction &instruction;
+    const v1cq::Instruction &instruction;
 };
 
-std::string to_string(cq::NodeType nodeType) {
+std::string to_string(v1cq::NodeType nodeType) {
     switch (nodeType) {
-    case cq::NodeType::AnnotationData:
+    case v1cq::NodeType::AnnotationData:
         return "AnnotationData";
-    case cq::NodeType::Block:
+    case v1cq::NodeType::Block:
         return "Block";
-    case cq::NodeType::BreakStatement:
+    case v1cq::NodeType::BreakStatement:
         return "BreakStatement";
-    case cq::NodeType::Bundle:
+    case v1cq::NodeType::Bundle:
         return "Bundle";
-    case cq::NodeType::BundleExt:
+    case v1cq::NodeType::BundleExt:
         return "BundleExt";
-    case cq::NodeType::ContinueStatement:
+    case v1cq::NodeType::ContinueStatement:
         return "ContinueStatement";
-    case cq::NodeType::ErrorModel:
+    case v1cq::NodeType::ErrorModel:
         return "ErrorModel";
-    case cq::NodeType::ForLoop:
+    case v1cq::NodeType::ForLoop:
         return "ForLoop";
-    case cq::NodeType::ForeachLoop:
+    case v1cq::NodeType::ForeachLoop:
         return "ForeachLoop";
-    case cq::NodeType::GotoInstruction:
+    case v1cq::NodeType::GotoInstruction:
         return "GotoInstruction";
-    case cq::NodeType::IfElse:
+    case v1cq::NodeType::IfElse:
         return "IfElse";
-    case cq::NodeType::IfElseBranch:
+    case v1cq::NodeType::IfElseBranch:
         return "IfElseBranch";
-    case cq::NodeType::Instruction:
+    case v1cq::NodeType::Instruction:
         return "Instruction";
-    case cq::NodeType::Mapping:
+    case v1cq::NodeType::Mapping:
         return "Mapping";
-    case cq::NodeType::Program:
+    case v1cq::NodeType::Program:
         return "Program";
-    case cq::NodeType::RepeatUntilLoop:
+    case v1cq::NodeType::RepeatUntilLoop:
         return "RepeatUntilLoop";
-    case cq::NodeType::SetInstruction:
+    case v1cq::NodeType::SetInstruction:
         return "SetInstruction";
-    case cq::NodeType::Subcircuit:
+    case v1cq::NodeType::Subcircuit:
         return "Subcircuit";
-    case cq::NodeType::Variable:
+    case v1cq::NodeType::Variable:
         return "Variable";
-    case cq::NodeType::Version:
+    case v1cq::NodeType::Version:
         return "Version";
-    case cq::NodeType::WhileLoop:
+    case v1cq::NodeType::WhileLoop:
         return "WhileLoop";
     }
 
     return "Unknown";
 }
 
-class GateConvertor : public cq::RecursiveVisitor {
+class GateConvertor : public v1cq::RecursiveVisitor {
 public:
     explicit GateConvertor(qx::Circuit &c) : circuit(c) {}
 
-    void visit_instruction(cq::Instruction &instr) override { addGates(instr); }
+    void visit_instruction(v1cq::Instruction &instr) override { addGates(instr); }
 
-    void visit_bundle_ext(cq::BundleExt &node) override {
+    void visit_bundle_ext(v1cq::BundleExt &node) override {
         node.items.visit(*this);
     }
 
-    void visit_node(cq::Node &node) override {
+    void visit_node(v1cq::Node &node) override {
         throw std::runtime_error("Statements of the following type are not supported by the simulator: " +
                                  to_string(node.type()));
     }
 
 private:
-    void addGates(const cq::Instruction &instruction) {
+    void addGates(const v1cq::Instruction &instruction) {
         auto b = instruction.condition->as_const_bool();
         if (b && !(b->value)) {
             return;
@@ -124,13 +125,13 @@ private:
     template <std::size_t NumberOfQubitOperands>
     void addGates(
         core::DenseUnitaryMatrix<1 << NumberOfQubitOperands> matrix,
-        std::array<cq::Many<values::ConstInt>, NumberOfQubitOperands> operands,
+        std::array<v1cq::Many<v1values::ConstInt>, NumberOfQubitOperands> operands,
         const std::shared_ptr<std::vector<core::QubitIndex>> &controlBits) {
         static_assert(NumberOfQubitOperands > 0);
 
 #ifndef NDEBUG
         std::for_each(operands.begin(), operands.end(),
-                      [&operands](cq::Many<values::ConstInt> const &ops) {
+                      [&operands](v1cq::Many<v1values::ConstInt> const &ops) {
                           assert(ops.size() == operands[0].size());
                       });
 #endif
@@ -147,7 +148,7 @@ private:
         }
     }
 
-    void addGates(const cq::Instruction &instruction,
+    void addGates(const v1cq::Instruction &instruction,
                   const std::shared_ptr<std::vector<core::QubitIndex>> &controlBits) {
         auto &name = instruction.instruction->name;
         OperandsHelper operands(instruction);
@@ -301,7 +302,7 @@ private:
 };
 } // namespace
 
-qx::Circuit loadCqasmCode(cq::Subcircuit const &subcircuit) {
+qx::Circuit loadCqasmCode(v1cq::Subcircuit const &subcircuit) {
     qx::Circuit circuit(subcircuit.name, subcircuit.iterations);
 
     for (const auto &statement : subcircuit.body->statements) {

@@ -2,9 +2,13 @@
 
 #include "qx/Circuit.hpp"
 #include "qx/ErrorModels.hpp"
-#include "qx/LibqasmInterface.hpp"
+#include "qx/V1xLibqasmInterface.hpp"
+#include "qx/V3xLibqasmInterface.hpp"
 #include "qx/Random.hpp"
 #include "qx/SimulationResult.hpp"
+
+#include "v1x/cqasm.hpp"
+#include "v3x/cqasm.hpp"
 
 #include <fstream>
 #include <iostream>
@@ -13,66 +17,89 @@
 
 namespace qx {
 
-std::optional<SimulationError> Simulator::set(std::string const &filePath) {
+using V1AnalysisResult = cqasm::v1x::analyzer::AnalysisResult;
+using V1Program = cqasm::v1x::ast::One<cqasm::v1x::semantic::Program>;
+
+using V3AnalysisResult = cqasm::v3x::analyzer::AnalysisResult;
+using V3Program = cqasm::v3x::ast::One<cqasm::v3x::semantic::Program>;
+
+namespace {
+V1AnalysisResult parseCqasmV1xFile(std::string const &filePath) {
     auto analyzer = cqasm::v1x::default_analyzer("1.2");
 
-    auto analysisResult = analyzer.analyze(filePath);
-    if (!analysisResult.errors.empty()) {
-        program.reset();
-        std::stringstream error;
-        error << "Cannot parse and analyze file " << filePath << ":";
-
-        std::for_each(analysisResult.errors.begin(), analysisResult.errors.end(), [&error](auto const& s) { error << "\n" << s; });
-
-        return SimulationError{error.str()};
-    }
-
-    program = analysisResult.root;
-    assert(!program.empty());
-
-    if (!program->error_model.empty() &&
-        program->error_model->name != "depolarizing_channel") {
-        program.reset();
-        return SimulationError{"Unknown error model: " + program->error_model->name};
-    }
-
-    return std::nullopt;
+    return analyzer.analyze_file(filePath);
 }
 
-std::optional<SimulationError> Simulator::setString(std::string const &s) {
+V1AnalysisResult parseCqasmV1xString(std::string const &s) {
     auto analyzer = cqasm::v1x::default_analyzer("1.2");
 
-    auto analysisResult = analyzer.analyze_string(s);
+    return analyzer.analyze_string(s);
+}
+
+V3AnalysisResult parseCqasmV3xFile(std::string const &filePath) {
+    auto analyzer = cqasm::v3x::default_analyzer("3.0");
+
+    return analyzer.analyze_file(filePath);
+}
+
+V3AnalysisResult parseCqasmV3xString(std::string const &s) {
+    auto analyzer = cqasm::v3x::default_analyzer("3.0");
+
+    return analyzer.analyze_string(s);
+}
+
+std::variant<V1Program, SimulationError> getV1ProgramOrError(V1AnalysisResult const& analysisResult) {
     if (!analysisResult.errors.empty()) {
-        program.reset();
         std::stringstream error;
-        error << "Cannot parse and analyze string " << s << ": \n";
+        error << "Cannot parse and analyze cQASM v1: \n";
 
         std::for_each(analysisResult.errors.begin(), analysisResult.errors.end(), [&error](auto const& x) { error << x << "\n"; });
 
         return SimulationError{error.str()};
     }
 
-    program = analysisResult.root;
+    auto program = analysisResult.root;
     assert(!program.empty());
 
     if (!program->error_model.empty() &&
         program->error_model->name != "depolarizing_channel") {
         std::cerr << "Unknown error model: " << program->error_model->name
-                  << std::endl;
-        program.reset();
+                << std::endl;
         return SimulationError{"Unknown error model: " + program->error_model->name};
     }
 
-    return std::nullopt;
+    return program;
+}
+
+std::variant<V3Program, SimulationError> getV3ProgramOrError(V3AnalysisResult const& analysisResult) {
+    if (!analysisResult.errors.empty()) {
+        std::stringstream error;
+        error << "Cannot parse and analyze cQASM v3: \n";
+
+        std::for_each(analysisResult.errors.begin(), analysisResult.errors.end(), [&error](auto const& x) { error << x << "\n"; });
+
+        return SimulationError{error.str()};
+    }
+
+    auto program = analysisResult.root;
+    assert(!program.empty());
+    
+    return program;
 }
 
 std::variant<SimulationResult, SimulationError>
-Simulator::execute(std::size_t iterations,
-                   std::optional<std::uint_fast64_t> seed) const {
-    if (program.empty()) {
-        return SimulationError{"No circuit successfully loaded, call set(...) first"};
+execute(V1AnalysisResult analysisResult,
+                std::size_t iterations,
+                std::optional<std::uint_fast64_t> seed) {
+    auto programOrError = getV1ProgramOrError(analysisResult);
+
+    if (auto* error = std::get_if<SimulationError>(&programOrError)) {
+        return *error;
     }
+
+    auto program = std::get<V1Program>(programOrError);
+
+    assert(!program.empty());
 
     if (iterations <= 0) {
         return SimulationError{"Invalid number of iterations"};
@@ -112,35 +139,94 @@ Simulator::execute(std::size_t iterations,
 
     auto simulationResult = simulationResultAccumulator.get();
 
-    if (!jsonOutputFilePath.empty()) {
-        auto resultJson = simulationResult.getJsonString();
-        std::ofstream outfile(jsonOutputFilePath);
-        outfile << resultJson;
-    }
-
     return simulationResult;
 }
 
 std::variant<SimulationResult, SimulationError>
-executeString(std::string const &s, std::size_t iterations,
-              std::optional<std::uint_fast64_t> seed) {
-    Simulator simulator;
-    if (auto error = simulator.setString(s)) {
+execute(V3AnalysisResult analysisResult,
+                std::size_t iterations,
+                std::optional<std::uint_fast64_t> seed) {
+    auto programOrError = getV3ProgramOrError(analysisResult);
+
+    // FIXME: assert that there is only one qubit register... and only one bit register with same size?
+
+    if (auto* error = std::get_if<SimulationError>(&programOrError)) {
         return *error;
     }
 
-    return simulator.execute(iterations, seed);
+    auto program = std::get<V3Program>(programOrError);
+
+    assert(!program.empty());
+
+    if (iterations <= 0) {
+        return SimulationError{"Invalid number of iterations"};
+    }
+
+    if (seed) {
+        random::seed(*seed);
+    }
+
+    std::size_t qubitCount = 0;
+    for (auto const& v: program->variables) {
+        if (v->typ->type() == cqasm::v3x::types::NodeType::QubitArray) {
+            qubitCount += v->typ->as_qubit_array()->size;
+        } else if (v->typ->type() == cqasm::v3x::types::NodeType::Qubit) {
+            qubitCount += 1;
+        }
+    }
+
+    if (qubitCount > config::MAX_QUBIT_NUMBER) {
+        return SimulationError{"Cannot run that many qubits in this version of QX-simulator"};
+    }
+
+    // TODO: make mapping between simulator global qubit index and qubit register index.
+
+
+    qx::core::QuantumState quantumState(qubitCount);
+
+    qx::Circuit circuit = loadCqasmCode(*program);
+
+    SimulationResultAccumulator simulationResultAccumulator(quantumState);
+
+    for (std::size_t s = 0; s < iterations; ++s) {
+        quantumState.reset();
+        circuit.execute(quantumState, std::monostate{});
+        simulationResultAccumulator.append(
+            quantumState.getMeasurementRegister());
+    }
+
+    auto simulationResult = simulationResultAccumulator.get();
+
+    return simulationResult;
+}
+}
+
+std::variant<SimulationResult, SimulationError>
+executeString(std::string const &s, std::size_t iterations,
+              std::optional<std::uint_fast64_t> seed, std::string cqasm_version) {    
+    if (cqasm_version == "1.0") {
+        auto analysisResult = parseCqasmV1xString(s);
+        return execute(analysisResult, iterations, seed);
+    } else if (cqasm_version == "3.0") {
+        auto analysisResult = parseCqasmV3xString(s);
+        return execute(analysisResult, iterations, seed);
+    } else {
+        return SimulationError{"Unknown cqasm version: " + cqasm_version};
+    }
 }
 
 std::variant<SimulationResult, SimulationError>
 executeFile(std::string const &filePath, std::size_t iterations,
-            std::optional<std::uint_fast64_t> seed) {
-    Simulator simulator;
-    if (auto error = simulator.set(filePath)) {
-        return *error;
+            std::optional<std::uint_fast64_t> seed, std::string cqasm_version) {
+    if (cqasm_version == "1.0") {
+        auto analysisResult = parseCqasmV1xFile(filePath);
+        return execute(analysisResult, iterations, seed);
+    } else if (cqasm_version == "3.0") {
+        auto analysisResult = parseCqasmV3xFile(filePath);
+        return execute(analysisResult, iterations, seed);
+    } else {
+        return SimulationError{"Unknown cqasm version: " + cqasm_version};
     }
-
-    return simulator.execute(iterations, seed);
 }
 
 } // namespace qx

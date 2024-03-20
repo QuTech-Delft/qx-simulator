@@ -30,8 +30,6 @@ struct SimulationResult {
 
     Results results;
     State state;
-
-    std::string getJsonString();
 };
 
 std::ostream &operator<<(std::ostream &os, SimulationResult const &r);
