@@ -2,12 +2,10 @@
 
 #include "qx/Circuit.hpp"
 #include "qx/ErrorModels.hpp"
-#include "qx/V1xLibqasmInterface.hpp"
 #include "qx/V3xLibqasmInterface.hpp"
 #include "qx/Random.hpp"
 #include "qx/SimulationResult.hpp"
 
-#include "v1x/cqasm.hpp"
 #include "v3x/cqasm.hpp"
 
 #include <fstream>
@@ -17,25 +15,10 @@
 
 namespace qx {
 
-using V1AnalysisResult = cqasm::v1x::analyzer::AnalysisResult;
-using V1Program = cqasm::v1x::ast::One<cqasm::v1x::semantic::Program>;
-
 using V3AnalysisResult = cqasm::v3x::analyzer::AnalysisResult;
 using V3Program = cqasm::v3x::ast::One<cqasm::v3x::semantic::Program>;
 
 namespace {
-V1AnalysisResult parseCqasmV1xFile(std::string const &filePath) {
-    auto analyzer = cqasm::v1x::default_analyzer("1.2");
-
-    return analyzer.analyze_file(filePath);
-}
-
-V1AnalysisResult parseCqasmV1xString(std::string const &s) {
-    auto analyzer = cqasm::v1x::default_analyzer("1.2");
-
-    return analyzer.analyze_string(s);
-}
-
 V3AnalysisResult parseCqasmV3xFile(std::string const &filePath) {
     auto analyzer = cqasm::v3x::default_analyzer("3.0");
 
@@ -204,10 +187,7 @@ execute(V3AnalysisResult analysisResult,
 std::variant<SimulationResult, SimulationError>
 executeString(std::string const &s, std::size_t iterations,
               std::optional<std::uint_fast64_t> seed, std::string cqasm_version) {    
-    if (cqasm_version == "1.0") {
-        auto analysisResult = parseCqasmV1xString(s);
-        return execute(analysisResult, iterations, seed);
-    } else if (cqasm_version == "3.0") {
+    if (cqasm_version == "3.0") {
         auto analysisResult = parseCqasmV3xString(s);
         return execute(analysisResult, iterations, seed);
     } else {
@@ -218,10 +198,7 @@ executeString(std::string const &s, std::size_t iterations,
 std::variant<SimulationResult, SimulationError>
 executeFile(std::string const &filePath, std::size_t iterations,
             std::optional<std::uint_fast64_t> seed, std::string cqasm_version) {
-    if (cqasm_version == "1.0") {
-        auto analysisResult = parseCqasmV1xFile(filePath);
-        return execute(analysisResult, iterations, seed);
-    } else if (cqasm_version == "3.0") {
+    if (cqasm_version == "3.0") {
         auto analysisResult = parseCqasmV3xFile(filePath);
         return execute(analysisResult, iterations, seed);
     } else {

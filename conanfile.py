@@ -26,7 +26,6 @@ class QxConan(ConanFile):
         "build_python": [True, False],
         "build_tests": [True, False],
         "cpu_compatibility_mode": [True, False],
-        "libqasm_compat": [True, False],
         "python_dir": [None, "ANY"],
         "python_ext": [None, "ANY"],
     }
@@ -37,7 +36,6 @@ class QxConan(ConanFile):
         "build_python": False,
         "build_tests": False,
         "cpu_compatibility_mode": False,
-        "libqasm_compat": True,
         "python_dir": None,
         "python_ext": None
     }
@@ -86,7 +84,6 @@ class QxConan(ConanFile):
         deps.generate()
         tc = CMakeToolchain(self)
         tc.variables["ASAN_ENABLED"] = self.options.asan_enabled
-        tc.variables["LIBQASM_COMPAT"] = self.options.libqasm_compat
         tc.variables["QX_BUILD_PYTHON"] = self.options.build_python
         tc.variables["QX_BUILD_TESTS"] = self.options.build_tests
         tc.variables["QX_CPU_COMPATIBILITY_MODE"] = self.options.cpu_compatibility_mode
