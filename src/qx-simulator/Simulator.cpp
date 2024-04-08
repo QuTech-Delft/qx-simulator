@@ -1,6 +1,5 @@
 #include "qx/Simulator.hpp"
 #include "qx/Version.hpp"
-#include "v10/qasm_semantic.hpp"
 
 
 void print_banner() {
@@ -13,7 +12,7 @@ void print_banner() {
     std::cout << R"(    /  /___/  /   >   <     _\ \   _/ /   / /|_/ / / /_/ /  / /__ / __ | / /   / /_/ / / , _/    )" << std::endl;
     std::cout << R"(    \______/\__\ /_/|_|    /___/  /___/  /_/  /_/  \____/  /____//_/ |_|/_/    \____/ /_/|_|     )" << std::endl;
     std::cout << R"(                                                                                                 )" << std::endl;
-    std::cout <<  "      Version " << QX_VERSION << " - QuTech - " << QX_RELEASE_YEAR << " - report bugs and suggestions to: p.lehenaff@tudelft.nl" << std::endl;
+    std::cout << "Version " << QX_VERSION << " - QuTech / TU Delft - " << QX_RELEASE_YEAR << std::endl;
     std::cout << R"( =============================================================================================== )" << std::endl;
     std::cout << "" << std::endl;
     // clang-format on
