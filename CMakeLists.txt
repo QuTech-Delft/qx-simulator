@@ -115,7 +115,7 @@ find_package(absl)
 message(STATUS "Fetching cqasm")
 FetchContent_Declare(cqasm
     GIT_REPOSITORY https://github.com/QuTech-Delft/libqasm.git
-    GIT_TAG "77942f84e5772681745841cb42bf65ab80b3ff5b"
+    GIT_TAG "dc565b8eefdec30ebfe121ee48cd18162a5939d4"
 )
 FetchContent_MakeAvailable(cqasm)
 
