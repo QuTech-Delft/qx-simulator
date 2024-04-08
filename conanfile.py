@@ -44,20 +44,17 @@ class QxConan(ConanFile):
 
     def build_requirements(self):
         self.requires("abseil/20230125.3")
-        self.tool_requires("m4/1.4.19")
-        if self.settings.os == "Windows":
-            self.tool_requires("winflexbison/2.5.24")
-        else:
-            if self.settings.arch != "armv8":
-                self.tool_requires("flex/2.6.4")
-                self.tool_requires("bison/3.8.2")
+        self.tool_requires("tree-gen/1.0.7")
         if self.settings.arch != "armv8":
             self.tool_requires("zulu-openjdk/11.0.19")
         if self.options.build_tests:
             self.requires("gtest/1.14.0")
 
     def requirements(self):
-        self.requires("antlr4-cppruntime/4.13.0")
+        self.requires("fmt/10.2.1")
+        self.requires("range-v3/0.12.0")
+        self.requires("tree-gen/1.0.7")
+        self.requires("antlr4-cppruntime/4.13.1")
 
     def config_options(self):
         if self.settings.os == "Windows":
