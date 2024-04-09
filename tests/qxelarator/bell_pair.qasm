@@ -1,7 +1,6 @@
-version 1.0
+version 3.0
 
-qubits 2
+qubit[2] q
 
-.init
-    x q[0]
-	cnot q[0], q[1]
+X q[0]
+CNOT q[0], q[1]
