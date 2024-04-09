@@ -1,11 +1,12 @@
 #pragma once
 
+#include "qx/Common.hpp"
+
+#include <absl/container/btree_map.h>
 #include <complex>
+#include <fmt/ostream.h>
 #include <string>
 #include <vector>
-
-#include "absl/container/btree_map.h"
-#include "qx/Common.hpp"
 
 
 namespace qx {
@@ -36,11 +37,9 @@ std::ostream &operator<<(std::ostream &os, SimulationResult const &r);
 
 class SimulationResultAccumulator {
 public:
-    SimulationResultAccumulator(qx::core::QuantumState &s) : quantumState(s){};
+    explicit SimulationResultAccumulator(qx::core::QuantumState &s) : quantumState(s){};
 
     void append(BasisVector measuredState);
-
-    void dump();
 
     SimulationResult get();
 
@@ -55,3 +54,5 @@ private:
 };
 
 }  // namespace qx
+
+template <> struct fmt::formatter<qx::SimulationResult> : fmt::ostream_formatter {};
