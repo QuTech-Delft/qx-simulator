@@ -79,7 +79,7 @@ private:
         auto &name = instruction.instruction_ref->name;
         OperandsHelper operands(instruction);
 
-        if (name == "Toffoli") {
+        if (name == "TOFFOLI") {
             addGates<3>(gates::TOFFOLI, {
                 operands.get_register_operand(0),
                 operands.get_register_operand(1),
@@ -113,7 +113,7 @@ private:
             addGates<2>(gates::CNOT, { operands.get_register_operand(0), operands.get_register_operand(1) });
         } else if (name == "CZ") {
             addGates<2>(gates::CZ, { operands.get_register_operand(0), operands.get_register_operand(1) });
-        } else if (name == "Swap") {
+        } else if (name == "SWAP") {
             addGates<2>(gates::SWAP, { operands.get_register_operand(0), operands.get_register_operand(1) });
         } else if (name == "X90") {
             return addGates<1>(gates::X90, { operands.get_register_operand(0) });
