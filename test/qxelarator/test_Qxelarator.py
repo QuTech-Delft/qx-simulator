@@ -27,7 +27,7 @@ measure q
 
         self.assertIsInstance(simulation_error, qxelarator.SimulationError)
         self.assertTrue(simulation_error.message.startswith("""\
-Cannot parse and analyze cQASM v3: 
+Cannot parse and analyze cQASM v3:
 Error at <unknown file name>:5:5..6: mismatched input '\\n'\
 """))
 

@@ -8,6 +8,8 @@
 
 #include "v3x/cqasm.hpp"
 
+#include <fmt/format.h>
+#include <fmt/ranges.h>
 #include <fstream>
 #include <iostream>
 #include <optional>
@@ -34,12 +36,8 @@ V3AnalysisResult parseCqasmV3xString(std::string const &s) {
 
 std::variant<V3Program, SimulationError> getV3ProgramOrError(V3AnalysisResult const& analysisResult) {
     if (!analysisResult.errors.empty()) {
-        std::stringstream error;
-        error << "Cannot parse and analyze cQASM v3: \n";
-
-        std::for_each(analysisResult.errors.begin(), analysisResult.errors.end(), [&error](auto const& x) { error << x << "\n"; });
-
-        return SimulationError{error.str()};
+        auto error = fmt::format("Cannot parse and analyze cQASM v3:\n{}", fmt::join(analysisResult.errors, "\n"));
+        return SimulationError{ error };
     }
 
     auto program = analysisResult.root;
@@ -65,7 +63,7 @@ execute(
     assert(!program.empty());
 
     if (iterations <= 0) {
-        return SimulationError{"Invalid number of iterations"};
+        return SimulationError{ "Invalid number of iterations" };
     }
 
     if (seed) {
@@ -81,7 +79,7 @@ execute(
     }
 
     if (qubitCount > config::MAX_QUBIT_NUMBER) {
-        return SimulationError{"Cannot run that many qubits in this version of QX-simulator"};
+        return SimulationError{ "Cannot run that many qubits in this version of QX-simulator" };
     }
 
     qx::core::QuantumState quantumState(qubitCount);
@@ -114,7 +112,7 @@ executeString(
         auto analysisResult = parseCqasmV3xString(s);
         return execute(analysisResult, iterations, seed);
     } else {
-        return SimulationError{"Unknown cqasm version: " + cqasm_version};
+        return SimulationError{ fmt::format("Unknown cqasm version: {}", cqasm_version) };
     }
 }
 
@@ -129,7 +127,7 @@ executeFile(
         auto analysisResult = parseCqasmV3xFile(filePath);
         return execute(analysisResult, iterations, seed);
     } else {
-        return SimulationError{"Unknown cqasm version: " + cqasm_version};
+        return SimulationError{ fmt::format("Unknown cqasm version: {}", cqasm_version) };
     }
 }
 
