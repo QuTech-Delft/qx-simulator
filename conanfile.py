@@ -44,6 +44,7 @@ class QxConan(ConanFile):
 
     def build_requirements(self):
         self.requires("abseil/20230125.3")
+        # TODO: remove tree-gen dependency once libqasm can be required directly
         self.tool_requires("tree-gen/1.0.7")
         if self.settings.arch != "armv8":
             self.tool_requires("zulu-openjdk/11.0.19")
@@ -51,8 +52,7 @@ class QxConan(ConanFile):
             self.requires("gtest/1.14.0")
 
     def requirements(self):
-        self.requires("fmt/10.2.1")
-        self.requires("range-v3/0.12.0")
+        # TODO: remove tree-gen dependency once libqasm can be required directly
         self.requires("tree-gen/1.0.7")
         self.requires("antlr4-cppruntime/4.13.1")
 
