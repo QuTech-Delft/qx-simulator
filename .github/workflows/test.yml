@@ -86,7 +86,7 @@ jobs:
       - uses: ./.github/actions/cpp-tests
         with:
           build_type: Release
-          conan_profile_host: conan/profiles/tests-${{ matrix.build_type }}-gcc-linux-arm64
+          conan_profile_host: conan/profiles/tests-release-gcc-linux-arm64
           shell: bash
 
   cpp-macos-arm64:
@@ -106,7 +106,7 @@ jobs:
       - uses: ./.github/actions/cpp-tests
         with:
           build_type: Release
-          conan_profile_host: conan/profiles/tests-${{ matrix.build_type }}-apple_clang-macos-arm64
+          conan_profile_host: conan/profiles/tests-release-apple_clang-macos-arm64
           shell: bash
 
   python-linux-x64:
