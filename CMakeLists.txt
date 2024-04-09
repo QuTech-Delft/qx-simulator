@@ -221,7 +221,7 @@ if(QX_BUILD_TESTS)
     include(CTest)
     include(GoogleTest)
     set(CMAKE_CTEST_ARGUMENTS "--output-on-failure")
-    add_subdirectory(tests)
+    add_subdirectory(test)
 endif()
 
 
