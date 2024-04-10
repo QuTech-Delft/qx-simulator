@@ -91,11 +91,18 @@ version 3.0
 qubit[3] q
 
 X q[0]
+H q[1]
+CNOT q[1], q[2]
+
 measure q
 )";
     auto actual = runFromString(cqasm, iterations);
 
     EXPECT_EQ(actual.results, (SimulationResult::Results{ { "001", 10000 } }));
+    EXPECT_EQ(actual.state, (SimulationResult::State{
+        { "001", { 1 / std::sqrt(2), 0, 0.5 } },
+        { "111", { 1 / std::sqrt(2), 0, 0.5 } }
+    }));
 }
 
 } // namespace qx
