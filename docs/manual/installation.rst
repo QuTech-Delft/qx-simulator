@@ -18,15 +18,24 @@ For normal users, this is the only thing you have to do, so you can stop reading
 
 
 Installation from source
------------
+------------------------
 
 QX-simulator can be built from source.
-On the ARM platform, you need to install yourself some dependencies:
+On the ARM platform, you need to install yourself Java JRE (for building libqasm).
 
-* Bison (for building libqasm)
-* Flex (for building libqasm)
+- Linux
 
-On top of that, you will need a C++ compiler with support for C++20, ``make`` (for Linux), ``cmake`` and ``conan``:
+.. code-block:: bash
+
+    apt-get install -y default-jre
+
+- MacOS
+
+.. code-block:: bash
+
+    brew install -y java
+
+On top of that, you will need a C++ compiler with support for C++23), ``CMake`` and ``Conan``:
 
 .. code-block:: bash
 
@@ -53,16 +62,16 @@ To build QXelarator yourself from source and add it to your local Python package
 
 You will need to have SWIG installed for the above to work.
 
-Building the C++ executable from source with Conan
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Building the C++ executable
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This is particularly useful for debugging purposes, as the executable can then be run under ``gdb``, for instance. To do so,
-do not forget to build in debug mode.
+This is particularly useful for debugging purposes, as the executable can then be run under ``gdb``, for instance.
+To do so, do not forget to build in debug mode.
 
 .. code-block:: bash
 
     conan profile detect
-    conan build . -pr=conan/profiles/tests-Debug -b missing
+    conan build . -pr:a=conan/profiles/tests-debug -b missing
 
 
 Look into `conan/profiles/` to find other profiles to build with.
