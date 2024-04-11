@@ -18,10 +18,8 @@ static constexpr char const* banner = R"(
 
 
 void print_banner() {
-    // clang-format off
     fmt::print(banner, QX_VERSION, QX_RELEASE_YEAR);
     fmt::print("\n\n");
-    // clang-format on
 }
 
 
