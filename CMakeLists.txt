@@ -112,11 +112,11 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 find_package(absl)
 
-# libqasm 0.6.1
+# libqasm 0.6.3
 message(STATUS "Fetching cqasm")
 FetchContent_Declare(cqasm
     GIT_REPOSITORY https://github.com/QuTech-Delft/libqasm.git
-    GIT_TAG "31ea0e64831b951c34280e3228dae96a042ed642"
+    GIT_TAG "4240fe9fd52e3e8da1585091d6f7ac5ae105271f"
 )
 FetchContent_MakeAvailable(cqasm)
 
