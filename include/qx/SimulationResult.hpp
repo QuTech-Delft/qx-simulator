@@ -15,14 +15,14 @@ namespace core {
 class QuantumState;
 }
 
+struct Complex {
+    double real = 0;
+    double imag = 0;
+    double norm = 0;
+};
+
 struct SimulationResult {
     using Results = std::vector<std::pair<std::string, std::uint64_t>>;
-
-    struct Complex {
-        double real = 0;
-        double imag = 0;
-        double norm = 0;
-    };
 
     using State = std::vector<std::pair<std::string, Complex>>;
 

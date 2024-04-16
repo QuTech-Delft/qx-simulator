@@ -1,6 +1,7 @@
 #include "qx/Random.hpp"
 #include "qx/Simulator.hpp"
 
+#include <cmath>  // abs
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
@@ -18,7 +19,7 @@ public:
     }
 };
 
-bool operator==(SimulationResult::Complex const &left, SimulationResult::Complex const &right) {
+bool operator==(Complex const &left, Complex const &right) {
     return std::abs(left.real - right.real) < config::EPS &&
         std::abs(left.imag - right.imag) < config::EPS &&
         std::abs(left.norm - right.norm) < config::EPS;
@@ -40,8 +41,8 @@ CNOT q[0], q[1]
     EXPECT_EQ(actual.results, (SimulationResult::Results{ { "00", 1 } }));
     EXPECT_EQ(actual.state,
         (SimulationResult::State{
-            { "00", { 1 / std::sqrt(2), 0, 0.5 } },
-            { "11", { 1 / std::sqrt(2), 0, 0.5 } }
+            { "00", Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } },
+            { "11", Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } }
     }));
 }
 
@@ -55,7 +56,7 @@ CNOT q[0:2], q[3:5]
 )";
     auto actual = runFromString(cqasm, 2);
 
-    EXPECT_EQ(actual.state, (SimulationResult::State{ { "111111", { 1, 0, 1 } } }));
+    EXPECT_EQ(actual.state, (SimulationResult::State{ { "111111", Complex{ .real = 1, .imag = 0, .norm = 1 } } }));
 }
 
 TEST_F(IntegrationTest, too_many_qubits) {
@@ -84,7 +85,7 @@ Error at <unknown file name>:6:6..7: missing ']' at '\\n'"""));
 }
 
 TEST_F(IntegrationTest, measure) {
-    std::size_t iterations = 10000;
+    std::size_t iterations = 10'000;
     auto cqasm = R"(
 version 3.0
 
@@ -98,11 +99,47 @@ measure q
 )";
     auto actual = runFromString(cqasm, iterations);
 
-    EXPECT_EQ(actual.results, (SimulationResult::Results{ { "001", 10000 } }));
-    EXPECT_EQ(actual.state, (SimulationResult::State{
-        { "001", { 1 / std::sqrt(2), 0, 0.5 } },
-        { "111", { 1 / std::sqrt(2), 0, 0.5 } }
-    }));
+    std::cout << "Simulation result: " << actual << "\n";
+
+    auto error = static_cast<std::uint64_t>(iterations/2 * 0.05);
+    EXPECT_EQ(actual.results.size(), 2);
+    EXPECT_EQ(actual.results[0].first, "001");
+    EXPECT_LT(std::abs(static_cast<long long>(iterations/2 - actual.results[0].second)), error);
+    EXPECT_EQ(actual.results[1].first, "111");
+    EXPECT_LT(std::abs(static_cast<long long>(iterations/2 - actual.results[1].second)), error);
+
+    // State could be 001 or 111
+    EXPECT_TRUE(actual.state[0].first.ends_with('1'));
+    EXPECT_EQ(actual.state[0].second, (Complex{ .real = 1, .imag = 0, .norm = 1 }));
+}
+
+TEST_F(IntegrationTest, multiple_measure_instructions) {
+    std::size_t iterations = 10'000;
+    auto cqasm = R"(
+version 3.0
+
+qubit[3] q
+
+X q[0]
+H q[1]
+CNOT q[1], q[2]
+
+measure q[0]
+measure q[1]
+measure q[2]
+)";
+    auto actual = runFromString(cqasm, iterations);
+
+    auto error = static_cast<std::uint64_t>(iterations/2 * 0.05);
+    EXPECT_EQ(actual.results.size(), 2);
+    EXPECT_EQ(actual.results[0].first, "001");
+    EXPECT_LT(std::abs(static_cast<long long>(iterations/2 - actual.results[0].second)), error);
+    EXPECT_EQ(actual.results[1].first, "111");
+    EXPECT_LT(std::abs(static_cast<long long>(iterations/2 - actual.results[1].second)), error);
+
+    // State could be 001 or 111
+    EXPECT_TRUE(actual.state[0].first.ends_with('1'));
+    EXPECT_EQ(actual.state[0].second, (Complex{ .real = 1, .imag = 0, .norm = 1 }));
 }
 
 } // namespace qx

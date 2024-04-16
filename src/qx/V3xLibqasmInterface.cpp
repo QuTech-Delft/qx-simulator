@@ -5,11 +5,15 @@
 #include "qx/Gates.hpp"
 #include "v3x/cqasm-semantic-gen.hpp"
 
+#include <algorithm>  // generate_n
+
 
 namespace qx {
 
 namespace v3cq = ::cqasm::v3x::semantic;
+namespace v3primitives = ::cqasm::v3x::primitives;
 namespace v3tree = ::cqasm::tree;
+namespace v3types = ::cqasm::v3x::types;
 namespace v3values = ::cqasm::v3x::values;
 
 namespace {
@@ -19,8 +23,14 @@ public:
         : instruction(instruction) {}
 
     [[nodiscard]] v3cq::Many<v3values::ConstInt> get_register_operand(int id) const {
-        if (instruction.operands[id]->as_variable_ref()) {
-            return v3cq::Many<v3values::ConstInt>{ v3tree::make<v3values::ConstInt>(0) };
+        if (auto variable_ref = instruction.operands[id]->as_variable_ref()) {
+            auto variable_size = v3types::size_of(variable_ref->variable->typ);
+            auto ret = v3cq::Many<v3values::ConstInt>{};
+            ret.get_vec().resize(variable_size);
+            std::generate_n(ret.get_vec().begin(), variable_size, [i=0]() mutable {
+                return v3tree::make<v3values::ConstInt>(static_cast<v3primitives::Int>(i++));
+            });
+            return ret;
         }
         return instruction.operands[id]->as_index_ref()->indices;
     }

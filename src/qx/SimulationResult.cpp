@@ -55,9 +55,7 @@ SimulationResult SimulationResultAccumulator::get() {
 
     forAllNonZeroStates([&simulationResult](auto stateString, auto c) {
         simulationResult.state.push_back(std::make_pair(
-            stateString, SimulationResult::Complex{.real = c.real(),
-                                                   .imag = c.imag(),
-                                                   .norm = std::norm(c)}));
+            stateString, Complex{ .real = c.real(), .imag = c.imag(), .norm = std::norm(c) }));
     });
 
     return simulationResult;
