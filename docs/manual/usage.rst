@@ -53,11 +53,11 @@ In case the parsing/analysis of the cqasm string or file fails, you end up with 
 .. code-block:: pycon
 
     >>> r = qxelarator.execute_string("version 1.0;qubits 2;h q[0")
+    >>> r
+    Quantum simulation error: Cannot parse and analyze cQASM: 
     <unknown>:1:27: syntax error, unexpected end of file, expecting ',' or ']'
     Failed to parse <unknown>
-    Cannot parse and analyze string version 1.0;qubits 2;h q[0
-    >>> r
-    Quantum simulation failed: Simulation failed!
+    
     >>> isinstance(r, qxelarator.SimulationError)
     True
 
@@ -75,23 +75,6 @@ To simulate a quantum circuit multiple times, pass an integer number of iteratio
 
 To make sense of the output of QX-simulator, please visit :ref:`Output`
 
-Alternatively, you can use the "old" API by creating a ``qxelarator.QX`` instance:
-
-.. code-block:: python
-
-    import qxelarator
-
-    qx = qxelarator.QX()
-
-
-Then, load and execute a number of times the cQasm file (e.g. ``bell_pair.qc``):
-
-.. code-block:: python
-
-    qx.set('bell_pair.qc') # Alternatively: qx.set_string('version 1.0;qubits 1;x q[0]')
-    json_string = qx.execute(3)
-
-
 Using a constant seed for random number generation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -105,42 +88,6 @@ In some cases this is not desired. To make the output of the simulator determini
     qxelarator.execute_string("version 1.0;qubits 2;h q[0];measure_all", iterations=1000, seed=123)
 
 
-JSON output
-~~~~~~~~~~~
-
-The "old" API provides a function to set a file to output JSON:
-
-.. code-block:: python
-
-    qx.set_json_output_path("simulation_result.json")
-
-After another ``execute(1000)`` call, that JSON output will look like this:
-
-.. code-block:: bash
-
-    > cat simulation_result.json 
-    {
-        "info": {
-            "shots requested": 1000,
-            "shots_done": 1000
-        },
-        "results": {
-            "000": 516,
-            "001": 241,
-            "011": 243
-        },
-        "state": {
-            "001": {
-                "real": 1.00000000,
-                "imag": 0.00000000,
-                "norm": 1.00000000
-            }
-        }
-    }
-
-Note: The json string ``json_string`` obtained as output of ``json_string = qx.execute(n)`` is equal to the content of this file.
-
-
 Running the binary built from source
 ------------------------------------
 
@@ -148,4 +95,4 @@ The following will result in the same runs using the executable binary instead o
 
 .. code-block:: bash
 
-    ./qx-simulator -c 1000 -j simulation_result.json ../tests/circuits/bell_pair.qc
+    ./qx-simulator -c 1000 ../tests/circuits/bell_pair.qc

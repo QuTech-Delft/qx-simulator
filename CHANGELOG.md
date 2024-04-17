@@ -3,17 +3,34 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [ 0.7.0 ] - [ 2024-04-09 ]
+
+### Added
+
+- Integrate with libqasm 0.6.1 release.
+
+### Changed
+
+- Rename `tests` folder to `test`.
+- Update GitHub workflows.
+
+### Removed
+
+- cQasm 1.x support.
+- `circuits` folder.
+
+
 ## [ 0.6.5 ] - [ 2023-11-13 ]
 
 ### Added
 
-- Python 3.12 support
+- Python 3.12 support.
 
 ### Changed
 
-- Uses Conan
-- New Github workflows
-- Working ARM runners in the CI
+- Uses Conan.
+- New GitHub workflows.
+- Working ARM runners in the CI.
 
 ### Removed
 
@@ -23,11 +40,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- Meaningful error message when parsing or simulation fails
+- Meaningful error message when parsing or simulation fails.
 
 ### Changed
 
-- Does not crash when too many qubits asked
+- Does not crash when too many qubits asked.
 
 ### Removed
 
@@ -37,64 +54,64 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- Address sanitizer CMake mode
+- Address sanitizer CMake mode.
 
 ### Changed
 
-- Removed submodules and deps/ folder, replaced with CMake FetchContent
-- C++23
-- gtest instead of doctest
-- Various fixes to Github actions
-- Fixed bug in bitset due to bool automatic casting to 32 bits
-- Documentation formatting fixes
-- Doc chapter about internals
+- Removed submodules and `deps` folder, replaced with CMake FetchContent.
+- C++23.
+- gtest instead of doctest.
+- Various fixes to GitHub actions.
+- Fixed bug in bitset due to bool automatic casting to 32 bits.
+- Documentation formatting fixes.
+- Doc chapter about internals.
 
 ### Removed
 
 -
 
-
 ## [ 0.6.2 ] - [ 2023-02-21 ]
 
 ### Added
 
-- depolarizing_channel error model and docs
-- ability to pass constant seed for deterministic simulation
-- RandomTest doing Kolmogorov-Smirnov statistical test to match random numbers with their ideal probability distribution
+- `depolarizing_channel` error model and docs.
+- Ability to pass constant seed for deterministic simulation.
+- `RandomTest` doing Kolmogorov-Smirnov statistical test to match random numbers with their ideal probability distribution.
 
 ### Changed
 
-- fixed docs
-- source files use .hpp/.cpp extensions
-- random number distributions (integer min/max and real 0-1) are done in-house for portability and consistency of results
+- Fixed docs.
+- Source files use .hpp/.cpp extensions.
+- Random number distributions (integer min/max and real 0-1) are done in-house for portability and consistency of results.
 
 ### Removed
 
 - 
 
-
 ## [ 0.6.1 ] - [ 2023-02-01 ]
 
 ### Added
 
-- Linux arm64 Python wheel and Linux arm64 test workflow (GCC-Release)
-- "classical not" gate is back
-- "state" section in JSON now contains a new entry "norm" which is the square of the modulus
-of the complex number
-- C++ integration test
-- All gates can be controlled (including prep, measure). This is not new but was accidentally removed in 0.6.0.
-- New Python API execute_string and execute_file without having to create qxelarator.QX() and returning user-friendly Python type
+- Linux arm64 Python wheel and Linux arm64 test workflow (GCC-Release).
+- `classical not` gate is back.
+- `state` section in JSON now contains a new entry `norm` which is the square of the modulus of the complex number.
+- C++ integration test.
+- All gates can be controlled (including `prep`, `measure`). This is not new but was accidentally removed in 0.6.0.
+- New Python API `execute_string` and `execute_file` without having to create `qxelarator.QX()`
+  and returning user-friendly Python type.
 
 ### Changed
 
-- Fixed README
-- "results" section in JSON contains integers instead of floats (those integers being the number of occurences)
-- In relation to previous point, "results" only relates to measurement register averaging, and no longer to quantum state
-when doing a single shot. For that, use the "state" section in the JSON.
-- Output float precision is 8 decimals instead of 6
+- Fixed README.
+- `results` section in JSON contains integers instead of floats (those integers being the number of occurrences).
+- In relation to previous point, `results` only relates to measurement register averaging,
+  and no longer to quantum state when doing a single shot.
+  For that, use the "state" section in the JSON.
+- Output float precision is 8 decimals instead of 6.
 
 ### Removed
-- Most Python tests - already covered in C++ integration test, and they didn't check much anyway
+
+- Most Python tests. Already covered in C++ integration test, and they didn't check much anyway.
 
 ## [ 0.6.0 ] - [ 2023-01-19 ]
 
@@ -102,33 +119,34 @@ Almost a complete rewrite. No functional change except it's faster.
 
 ### Added
 
-- Ability to easily implement any quantum gate by simply giving an arbitrary unitary matrix in Gates.h
-- Performance speedup using a single thread
-- Some proper linear algebra primitives using template metaprogramming
-- Abseil-cpp dependency for flat_hash_map
-- Ability to compile the simulator with an set maximum number of qubits - in the future this will
-be using templates as well to switch data structures based on the input quantum circuit
+- Ability to easily implement any quantum gate by simply giving an arbitrary unitary matrix in `Gates.h`.
+- Performance speedup using a single thread.
+- Some proper linear algebra primitives using template metaprogramming.
+- `abseil-cpp` dependency for `flat_hash_map`.
+- Ability to compile the simulator with a maximum number of qubits.
+  In the future this will be using templates as well to switch data structures based on the input quantum circuit.
 
 ### Changed
 
-- Quantum state is stored as a sparse array implemented using a flat_hash_map from Abseil-cpp
-- C++20 in place of C++14,
-- Code style: camel case
+- Quantum state is stored as a sparse array implemented using a `flat_hash_map` from `abseil-cpp`.
+- C++20 in place of C++14.
+- Code style: camel case.
 
 ### Removed
+
 - OpenMP and multithreading.
 - SSE, AVX and other intrinsics.
-- get_measurement_outcome and get_state methods. Now accessible via JSON output.
+- `get_measurement_outcome` and `get_state` methods. Now accessible via JSON output.
 
 ## [ 0.5.5 ] - [ 2023-01-12 ]
 
 ### Added
 
-- set_string method to parse a cqasm string directly instead of a cqasm file
+- `set_string` method to parse a cQASM string directly instead of a cQASM file.
 
 ### Changed
 
-- Fixed issue #118: quantum state is always displayed, as well as measurement register averaging
+- Fixed issue #118: quantum state is always displayed, as well as measurement register averaging.
 
 ### Removed
 - 
@@ -137,26 +155,26 @@ be using templates as well to switch data structures based on the input quantum 
 
 ### Added
 
-- Tests for measure gate
+- Tests for `measure` gate.
 
 ### Changed
 
-- Fixed issues #91 and #114
-- As part of #114, switch to sequential/simple measure gate
+- Fixed issues #91 and #114.
+- As part of #114, switch to sequential/simple `measure` gate.
 
 ### Removed
 
-- QFT implementation (never instantiated, so no functional change)
-- qx-server no longer exists, together with the network libraries
-- "Microcode" generation functions (never used either)
-- Parallel gates in gate.h (they were executed sequentially)
-- Some non-needed and/or obsolete code
+- QFT implementation (never instantiated, so no functional change).
+- qx-server no longer exists, together with the network libraries.
+- "Microcode" generation functions (never used either).
+- Parallel gates in `gate.h` (they were executed sequentially).
+- Some non-needed and/or obsolete code.
 
 ## [ 0.5.3 ] - [ 2023-01-02 ]
 
 ### Added
 
-- Python 3.11 support
+- Python 3.11 support.
 
 ### Changed
 
@@ -174,7 +192,7 @@ be using templates as well to switch data structures based on the input quantum 
 
 ### Changed
 
-- Fixed version number incorrectly set in previous release
+- Fixed version number incorrectly set in previous release.
 
 ### Removed
 
@@ -184,47 +202,47 @@ be using templates as well to switch data structures based on the input quantum 
 
 ### Added
 
-- Readthedocs documentation
+- ReadTheDocs documentation.
 
 ### Changed
 
-- Fixed Python versions on Linux
-- Updated README with new API functions
-- Tidy tests and circuits folder
+- Fixed Python versions on Linux.
+- Updated README with new API functions.
+- Tidy tests and circuits folder.
 
 ### Removed
 
-- Python 3.6 support
+- Python 3.6 support.
 
 ## [ 0.5.0 ] - [ 2022-11-15 ]
 
 ### Added
 
-- "-j <filename>" CLI option to output JSON to a file
+- `-j <filename>` CLI option to output JSON to a file.
 - Possible to use the simulator without OpenMP.
 
 ### Changed
 
-- Measure_all gate added; does no longer measure each qubit separately.
+- `measure_all` gate added. Does no longer measure each qubit separately.
 - Move to C++11: smart pointers, etc.
-- Format of output has been changed. You no longer need to add a "display" gate to
-output the quantum state at the end of the circuit.
-- Now uses the new Libqasm API instead of the old one.
+- Format of output has been changed.
+  You no longer need to add a `display` gate to output the quantum state at the end of the circuit.
+- Now uses the new libqasm API instead of the old one.
 - Output complex amplitudes when not averaging measurement register.
-- Do not add automatically a measure_all when doing measurement averaging;
-average the measurement register only.
+- Do not add automatically a measure_all when doing measurement averaging.
+  Average the measurement register only.
 
 ### Removed
 
-- Most preprocessor macros. E.g. for gate creation.
+- Most preprocessor macros. E.g., for gate creation.
 - A lot of old and useless code was removed. A lot of dead code removed.
 
 ### Fixed
 
 - Close input file when done.
 - Code style has been completely fixed automatically with clang-format.
-- Headers no longer include .cc file.
-- Moved implementations to .cc files instead of headers.
+- Headers no longer include `.cc` file.
+- Moved implementations to `.cc` files instead of headers.
 
 ## [ 0.4.2 ] - [ 2021-06-01 ]
 
@@ -242,16 +260,16 @@ average the measurement register only.
 
 ### Fixed
 
-- Wheels no longer require exotic CPU extensions to work
+- Wheels no longer require exotic CPU extensions to work.
 
 ## [ 0.4.1 ] - [ 2021-05-20 ]
 
 ### Added
 
-- Continuous integration for as far as automated tests exist
-- Automated release build and distribution logic for PyPI
-- Installation logic in build system
-- qxelarator wheels include qx-simulator binary (and friends)
+- Continuous integration for as far as automated tests exist.
+- Automated release build and distribution logic for PyPI.
+- Installation logic in build system.
+- qxelarator wheels include qx-simulator binary (and friends).
 
 ### Changed
 
@@ -263,9 +281,9 @@ average the measurement register only.
 
 ### Fixed
 
-- Build on MacOS
-- Build on Windows using MSVC
-- Python build process on various platforms
+- Build on MacOS.
+- Build on Windows using MSVC.
+- Python build process on various platforms.
 
 ## [ 0.4.0 ] - [ 2021-05-20 ]
 
@@ -275,7 +293,7 @@ average the measurement register only.
 
 ### Changed
 
-- Replaced XPU-based threading with OpenMP
+- Replaced XPU-based threading with OpenMP.
 
 ### Removed
 
@@ -283,14 +301,14 @@ average the measurement register only.
 
 ### Fixed
 
-- Various bugs and inefficiencies related to multithreading
+- Various bugs and inefficiencies related to multithreading.
 
 ## [ 0.3.0 ] - [ 2019-05-01 ]
 
 ### Added
 
-- qxelerator to support cqasm v1.0
-- setup instructions in README.md
+- qxelerator to support cqasm v1.0.
+- setup instructions in README.md.
 
 ### Changed
 
@@ -320,7 +338,7 @@ average the measurement register only.
 
 ### Fixed
 
-- Fixed issue with libqasm submodule, this release is now with the correct version
+- Fixed issue with libqasm submodule, this release is now with the correct version.
 
 ## [ 0.2.4 ] - [ 2018-12-14 ]
 
@@ -334,11 +352,11 @@ average the measurement register only.
 
 ### Removed
 
-- Removed -u 0 in Jenkinsfile again
+- Removed `-u 0` in Jenkins file again.
 
 ### Fixed
 
-- Single qubit operations now accept integers as arguments, previously it required floats
+- Single qubit operations now accept integers as arguments, previously it required floats.
 
 ## [ 0.2.3 ] - [ 2018-11-05 ]
 
@@ -348,7 +366,7 @@ average the measurement register only.
 
 ### Changed
 
-- Updated the libqasm to get the hotfix
+- Updated the libqasm to get the hotfix.
 
 ### Removed
 
@@ -381,9 +399,9 @@ average the measurement register only.
 
 ### Added
 
-- Enabled quantum noise simulation using the Depolarizing Error Model
-- Added multishot simulation mode to save simulation time on the Quantum Inspire web platform.
-- Enabled Identity gate support
+- Enabled quantum noise simulation using the Depolarizing Error Model.
+- Added multi-shot simulation mode to save simulation time on the Quantum Inspire web platform.
+- Enabled Identity gate support.
 
 ### Changed
 
@@ -404,8 +422,8 @@ average the measurement register only.
 - Initial cQASM 1.0 support.
 - Integrated with libqasm 0.1.1 release.
 - Added support for new quantum gates:
-  - Flexible controlled phase shift (CR and CRK)
-  - Measurement and Preparation in X/Y/Z basis: added measure_x, measure_y, prep_x and prep_y.
+  - Flexible controlled phase shift (`CR` and `CRK`)
+  - Measurement and Preparation in X/Y/Z basis: added `measure_x`, `measure_y`, `prep_x` and `prep_y`.
 - Added support for Single Gate Multiple Qubits (SGMQ).
 - Added a new set of unit tests.
 

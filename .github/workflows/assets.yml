@@ -22,12 +22,13 @@ jobs:
           - "3.12"
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+        uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
       - name: Install dependencies
-        run: python -m pip install --upgrade pip conan setuptools wheel
+        run: |
+          python -m pip install --upgrade pip conan setuptools wheel
       - name: Build wheel
         env:
           QX_CPU_COMPATIBILITY_MODE: "True"
@@ -36,19 +37,21 @@ jobs:
       - name: Wheel path
         id: wheel
         working-directory: pybuild/dist/
-        run: echo "##[set-output name=wheel;]$(ls *.whl)"
-      - uses: actions/upload-artifact@v3
+        run: |
+          echo "WHEEL_NAME=$(ls *.whl)" >> $GITHUB_OUTPUT
+          echo "WHEEL_NAME=$(ls *.whl)" >> $GITHUB_ENV
+      - uses: actions/upload-artifact@v4
         with:
           name: pypi-macos-py${{ matrix.python }}
-          path: pybuild/dist/${{ steps.wheel.outputs.wheel }}
+          path: pybuild/dist/${{ env.WHEEL_NAME }}
       - uses: actions/upload-release-asset@v1
         if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: pybuild/dist/${{ steps.wheel.outputs.wheel }}
-          asset_name: ${{ steps.wheel.outputs.wheel }}
+          asset_path: pybuild/dist/${{ env.WHEEL_NAME }}
+          asset_name: ${{ env.WHEEL_NAME }}
           asset_content_type: application/zip
 
   manylinux-x64:
@@ -67,60 +70,11 @@ jobs:
           - "cp312-cp312"
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install dependencies
-        run: |
-          /opt/python/${{ matrix.cpython_version }}/bin/python -m pip install --upgrade pip conan wheel auditwheel
-      - name: Build wheel
-        env:
-          QX_CPU_COMPATIBILITY_MODE: "True"
-          NPROCS: 5
         run: |
           export PATH="/opt/python/${{ matrix.cpython_version }}/bin:$PATH"
-          /opt/python/${{ matrix.cpython_version }}/bin/python setup.py bdist_wheel
-          /opt/python/${{ matrix.cpython_version }}/bin/python -m auditwheel repair pybuild/dist/*.whl
-      - name: Wheel path
-        id: wheel
-        working-directory: wheelhouse
-        run: echo "##[set-output name=wheel;]$(ls *.whl)"
-      - uses: actions/upload-artifact@v3
-        with:
-          name: pypi-linux-${{ matrix.cpython_version }}
-          path: wheelhouse/${{ steps.wheel.outputs.wheel }}
-      - uses: actions/upload-release-asset@v1
-        if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: wheelhouse/${{ steps.wheel.outputs.wheel }}
-          asset_name: ${{ steps.wheel.outputs.wheel }}
-          asset_content_type: application/zip
-
-  manylinux-arm64:
-    name: PyPI wheels for Manylinux (arm64)
-    runs-on:
-      - "self-hosted"
-      - "ARM64"
-      - "Linux"
-    container: quay.io/pypa/manylinux${{ matrix.manylinux }}_aarch64:latest
-    strategy:
-      matrix:
-        manylinux:
-          - "_2_28"
-        cpython_version:
-          - "cp38-cp38"
-          - "cp39-cp39"
-          - "cp310-cp310"
-          - "cp311-cp311"
-          - "cp312-cp312"
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Install dependencies
-        run: |
-          dnf install -y bison flex java-17-openjdk
-          /opt/python/${{ matrix.cpython_version }}/bin/python -m pip install --upgrade pip conan wheel auditwheel
+          python -m pip install --upgrade pip conan wheel auditwheel
       - name: Build wheel
         env:
           QX_CPU_COMPATIBILITY_MODE: "True"
@@ -133,19 +87,83 @@ jobs:
       - name: Wheel path
         id: wheel
         working-directory: wheelhouse
-        run: echo "##[set-output name=wheel;]$(ls *.whl)"
-      - uses: actions/upload-artifact@v3
+        run: |
+          echo "WHEEL_NAME=$(ls *.whl)" >> $GITHUB_OUTPUT
+          echo "WHEEL_NAME=$(ls *.whl)" >> $GITHUB_ENV
+      - uses: actions/upload-artifact@v4
         with:
-          name: pypi-linux-${{ matrix.cpython_version }}
-          path: wheelhouse/${{ steps.wheel.outputs.wheel }}
+          name: pypi-linux-x64-${{ matrix.cpython_version }}
+          path: wheelhouse/${{ env.WHEEL_NAME }}
       - uses: actions/upload-release-asset@v1
         if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: wheelhouse/${{ steps.wheel.outputs.wheel }}
-          asset_name: ${{ steps.wheel.outputs.wheel }}
+          asset_path: wheelhouse/${{ env.WHEEL_NAME }}
+          asset_name: ${{ env.WHEEL_NAME }}
+          asset_content_type: application/zip
+
+  manylinux-arm64:
+    name: PyPI wheels for Manylinux (arm64)
+    runs-on:
+      - "self-hosted"
+      - "ARM64"
+      - "Linux"
+    container: quay.io/pypa/manylinux${{ matrix.manylinux }}_aarch64:latest
+    env:
+      JAVA_VERSION: ${{ matrix.java_version }}
+    strategy:
+      matrix:
+        manylinux:
+          - "_2_28"
+        cpython_version:
+          - "cp38-cp38"
+          - "cp39-cp39"
+          - "cp310-cp310"
+          - "cp311-cp311"
+          - "cp312-cp312"
+        # We are having problems when zulu-opendjk Conan package on an armv8 architecture.
+        # zulu-openjdk provides the Java JRE required by the ANTLR generator.
+        # So, for the time being, we are installing Java manually for this platform
+        include:
+          - manylinux: _2_28
+            java_version: 'java-11-openjdk-11.0.21.0.9-2.el8'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          dnf install -y $JAVA_VERSION
+          export PATH="/opt/python/${{ matrix.cpython_version }}/bin:$PATH"
+          python -m pip install --upgrade pip conan wheel auditwheel
+      - name: Build wheel
+        env:
+          QX_CPU_COMPATIBILITY_MODE: "True"
+          NPROCS: 5
+        run: |
+          export PATH="/opt/python/${{ matrix.cpython_version }}/bin:$PATH"
+          conan remove -c "qx/*"
+          python setup.py bdist_wheel
+          python -m auditwheel repair pybuild/dist/*.whl
+      - name: Wheel path
+        id: wheel
+        working-directory: wheelhouse
+        run: |
+          echo "WHEEL_NAME=$(ls *.whl)" >> $GITHUB_OUTPUT
+          echo "WHEEL_NAME=$(ls *.whl)" >> $GITHUB_ENV
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pypi-linux-arm64-${{ matrix.cpython_version }}
+          path: wheelhouse/${{ env.WHEEL_NAME }}
+      - uses: actions/upload-release-asset@v1
+        if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: wheelhouse/${{ env.WHEEL_NAME }}
+          asset_name: ${{ env.WHEEL_NAME }}
           asset_content_type: application/zip
 
   windows-x64:
@@ -161,8 +179,8 @@ jobs:
           - "3.12"
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+        uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
       - name: Install dependencies
@@ -175,19 +193,22 @@ jobs:
       - name: Wheel path
         id: wheel
         working-directory: pybuild/dist/
-        run: echo "##[set-output name=wheel;]$(Get-ChildItem -name *.whl)"
-      - uses: actions/upload-artifact@v3
+        run: |
+          echo "WHEEL_NAME=$(Get-ChildItem -name *.whl)" >> $env:GITHUB_OUTPUT
+          echo "WHEEL_NAME=$(Get-ChildItem -name *.whl)" >> $env:GITHUB_ENV
+        shell: powershell
+      - uses: actions/upload-artifact@v4
         with:
           name: pypi-windows-py${{ matrix.python }}
-          path: pybuild/dist/${{ steps.wheel.outputs.wheel }}
+          path: pybuild/dist/${{ env.WHEEL_NAME }}
       - uses: actions/upload-release-asset@v1
         if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: pybuild/dist/${{ steps.wheel.outputs.wheel }}
-          asset_name: ${{ steps.wheel.outputs.wheel }}
+          asset_path: pybuild/dist/${{ env.WHEEL_NAME }}
+          asset_name: ${{ env.WHEEL_NAME }}
           asset_content_type: application/zip
 
   publish:
@@ -201,10 +222,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         id: download
       - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@v1.3.1
+        uses: pypa/gh-action-pypi-publish@v1.8.14
         with:
           user: __token__
           password: ${{ secrets.PYPI_TOKEN }}

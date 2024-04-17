@@ -18,14 +18,31 @@ For normal users, this is the only thing you have to do, so you can stop reading
 
 
 Installation from source
------------
+------------------------
 
-QX-simulator can be built from source, provided you have installed some dependencies:
+QX-simulator can be built from source.
+On the ARM platform, you need to install yourself Java JRE (for building libqasm).
 
-* Bison (for building libqasm)
-* Flex (for building libqasm)
+- Linux
 
-On top of that, you will need a C++ compiler with support for C++20, ``make`` (for Linux) and ``cmake``.
+.. code-block:: bash
+
+    apt-get install -y default-jre
+
+- MacOS
+
+.. code-block:: bash
+
+    brew install -y java
+
+On top of that, you will need a C++ compiler with support for C++23), ``CMake`` and ``Conan``:
+
+.. code-block:: bash
+
+    python3 -m pip install --upgrade pip conan
+
+
+First and foremost, clone and visit the sources:
 
 .. code-block:: bash
     
@@ -45,24 +62,16 @@ To build QXelarator yourself from source and add it to your local Python package
 
 You will need to have SWIG installed for the above to work.
 
-Building the C++ executable from source
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Building the C++ executable
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This is particularly useful for debugging purposes, as the executable can then be run under ``gdb``, for instance. To do so,
-do not forget to build it in debug mode, otherwise compiler optimizations will make debugging more difficult.
+This is particularly useful for debugging purposes, as the executable can then be run under ``gdb``, for instance.
+To do so, do not forget to build in debug mode.
 
 .. code-block:: bash
 
-    mkdir build
-
-    cd build
-
-    cmake -S .. -B . -DCMAKE_BUILD_TYPE=Release
-
-    make -j16 qx-simulator
+    conan profile detect
+    conan build . -pr:a=conan/profiles/tests-debug -b missing
 
 
-This will produced an optimized binary ``qx-simulator`` (``-DCMAKE_BUILD_TYPE=Debug`` to disable optimizations).
-
-To build the C++ tests, add the following option to the ``cmake`` call: ``-DQX_BUILD_TESTS=ON``. To run them,
-call ``ctest``.
+Look into `conan/profiles/` to find other profiles to build with.

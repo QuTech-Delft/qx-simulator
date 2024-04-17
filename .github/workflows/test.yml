@@ -17,14 +17,15 @@ jobs:
           - Debug
           - Release
         compiler:
-          - clang++
-          - g++
+          - clang
+          - gcc
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - uses: ./.github/actions/cpp-tests
         with:
           build_type: ${{ matrix.build_type }}
+          conan_profile_host: conan/profiles/tests-${{ matrix.build_type }}-${{ matrix.compiler }}-linux-x64
           shell: bash
 
   cpp-macos-x64:
@@ -42,6 +43,7 @@ jobs:
       - uses: ./.github/actions/cpp-tests
         with:
           build_type: ${{ matrix.build_type }}
+          conan_profile_host: conan/profiles/tests-${{ matrix.build_type }}-apple_clang-macos-x64
           shell: bash
 
   cpp-windows-x64:
@@ -59,6 +61,8 @@ jobs:
       - uses: ./.github/actions/cpp-tests
         with:
           build_type: ${{ matrix.build_type }}
+          conan_profile_host: conan/profiles/tests-${{ matrix.build_type }}-msvc-windows-x64
+          conan_profile_build: conan/profiles/tests-${{ matrix.build_type }}-msvc-windows-x64
           shell: bash
 
   cpp-linux-arm64:
@@ -68,16 +72,21 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Add Python symlink
-        run: ln -sf /usr/local/bin/python3.11 /usr/bin/python3
-        shell: bash
-      - name: Install bison and flex
+        # We are having problems when using zulu-opendjk Conan package on an armv8 architecture.
+        # zulu-openjdk provides the Java JRE required by the ANTLR generator.
+        # So, for the time being, we are installing Java manually for this platform
+      - name: Install dependencies
         run: |
           apt-get update
-          apt-get install -y bison flex default-jre
+          apt-get install -y default-jre pipx
+        # Add Conan to path (even before it is installed)
+      - name: Add Conan to path
+        run: |
+          echo "${HOME}/.local/bin" >> $GITHUB_PATH
       - uses: ./.github/actions/cpp-tests
         with:
           build_type: Release
+          conan_profile_host: conan/profiles/tests-release-gcc-linux-arm64
           shell: bash
 
   cpp-macos-arm64:
@@ -86,15 +95,18 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Install bison 3.8
+        # We are having problems when using zulu-opendjk Conan package on an armv8 architecture.
+        # zulu-openjdk provides the Java JRE required by the ANTLR generator.
+        # So, for the time being, we are installing Java manually for this platform
+      - name: Install dependencies
         run: |
-          brew install bison@3.8 java
-          echo "$(brew --prefix bison)/bin" >> $GITHUB_PATH
+          brew install java
           echo "$(brew --prefix java)/bin" >> $GITHUB_PATH
         shell: bash
       - uses: ./.github/actions/cpp-tests
         with:
           build_type: Release
+          conan_profile_host: conan/profiles/tests-release-apple_clang-macos-arm64
           shell: bash
 
   python-linux-x64:

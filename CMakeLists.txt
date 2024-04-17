@@ -112,11 +112,11 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 find_package(absl)
 
+# libqasm 0.6.3
 message(STATUS "Fetching cqasm")
-option(LIBQASM_COMPAT "" ON)
 FetchContent_Declare(cqasm
     GIT_REPOSITORY https://github.com/QuTech-Delft/libqasm.git
-    GIT_TAG "ea8c259c6cd685e7e2fe7a11868e6e41ce033ba4"
+    GIT_TAG "4240fe9fd52e3e8da1585091d6f7ac5ae105271f"
 )
 FetchContent_MakeAvailable(cqasm)
 
@@ -133,7 +133,7 @@ add_library(qx
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Qxelarator.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Random.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Simulator.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/LibqasmInterface.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/V3xLibqasmInterface.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Gates.cpp"
 )
 
@@ -222,7 +222,7 @@ if(QX_BUILD_TESTS)
     include(CTest)
     include(GoogleTest)
     set(CMAKE_CTEST_ARGUMENTS "--output-on-failure")
-    add_subdirectory(tests)
+    add_subdirectory(test)
 endif()
 
 

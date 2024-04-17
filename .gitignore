@@ -1,4 +1,4 @@
-# Build files
+# Build
 build
 cbuild
 pybuild
@@ -6,8 +6,14 @@ pybuild
 __pycache__
 .eggs
 
-# CLion files
+# CMake
+CMakeUserPresets.json
+
+# CLion
 /.idea
 /cmake-build-*
 
 *.code-workspace
+
+# Conan
+conan_provider.cmake

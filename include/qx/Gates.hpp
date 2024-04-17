@@ -92,8 +92,7 @@ static __CONSTEXPR__ UnitaryMatrix<8> TOFFOLI({{{1, 0, 0, 0, 0, 0, 0, 0},
                                                 {0, 0, 0, 0, 0, 0, 0, 1},
                                                 {0, 0, 0, 0, 0, 0, 1, 0}}});
 
-// TODO: make this even more user-friendly with ctrl operator and multiplication
-// by double.
+// TODO: make this even more user-friendly with ctrl operator and multiplication by double.
 
 #if !defined(_MSC_VER) && !defined(__clang__)
 static_assert(T * T == S);

@@ -1,5 +1,9 @@
 #pragma once
 
+#include <cstddef>  // size_t
+#include <cstdint>  // uint64_t
+
+
 namespace qx::config {
 
 // Epsilon for double comparison

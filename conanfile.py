@@ -26,7 +26,6 @@ class QxConan(ConanFile):
         "build_python": [True, False],
         "build_tests": [True, False],
         "cpu_compatibility_mode": [True, False],
-        "libqasm_compat": [True, False],
         "python_dir": [None, "ANY"],
         "python_ext": [None, "ANY"],
     }
@@ -37,7 +36,6 @@ class QxConan(ConanFile):
         "build_python": False,
         "build_tests": False,
         "cpu_compatibility_mode": False,
-        "libqasm_compat": True,
         "python_dir": None,
         "python_ext": None
     }
@@ -46,20 +44,18 @@ class QxConan(ConanFile):
 
     def build_requirements(self):
         self.requires("abseil/20230125.3")
-        self.tool_requires("m4/1.4.19")
-        if self.settings.os == "Windows":
-            self.tool_requires("winflexbison/2.5.24")
-        else:
-            if self.settings.arch != "armv8":
-                self.tool_requires("flex/2.6.4")
-                self.tool_requires("bison/3.8.2")
+        # TODO: remove tree-gen dependency once libqasm can be required directly
+        self.tool_requires("tree-gen/1.0.7")
         if self.settings.arch != "armv8":
             self.tool_requires("zulu-openjdk/11.0.19")
         if self.options.build_tests:
             self.requires("gtest/1.14.0")
 
     def requirements(self):
-        self.requires("antlr4-cppruntime/4.13.0")
+        self.requires("antlr4-cppruntime/4.13.1")
+        self.requires("fmt/10.2.1")
+        # TODO: remove tree-gen dependency once libqasm can be required directly
+        self.requires("tree-gen/1.0.7")
 
     def config_options(self):
         if self.settings.os == "Windows":
@@ -86,7 +82,6 @@ class QxConan(ConanFile):
         deps.generate()
         tc = CMakeToolchain(self)
         tc.variables["ASAN_ENABLED"] = self.options.asan_enabled
-        tc.variables["LIBQASM_COMPAT"] = self.options.libqasm_compat
         tc.variables["QX_BUILD_PYTHON"] = self.options.build_python
         tc.variables["QX_BUILD_TESTS"] = self.options.build_tests
         tc.variables["QX_CPU_COMPATIBILITY_MODE"] = self.options.cpu_compatibility_mode

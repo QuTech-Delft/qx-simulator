@@ -9,4 +9,3 @@ qx/*:asan_enabled=False
 qx/*:build_python=False
 qx/*:build_tests=True
 qx/*:cpu_compatibility_mode=False
-qx/*:libqasm_compat=True

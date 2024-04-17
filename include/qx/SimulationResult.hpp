@@ -1,11 +1,12 @@
 #pragma once
 
+#include "qx/Common.hpp"
+
+#include <absl/container/btree_map.h>
 #include <complex>
+#include <fmt/ostream.h>
 #include <string>
 #include <vector>
-
-#include "absl/container/btree_map.h"
-#include "qx/Common.hpp"
 
 
 namespace qx {
@@ -14,14 +15,14 @@ namespace core {
 class QuantumState;
 }
 
+struct Complex {
+    double real = 0;
+    double imag = 0;
+    double norm = 0;
+};
+
 struct SimulationResult {
     using Results = std::vector<std::pair<std::string, std::uint64_t>>;
-
-    struct Complex {
-        double real = 0;
-        double imag = 0;
-        double norm = 0;
-    };
 
     using State = std::vector<std::pair<std::string, Complex>>;
 
@@ -30,19 +31,15 @@ struct SimulationResult {
 
     Results results;
     State state;
-
-    std::string getJsonString();
 };
 
 std::ostream &operator<<(std::ostream &os, SimulationResult const &r);
 
 class SimulationResultAccumulator {
 public:
-    SimulationResultAccumulator(qx::core::QuantumState &s) : quantumState(s){};
+    explicit SimulationResultAccumulator(qx::core::QuantumState &s) : quantumState(s){};
 
     void append(BasisVector measuredState);
-
-    void dump();
 
     SimulationResult get();
 
@@ -57,3 +54,5 @@ private:
 };
 
 }  // namespace qx
+
+template <> struct fmt::formatter<qx::SimulationResult> : fmt::ostream_formatter {};

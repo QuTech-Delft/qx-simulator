@@ -5,7 +5,7 @@ Output
 Contents of the output
 ----------------------
 
-As described in :ref:`usage`, the simulator can output to stdout (C++ executable version and old Python API), json (C++ executable and Python) and as a ``SimulationResult`` object (Python API).
+As described in :ref:`usage`, the simulator can output to stdout (C++ executable) and as a ``SimulationResult`` object (Python API).
 Those all contain the same data.
 
 Let's simulate a bell pair 100 times:

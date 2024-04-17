@@ -1,65 +1,47 @@
 #!/usr/bin/env python3
 
-import os, platform, shutil, sys, re
-from setuptools import setup, Extension
-from distutils.dir_util import copy_tree
-from distutils import log
+import os
+import platform
+import shutil
+import sys
+import re
 
-from distutils.command.clean import clean as _clean
-from setuptools.command.build_ext import build_ext as _build_ext
-from distutils.command.build import build as _build
-from setuptools.command.install import install as _install
+from distutils.dir_util import copy_tree
+from setuptools import setup, Extension
+
 from distutils.command.bdist import bdist as _bdist
-from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
+from distutils.command.build import build as _build
+from distutils.command.clean import clean as _clean
 from distutils.command.sdist import sdist as _sdist
+from setuptools.command.build_ext import build_ext as _build_ext
 from setuptools.command.egg_info import egg_info as _egg_info
+from setuptools.command.install import install as _install
+from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
+
+from version import get_version
 
 root_dir = os.getcwd()  # root of the repository
 src_dir = root_dir + os.sep + "src"  # C++ source directory
-inc_dir = root_dir + os.sep + "include"  # C++ include directory
 pysrc_dir = root_dir + os.sep + "python"  # Python source files
 target_dir = root_dir + os.sep + "pybuild"  # python-specific build directory
 build_dir = target_dir + os.sep + "build"  # directory for setuptools to dump various files into
 dist_dir = target_dir + os.sep + "dist"  # wheel output directory
 cbuild_dir = target_dir + os.sep + "cbuild"  # cmake build directory
 prefix_dir = target_dir + os.sep + "prefix"  # cmake install prefix
-srcmod_dir = (
-    pysrc_dir + os.sep + "qxelarator"
-)  # qxelarator Python module directory, source files only
-module_dir = (
-    target_dir + os.sep + "qxelarator"
-)  # qxelarator Python module directory for editable install
+srcmod_dir = pysrc_dir + os.sep + "qxelarator"  # qxelarator Python module directory, source files only
+module_dir = target_dir + os.sep + "qxelarator"  # qxelarator Python module directory for editable install
 
-# Copy the hand-written Python sources into the module directory that we're
-# telling setuptools is our source directory, because setuptools insists on
-# spamming output files into that directory. This is ugly, especially because
-# it has to run before setup() is invoked, but seems to be more-or-less
-# unavoidable to get editable installs to work.
+# Copy the handwritten Python sources into the module directory that we're telling setuptools is our source directory,
+# because setuptools insists on spamming output files into that directory.
+# This is ugly, especially because it has to run before setup() is invoked,
+# but seems to be more-or-less unavoidable to get editable installations to work.
 if not os.path.exists(target_dir):
     os.makedirs(target_dir)
 copy_tree(srcmod_dir, module_dir)
 
 
-def get_version(verbose=0):
-    """Extract version information from source code"""
-
-    matcher = re.compile('[\t ]*#define[\t ]+QX_VERSION[\t ]+"(.*)"')
-    version = None
-    with open(os.path.join(inc_dir, "qx", "Version.hpp"), "r") as f:
-        for ln in f:
-            m = matcher.match(ln)
-            if m:
-                version = m.group(1)
-                break
-
-    if verbose:
-        print("get_version: %s" % version)
-
-    return version
-
-
-def read(fname):
-    with open(os.path.join(os.path.dirname(__file__), fname)) as f:
+def read(file_name):
+    with open(os.path.join(os.path.dirname(__file__), file_name)) as f:
         return f.read()
 
 
@@ -90,12 +72,6 @@ class build_ext(_build_ext):
                             shutil.rmtree(cbuild_dir)
                         break
 
-        # Figure out how many parallel processes to build with.
-        if self.parallel:
-            nprocs = str(self.parallel)
-        else:
-            nprocs = os.environ.get("NPROCS", "1")
-
         # Figure out how setuptools wants to name the extension file and where
         # it wants to place it.
         target = os.path.abspath(self.get_ext_fullpath("qxelarator._qxelarator"))
@@ -116,13 +92,14 @@ class build_ext(_build_ext):
             cmd = (local['conan']['create']['.']
                 ['--version'][get_version()]
                 ['-s:h']['compiler.cppstd=23']
-                ['-s:h']["build_type=" + build_type]
+                ['-s:b']['compiler.cppstd=23']
+                ['-s:h']['build_type=' + build_type]
+                ['-s:b']['build_type=' + build_type]
 
                 ['-o']['qx/*:build_python=True']
                 ['-o']['qx/*:build_tests=' + build_tests]
                 ['-o']['qx/*:cpu_compatibility_mode=' + cpu_compatibility_mode]
                 # The Python library needs the compatibility headers
-                ['-o']["qx/*:libqasm_compat=True"]
                 ['-o']['qx/*:python_dir=' + re.escape(os.path.dirname(target))]
                 ['-o']['qx/*:python_ext=' + re.escape(os.path.basename(target))]
                 # (Ab)use static libs for the intermediate libraries
@@ -205,15 +182,6 @@ class bdist_wheel(_bdist_wheel):
         if platform.system() == "Darwin":
             os.environ["MACOSX_DEPLOYMENT_TARGET"] = "10.10"
         _bdist_wheel.run(self)
-        impl_tag, abi_tag, plat_tag = self.get_tag()
-        archive_basename = "{}-{}-{}-{}".format(
-            self.wheel_dist_name, impl_tag, abi_tag, plat_tag
-        )
-        wheel_path = os.path.join(self.dist_dir, archive_basename + ".whl")
-        if platform.system() == "Darwin":
-            from delocate.delocating import delocate_wheel
-
-            delocate_wheel(wheel_path)
 
 
 class sdist(_sdist):
@@ -242,21 +210,15 @@ setup(
         "Operating System :: MacOS",
         "Operating System :: Microsoft :: Windows",
         "Programming Language :: Python :: 3 :: Only",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
-        "Programming Language :: Python :: 3.11",
-        "Programming Language :: Python :: 3.12",
         "Topic :: Scientific/Engineering",
     ],
     packages=["qxelarator"],
     package_dir={"": "pybuild"},
     # This will be populated during the build.
     data_files=[],
-    # NOTE: the library build process is completely overridden to let CMake
-    # handle it; setuptools' implementation is horribly broken. This is here
-    # just to have the rest of setuptools understand that this is a Python
-    # module with an extension in it.
+    # NOTE: the library build process is completely overridden to let CMake handle it.
+    # setuptools implementation is horribly broken.
+    # This is here just to have the rest of setuptools understand that this is a Python module with an extension in it.
     ext_modules=[Extension("qxelarator._qxelarator", [])],
     cmdclass={
         "bdist": bdist,
@@ -273,9 +235,7 @@ setup(
         "plumbum",
         'delocate; platform_system == "Darwin"',
     ],
-    install_requires=[
-        'msvc-runtime; platform_system == "Windows"',
-    ],
+    install_requires=['msvc-runtime; platform_system == "Windows"'],
     tests_require=["pytest"],
     zip_safe=False,
 )
