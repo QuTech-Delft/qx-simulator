@@ -81,7 +81,7 @@ jobs:
           NPROCS: 5
         run: |
           export PATH="/opt/python/${{ matrix.cpython_version }}/bin:$PATH"
-          conan remove -c "qx/*"
+          conan remove -c "*/*"
           /opt/python/${{ matrix.cpython_version }}/bin/python setup.py bdist_wheel
           /opt/python/${{ matrix.cpython_version }}/bin/python -m auditwheel repair pybuild/dist/*.whl
       - name: Wheel path
@@ -141,9 +141,12 @@ jobs:
         env:
           QX_CPU_COMPATIBILITY_MODE: "True"
           NPROCS: 5
+        # We clean the Conan cache as a preventive measure for our runs in self-hosted runners
+        # Self-hosted runners use containers that cache Conan packages from previous runs,
+        # and that can cause different type of problems
         run: |
           export PATH="/opt/python/${{ matrix.cpython_version }}/bin:$PATH"
-          conan remove -c "qx/*"
+          conan remove -c "*/*"
           python setup.py bdist_wheel
           python -m auditwheel repair pybuild/dist/*.whl
       - name: Wheel path
