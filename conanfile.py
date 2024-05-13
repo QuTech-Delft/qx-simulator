@@ -42,15 +42,12 @@ class QxConan(ConanFile):
         return not self.conf.get("tools.build:skip_test", default=True, check_type=bool)
 
     def build_requirements(self):
-        self.tool_requires("abseil/20230125.3")
         self.tool_requires("libqasm/0.6.5")
-        if self.settings.arch != "armv8":
-            self.tool_requires("zulu-openjdk/11.0.19")
         if self._should_build_test:
             self.test_requires("gtest/1.14.0")
 
     def requirements(self):
-        self.requires("antlr4-cppruntime/4.13.1")
+        self.requires("abseil/20230125.3")
         self.requires("fmt/10.2.1")
         self.requires("libqasm/0.6.5")
 
