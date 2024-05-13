@@ -110,7 +110,7 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 # Dependencies                                                                #
 #=============================================================================#
 
-find_package(absl REQUIRED)
+find_package(absl)
 find_package(libqasm REQUIRED CONFIG)
 
 

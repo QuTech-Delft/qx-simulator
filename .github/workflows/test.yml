@@ -26,11 +26,12 @@ jobs:
         with:
           build_type: ${{ matrix.build_type }}
           conan_profile_host: conan/profiles/tests-${{ matrix.build_type }}-${{ matrix.compiler }}-linux-x64
+          conan_profile_build: conan/profiles/tests-${{ matrix.build_type }}-${{ matrix.compiler }}-linux-x64
           shell: bash
 
   cpp-macos-x64:
     name: "C++ tests (clang/MacOS/x64)"
-    runs-on: macos-latest
+    runs-on: macos-13  # x64
     strategy:
       fail-fast: false
       matrix:
@@ -44,6 +45,7 @@ jobs:
         with:
           build_type: ${{ matrix.build_type }}
           conan_profile_host: conan/profiles/tests-${{ matrix.build_type }}-apple_clang-macos-x64
+          conan_profile_build: conan/profiles/tests-${{ matrix.build_type }}-apple_clang-macos-x64
           shell: bash
 
   cpp-windows-x64:
@@ -87,11 +89,12 @@ jobs:
         with:
           build_type: Release
           conan_profile_host: conan/profiles/tests-release-gcc-linux-arm64
+          conan_profile_build: conan/profiles/tests-release-gcc-linux-arm64
           shell: bash
 
   cpp-macos-arm64:
     name: "C++ tests (clang/macos/ARM64)"
-    runs-on: [self-hosted, ARM64, macOS]
+    runs-on: macos-14  # arm64
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -107,6 +110,7 @@ jobs:
         with:
           build_type: Release
           conan_profile_host: conan/profiles/tests-release-apple_clang-macos-arm64
+          conan_profile_build: conan/profiles/tests-release-apple_clang-macos-arm64
           shell: bash
 
   python-linux-x64:
@@ -125,7 +129,21 @@ jobs:
 
   python-macos-x64:
     name: "Python tests (macOS/x64)"
-    runs-on: macos-latest
+    runs-on: macos-13
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install SWIG
+        run: |
+          brew install swig
+        shell: bash
+      - uses: ./.github/actions/python-tests
+        with:
+          shell: bash
+
+  python-macos-arm64:
+    name: "Python tests (macOS/arm64)"
+    runs-on: macos-14
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -158,6 +176,7 @@ jobs:
       - cpp-macos-arm64
       - python-linux-x64
       - python-macos-x64
+      - python-macos-arm64
       - python-windows-x64
     if: ${{ always() }}
     runs-on: ubuntu-latest
