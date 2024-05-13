@@ -6,25 +6,22 @@ from conan import ConanFile
 from conan.tools.cmake import CMakeToolchain, CMakeDeps, CMake
 from conan.tools.files import copy
 
+required_conan_version = ">=1.60.0 <2 || >=2.0.6"
+
 
 class QxConan(ConanFile):
     name = "qx"
-
-    # Optional metadata
     license = "Apache-2.0"
     homepage = "https://github.com/QuTech-Delft/qx-simulator"
     url = "https://github.com/conan-io/conan-center-index"
     description = "A universal quantum computer simulator. Allows simulation of a quantum circuit written in cQasm."
     topics = "quantum simulation"
-
-    # Binary configuration
     settings = "os", "compiler", "build_type", "arch"
     options = {
         "shared": [True, False],
         "fPIC": [True, False],
         "asan_enabled": [True, False],
         "build_python": [True, False],
-        "build_tests": [True, False],
         "cpu_compatibility_mode": [True, False],
         "python_dir": [None, "ANY"],
         "python_ext": [None, "ANY"],
@@ -34,28 +31,28 @@ class QxConan(ConanFile):
         "fPIC": True,
         "asan_enabled": False,
         "build_python": False,
-        "build_tests": False,
         "cpu_compatibility_mode": False,
         "python_dir": None,
         "python_ext": None
     }
-
     exports_sources = "CMakeLists.txt", "include/*", "python/*", "src/*", "tests/*"
 
+    @property
+    def _should_build_test(self):
+        return not self.conf.get("tools.build:skip_test", default=True, check_type=bool)
+
     def build_requirements(self):
-        self.requires("abseil/20230125.3")
-        # TODO: remove tree-gen dependency once libqasm can be required directly
-        self.tool_requires("tree-gen/1.0.7")
+        self.tool_requires("abseil/20230125.3")
+        self.tool_requires("libqasm/0.6.5")
         if self.settings.arch != "armv8":
             self.tool_requires("zulu-openjdk/11.0.19")
-        if self.options.build_tests:
-            self.requires("gtest/1.14.0")
+        if self._should_build_test:
+            self.test_requires("gtest/1.14.0")
 
     def requirements(self):
         self.requires("antlr4-cppruntime/4.13.1")
         self.requires("fmt/10.2.1")
-        # TODO: remove tree-gen dependency once libqasm can be required directly
-        self.requires("tree-gen/1.0.7")
+        self.requires("libqasm/0.6.5")
 
     def config_options(self):
         if self.settings.os == "Windows":
@@ -83,7 +80,7 @@ class QxConan(ConanFile):
         tc = CMakeToolchain(self)
         tc.variables["ASAN_ENABLED"] = self.options.asan_enabled
         tc.variables["QX_BUILD_PYTHON"] = self.options.build_python
-        tc.variables["QX_BUILD_TESTS"] = self.options.build_tests
+        tc.variables["QX_BUILD_TESTS"] = self._should_build_test
         tc.variables["QX_CPU_COMPATIBILITY_MODE"] = self.options.cpu_compatibility_mode
         tc.variables["QX_PYTHON_DIR"] = self.options.python_dir
         tc.variables["QX_PYTHON_EXT"] = self.options.python_ext

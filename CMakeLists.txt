@@ -110,15 +110,8 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 # Dependencies                                                                #
 #=============================================================================#
 
-find_package(absl)
-
-# libqasm 0.6.3
-message(STATUS "Fetching cqasm")
-FetchContent_Declare(cqasm
-    GIT_REPOSITORY https://github.com/QuTech-Delft/libqasm.git
-    GIT_TAG "4240fe9fd52e3e8da1585091d6f7ac5ae105271f"
-)
-FetchContent_MakeAvailable(cqasm)
+find_package(absl REQUIRED)
+find_package(libqasm REQUIRED CONFIG)
 
 
 #=============================================================================#
@@ -203,7 +196,7 @@ endif()
 
 target_link_libraries(qx PUBLIC
     absl::flat_hash_map
-    cqasm
+    libqasm::libqasm
 )
 
 #=============================================================================#

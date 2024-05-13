@@ -97,7 +97,6 @@ class build_ext(_build_ext):
                 ['-s:b']['build_type=' + build_type]
 
                 ['-o']['qx/*:build_python=True']
-                ['-o']['qx/*:build_tests=' + build_tests]
                 ['-o']['qx/*:cpu_compatibility_mode=' + cpu_compatibility_mode]
                 # The Python library needs the compatibility headers
                 ['-o']['qx/*:python_dir=' + re.escape(os.path.dirname(target))]
@@ -109,6 +108,8 @@ class build_ext(_build_ext):
                 ['-b']['missing']
                 ['-tf']['']
             )
+            if not build_tests:
+                cmd = cmd['-c']['tools.build:skip_test=True']
             if platform.system() == "Darwin":
                 cmd = cmd['-c']['tools.build:defines=["_LIBCPP_DISABLE_AVAILABILITY"]']
             cmd & FG
