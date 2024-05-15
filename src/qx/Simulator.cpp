@@ -4,6 +4,7 @@
 #include "qx/ErrorModels.hpp"
 #include "qx/V3xLibqasmInterface.hpp"
 #include "qx/Random.hpp"
+#include "qx/RegisterManager.hpp"
 #include "qx/SimulationResult.hpp"
 
 #include "v3x/cqasm.hpp"
@@ -22,6 +23,7 @@ using V3AnalysisResult = cqasm::v3x::analyzer::AnalysisResult;
 using V3Program = cqasm::v3x::ast::One<cqasm::v3x::semantic::Program>;
 
 namespace {
+
 V3AnalysisResult parseCqasmV3xFile(std::string const &filePath) {
     auto analyzer = cqasm::v3x::default_analyzer("3.0");
 
@@ -53,53 +55,38 @@ execute(
     std::optional<std::uint_fast64_t> seed) {
 
     auto programOrError = getV3ProgramOrError(analysisResult);
-
     if (auto* error = std::get_if<SimulationError>(&programOrError)) {
         return *error;
     }
-
     auto program = std::get<V3Program>(programOrError);
-
     assert(!program.empty());
 
     if (iterations <= 0) {
         return SimulationError{ "Invalid number of iterations" };
     }
-
     if (seed) {
         random::seed(*seed);
     }
 
-    std::size_t qubitCount = 0;
-    auto const& v = program->qubit_variable_declaration;
-    if (v->typ->type() == cqasm::v3x::types::NodeType::QubitArray) {
-        qubitCount = v->typ->as_qubit_array()->size;
-    } else if (v->typ->type() == cqasm::v3x::types::NodeType::Qubit) {
-        qubitCount = 1;
+    try {
+        auto register_manager = qx::RegisterManager{ program };
+        qx::core::QuantumState quantumState(register_manager.get_qubit_register_size());
+        qx::Circuit circuit = loadCqasmCode(*program);
+        SimulationResultAccumulator simulationResultAccumulator(quantumState);
+
+        while (iterations--) {
+            quantumState.reset();
+            circuit.execute(quantumState, std::monostate{});
+            simulationResultAccumulator.append(quantumState.getMeasurementRegister());
+        }
+
+        return simulationResultAccumulator.get();
+    } catch (const SimulationError &err) {
+        return err;
     }
-
-    if (qubitCount > config::MAX_QUBIT_NUMBER) {
-        return SimulationError{ "Cannot run that many qubits in this version of QX-simulator" };
-    }
-
-    qx::core::QuantumState quantumState(qubitCount);
-
-    qx::Circuit circuit = loadCqasmCode(*program);
-
-    SimulationResultAccumulator simulationResultAccumulator(quantumState);
-
-    for (std::size_t s = 0; s < iterations; ++s) {
-        quantumState.reset();
-        circuit.execute(quantumState, std::monostate{});
-        simulationResultAccumulator.append(
-            quantumState.getMeasurementRegister());
-    }
-
-    auto simulationResult = simulationResultAccumulator.get();
-
-    return simulationResult;
 }
-}
+
+}  // namespace
 
 std::variant<SimulationResult, SimulationError>
 executeString(

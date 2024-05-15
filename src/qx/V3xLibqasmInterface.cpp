@@ -3,9 +3,10 @@
 #include "qx/Circuit.hpp"
 #include "qx/Core.hpp"
 #include "qx/Gates.hpp"
+#include "qx/RegisterManager.hpp"
 #include "v3x/cqasm-semantic-gen.hpp"
 
-#include <algorithm>  // generate_n
+#include <algorithm>  // for_each, generate_n
 
 
 namespace qx {
@@ -22,17 +23,25 @@ public:
     explicit OperandsHelper(const v3cq::Instruction &instruction)
         : instruction(instruction) {}
 
+    // TODO: make register_manager accessible from different parts of the code
     [[nodiscard]] v3cq::Many<v3values::ConstInt> get_register_operand(int id) const {
         if (auto variable_ref = instruction.operands[id]->as_variable_ref()) {
-            auto variable_size = v3types::size_of(variable_ref->variable->typ);
+            auto qubit_range = register_manager->get_qubit_range(variable_ref->variable->name);
             auto ret = v3cq::Many<v3values::ConstInt>{};
-            ret.get_vec().resize(variable_size);
-            std::generate_n(ret.get_vec().begin(), variable_size, [i=0]() mutable {
-                return v3tree::make<v3values::ConstInt>(static_cast<v3primitives::Int>(i++));
+            ret.get_vec().resize(qubit_range.size);
+            std::generate_n(ret.get_vec().begin(), qubit_range.size, [i=0]() mutable {
+                return v3tree::make<v3values::ConstInt>(static_cast<v3primitives::Int>(qubit_range.first + i++));
+            });
+            return ret;
+        } else if (auto index_ref = instruction.operands[id]->as_index_ref()) {
+            auto qubit_range = register_manager->get_qubit_range(index_ref->variable->name);
+            auto ret = index_ref->indices;
+            std::for_each(ret.get_vec().begin(), ret.get_vec().end(), [qubit_range](const auto &index) {
+                index->value += qubit_range.first;
             });
             return ret;
         }
-        return instruction.operands[id]->as_index_ref()->indices;
+        assert(false && "operand is neither a variable reference nor an index reference");
     }
 
     [[nodiscard]] double get_float_operand(int id) const {
