@@ -62,7 +62,7 @@ int main(int argc, char **argv) {
 
     auto simulationResult = qx::executeFile(filePath, iterations);
     if (auto* error = std::get_if<qx::SimulationError>(&simulationResult)) {
-        fmt::print(std::cerr, "{}\n", error->message);
+        fmt::print(std::cerr, "{}\n", error->what());
         return 1;
     }
 
