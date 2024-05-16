@@ -125,6 +125,7 @@ add_library(qx
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/ErrorModels.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Qxelarator.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Random.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/RegisterManager.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Simulator.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/V3xLibqasmInterface.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Gates.cpp"

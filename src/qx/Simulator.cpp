@@ -69,8 +69,8 @@ execute(
     }
 
     try {
-        auto register_manager = qx::RegisterManager{ program };
-        qx::core::QuantumState quantumState(register_manager.get_qubit_register_size());
+        qx::RegisterManager::initialize(program);
+        qx::core::QuantumState quantumState(qx::RegisterManager::get_instance().get_qubit_register_size());
         qx::Circuit circuit = loadCqasmCode(*program);
         SimulationResultAccumulator simulationResultAccumulator(quantumState);
 

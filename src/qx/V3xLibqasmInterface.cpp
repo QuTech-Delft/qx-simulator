@@ -18,30 +18,32 @@ namespace v3types = ::cqasm::v3x::types;
 namespace v3values = ::cqasm::v3x::values;
 
 namespace {
+
 class OperandsHelper {
 public:
     explicit OperandsHelper(const v3cq::Instruction &instruction)
         : instruction(instruction) {}
 
-    // TODO: make register_manager accessible from different parts of the code
     [[nodiscard]] v3cq::Many<v3values::ConstInt> get_register_operand(int id) const {
+        const auto &register_manager = qx::RegisterManager::get_instance();
         if (auto variable_ref = instruction.operands[id]->as_variable_ref()) {
-            auto qubit_range = register_manager->get_qubit_range(variable_ref->variable->name);
+            auto qubit_range = register_manager.get_qubit_range(variable_ref->variable->name);
             auto ret = v3cq::Many<v3values::ConstInt>{};
             ret.get_vec().resize(qubit_range.size);
-            std::generate_n(ret.get_vec().begin(), qubit_range.size, [i=0]() mutable {
+            std::generate_n(ret.get_vec().begin(), qubit_range.size, [qubit_range, i=0]() mutable {
                 return v3tree::make<v3values::ConstInt>(static_cast<v3primitives::Int>(qubit_range.first + i++));
             });
             return ret;
         } else if (auto index_ref = instruction.operands[id]->as_index_ref()) {
-            auto qubit_range = register_manager->get_qubit_range(index_ref->variable->name);
+            auto qubit_range = register_manager.get_qubit_range(index_ref->variable->name);
             auto ret = index_ref->indices;
             std::for_each(ret.get_vec().begin(), ret.get_vec().end(), [qubit_range](const auto &index) {
                 index->value += qubit_range.first;
             });
             return ret;
         }
-        assert(false && "operand is neither a variable reference nor an index reference");
+        assert(false || "operand is neither a variable reference nor an index reference");
+        return {};
     }
 
     [[nodiscard]] double get_float_operand(int id) const {
@@ -105,23 +107,23 @@ private:
                 operands.get_register_operand(2)
             });
         } else if (name == "I") {
-            addGates<1>(gates::IDENTITY, {operands.get_register_operand(0)});
+            addGates<1>(gates::IDENTITY, { operands.get_register_operand(0) });
         } else if (name == "X") {
-            addGates<1>(gates::X, {operands.get_register_operand(0)});
+            addGates<1>(gates::X, { operands.get_register_operand(0) });
         } else if (name == "Y") {
-            addGates<1>(gates::Y, {operands.get_register_operand(0)});
+            addGates<1>(gates::Y, { operands.get_register_operand(0) });
         } else if (name == "Z") {
-            addGates<1>(gates::Z, {operands.get_register_operand(0)});
+            addGates<1>(gates::Z, { operands.get_register_operand(0) });
         } else if (name == "H") {
-            addGates<1>(gates::H, {operands.get_register_operand(0)});
+            addGates<1>(gates::H, { operands.get_register_operand(0) });
         } else if (name == "S") {
-            addGates<1>(gates::S, {operands.get_register_operand(0)});
+            addGates<1>(gates::S, { operands.get_register_operand(0) });
         } else if (name == "Sdag") {
-            addGates<1>(gates::SDAG, {operands.get_register_operand(0)});
+            addGates<1>(gates::SDAG, { operands.get_register_operand(0) });
         } else if (name == "T") {
-            addGates<1>(gates::T, {operands.get_register_operand(0)});
+            addGates<1>(gates::T, { operands.get_register_operand(0) });
         } else if (name == "Tdag") {
-            addGates<1>(gates::TDAG, {operands.get_register_operand(0)});
+            addGates<1>(gates::TDAG, { operands.get_register_operand(0) });
         } else if (name == "Rx") {
             addGates<1>(gates::RX(operands.get_float_operand(1)), { operands.get_register_operand(0) });
         } else if (name == "Ry") {
@@ -163,17 +165,15 @@ private:
 
     qx::Circuit &circuit;
 };
+
 } // namespace
 
 qx::Circuit loadCqasmCode(v3cq::Program const &program) {
     qx::Circuit circuit("cqasm 3.0 circuit", 1);
-
-    for (const auto &statement : program.block->statements) { // program.global_block->statements
+    for (const auto &statement: program.block->statements) {
         GateConvertor gateConvertor(circuit);
-
         statement->visit(gateConvertor);
     }
-
     return circuit;
 }
 
