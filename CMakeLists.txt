@@ -119,16 +119,17 @@ find_package(libqasm REQUIRED CONFIG)
 #=============================================================================#
 
 add_library(qx
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Core.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/SimulationResult.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Circuit.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Core.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/ErrorModels.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/GateConvertor.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Gates.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/OperandsHelper.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Qxelarator.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Random.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/RegisterManager.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/SimulationResult.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Simulator.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/V3xLibqasmInterface.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Gates.cpp"
 )
 
 target_compile_features(qx PRIVATE

@@ -17,14 +17,12 @@ struct RegisterManagerError : public SimulationError {
     {}
 };
 
-/* static */ V3Program RegisterManager::program_{};
-
 RegisterManager::RegisterManager(const V3Program &program) {
     auto is_qubit_variable = [](const V3Variable &variable) {
         return variable->typ->as_qubit() || variable->typ->as_qubit_array(); };
     auto &&qubit_variable_sizes = program->variables.get_vec()
         | ranges::views::filter([&](const V3Variable &variable) { return is_qubit_variable(variable); })
-        | ranges::views::transform([](const V3Variable &variable) { return types::size_of(variable->typ); });
+        | ranges::views::transform([](const V3Variable &variable) { return v3_types::size_of(variable->typ); });
     qubit_register_size_ = ranges::accumulate(qubit_variable_sizes, size_t{});
 
     if (qubit_register_size_ > config::MAX_QUBIT_NUMBER) {
@@ -38,22 +36,10 @@ RegisterManager::RegisterManager(const V3Program &program) {
     for (const auto &variable: program->variables) {
         const auto &variable_size = static_cast<size_t>(cqasm::v3x::types::size_of(variable->typ));
         variable_name_to_qubit_range_[variable->name] = QubitRange{ current_qubit_index, variable_size };
-        std::fill(qubit_index_to_variable_name_.begin() + current_qubit_index,
-                  qubit_index_to_variable_name_.begin() + current_qubit_index + variable_size,
+        std::fill(qubit_index_to_variable_name_.begin() + static_cast<long>(current_qubit_index),
+                  qubit_index_to_variable_name_.begin() + static_cast<long>(current_qubit_index + variable_size),
                   variable->name);
     };
-}
-
-/* static */ void RegisterManager::initialize(const V3Program &program) {
-    program_ = program;
-}
-
-/* static */ RegisterManager& RegisterManager::get_instance() {
-    if (program_.empty()) {
-        throw RegisterManagerError{ "RegisterManager has not been initialized." };
-    }
-    static RegisterManager instance{ program_ };
-    return instance;
 }
 
 [[nodiscard]] std::size_t RegisterManager::get_qubit_register_size() const {

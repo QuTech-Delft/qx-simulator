@@ -26,13 +26,11 @@ namespace {
 
 V3AnalysisResult parseCqasmV3xFile(std::string const &filePath) {
     auto analyzer = cqasm::v3x::default_analyzer("3.0");
-
     return analyzer.analyze_file(filePath);
 }
 
 V3AnalysisResult parseCqasmV3xString(std::string const &s) {
     auto analyzer = cqasm::v3x::default_analyzer("3.0");
-
     return analyzer.analyze_string(s, std::nullopt);
 }
 
@@ -41,10 +39,8 @@ std::variant<V3Program, SimulationError> getV3ProgramOrError(V3AnalysisResult co
         auto error = fmt::format("Cannot parse and analyze cQASM v3:\n{}", fmt::join(analysisResult.errors, "\n"));
         return SimulationError{ error };
     }
-
     auto program = analysisResult.root;
     assert(!program.empty());
-    
     return program;
 }
 
@@ -69,10 +65,10 @@ execute(
     }
 
     try {
-        qx::RegisterManager::initialize(program);
-        qx::core::QuantumState quantumState(qx::RegisterManager::get_instance().get_qubit_register_size());
-        qx::Circuit circuit = loadCqasmCode(*program);
-        SimulationResultAccumulator simulationResultAccumulator(quantumState);
+        auto register_manager = RegisterManager{ program };
+        auto quantumState = core::QuantumState{ register_manager.get_qubit_register_size() };
+        auto circuit = Circuit{ program, register_manager };
+        auto simulationResultAccumulator = SimulationResultAccumulator{ quantumState };
 
         while (iterations--) {
             quantumState.reset();

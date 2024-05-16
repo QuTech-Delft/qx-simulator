@@ -18,16 +18,6 @@ struct QubitRange {
     std::size_t size;
 };
 
-namespace ast = cqasm::v3x::ast;
-namespace semantic = cqasm::v3x::semantic;
-namespace types = cqasm::v3x::types;
-namespace values = cqasm::v3x::values;
-
-using V3Value = values::Value;
-using V3Type = types::Type;
-using V3Variable = ast::One<semantic::Variable>;
-using V3Program = ast::One<semantic::Program>;
-
 /*
  * RegisterManager keeps track of a (virtual) qubit register, i.e., an array of consecutive qubits,
  * and the mappings between the (logical) qubit variable names, as used in an input cQASM program,
@@ -45,9 +35,7 @@ class RegisterManager {
     using VariableNameToQubitRangeMapT = std::unordered_map<VariableName, QubitRange>;
     using QubitIndexToVariableNameMapT = std::vector<VariableName>;
 private:
-    explicit RegisterManager(const V3Program &program);
-private:
-    static V3Program program_;
+    V3Program program_;
     std::size_t qubit_register_size_;
     VariableNameToQubitRangeMapT variable_name_to_qubit_range_;
     QubitIndexToVariableNameMapT qubit_index_to_variable_name_;
@@ -57,8 +45,7 @@ public:
     RegisterManager& operator=(const RegisterManager&) = default;
     RegisterManager& operator=(RegisterManager&&) noexcept = default;
 public:
-    static void initialize(const V3Program &program);
-    static RegisterManager& get_instance();
+    explicit RegisterManager(const V3Program &program);
     [[nodiscard]] std::size_t get_qubit_register_size() const;
     [[nodiscard]] QubitRange get_qubit_range(const VariableName &name) const;
     [[nodiscard]] VariableName get_variable_name(std::size_t index) const;
