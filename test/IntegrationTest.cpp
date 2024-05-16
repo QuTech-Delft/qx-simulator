@@ -145,4 +145,34 @@ b[2] = measure q[2]
     EXPECT_EQ(actual.state[0].second, (Complex{ .real = 1, .imag = 0, .norm = 1 }));
 }
 
+TEST_F(IntegrationTest, mid_circuit_measure_instruction) {
+    std::size_t iterations = 10'000;
+    auto cqasm = R"(
+version 3.0
+
+qubit[3] q
+bit[3] b
+
+X q[0]
+b[0] = measure q[0]
+
+H q[1]
+CNOT q[1], q[2]
+b[1] = measure q[1]
+b[2] = measure q[2]
+)";
+    auto actual = runFromString(cqasm, iterations);
+
+    auto error = static_cast<std::uint64_t>(iterations/2 * 0.05);
+    EXPECT_EQ(actual.results.size(), 2);
+    EXPECT_EQ(actual.results[0].first, "001");
+    EXPECT_LT(std::abs(static_cast<long long>(iterations/2 - actual.results[0].second)), error);
+    EXPECT_EQ(actual.results[1].first, "111");
+    EXPECT_LT(std::abs(static_cast<long long>(iterations/2 - actual.results[1].second)), error);
+
+    // State could be 001 or 111
+    EXPECT_TRUE(actual.state[0].first.ends_with('1'));
+    EXPECT_EQ(actual.state[0].second, (Complex{ .real = 1, .imag = 0, .norm = 1 }));
+}
+
 } // namespace qx
