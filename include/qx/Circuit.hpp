@@ -54,7 +54,7 @@ public:
 
     Circuit(V3Program &program, RegisterManager &register_manager);
     RegisterManager& get_register_manager() const;
-    void addInstruction(Instruction instruction, ControlBits control_bits);
+    void add_instruction(Instruction instruction, ControlBits control_bits);
     void execute(core::QuantumState &quantumState, error_models::ErrorModel const &errorModel) const;
 
 private:

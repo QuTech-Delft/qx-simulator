@@ -39,7 +39,7 @@ Circuit::Circuit(V3Program &program, RegisterManager &register_manager)
     : program_{ program }
     , register_manager_{ register_manager } {
     GateConvertor gateConvertor{ *this };
-    for (const auto &statement : program_->block->statements) {
+    for (const auto &statement: program_->block->statements) {
         statement->visit(gateConvertor);
     }
 }
@@ -48,14 +48,14 @@ RegisterManager& Circuit::get_register_manager() const {
     return register_manager_;
 }
 
-void Circuit::addInstruction(Instruction instruction, ControlBits control_bits) {
+void Circuit::add_instruction(Instruction instruction, ControlBits control_bits) {
     controlled_instructions_.emplace_back(std::move(instruction), std::move(control_bits));
 }
 
 void Circuit::execute(core::QuantumState &quantumState, error_models::ErrorModel const &errorModel) const {
     InstructionExecutor instruction_executor(quantumState);
-    for (auto const &controlled_instruction : controlled_instructions_) {
-        if (auto *depolarizing_channel = std::get_if<error_models::DepolarizingChannel>( &errorModel)) {
+    for (auto const &controlled_instruction: controlled_instructions_) {
+        if (auto *depolarizing_channel = std::get_if<error_models::DepolarizingChannel>(&errorModel)) {
             depolarizing_channel->addError(quantumState);
         } else {
             assert(std::get_if<std::monostate>(&errorModel) && "Unimplemented error model");

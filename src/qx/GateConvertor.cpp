@@ -43,7 +43,7 @@ void GateConvertor::addGates(
         Circuit::Unitary<NumberOfQubitOperands> unitary{matrix, ops};
 
         auto controlBits = std::make_shared<std::vector<core::QubitIndex>>();
-        circuit_.addInstruction(unitary, controlBits);
+        circuit_.add_instruction(unitary, controlBits);
     }
 }
 
@@ -128,12 +128,10 @@ void GateConvertor::addGates(const V3Instruction &instruction) {
             { operands_helper.get_register_operand(0) }
         );
     } else if (name == "measure") {
-        for (const auto &q : operands_helper.get_register_operand(0)) {
+        for (const auto &q: operands_helper.get_register_operand(0)) {
             auto controlBits = std::make_shared<std::vector<core::QubitIndex>>();
-            circuit_.addInstruction(
-                Circuit::Measure{ core::QubitIndex{ static_cast<std::size_t>(q->value) } },
-                controlBits
-            );
+            circuit_.add_instruction(Circuit::Measure{ core::QubitIndex{ static_cast<std::size_t>(q->value) } },
+                                     controlBits);
         }
     } else if (name == "CR") {
         addGates<2>(
