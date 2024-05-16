@@ -35,7 +35,6 @@ class RegisterManager {
     using VariableNameToQubitRangeMapT = std::unordered_map<VariableName, QubitRange>;
     using QubitIndexToVariableNameMapT = std::vector<VariableName>;
 private:
-    V3Program program_;
     std::size_t qubit_register_size_;
     VariableNameToQubitRangeMapT variable_name_to_qubit_range_;
     QubitIndexToVariableNameMapT qubit_index_to_variable_name_;

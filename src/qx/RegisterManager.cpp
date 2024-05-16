@@ -6,7 +6,6 @@
 #include <range/v3/numeric/accumulate.hpp>
 #include <range/v3/view/filter.hpp>
 #include <range/v3/view/transform.hpp>
-#include <stdexcept>  // runtime_error
 
 
 namespace qx {
@@ -26,7 +25,7 @@ RegisterManager::RegisterManager(const V3Program &program) {
     qubit_register_size_ = ranges::accumulate(qubit_variable_sizes, size_t{});
 
     if (qubit_register_size_ > config::MAX_QUBIT_NUMBER) {
-        throw SimulationError{ "Cannot run that many qubits in this version of QX-simulator" };
+        throw RegisterManagerError{ "Cannot run that many qubits in this version of QX-simulator" };
     }
 
     variable_name_to_qubit_range_.reserve(qubit_register_size_);
