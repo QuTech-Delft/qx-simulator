@@ -8,3 +8,6 @@ build_type=Release
 qx/*:asan_enabled=False
 qx/*:build_python=False
 qx/*:cpu_compatibility_mode=False
+
+[conf]
+tools.build:skip_test=False
