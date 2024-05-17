@@ -44,7 +44,7 @@ public:
     RegisterManager& operator=(const RegisterManager&) = default;
     RegisterManager& operator=(RegisterManager&&) noexcept = default;
 public:
-    explicit RegisterManager(const V3Program &program);
+    explicit RegisterManager(const V3OneProgram &program);
     [[nodiscard]] std::size_t get_qubit_register_size() const;
     [[nodiscard]] QubitRange get_qubit_range(const VariableName &name) const;
     [[nodiscard]] VariableName get_variable_name(std::size_t index) const;

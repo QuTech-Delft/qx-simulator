@@ -52,13 +52,13 @@ public:
 
     // We could in the future add loops and if/else...
 
-    Circuit(V3Program &program, RegisterManager &register_manager);
+    Circuit(V3OneProgram &program, RegisterManager &register_manager);
     RegisterManager& get_register_manager() const;
     void add_instruction(Instruction instruction, ControlBits control_bits);
     void execute(core::QuantumState &quantumState, error_models::ErrorModel const &errorModel) const;
 
 private:
-    V3Program program_;
+    V3OneProgram program_;
     RegisterManager &register_manager_;
     std::vector<ControlledInstruction> controlled_instructions_;
 };

@@ -20,7 +20,7 @@
 namespace qx {
 
 using V3AnalysisResult = cqasm::v3x::analyzer::AnalysisResult;
-using V3Program = cqasm::v3x::ast::One<cqasm::v3x::semantic::Program>;
+using V3OneProgram = cqasm::v3x::ast::One<cqasm::v3x::semantic::Program>;
 
 namespace {
 
@@ -34,7 +34,7 @@ V3AnalysisResult parseCqasmV3xString(std::string const &s) {
     return analyzer.analyze_string(s, std::nullopt);
 }
 
-std::variant<V3Program, SimulationError> getV3ProgramOrError(V3AnalysisResult const& analysisResult) {
+std::variant<V3OneProgram, SimulationError> getV3ProgramOrError(V3AnalysisResult const& analysisResult) {
     if (!analysisResult.errors.empty()) {
         auto error = fmt::format("Cannot parse and analyze cQASM v3:\n{}", fmt::join(analysisResult.errors, "\n"));
         return SimulationError{ error };
@@ -54,7 +54,7 @@ execute(
     if (auto* error = std::get_if<SimulationError>(&programOrError)) {
         return *error;
     }
-    auto program = std::get<V3Program>(programOrError);
+    auto program = std::get<V3OneProgram>(programOrError);
     assert(!program.empty());
 
     if (iterations <= 0) {

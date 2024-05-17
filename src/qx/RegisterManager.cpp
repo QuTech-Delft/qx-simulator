@@ -1,6 +1,7 @@
 #include "qx/CompileTimeConfiguration.hpp"
 #include "qx/RegisterManager.hpp"
 #include "qx/SimulationError.hpp"
+#include "qx/V3xLibqasmInterface.hpp"
 
 #include <algorithm>  // fill
 #include <range/v3/numeric/accumulate.hpp>
@@ -16,12 +17,10 @@ struct RegisterManagerError : public SimulationError {
     {}
 };
 
-RegisterManager::RegisterManager(const V3Program &program) {
-    auto is_qubit_variable = [](const V3Variable &variable) {
-        return variable->typ->as_qubit() || variable->typ->as_qubit_array(); };
+RegisterManager::RegisterManager(const V3OneProgram &program) {
     auto &&qubit_variable_sizes = program->variables.get_vec()
-        | ranges::views::filter([&](const V3Variable &variable) { return is_qubit_variable(variable); })
-        | ranges::views::transform([](const V3Variable &variable) { return v3_types::size_of(variable->typ); });
+        | ranges::views::filter([&](const V3OneVariable &variable) { return is_qubit_variable(*variable); })
+        | ranges::views::transform([](const V3OneVariable &variable) { return v3_types::size_of(variable->typ); });
     qubit_register_size_ = ranges::accumulate(qubit_variable_sizes, size_t{});
 
     if (qubit_register_size_ > config::MAX_QUBIT_NUMBER) {
@@ -33,11 +32,15 @@ RegisterManager::RegisterManager(const V3Program &program) {
 
     auto current_qubit_index = size_t{};
     for (const auto &variable: program->variables) {
+        if (!is_qubit_variable(*variable)) {
+            continue;
+        }
         const auto &variable_size = static_cast<size_t>(cqasm::v3x::types::size_of(variable->typ));
         variable_name_to_qubit_range_[variable->name] = QubitRange{ current_qubit_index, variable_size };
         std::fill(qubit_index_to_variable_name_.begin() + static_cast<long>(current_qubit_index),
                   qubit_index_to_variable_name_.begin() + static_cast<long>(current_qubit_index + variable_size),
                   variable->name);
+        current_qubit_index += variable_size;
     };
 }
 

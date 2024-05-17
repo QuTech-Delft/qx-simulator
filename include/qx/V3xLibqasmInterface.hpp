@@ -17,14 +17,19 @@ namespace v3_tree = ::cqasm::tree;
 namespace v3_types = cqasm::v3x::types;
 namespace v3_values = cqasm::v3x::values;
 
+template <typename T> using V3Many = v3_ast::Many<T>;
 using V3ConstInt = v3_values::ConstInt;
 using V3Instruction = v3_semantic::Instruction;
-template <typename T> using V3Many = v3_ast::Many<T>;
 using V3Node = v3_semantic::Node;
-using V3Program = v3_ast::One<v3_semantic::Program>;
+using V3OneProgram = v3_tree::One<v3_semantic::Program>;
+using V3OneVariable = v3_tree::One<v3_semantic::Variable>;
 using V3RecursiveVisitor = v3_semantic::RecursiveVisitor;
 using V3Type = v3_types::Type;
 using V3Value = v3_values::Value;
-using V3Variable = v3_ast::One<v3_semantic::Variable>;
+using V3Variable = v3_semantic::Variable;
+
+auto is_qubit_variable = [](const V3Variable &variable) {
+    return variable.typ->as_qubit() || variable.typ->as_qubit_array();
+};
 
 }  // namespace qx

@@ -1,6 +1,6 @@
 #include "qx/OperandsHelper.hpp"
-#include "qx/V3xLibqasmInterface.hpp"
 #include "qx/RegisterManager.hpp"
+#include "qx/V3xLibqasmInterface.hpp"
 
 #include <algorithm>  // generate_n
 #include <cassert>
@@ -15,6 +15,9 @@ OperandsHelper::OperandsHelper(const V3Instruction &instruction, const RegisterM
 
 [[nodiscard]] V3Many<V3ConstInt> OperandsHelper::get_register_operand(int id) const {
     if (auto variable_ref = instruction_.operands[id]->as_variable_ref()) {
+        if (!is_qubit_variable(*variable_ref->variable)) {
+            return {};
+        }
         auto qubit_range = register_manager_.get_qubit_range(variable_ref->variable->name);
         auto ret = V3Many<V3ConstInt>{};
         ret.get_vec().resize(qubit_range.size);
@@ -23,6 +26,9 @@ OperandsHelper::OperandsHelper(const V3Instruction &instruction, const RegisterM
         });
         return ret;
     } else if (auto index_ref = instruction_.operands[id]->as_index_ref()) {
+        if (!is_qubit_variable(*index_ref->variable)) {
+            return {};
+        }
         auto qubit_range = register_manager_.get_qubit_range(index_ref->variable->name);
         auto ret = index_ref->indices;
         std::for_each(ret.get_vec().begin(), ret.get_vec().end(), [qubit_range](const auto &index) {

@@ -128,7 +128,10 @@ void GateConvertor::addGates(const V3Instruction &instruction) {
             { operands_helper.get_register_operand(0) }
         );
     } else if (name == "measure") {
-        for (const auto &q: operands_helper.get_register_operand(0)) {
+        // A measure statement has the following syntax: b = measure q
+        // The left-hand side operand, b, is the operand 0
+        // The right-hand side operand, q, is the operand 1
+        for (const auto &q: operands_helper.get_register_operand(1)) {
             auto controlBits = std::make_shared<std::vector<core::QubitIndex>>();
             circuit_.add_instruction(Circuit::Measure{ core::QubitIndex{ static_cast<std::size_t>(q->value) } },
                                      controlBits);

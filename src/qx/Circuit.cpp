@@ -35,7 +35,7 @@ private:
 
 } // namespace
 
-Circuit::Circuit(V3Program &program, RegisterManager &register_manager)
+Circuit::Circuit(V3OneProgram &program, RegisterManager &register_manager)
     : program_{ program }
     , register_manager_{ register_manager } {
     GateConvertor gateConvertor{ *this };
