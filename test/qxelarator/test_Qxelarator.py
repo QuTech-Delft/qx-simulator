@@ -19,16 +19,18 @@ class QxelaratorTest(unittest.TestCase):
 version 3.0
 
 qubit q
+bit b
 
 X q,
-measure q
+b = measure q
 """
         simulation_error = qxelarator.execute_string(cqasm_string, iterations=2)
+        print(simulation_error)
 
         self.assertIsInstance(simulation_error, qxelarator.SimulationError)
         self.assertTrue(simulation_error.message.startswith("""\
 Cannot parse and analyze cQASM v3:
-Error at <unknown file name>:5:5..6: mismatched input '\\n'\
+Error at <unknown file name>:6:5..6: extraneous input '\\n'\
 """))
 
     def test_execute_string(self):
@@ -36,9 +38,10 @@ Error at <unknown file name>:5:5..6: mismatched input '\\n'\
 version 3.0
 
 qubit q
+bit b
 
 X q
-measure q
+b = measure q
 """
         simulation_result = qxelarator.execute_string(cqasm_string, iterations=2)
 
@@ -53,9 +56,10 @@ measure q
 version 3.0
 
 qubit q
+bit b
 
 H q
-measure q
+b = measure q
 """
         simulation_result = qxelarator.execute_string(cqasm_string, iterations=20, seed=123)
         self.assertEqual(simulation_result.results, {"0": 12, "1": 8})
