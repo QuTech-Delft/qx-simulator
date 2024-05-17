@@ -56,7 +56,7 @@ void QuantumState::testInitialize(
     std::initializer_list<std::pair<std::string, std::complex<double>>> values) {
     data.clear();
     double norm = 0;
-    for (auto const &kv : values) {
+    for (auto const &kv: values) {
         BasisVector index(kv.first);
         data.set(index, kv.second);
         norm += std::norm(kv.second);

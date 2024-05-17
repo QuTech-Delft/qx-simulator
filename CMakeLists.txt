@@ -111,14 +111,7 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 #=============================================================================#
 
 find_package(absl)
-
-# libqasm 0.6.3
-message(STATUS "Fetching cqasm")
-FetchContent_Declare(cqasm
-    GIT_REPOSITORY https://github.com/QuTech-Delft/libqasm.git
-    GIT_TAG "4240fe9fd52e3e8da1585091d6f7ac5ae105271f"
-)
-FetchContent_MakeAvailable(cqasm)
+find_package(libqasm REQUIRED CONFIG)
 
 
 #=============================================================================#
@@ -126,15 +119,18 @@ FetchContent_MakeAvailable(cqasm)
 #=============================================================================#
 
 add_library(qx
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Core.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/SimulationResult.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Circuit.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Core.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/ErrorModels.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/GateConvertor.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Gates.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/OperandsHelper.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Qxelarator.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Random.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/RegisterManager.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/SimulationResult.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Simulator.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/V3xLibqasmInterface.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Gates.cpp"
 )
 
 target_compile_features(qx PRIVATE
@@ -203,7 +199,7 @@ endif()
 
 target_link_libraries(qx PUBLIC
     absl::flat_hash_map
-    cqasm
+    libqasm::libqasm
 )
 
 #=============================================================================#

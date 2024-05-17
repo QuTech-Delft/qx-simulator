@@ -7,5 +7,4 @@ build_type=Debug
 [options]
 qx/*:asan_enabled=False
 qx/*:build_python=False
-qx/*:build_tests=False
 qx/*:cpu_compatibility_mode=False

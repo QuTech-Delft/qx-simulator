@@ -1,5 +1,6 @@
 #pragma once
 
+#include "qx/SimulationError.hpp"
 #include "qx/SimulationResult.hpp"
 
 #include <optional>
@@ -8,10 +9,6 @@
 
 
 namespace qx {
-
-struct SimulationError {
-    std::string message = "Simulation error";
-};
 
 std::variant<SimulationResult, SimulationError>
 executeString(

@@ -78,10 +78,34 @@ H q[0
 )";
 
     auto result = executeString(cqasm);
+    auto message = std::string{ std::get_if<SimulationError>(&result)->what() };
     EXPECT_TRUE(std::holds_alternative<SimulationError>(result));
-    EXPECT_THAT(std::get_if<SimulationError>(&result)->message, ::testing::StartsWith("""\
+    EXPECT_THAT(message, ::testing::StartsWith("""\
 Cannot parse and analyze cQASM v3:\n\
 Error at <unknown file name>:6:6..7: missing ']' at '\\n'"""));
+}
+
+TEST_F(IntegrationTest, identity) {
+    auto cqasm = R"(
+version 3.0
+
+qubit[2] q
+
+H q[0]
+I q[0]
+CNOT q[0], q[1]
+I q[1]
+)";
+    auto actual = runFromString(cqasm, 1, "3.0");
+
+    EXPECT_EQ(actual.shots_requested, 1);
+    EXPECT_EQ(actual.shots_done, 1);
+    EXPECT_EQ(actual.results, (SimulationResult::Results{ { "00", 1 } }));
+    EXPECT_EQ(actual.state,
+        (SimulationResult::State{
+            { "00", Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } },
+            { "11", Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } }
+    }));
 }
 
 TEST_F(IntegrationTest, measure) {
@@ -90,12 +114,13 @@ TEST_F(IntegrationTest, measure) {
 version 3.0
 
 qubit[3] q
+bit[3] b
 
 X q[0]
 H q[1]
 CNOT q[1], q[2]
 
-measure q
+b = measure q
 )";
     auto actual = runFromString(cqasm, iterations);
 
@@ -119,14 +144,15 @@ TEST_F(IntegrationTest, multiple_measure_instructions) {
 version 3.0
 
 qubit[3] q
+bit[3] b
 
 X q[0]
 H q[1]
 CNOT q[1], q[2]
 
-measure q[0]
-measure q[1]
-measure q[2]
+b[0] = measure q[0]
+b[1] = measure q[1]
+b[2] = measure q[2]
 )";
     auto actual = runFromString(cqasm, iterations);
 
@@ -140,6 +166,61 @@ measure q[2]
     // State could be 001 or 111
     EXPECT_TRUE(actual.state[0].first.ends_with('1'));
     EXPECT_EQ(actual.state[0].second, (Complex{ .real = 1, .imag = 0, .norm = 1 }));
+}
+
+TEST_F(IntegrationTest, mid_circuit_measure_instruction) {
+    std::size_t iterations = 10'000;
+    auto cqasm = R"(
+version 3.0
+
+qubit[2] q
+bit[2] b
+
+X q[0]
+b[0] = measure q[0]
+
+H q[1]
+CNOT q[1], q[0]
+b = measure q
+)";
+    auto actual = runFromString(cqasm, iterations);
+
+    // Expected output state: |00>+|11> or |01>+|10>
+    auto error = static_cast<std::uint64_t>(iterations/2 * 0.05);
+    EXPECT_EQ(actual.results.size(), 2);
+    EXPECT_TRUE(actual.results[0].first == "00" || actual.results[0].first == "01");
+    EXPECT_LT(std::abs(static_cast<long long>(iterations/2 - actual.results[0].second)), error);
+    EXPECT_TRUE(actual.results[1].first == "11" || actual.results[1].first == "10");
+    EXPECT_LT(std::abs(static_cast<long long>(iterations/2 - actual.results[1].second)), error);
+}
+
+TEST_F(IntegrationTest, multiple_qubit_bit_definitions_and_mid_circuit_measure_instructions) {
+    std::size_t iterations = 10'000;
+    auto cqasm = R"(
+version 3.0
+
+qubit q0
+qubit q1
+bit b0
+bit b1
+
+X q0
+b0 = measure q0
+
+H q1
+CNOT q1, q0
+b0 = measure q0
+b1 = measure q1
+)";
+    auto actual = runFromString(cqasm, iterations);
+
+    // Expected output state: |00>+|11> or |01>+|10>
+    auto error = static_cast<std::uint64_t>(iterations/2 * 0.05);
+    EXPECT_EQ(actual.results.size(), 2);
+    EXPECT_TRUE(actual.results[0].first == "00" || actual.results[0].first == "01");
+    EXPECT_LT(std::abs(static_cast<long long>(iterations/2 - actual.results[0].second)), error);
+    EXPECT_TRUE(actual.results[1].first == "11" || actual.results[1].first == "10");
+    EXPECT_LT(std::abs(static_cast<long long>(iterations/2 - actual.results[1].second)), error);
 }
 
 } // namespace qx

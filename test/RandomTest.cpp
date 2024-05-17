@@ -14,13 +14,13 @@ protected:
         // Assumption: perfectDistribution is non-decreasing, with lim -inf = 0 and lim +inf = 1.
 
         std::map<double, std::uint64_t> multiplicities;
-        for (auto s : samples) {
+        for (auto s: samples) {
             ++multiplicities[s];
         }
 
         double testStatistic = 0.;
         std::uint64_t accumulatedMultiplicity = 0;
-        for (auto sm : multiplicities) {
+        for (auto sm: multiplicities) {
             auto const &[sample, multiplicity] = sm;
 
             static constexpr double const EPSILON = 0.000000001;
