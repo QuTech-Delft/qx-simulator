@@ -28,8 +28,6 @@ using V3Type = v3_types::Type;
 using V3Value = v3_values::Value;
 using V3Variable = v3_semantic::Variable;
 
-auto is_qubit_variable = [](const V3Variable &variable) {
-    return variable.typ->as_qubit() || variable.typ->as_qubit_array();
-};
+bool is_qubit_variable(const V3Variable &variable);
 
 }  // namespace qx

@@ -47,7 +47,7 @@
         auto pclass = PyObject_GetAttrString(pmod, "SimulationError");
         Py_DECREF(pmod);
 
-        auto errorString = PyUnicode_FromString(std::get_if<qx::SimulationError>(&$1)->message.c_str());
+        auto errorString = PyUnicode_FromString(std::get_if<qx::SimulationError>(&$1)->what());
         auto args = PyTuple_Pack(1, errorString);
 
         auto simulationError = PyObject_CallObject(pclass, args);
