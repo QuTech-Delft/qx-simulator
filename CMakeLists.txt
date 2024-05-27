@@ -2,52 +2,50 @@ cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
 
 project(QX C CXX)
 
-# If QX was already included elsewhere in the project, don't include it
-# again. There should be only one place for it and one version per project.
+# If QX was already included elsewhere in the project, don't include it again.
+# There should be only one place for it and one version per project.
 if(NOT TARGET qx)
 
 # Loads up the appropriate directories for installing stuff.
 include(GNUInstallDirs)
+
+# Packages
+include(FetchContent)
 
 
 #=============================================================================#
 # Configuration options                                                       #
 #=============================================================================#
 
-# Library type option. Default is a shared object, because for CMake it doesn't
-# matter, but outside of CMake dependency information is lost for static
-# libraries. That requires the user to link all of QX's direct and transitive
-# dependencies as well, which is terribly ugly. setup.py *has* to do this
-# however, because "pip install ." builds this in a temporary directory, so the
-# shared objects that get built and installed and are then depended on by the
-# Python lib get deleted by pip after the install.
+# Library type option. Default is a shared object, because for CMake it doesn't matter,
+# but outside of CMake dependency information is lost for static libraries.
+# That requires the user to link all of QX's direct and transitive dependencies as well, which is terribly ugly.
+# setup.py *has* to do this however, because "pip install ." builds this in a temporary directory,
+# so the shared objects that get built and installed and are then depended on by the Python lib
+# get deleted by pip after the install.
 option(
     BUILD_SHARED_LIBS
     "Whether libraries should be built as a shared object or as a static library"
     OFF
 )
 
-# With what optimization level the library is to be built.
 if(NOT CMAKE_BUILD_TYPE)
-    set(
-        CMAKE_BUILD_TYPE Release CACHE STRING
-        "Type of build (Debug, Release)" FORCE
-    )
-    set_property(
-        CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
-        "Debug" "Release"
-    )
+    message(STATUS "No build type selected, default to Release")
+    set(CMAKE_BUILD_TYPE "Release")
 endif()
 
-# Whether tests should be built.
+option(
+    QX_CPU_COMPATIBILITY_MODE
+    "Produce binaries that would work on any CPU, instead of just the one of the machine on which the code is built"
+    OFF
+)
+
 option(
     QX_BUILD_TESTS
     "Whether the tests should be built and added to `make test`"
     OFF
 )
 
-# Whether the Python module should be built. This should only be enabled for
-# setup.py's builds.
 option(
     QX_BUILD_PYTHON
     "Whether the Python module should be built"
@@ -55,32 +53,28 @@ option(
 )
 mark_as_advanced(QX_BUILD_PYTHON)
 
-# Where the Python module should be built.
 set(
     QX_PYTHON_DIR "${CMAKE_INSTALL_FULL_LIBDIR}/python/qxelarator"
     CACHE STRING "Where to install the Python library"
 )
 mark_as_advanced(QX_PYTHON_DIR)
 
-# Used to override the (base)name of the Python extension.
 set(
     QX_PYTHON_EXT ""
     CACHE STRING "Basename for the Python extension, or \"\" to let CMake's SWIG implementation handle it"
 )
 mark_as_advanced(QX_PYTHON_EXT)
 
-
 #=============================================================================#
 # CMake weirdness and compatibility                                           #
 #=============================================================================#
 
-# On Windows builds, CMake complains that the CMake internal variable
-# "CMAKE_MODULE_LINKER_FLAGS_MAINTAINER" is not defined *the first time you
-# configure*. Weirdly, all is good with the world if you then just try again.
-# It seems to have to do with the "maintainer" build type in MSVC, but there
-# is no documentation whatsoever. In any case, this just mimics what CMake
-# does automatically the second time you invoke it, so it works around the
-# issue.
+# On Windows builds, CMake complains that the CMake internal variable "CMAKE_MODULE_LINKER_FLAGS_MAINTAINER"
+# is not defined *the first time you configure*.
+# Weirdly, all is good with the world if you then just try again.
+# It seems to have to do with the "maintainer" build type in MSVC, but there is no documentation whatsoever.
+# In any case, this just mimics what CMake does automatically the second time you invoke it,
+# so it works around the issue.
 if(NOT DEFINED CMAKE_MODULE_LINKER_FLAGS_MAINTAINER)
     set(
         CMAKE_MODULE_LINKER_FLAGS_MAINTAINER ""
@@ -93,80 +87,109 @@ endif()
 # Global build configuration                                                  #
 #=============================================================================#
 
-# Since we have multiple libraries to link together, we unfortunately have to
-# worry about RPATH handling on Linux and OSX. See
+# Since we have multiple libraries to link together,
+# we unfortunately have to worry about RPATH handling on Linux and OSX. See
 # https://gitlab.kitware.com/cmake/community/-/wikis/doc/cmake/RPATH-handling
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-# Everything needs C++11 support.
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-# Windows weirdness: need a .lib file to link against a DLL at compile-time
-# (I think), but only the .dll is generated when there are no exported symbols.
+# Windows weirdness: need a .lib file to link against a DLL at compile-time (I think),
+# but only the .dll is generated when there are no exported symbols.
 # This sort of fixes that (https://stackoverflow.com/questions/1941443)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+
+
+#=============================================================================#
+# Dependencies                                                                #
+#=============================================================================#
+
+find_package(absl)
+find_package(libqasm REQUIRED CONFIG)
 
 
 #=============================================================================#
 # QX library target                                                           #
 #=============================================================================#
 
-# Create the QX library. This will be built either as a shared object/DLL
-# or as a static library based on BUILD_SHARED_LIBS; add_library switches
-# automatically.
 add_library(qx
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/dummy.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Circuit.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Core.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/ErrorModels.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/GateConvertor.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Gates.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/OperandsHelper.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Qxelarator.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Random.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/RegisterManager.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/SimulationResult.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Simulator.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/V3xLibqasmInterface.cpp"
 )
 
-# This definition is used to define QX_DECLSPEC for __declspec. More info:
-# https://docs.microsoft.com/en-us/cpp/cpp/declspec?view=vs-2019
-target_compile_definitions(qx PRIVATE BUILDING_QX)
+target_compile_features(qx PRIVATE
+    cxx_std_23
+)
 
-# FIXME: these should be removed or added to a global config header file!
-target_compile_definitions(qx PUBLIC USE_OPENMP XPU_TIMER CG_BC QX_SPARSE_MV_MUL __BUILTIN_LINALG__)
-
-# Add the src directory as a private include path and include as the public
-# include path.
 target_include_directories(qx
-    PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src/"
-    PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/src/"
     PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/"
-    PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/include/"
 )
 
-# Configure compilation.
-set_property(TARGET qx PROPERTY POSITION_INDEPENDENT_CODE ON)
 if(CMAKE_COMPILER_IS_GNUCXX)
-    target_compile_options(qx PRIVATE -Wall -Wfatal-errors -ggdb)
+    target_compile_options(qx PRIVATE
+        -Wall -Wextra -Werror -Wfatal-errors
+        -Wno-error=restrict
+    )
 elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    target_compile_options(qx PRIVATE -Wall -Wfatal-errors -ggdb -Wno-unused-local-typedef)
+    target_compile_options(qx PRIVATE
+        -Wall -Wextra -Werror -Wfatal-errors
+        -Wno-error=unused-but-set-variable
+        -Wno-error=unused-function
+        -Wno-error=unused-local-typedef
+    )
 elseif(MSVC)
-    target_compile_options(qx PRIVATE /MP /D_USE_MATH_DEFINES /EHsc /bigobj)
+    target_compile_options(qx PRIVATE
+        /MP /EHsc /bigobj
+    )
 else()
     message(SEND_ERROR "Unknown compiler!")
 endif()
 
-# Enable optimizations only for release builds.
-if(NOT MSVC AND "${CMAKE_BUILD_TYPE}" STREQUAL "Release")
-    target_compile_options(qx PRIVATE -O3)
+if(!${QX_CPU_COMPATIBILITY_MODE})
+    if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
+        target_compile_options(qx PUBLIC
+            -march=native
+        )
+    elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel")
+        target_compile_options(qx PUBLIC
+            -ipo -xHost -no-prec-div
+        )
+    elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+        target_compile_options(qx PUBLIC
+            -march=native
+        )
+    endif()
 endif()
 
-# Compiler-specific and architectural optimizations.
-if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
-    target_compile_options(qx PUBLIC -march=native)
-elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel")
-    target_compile_options(qx PUBLIC -ipo -xHost -no-prec-div)
-elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    target_compile_options(qx PUBLIC -msse4.2)
-elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
-    target_compile_options(qx PUBLIC /arch:AVX)
-else()
-    message(SEND_ERROR "Unsupported compiler: ${CMAKE_CXX_COMPILER_ID}")
+# Address sanitizer
+if(ASAN_ENABLED)
+    if(MSVC AND CMAKE_BUILD_TYPE STREQUAL "Debug")
+        string(REGEX REPLACE "/RTC(su|[1su])" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+        message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}\n")
+
+        # /MTd is needed to link clang_rt.asan-i386.lib statically
+        # Otherwise the path to clang_rt.asan-i386.dll should be provided
+        add_compile_options(/fsanitize=address /MTd)
+    elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+        add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer)
+        add_link_options(-fsanitize=address,undefined)
+    endif()
 endif()
 
 
@@ -174,60 +197,28 @@ endif()
 # Configure, build, and link dependencies                                     #
 #=============================================================================#
 
-# OpenMP
-find_package(OpenMP REQUIRED)
-target_link_libraries(qx PUBLIC OpenMP::OpenMP_CXX)
-
-# libqasm
-option(LIBQASM_COMPAT "" ON)
-add_subdirectory(deps/libqasm)
-target_link_libraries(qx PUBLIC cqasm)
-
-# winsock
-if(WIN32)
-    target_link_libraries(qx PUBLIC wsock32 ws2_32)
-endif()
-
+target_link_libraries(qx PUBLIC
+    absl::flat_hash_map
+    libqasm::libqasm
+)
 
 #=============================================================================#
 # Executables                                                                 #
 #=============================================================================#
 
-# qx-simulator
-add_executable("qx-simulator" "${CMAKE_CURRENT_SOURCE_DIR}/src/qx-simulator/simulator.cc")
+add_executable("qx-simulator" "${CMAKE_CURRENT_SOURCE_DIR}/src/qx-simulator/Simulator.cpp")
 target_link_libraries(qx-simulator qx)
-
-# qx-simulator-old
-add_executable("qx-simulator-old" "${CMAKE_CURRENT_SOURCE_DIR}/src/qx-simulator-old/simulator_old.cc")
-target_link_libraries(qx-simulator-old qx)
-
-# qx-server
-add_executable("qx-server" "${CMAKE_CURRENT_SOURCE_DIR}/src/qx-server/server.cc")
-target_link_libraries(qx-server qx)
-
 
 #=============================================================================#
 # Testing                                                                     #
 #=============================================================================#
 
-# Include the tests directory if requested.
 if(QX_BUILD_TESTS)
     enable_testing()
-
-    # Convenience function to add a test.
-    function(add_qx_test name source workdir)
-        add_executable("${name}" "${CMAKE_CURRENT_SOURCE_DIR}/${source}")
-        target_link_libraries("${name}" qx)
-        add_test(
-            NAME "${name}"
-            WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${workdir}"
-            COMMAND "${name}"
-        )
-    endfunction()
-
-    # Include the directories containing tests.
-    add_subdirectory(tests)
-
+    include(CTest)
+    include(GoogleTest)
+    set(CMAKE_CTEST_ARGUMENTS "--output-on-failure")
+    add_subdirectory(test)
 endif()
 
 
@@ -235,7 +226,6 @@ endif()
 # Python module                                                               #
 #=============================================================================#
 
-# Include the tests directory if requested.
 if(QX_BUILD_PYTHON)
     add_subdirectory(python)
 endif()
@@ -252,19 +242,15 @@ install(
     ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
 )
 install(
-    TARGETS qx-simulator qx-simulator-old qx-server
-    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
-)
-install(
     DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/"
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
-    FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN "*.cc"
+    FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN "*.cpp"
 )
 install(
     DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/include/"
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
-    FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN "*.cc"
+    FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN "*.cpp"
 )
 
 
-endif() # NOT TARGET qx
+endif()  # NOT TARGET qx

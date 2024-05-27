@@ -102,12 +102,12 @@ endif()
 #=============================================================================#
 
 # Configure SWIG.
-set(SWIG_FILE "${CMAKE_CURRENT_SOURCE_DIR}/qxelarator.i")
+set(SWIG_FILE "${CMAKE_CURRENT_SOURCE_DIR}/Qxelarator.i")
 
 set_source_files_properties("${SWIG_FILE}" PROPERTIES
     CPLUSPLUS ON
     INCLUDE_DIRECTORIES "$<TARGET_PROPERTY:qx,INTERFACE_INCLUDE_DIRECTORIES>;${PYTHON_INCLUDE_DIRS};${CMAKE_CURRENT_SOURCE_DIR}/../src"
-    SWIG_FLAGS "-castmode"
+    SWIG_FLAGS "-castmode;-keyword"
 )
 
 set(CMAKE_SWIG_OUTDIR "${CMAKE_CURRENT_BINARY_DIR}")
