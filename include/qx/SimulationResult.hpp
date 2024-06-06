@@ -1,6 +1,6 @@
 #pragma once
 
-#include "qx/Common.hpp"
+#include "qx/Core.hpp"
 
 #include <absl/container/btree_map.h>
 #include <complex>
@@ -37,19 +37,19 @@ std::ostream &operator<<(std::ostream &os, SimulationResult const &r);
 
 class SimulationResultAccumulator {
 public:
-    explicit SimulationResultAccumulator(qx::core::QuantumState &s) : quantumState(s){};
+    explicit SimulationResultAccumulator(core::QuantumState &s) : quantumState(s){};
 
-    void append(BasisVector measuredState);
+    void append(core::BasisVector measuredState);
 
     SimulationResult get();
 
 private:
     template <typename F> void forAllNonZeroStates(F &&f);
 
-    std::string getStateString(BasisVector s);
+    std::string getStateString(core::BasisVector s);
 
     core::QuantumState &quantumState;
-    absl::btree_map<BasisVector, std::uint64_t> measuredStates;
+    absl::btree_map<core::BasisVector, std::uint64_t> measuredStates;
     std::uint64_t nMeasurements = 0;
 };
 

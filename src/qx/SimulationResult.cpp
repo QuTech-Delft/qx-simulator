@@ -1,6 +1,7 @@
 #include "qx/SimulationResult.hpp"
 
-#include "qx/Core.hpp"
+#include "qx/Core.hpp"  // BasisVector
+#include "qx/QuantumState.hpp"
 #include <iomanip>
 #include <iostream>
 #include <variant>
@@ -8,7 +9,7 @@
 
 namespace qx {
 
-void SimulationResultAccumulator::append(BasisVector measuredState) {
+void SimulationResultAccumulator::append(core::BasisVector measuredState) {
     assert(measuredStates.size() <= (1u << quantumState.getNumberOfQubits()));
     measuredStates[measuredState]++;
     nMeasurements++;
@@ -67,7 +68,7 @@ void SimulationResultAccumulator::forAllNonZeroStates(F &&f) {
         [&f, this](auto const &kv) { f(getStateString(kv.first), kv.second); });
 }
 
-std::string SimulationResultAccumulator::getStateString(BasisVector s) {
+std::string SimulationResultAccumulator::getStateString(qx::core::BasisVector s) {
     auto str = s.toString();
 
     return str.substr(str.size() - quantumState.getNumberOfQubits(),

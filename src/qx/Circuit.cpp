@@ -44,7 +44,7 @@ Circuit::Circuit(V3OneProgram &program, RegisterManager &register_manager)
     }
 }
 
-RegisterManager& Circuit::get_register_manager() const {
+[[nodiscard]] RegisterManager& Circuit::get_register_manager() const {
     return register_manager_;
 }
 

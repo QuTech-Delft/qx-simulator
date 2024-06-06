@@ -1,5 +1,6 @@
-#include "qx/Core.hpp"
+#include "qx/Core.hpp"  // BasisVector
 #include "qx/Gates.hpp"
+#include "qx/QuantumState.hpp"
 
 #include <algorithm>  // count_if
 #include <gtest/gtest.h>

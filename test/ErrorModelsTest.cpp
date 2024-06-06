@@ -14,7 +14,7 @@ protected:
         random::seed(123);
     }
 
-    void checkState(const std::map<BasisVector, std::complex<double>> &expected) {
+    void checkState(const std::map<core::BasisVector, std::complex<double>> &expected) {
         state.forEach([&expected](auto const &kv) {
             ASSERT_EQ(expected.count(kv.first), 1);
             EXPECT_EQ(expected.at(kv.first), kv.second);
@@ -34,15 +34,15 @@ TEST_F(ErrorModelsTest, depolarizing_channel__probability_1) {
     DepolarizingChannel const channel(1.);
     addError(channel);
     // X is applied to qubit 1.
-    checkState({{BasisVector{"010"}, 1. + 0.i}});
+    checkState({{core::BasisVector{"010"}, 1. + 0.i}});
 
     addError(channel);
     // Z is applied to qubit 2.
-    checkState({{BasisVector{"010"}, 1. + 0.i}});
+    checkState({{core::BasisVector{"010"}, 1. + 0.i}});
 
     addError(channel);
     // X is applied to qubit 0.
-    checkState({{BasisVector{"011"}, 1. + 0.i}});
+    checkState({{core::BasisVector{"011"}, 1. + 0.i}});
 }
 
 TEST_F(ErrorModelsTest, depolarizing_channel__probability_0) {
@@ -53,7 +53,7 @@ TEST_F(ErrorModelsTest, depolarizing_channel__probability_0) {
     addError(channel);
     addError(channel);
 
-    checkState({{BasisVector{"000"}, 1. + 0.i}});
+    checkState({{core::BasisVector{"000"}, 1. + 0.i}});
 }
 
 }  // namespace qx::error_models

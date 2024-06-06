@@ -1,4 +1,4 @@
-#include "qx/Core.hpp"
+#include "qx/SparseArray.hpp"
 
 #include <gmock/gmock.h>  // ThrowsMessageHasSubstr
 #include <gtest/gtest.h>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "qx/Core.hpp"
+#include "qx/Core.hpp"  // BasisVector
 #include "qx/ErrorModels.hpp"
 #include "qx/RegisterManager.hpp"
 #include "qx/V3xLibqasmInterface.hpp"
@@ -23,7 +23,7 @@ public:
         core::QubitIndex qubitIndex{};
     };
     struct MeasurementRegisterOperation {
-        std::function<void(BasisVector &)> operation;
+        std::function<void(core::BasisVector const &)> operation;
     };
     template <std::size_t NumberOfOperands> struct Unitary {
         // Matrix is stored inline but could also be a pointer.
@@ -53,7 +53,7 @@ public:
     // We could in the future add loops and if/else...
 
     Circuit(V3OneProgram &program, RegisterManager &register_manager);
-    RegisterManager& get_register_manager() const;
+    [[nodiscard]] RegisterManager& get_register_manager() const;
     void add_instruction(Instruction instruction, ControlBits control_bits);
     void execute(core::QuantumState &quantumState, error_models::ErrorModel const &errorModel) const;
 
