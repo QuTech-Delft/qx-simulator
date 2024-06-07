@@ -2,8 +2,7 @@
 
 #include "qx/Core.hpp"  // BasisVector
 #include "qx/QuantumState.hpp"
-#include <iomanip>
-#include <iostream>
+#include <fmt/core.h>
 #include <variant>
 
 
@@ -16,26 +15,20 @@ void SimulationResultAccumulator::append(core::BasisVector measuredState) {
 }
 
 std::ostream &operator<<(std::ostream &os, SimulationResult const &r) {
-    os << std::setprecision(config::OUTPUT_DECIMALS) << std::fixed;
-    os << "-------------------------------------------" << std::endl;
-
-    os << "Final quantum state" << std::endl;
-
+    fmt::print("-------------------------------------------\n");
+    fmt::print("Final quantum state\n");
     for (auto const &kv : r.state) {
         auto const &stateString = kv.first;
         auto const &amplitude = kv.second;
-        os << stateString << "       " << amplitude.real << " + "
-           << amplitude.imag << "*i   "
-           << " (p = " << amplitude.norm << ")" << std::endl;
+        fmt::print("{1}       {2:.{0}f} + {3:.{0}f}*i   (p = {4:.{0}f})\n", config::OUTPUT_DECIMALS, stateString,
+                   amplitude.real, amplitude.imag, amplitude.norm);
     }
-
-    os << std::endl << "Measurement register averaging" << std::endl;
-
+    fmt::print("\nMeasurement register averaging\n");
     for (const auto &kv : r.results) {
         const auto &stateString = kv.first;
         const auto &count = kv.second;
-        os << stateString << "       " << count << "/" << r.shots_done << " ("
-           << static_cast<double>(count) / static_cast<double>(r.shots_done) << ")" << std::endl;
+        fmt::print("{1}       {2}/{3} ({4:.{0}f})\n", config::OUTPUT_DECIMALS, stateString, count,
+                   r.shots_done, static_cast<double>(count) / static_cast<double>(r.shots_done));
     }
     return os;
 }
@@ -46,33 +39,26 @@ SimulationResult SimulationResultAccumulator::get() {
     simulationResult.shots_done = nMeasurements;
 
     assert(nMeasurements > 0);
-
     for (const auto &kv : measuredStates) {
         const auto &state = kv.first;
         const auto &count = kv.second;
-
         simulationResult.results.emplace_back(getStateString(state), count);
     }
-
     forAllNonZeroStates([&simulationResult](auto stateString, auto c) {
         simulationResult.state.push_back(std::make_pair(
             stateString, Complex{ .real = c.real(), .imag = c.imag(), .norm = std::norm(c) }));
     });
-
     return simulationResult;
 }
 
 template <typename F>
 void SimulationResultAccumulator::forAllNonZeroStates(F &&f) {
-    quantumState.forEach(
-        [&f, this](auto const &kv) { f(getStateString(kv.first), kv.second); });
+    quantumState.forEach([&f, this](auto const &kv) { f(getStateString(kv.first), kv.second); });
 }
 
 std::string SimulationResultAccumulator::getStateString(qx::core::BasisVector s) {
     auto str = s.toString();
-
-    return str.substr(str.size() - quantumState.getNumberOfQubits(),
-                      str.size());
+    return str.substr(str.size() - quantumState.getNumberOfQubits(), str.size());
 }
 
 } // namespace qx
