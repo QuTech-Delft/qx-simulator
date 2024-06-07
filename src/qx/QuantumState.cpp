@@ -1,5 +1,6 @@
 #include "qx/QuantumState.hpp"
 
+
 namespace qx::core {
 
 QuantumState::QuantumState(std::size_t n)

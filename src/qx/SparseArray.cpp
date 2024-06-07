@@ -1,5 +1,6 @@
 #include "qx/SparseArray.hpp"
 
+
 namespace qx::core {
 
 SparseArray::SparseArray(std::size_t s)
