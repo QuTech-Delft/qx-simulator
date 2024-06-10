@@ -13,11 +13,9 @@ SparseArray::SparseArray(std::size_t s)
 
 [[nodiscard]] std::vector<std::complex<double>> SparseArray::testToVector() const {
     std::vector<std::complex<double>> result(getSize(), 0);
-
     for (auto const &kv : *this) {
         result[kv.first.toSizeT()] = kv.second;
     }
-
     return result;
 }
 
@@ -29,18 +27,15 @@ SparseArray::SparseArray(std::size_t s)
     return data.cend();
 }
 
-
 void SparseArray::set(BasisVector index, std::complex<double> value) {
 #ifndef NDEBUG
     if (index.toSizeT() >= size) {
         throw std::runtime_error("SparseArray::set index out of bounds");
     }
 #endif
-
     if (std::abs(value) < config::EPS) {
         return;
     }
-
     data.try_emplace(index, value);
 }
 
@@ -49,8 +44,7 @@ void SparseArray::clear() {
 }
 
 SparseArray &SparseArray::operator*=(double d) {
-    std::for_each(data.begin(), data.end(),
-                  [d](auto &kv) { kv.second *= d; });
+    std::for_each(data.begin(), data.end(), [d](auto &kv) { kv.second *= d; });
     return *this;
 }
 

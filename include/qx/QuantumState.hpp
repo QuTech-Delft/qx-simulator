@@ -4,6 +4,7 @@
 #include <cstdint>  // size_t
 #include <complex>  // norm
 #include <initializer_list>
+#include <stdexcept>
 #include <string>
 #include <utility>  // invoke, pair
 
@@ -15,8 +16,11 @@
 
 namespace qx::core {
 
-class QuantumState {
+struct QuantumStateError : public std::runtime_error {
+    explicit QuantumStateError(const std::string &message) : std::runtime_error{ message } {}
+};
 
+class QuantumState {
     template <std::size_t NumberOfOperands>
     void applyImpl(DenseUnitaryMatrix<1 << NumberOfOperands> const &matrix,
                    std::array<QubitIndex, NumberOfOperands> const &operands,
@@ -26,17 +30,13 @@ class QuantumState {
         for (std::size_t i = 0; i < NumberOfOperands; ++i) {
             reducedIndex.set(i, index.test(operands[NumberOfOperands - i - 1].value));
         }
-
         for (std::size_t i = 0; i < (1 << NumberOfOperands); ++i) {
             std::complex<double> addedValue = value * matrix.at(i, reducedIndex.toSizeT());
-
             if (isNotNull(addedValue)) {
                 auto newIndex = index;
-
                 for (std::size_t k = 0; k < NumberOfOperands; ++k) {
                     newIndex.set(operands[NumberOfOperands - k - 1].value, utils::getBit(i, k));
                 }
-
                 auto it = storage.try_emplace(newIndex, 0);
                 auto newValue = it.first->second + addedValue;
                 it.first->second = newValue;
@@ -46,13 +46,9 @@ class QuantumState {
 
 public:
     explicit QuantumState(std::size_t n);
-
     [[nodiscard]] std::size_t getNumberOfQubits() const;
-
     void reset();
-
-    void testInitialize(
-        std::initializer_list<std::pair<std::string, std::complex<double>>> values);
+    void testInitialize(std::initializer_list<std::pair<std::string, std::complex<double>>> values);
 
     template <std::size_t NumberOfOperands>
     QuantumState &apply(DenseUnitaryMatrix<1 << NumberOfOperands> const &m,
@@ -67,7 +63,6 @@ public:
 
         data.applyLinear([&m, &operands, this](auto index, auto value, auto &storage) {
             this->applyImpl<NumberOfOperands>(m, operands, index, value, storage); });
-
         return *this;
     }
 
@@ -82,13 +77,11 @@ public:
     void measure(QubitIndex qubitIndex, F &&randomGenerator) {
         auto rand = randomGenerator();
         double probabilityOfMeasuringOne = 0.;
-
         data.forEach([qubitIndex, &probabilityOfMeasuringOne](auto const &kv) {
             if (kv.first.test(qubitIndex.value)) {
                 probabilityOfMeasuringOne += std::norm(kv.second);
             }
         });
-
         if (rand < probabilityOfMeasuringOne) {
             data.eraseIf([qubitIndex](auto const &kv) {
                 return !kv.first.test(qubitIndex.value);
@@ -108,22 +101,17 @@ public:
     void measureAll(F &&randomGenerator) {
         auto rand = randomGenerator();
         double probability = 0.;
-
         auto measuredState = std::invoke([this, &probability, rand] {
-            for (auto const &kv :
-                 data) { // Does this work with non-ordered iteration?
+            for (auto const &kv : data) {  // Does this work with non-ordered iteration?
                 probability += std::norm(kv.second);
                 if (probability > rand) {
                     return kv;
                 }
             }
-            throw std::runtime_error(
-                "Vector was not normalized at measurement location (a bug)");
+            throw std::runtime_error{ "Vector was not normalized at measurement location (a bug)" };
         });
-
         data.clear();
-        data.set(measuredState.first,
-                 measuredState.second / std::abs(measuredState.second));
+        data.set(measuredState.first, measuredState.second / std::abs(measuredState.second));
         measurementRegister = measuredState.first;
     }
 
@@ -132,13 +120,11 @@ public:
         // Measure + conditional X, and reset the measurement register.
         auto rand = randomGenerator();
         double probabilityOfMeasuringOne = 0.;
-
         data.forEach([qubitIndex, &probabilityOfMeasuringOne](auto const &kv) {
             if (kv.first.test(qubitIndex.value)) {
                 probabilityOfMeasuringOne += std::norm(kv.second);
             }
         });
-
         if (rand < probabilityOfMeasuringOne) {
             data.eraseIf([qubitIndex](auto const &kv) {
                 return !kv.first.test(qubitIndex.value);

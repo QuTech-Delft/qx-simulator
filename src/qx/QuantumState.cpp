@@ -1,14 +1,21 @@
+#include <fmt/format.h>
+
 #include "qx/QuantumState.hpp"
 
 
 namespace qx::core {
 
 QuantumState::QuantumState(std::size_t n)
-    : numberOfQubits(n), data(1 << numberOfQubits) {
-    assert(numberOfQubits > 0 && "QuantumState needs at least one qubit");
-    assert(numberOfQubits <= config::MAX_QUBIT_NUMBER &&
-           "QuantumState currently cannot support that many qubits with this version of QX-simulator");
-    data.set(BasisVector{}, 1);  // Start initialized in state 00...000
+    : numberOfQubits(n),
+      data(1 << numberOfQubits) {
+    if (numberOfQubits == 0) {
+        throw QuantumStateError{ "quantum state needs at least one qubit" };
+    }
+    if (numberOfQubits > config::MAX_QUBIT_NUMBER) {
+        throw QuantumStateError{ fmt::format("quantum state size exceeds maximum allowed: {} > {}", numberOfQubits,
+                                             config::MAX_QUBIT_NUMBER) };
+    }
+    data.set(BasisVector{}, std::complex<double>{ 1 });  // Start initialized in state 00...000
 };
 
 [[nodiscard]] std::size_t QuantumState::getNumberOfQubits() const {
@@ -17,18 +24,17 @@ QuantumState::QuantumState(std::size_t n)
 
 void QuantumState::reset() {
     data.clear();
-    data.set(BasisVector{}, 1);  // Start initialized in state 00...000
+    data.set(BasisVector{}, std::complex<double>{ 1 });  // Start initialized in state 00...000
     measurementRegister.reset();
 }
 
 void QuantumState::testInitialize(
     std::initializer_list<std::pair<std::string, std::complex<double>>> values) {
     data.clear();
-    double norm = 0;
-    for (auto const &kv: values) {
-        BasisVector index(kv.first);
-        data.set(index, kv.second);
-        norm += std::norm(kv.second);
+    double norm{};
+    for (auto const &[state_string, amplitude] : values) {
+        data.set(BasisVector{ state_string }, amplitude);
+        norm += std::norm(amplitude);
     }
     assert(!isNotNull(norm - 1));
 }

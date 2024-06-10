@@ -13,12 +13,15 @@ static inline bool getBit(std::size_t x, std::size_t index) {
 }
 
 static inline void setBit(std::size_t &x, std::size_t index, bool value) {
-    x = (x & ~(static_cast<std::size_t>(1) << index)) | (static_cast<std::size_t>(value) << index);
+    x = (~(static_cast<std::size_t>(1) << index)       // 111...101...111, all 1s and 0 at index
+         & x)                                          // xxx...x0x...xxx, x with 0 at index
+        | (static_cast<std::size_t>(value) << index);  // xxx...xvx...xxx, x with value at index
 }
 
 // std::bitset is slightly slower than this.
 
-template <std::size_t NumberOfBits> class Bitset {
+template <std::size_t NumberOfBits>
+class Bitset {
 private:
     static constexpr std::size_t BITS_IN_SIZE_T =
         CHAR_BIT * sizeof(std::size_t);
@@ -28,7 +31,9 @@ public:
         NumberOfBits / BITS_IN_SIZE_T +
         (NumberOfBits % BITS_IN_SIZE_T >= 1 ? 1 : 0);
 
-    static constexpr std::size_t getNumberOfBits() { return NumberOfBits; }
+    static constexpr std::size_t getNumberOfBits() {
+        return NumberOfBits;
+    }
 
     Bitset() = default;
 
@@ -40,7 +45,9 @@ public:
         }
     }
 
-    inline void reset() { data = {}; }
+    inline void reset() {
+        data = {};
+    }
 
     [[nodiscard]] inline bool test(std::size_t index) const {
         assert(index < NumberOfBits && "Bitset::test bit index out of range");
@@ -94,7 +101,6 @@ private:
                 return compare<Index - 1>(other);
             }
         }
-
         return data[Index] < other.data[Index];
     }
 

@@ -21,21 +21,13 @@ public:
     using Iterator = Map::const_iterator;
 
     SparseArray() = delete;
-
     explicit SparseArray(std::size_t s);
-
     [[nodiscard]] std::size_t getSize() const;
-
     [[nodiscard]] std::vector<std::complex<double>> testToVector() const;
-
     [[nodiscard]] Iterator begin() const;
-
     [[nodiscard]] Iterator end() const;
-
     void set(BasisVector index, std::complex<double> value);
-
     void clear();
-
     SparseArray &operator*=(double d);
 
     template <typename F>
@@ -47,8 +39,7 @@ public:
     template <typename F>
     void forEachSorted(F &&f) {
         cleanupZeros();
-        std::vector<std::pair<BasisVector, std::complex<double>>> sorted(
-            data.begin(), data.end());
+        std::vector<std::pair<BasisVector, std::complex<double>>> sorted(data.begin(), data.end());
         std::sort(sorted.begin(), sorted.end(),
                   [](auto const &left, auto const &right) {
                       return left.first < right.first;
@@ -72,13 +63,10 @@ private:
             cleanupZeros();
         }
         ++zeroCounter;
-
         Map result;
-
         for (auto const &kv : data) {
             f(kv.first, kv.second, result);
         }
-
         data.swap(result);
     }
 
