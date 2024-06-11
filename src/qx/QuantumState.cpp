@@ -7,7 +7,7 @@ namespace qx::core {
 
 QuantumState::QuantumState(std::size_t n)
     : numberOfQubits(n),
-      data(1 << numberOfQubits) {
+      data(static_cast<size_t>(1) << numberOfQubits) {
     if (numberOfQubits == 0) {
         throw QuantumStateError{ "quantum state needs at least one qubit" };
     }
