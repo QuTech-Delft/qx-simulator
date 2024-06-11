@@ -30,14 +30,14 @@
         PyObject_SetAttrString(simulationResult, "shots_requested", PyLong_FromUnsignedLongLong(cppSimulationResult->shots_requested));
 
         auto results = PyDict_New();
-        for(auto const& x: cppSimulationResult->results) {
-            PyDict_SetItemString(results, x.first.c_str(), PyLong_FromUnsignedLongLong(x.second));
+        for(auto const& [state, count]: cppSimulationResult->results) {
+            PyDict_SetItemString(results, state.c_str(), PyLong_FromUnsignedLongLong(count));
         }
         PyObject_SetAttrString(simulationResult, "results", results);
 
         auto state = PyDict_New();
-        for(auto const& x: cppSimulationResult->state) {
-            PyDict_SetItemString(state, x.first.c_str(), PyComplex_FromCComplex({ .real = x.second.real, .imag = x.second.imag }));
+        for(auto const& [value, amplitude]: cppSimulationResult->states) {
+            PyDict_SetItemString(state, value.c_str(), PyComplex_FromCComplex({ .real = amplitude.real, .imag = amplitude.imag }));
         }
         PyObject_SetAttrString(simulationResult, "state", state);
 
