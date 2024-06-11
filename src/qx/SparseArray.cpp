@@ -9,8 +9,8 @@ SparseArrayError::SparseArrayError(const std::string &message)
     : std::runtime_error{ message }
 {}
 
-SparseComplex::SparseComplex(std::complex<double> value) {
-    value = value;
+SparseComplex::SparseComplex(std::complex<double> c) {
+    value = c;
 }
 
 SparseComplex::SparseComplex(const SparseComplex &other) {

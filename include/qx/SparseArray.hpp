@@ -26,7 +26,7 @@ struct SparseComplex {
     std::complex<double> value;
 
     SparseComplex() = default;
-    explicit SparseComplex(std::complex<double> value);
+    explicit SparseComplex(std::complex<double> c);
     SparseComplex(const SparseComplex &other);
     SparseComplex(SparseComplex &&other) noexcept;
     SparseComplex& operator=(const SparseComplex &other);
