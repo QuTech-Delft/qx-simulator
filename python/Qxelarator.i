@@ -26,8 +26,8 @@
 
         auto const* cppSimulationResult = std::get_if<qx::SimulationResult>(&$1);
 
-        PyObject_SetAttrString(simulationResult, "shots_done", PyLong_FromUnsignedLongLong(cppSimulationResult->shots_done));
-        PyObject_SetAttrString(simulationResult, "shots_requested", PyLong_FromUnsignedLongLong(cppSimulationResult->shots_requested));
+        PyObject_SetAttrString(simulationResult, "shots_done", PyLong_FromUnsignedLongLong(cppSimulationResult->shotsDone));
+        PyObject_SetAttrString(simulationResult, "shots_requested", PyLong_FromUnsignedLongLong(cppSimulationResult->shotsRequested));
 
         auto results = PyDict_New();
         for(auto const& [state, count]: cppSimulationResult->results) {
