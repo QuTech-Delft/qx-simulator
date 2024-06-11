@@ -84,7 +84,7 @@ For example:
 
 
 When simulating this circuit, the final quantum state in the ``State`` section is non-deterministic. However, the aggregated measurement register is very useful and the ratios like
-``results["001"] / shots_done`` converge as the number of iterations grow.
+``results["001"] / shotsDone`` converge as the number of iterations grow.
 For 100 iterations:
 
 ::

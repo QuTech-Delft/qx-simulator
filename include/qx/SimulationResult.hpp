@@ -35,8 +35,8 @@ struct State {
 struct SimulationResult {
     using Results = std::vector<Result>;
     using States = std::vector<State>;
-    std::uint64_t shots_requested = 0;
-    std::uint64_t shots_done = 0;
+    std::uint64_t shotsRequested = 0;
+    std::uint64_t shotsDone = 0;
     Results results;
     States states;
 };
@@ -59,7 +59,7 @@ private:
 
     core::QuantumState &quantumState;
     absl::btree_map<state_t, count_t> measuredStates;
-    std::uint64_t nMeasurements = 0;
+    std::uint64_t measuredStatesCount = 0;
 };
 
 }  // namespace qx

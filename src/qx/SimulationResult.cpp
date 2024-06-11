@@ -24,8 +24,8 @@ std::ostream &operator<<(std::ostream &os, const SimulationResult &simulationRes
                    config::OUTPUT_DECIMALS,
                    result.state,
                    result.count,
-                   simulationResult.shots_done,
-                   static_cast<double>(result.count) / static_cast<double>(simulationResult.shots_done));
+                   simulationResult.shotsDone,
+                   static_cast<double>(result.count) / static_cast<double>(simulationResult.shotsDone));
     }
     return os;
 }
@@ -37,15 +37,15 @@ SimulationResultAccumulator::SimulationResultAccumulator(core::QuantumState &s)
 void SimulationResultAccumulator::append(core::BasisVector measuredState) {
     assert(measuredStates.size() <= (static_cast<size_t>(1) << quantumState.getNumberOfQubits()));
     measuredStates[measuredState]++;
-    nMeasurements++;
+    measuredStatesCount++;
 }
 
 SimulationResult SimulationResultAccumulator::get() {
     SimulationResult simulationResult;
-    simulationResult.shots_requested = nMeasurements;
-    simulationResult.shots_done = nMeasurements;
+    simulationResult.shotsRequested = measuredStatesCount;
+    simulationResult.shotsDone = measuredStatesCount;
 
-    assert(nMeasurements > 0);
+    assert(measuredStatesCount > 0);
     for (const auto &[state, count] : measuredStates) {
         simulationResult.results.push_back(Result{ getStateString(state), count});
     }

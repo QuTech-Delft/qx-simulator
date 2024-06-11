@@ -30,8 +30,8 @@ CNOT q[0], q[1]
 )";
     auto actual = runFromString(cqasm, 1, "3.0");
 
-    EXPECT_EQ(actual.shots_requested, 1);
-    EXPECT_EQ(actual.shots_done, 1);
+    EXPECT_EQ(actual.shotsRequested, 1);
+    EXPECT_EQ(actual.shotsDone, 1);
     EXPECT_EQ(actual.states,
         (SimulationResult::States{
             { "00", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } },
@@ -92,8 +92,8 @@ I q[1]
 )";
     auto actual = runFromString(cqasm, 1, "3.0");
 
-    EXPECT_EQ(actual.shots_requested, 1);
-    EXPECT_EQ(actual.shots_done, 1);
+    EXPECT_EQ(actual.shotsRequested, 1);
+    EXPECT_EQ(actual.shotsDone, 1);
     EXPECT_EQ(actual.states,
         (SimulationResult::States{
             { "00", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } },
