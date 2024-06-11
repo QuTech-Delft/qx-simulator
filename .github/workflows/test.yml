@@ -3,6 +3,7 @@ name: Test
 on:
   push:
     branches:
+      - 154-code-manage-bit-register-variables
       - develop
   pull_request:
 
