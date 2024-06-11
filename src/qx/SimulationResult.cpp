@@ -35,7 +35,7 @@ SimulationResultAccumulator::SimulationResultAccumulator(core::QuantumState &s)
 {}
 
 void SimulationResultAccumulator::append(core::BasisVector measuredState) {
-    assert(measuredStates.size() <= (1u << quantumState.getNumberOfQubits()));
+    assert(measuredStates.size() <= (static_cast<size_t>(1) << quantumState.getNumberOfQubits()));
     measuredStates[measuredState]++;
     nMeasurements++;
 }
