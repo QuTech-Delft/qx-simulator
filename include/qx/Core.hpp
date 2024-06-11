@@ -21,8 +21,8 @@ struct BitIndex {
 using BasisVector = utils::Bitset<config::MAX_QUBIT_NUMBER>;
 
 inline constexpr bool isNotNull(std::complex<double> c) {
-    return std::abs(c.real()) > config::EPS ||
-           std::abs(c.imag()) > config::EPS;
+    return std::abs<double>(c.real()) > config::EPS ||
+           std::abs<double>(c.imag()) > config::EPS;
 }
 
 struct Complex {
