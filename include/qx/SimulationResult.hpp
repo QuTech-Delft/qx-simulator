@@ -4,7 +4,7 @@
 #include "qx/Core.hpp"  // Complex
 
 #include <absl/container/btree_map.h>
-#include <compare>  // strong_ordering
+#include <compare>  // partial_ordering
 #include <complex>
 #include <cstdint>  // uint64_t
 #include <fmt/ostream.h>
@@ -22,14 +22,14 @@ class QuantumState;
 struct Result {
     std::string state;
     std::uint64_t count;
-    std::strong_ordering operator<=>(const Result &other) const = default;
+    std::partial_ordering operator<=>(const Result &other) const = default;
 };
 
 struct State {
     std::string value;
     core::Complex amplitude;
     bool operator==(const State &other) const = default;
-    std::strong_ordering operator<=>(const State &other) const = default;
+    std::partial_ordering operator<=>(const State &other) const = default;
 };
 
 struct SimulationResult {
