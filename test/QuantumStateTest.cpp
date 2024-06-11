@@ -18,11 +18,12 @@ public:
 
         std::size_t nonZeros = std::count_if(expected.begin(), expected.end(), isNotNull);
 
-        victim.forEach([&nonZeros, &expected](auto const &kv) {
+        victim.forEach([&nonZeros, &expected](auto const &sparseElement) {
+            auto const &[basisVector, sparseComplex] = sparseElement;
             EXPECT_GT(nonZeros, 0);
-            EXPECT_NEAR(expected[kv.first.toSizeT()].real(), kv.second.real(),
+            EXPECT_NEAR(expected[basisVector.toSizeT()].real(), sparseComplex.value.real(),
                         .00000000000001);
-            EXPECT_NEAR(expected[kv.first.toSizeT()].imag(), kv.second.imag(),
+            EXPECT_NEAR(expected[basisVector.toSizeT()].imag(), sparseComplex.value.imag(),
                         .00000000000001);
             --nonZeros;
         });

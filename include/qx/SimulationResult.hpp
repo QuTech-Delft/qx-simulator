@@ -1,7 +1,7 @@
 #pragma once
 
 #include "qx/CompileTimeConfiguration.hpp"
-#include "qx/Core.hpp"
+#include "qx/Core.hpp"  // Complex
 
 #include <absl/container/btree_map.h>
 #include <compare>  // strong_ordering
@@ -19,18 +19,6 @@ namespace core {
 class QuantumState;
 }
 
-struct Complex {
-    double real = 0;
-    double imag = 0;
-    double norm = 0;
-    bool operator==(const Complex &other) const {
-        return std::abs(real - other.real) < config::EPS &&
-               std::abs(imag - other.imag) < config::EPS &&
-               std::abs(norm - other.norm) < config::EPS;
-    }
-    auto operator<=>(const Complex &other) const = default;
-};
-
 struct Result {
     std::string state;
     std::uint64_t count;
@@ -39,7 +27,7 @@ struct Result {
 
 struct State {
     std::string value;
-    Complex amplitude;
+    core::Complex amplitude;
     bool operator==(const State &other) const = default;
     std::strong_ordering operator<=>(const State &other) const = default;
 };

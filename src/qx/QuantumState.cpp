@@ -15,7 +15,7 @@ QuantumState::QuantumState(std::size_t n)
         throw QuantumStateError{ fmt::format("quantum state size exceeds maximum allowed: {} > {}", numberOfQubits,
                                              config::MAX_QUBIT_NUMBER) };
     }
-    data.set(BasisVector{}, std::complex<double>{ 1 });  // Start initialized in state 00...000
+    data[BasisVector{}] = SparseComplex{ 1. };  // start initialized in state 00...000
 };
 
 [[nodiscard]] std::size_t QuantumState::getNumberOfQubits() const {
@@ -24,7 +24,7 @@ QuantumState::QuantumState(std::size_t n)
 
 void QuantumState::reset() {
     data.clear();
-    data.set(BasisVector{}, std::complex<double>{ 1 });  // Start initialized in state 00...000
+    data[BasisVector{}] = SparseComplex{ 1. };  // start initialized in state 00...000
     measurementRegister.reset();
 }
 
@@ -33,7 +33,7 @@ void QuantumState::testInitialize(
     data.clear();
     double norm{};
     for (auto const &[state_string, amplitude] : values) {
-        data.set(BasisVector{ state_string }, amplitude);
+        data[BasisVector{ state_string }] = SparseComplex{ amplitude };
         norm += std::norm(amplitude);
     }
     assert(!isNotNull(norm - 1));

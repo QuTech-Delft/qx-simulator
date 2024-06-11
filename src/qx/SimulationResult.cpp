@@ -49,9 +49,10 @@ SimulationResult SimulationResultAccumulator::get() {
     for (const auto &[state, count] : measuredStates) {
         simulationResult.results.push_back(Result{ getStateString(state), count});
     }
-    forAllNonZeroStates([&simulationResult](auto stateString, auto c) {
+    forAllNonZeroStates([&simulationResult](auto stateString, auto sparseComplex) {
+        auto c = sparseComplex.value;
         simulationResult.states.push_back(
-            State{ stateString, Complex{ .real = c.real(), .imag = c.imag(), .norm = std::norm(c) } });
+            State{ stateString, core::Complex{ .real = c.real(), .imag = c.imag(), .norm = std::norm(c) } });
     });
     return simulationResult;
 }

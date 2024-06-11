@@ -20,30 +20,32 @@ struct QuantumStateError : public std::runtime_error {
     explicit QuantumStateError(const std::string &message) : std::runtime_error{ message } {}
 };
 
-class QuantumState {
-    template <std::size_t NumberOfOperands>
-    void applyImpl(DenseUnitaryMatrix<1 << NumberOfOperands> const &matrix,
-                   std::array<QubitIndex, NumberOfOperands> const &operands,
-                   BasisVector index, std::complex<double> value,
-                   SparseArray::Map &storage) {
-        utils::Bitset<NumberOfOperands> reducedIndex;
-        for (std::size_t i = 0; i < NumberOfOperands; ++i) {
-            reducedIndex.set(i, index.test(operands[NumberOfOperands - i - 1].value));
-        }
-        for (std::size_t i = 0; i < (1 << NumberOfOperands); ++i) {
-            std::complex<double> addedValue = value * matrix.at(i, reducedIndex.toSizeT());
-            if (isNotNull(addedValue)) {
-                auto newIndex = index;
-                for (std::size_t k = 0; k < NumberOfOperands; ++k) {
-                    newIndex.set(operands[NumberOfOperands - k - 1].value, utils::getBit(i, k));
-                }
-                auto it = storage.try_emplace(newIndex, 0);
-                auto newValue = it.first->second + addedValue;
-                it.first->second = newValue;
+
+template <std::size_t NumberOfOperands>
+void applyImpl(DenseUnitaryMatrix<1 << NumberOfOperands> const &matrix,
+               std::array<QubitIndex, NumberOfOperands> const &operands,
+               BasisVector index,
+               SparseComplex sparseComplex,
+               SparseArray::MapBasisVectorToSparseComplex &storage) {
+    utils::Bitset<NumberOfOperands> reducedIndex;
+    for (std::size_t i = 0; i < NumberOfOperands; ++i) {
+        reducedIndex.set(i, index.test(operands[NumberOfOperands - i - 1].value));
+    }
+    for (std::size_t i = 0; i < (1 << NumberOfOperands); ++i) {
+        std::complex<double> addedValue = sparseComplex.value * matrix.at(i, reducedIndex.toSizeT());
+        if (isNotNull(addedValue)) {
+            auto newIndex = index;
+            for (std::size_t k = 0; k < NumberOfOperands; ++k) {
+                newIndex.set(operands[NumberOfOperands - k - 1].value, utils::getBit(i, k));
             }
+            auto it = storage.try_emplace(newIndex, SparseComplex{ 0. });
+            it.first->second.value += addedValue;
         }
     }
+}
 
+
+class QuantumState {
 public:
     explicit QuantumState(std::size_t n);
     [[nodiscard]] std::size_t getNumberOfQubits() const;
@@ -61,8 +63,9 @@ public:
                             }) == operands.end() &&
                "Operand refers to a non-existing qubit");
 
-        data.applyLinear([&m, &operands, this](auto index, auto value, auto &storage) {
-            this->applyImpl<NumberOfOperands>(m, operands, index, value, storage); });
+        data.applyLinear([&m, &operands](auto index, auto value, auto &storage) {
+            applyImpl<NumberOfOperands>(m, operands, index, value, storage);
+        });
         return *this;
     }
 
@@ -78,19 +81,22 @@ public:
         auto rand = randomGenerator();
         double probabilityOfMeasuringOne = 0.;
         data.forEach([qubitIndex, &probabilityOfMeasuringOne](auto const &kv) {
-            if (kv.first.test(qubitIndex.value)) {
-                probabilityOfMeasuringOne += std::norm(kv.second);
+            auto const &[basisVector, sparseComplex] = kv;
+            if (basisVector.test(qubitIndex.value)) {
+                probabilityOfMeasuringOne += std::norm(sparseComplex.value);
             }
         });
         if (rand < probabilityOfMeasuringOne) {
             data.eraseIf([qubitIndex](auto const &kv) {
-                return !kv.first.test(qubitIndex.value);
+                auto const &[basisVector, _] = kv;
+                return !basisVector.test(qubitIndex.value);
             });
             data *= std::sqrt(1 / probabilityOfMeasuringOne);
             measurementRegister.set(qubitIndex.value, true);
         } else {
             data.eraseIf([qubitIndex](auto const &kv) {
-                return kv.first.test(qubitIndex.value);
+                auto const &[basisVector, _] = kv;
+                return basisVector.test(qubitIndex.value);
             });
             data *= std::sqrt(1 / (1 - probabilityOfMeasuringOne));
             measurementRegister.set(qubitIndex.value, false);
@@ -101,18 +107,18 @@ public:
     void measureAll(F &&randomGenerator) {
         auto rand = randomGenerator();
         double probability = 0.;
-        auto measuredState = std::invoke([this, &probability, rand] {
-            for (auto const &kv : data) {  // Does this work with non-ordered iteration?
-                probability += std::norm(kv.second);
+        auto [basisVector, sparseComplex] = std::invoke([this, &probability, rand] {
+            for (auto const &[bv, sc] : data) {  // does this work with non-ordered iteration?
+                probability += std::norm(sc.value);
                 if (probability > rand) {
-                    return kv;
+                    return SparseElement{ bv, sc };
                 }
             }
             throw std::runtime_error{ "Vector was not normalized at measurement location (a bug)" };
         });
         data.clear();
-        data.set(measuredState.first, measuredState.second / std::abs(measuredState.second));
-        measurementRegister = measuredState.first;
+        data[basisVector] = SparseComplex{ sparseComplex.value / std::abs(sparseComplex.value) };
+        measurementRegister = basisVector;
     }
 
     template <typename F>
@@ -121,26 +127,30 @@ public:
         auto rand = randomGenerator();
         double probabilityOfMeasuringOne = 0.;
         data.forEach([qubitIndex, &probabilityOfMeasuringOne](auto const &kv) {
-            if (kv.first.test(qubitIndex.value)) {
-                probabilityOfMeasuringOne += std::norm(kv.second);
+            auto const &[basisVector, sparseComplex] = kv;
+            if (basisVector.test(qubitIndex.value)) {
+                probabilityOfMeasuringOne += std::norm(sparseComplex.value);
             }
         });
         if (rand < probabilityOfMeasuringOne) {
             data.eraseIf([qubitIndex](auto const &kv) {
-                return !kv.first.test(qubitIndex.value);
+                auto const &[basisVector, _] = kv;
+                return !basisVector.test(qubitIndex.value);
             });
-            SparseArray::Map newData;
-            for (auto kv : data.data) {
-                auto newKey = kv.first;
+            SparseArray::MapBasisVectorToSparseComplex newData;
+            for (auto [basisVector, sparseComplex] : data) {
+                auto newKey = basisVector;
                 newKey.set(qubitIndex.value, false);
                 newData.insert(std::make_pair(
                     newKey,
-                    kv.second * std::sqrt(1 / probabilityOfMeasuringOne)));
+                    SparseComplex{ sparseComplex.value * std::sqrt(1 / probabilityOfMeasuringOne) }
+                ));
             }
-            data.data = newData; // Could fix the interface
+            data = newData;  // could fix the interface
         } else {
             data.eraseIf([qubitIndex](auto const &kv) {
-                return kv.first.test(qubitIndex.value);
+                auto const &[basisVector, _] = kv;
+                return basisVector.test(qubitIndex.value);
             });
             data *= std::sqrt(1 / (1 - probabilityOfMeasuringOne));
         }

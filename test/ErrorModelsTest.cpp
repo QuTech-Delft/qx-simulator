@@ -16,8 +16,9 @@ protected:
 
     void checkState(const std::map<core::BasisVector, std::complex<double>> &expected) {
         state.forEach([&expected](auto const &kv) {
-            ASSERT_EQ(expected.count(kv.first), 1);
-            EXPECT_EQ(expected.at(kv.first), kv.second);
+            auto const &[basisVector, sparseComplex] = kv;
+            ASSERT_EQ(expected.count(basisVector), 1);
+            EXPECT_EQ(expected.at(basisVector), sparseComplex.value);
         });
     }
 

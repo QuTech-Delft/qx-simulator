@@ -4,10 +4,11 @@
 #include <algorithm>  // for_each, sort
 #include <complex>
 #include <cstdint>  // size_t, uint64_t
+#include <stdexcept>  // runtime_error
 #include <utility>  // pair
 #include <vector>
 
-#include "qx/Core.hpp"  // BasisVector, QubitIndex
+#include "qx/Core.hpp"  // BasisVector, Complex, QubitIndex
 #include "qx/CompileTimeConfiguration.hpp"  // ZERO_CYCLE_SIZE
 
 
@@ -15,66 +16,90 @@ namespace qx::core {
 
 class QuantumState;
 
+
+struct SparseArrayError : public std::runtime_error {
+    explicit SparseArrayError(const std::string &message);
+};
+
+
+struct SparseComplex {
+    std::complex<double> value;
+
+    SparseComplex() = default;
+    explicit SparseComplex(std::complex<double> value);
+    SparseComplex(const SparseComplex &other);
+    SparseComplex(SparseComplex &&other) noexcept;
+    SparseComplex& operator=(const SparseComplex &other);
+    SparseComplex& operator=(SparseComplex &&other) noexcept;
+};
+using SparseElement = std::pair<BasisVector, SparseComplex>;
+bool compareSparseElements(const SparseElement &lhs, const SparseElement &rhs);
+
+
 class SparseArray {
 public:
-    using Map = absl::flat_hash_map<BasisVector, std::complex<double>>;
-    using Iterator = Map::const_iterator;
+    using MapBasisVectorToSparseComplex = absl::flat_hash_map<BasisVector, SparseComplex>;
+    using VectorOfSparseElements = std::vector<SparseElement>;
+    using Iterator = MapBasisVectorToSparseComplex::iterator;
+    using ConstIterator = MapBasisVectorToSparseComplex::const_iterator;
 
+public:
     SparseArray() = delete;
     explicit SparseArray(std::size_t s);
-    [[nodiscard]] std::size_t getSize() const;
-    [[nodiscard]] std::vector<std::complex<double>> testToVector() const;
-    [[nodiscard]] Iterator begin() const;
-    [[nodiscard]] Iterator end() const;
-    void set(BasisVector index, std::complex<double> value);
+
+    [[nodiscard]] ConstIterator begin() const;
+    [[nodiscard]] ConstIterator end() const;
+    [[nodiscard]] Iterator begin();
+    [[nodiscard]] Iterator end();
+
+    SparseArray& operator=(MapBasisVectorToSparseComplex map);
+    SparseArray& operator*=(double d);
+    SparseComplex& operator[](const BasisVector &index);
+
     void clear();
-    SparseArray &operator*=(double d);
+    [[nodiscard]] std::size_t size() const;
+    [[nodiscard]] std::vector<std::complex<double>> toVector() const;
 
     template <typename F>
     void forEach(F &&f) {
-        cleanupZeros();
-        std::for_each(data.begin(), data.end(), f);
+        cleanUpZeros();
+        std::for_each(data_.begin(), data_.end(), f);
     }
 
     template <typename F>
     void forEachSorted(F &&f) {
-        cleanupZeros();
-        std::vector<std::pair<BasisVector, std::complex<double>>> sorted(data.begin(), data.end());
-        std::sort(sorted.begin(), sorted.end(),
-                  [](auto const &left, auto const &right) {
-                      return left.first < right.first;
-                  });
+        cleanUpZeros();
+        VectorOfSparseElements sorted(data_.begin(), data_.end());
+        std::sort(sorted.begin(), sorted.end(), compareSparseElements);
         std::for_each(sorted.begin(), sorted.end(), f);
     }
 
     template <typename F>
     void eraseIf(F &&pred) {
-        absl::erase_if(data, pred);
+        absl::erase_if(data_, pred);
     }
-
-private:
-    friend QuantumState;
 
     // Let f build a new SparseArray to replace *this, assuming f is linear.
     template <typename F>
     void applyLinear(F &&f) {
         // Every ZERO_CYCLE_SIZE gates, cleanup the 0s
-        if (zeroCounter >= config::ZERO_CYCLE_SIZE) {
-            cleanupZeros();
+        if (zeroCounter_ >= config::ZERO_CYCLE_SIZE) {
+            cleanUpZeros();
         }
-        ++zeroCounter;
-        Map result;
-        for (auto const &kv : data) {
-            f(kv.first, kv.second, result);
+        ++zeroCounter_;
+        MapBasisVectorToSparseComplex result;
+        for (auto const &[basisVector, complex_value] : data_) {
+            f(basisVector, complex_value, result);
         }
-        data.swap(result);
+        data_.swap(result);
     }
 
-    void cleanupZeros();
+private:
+    void cleanUpZeros();
 
-    std::size_t const size = 0;
-    std::uint64_t zeroCounter = 0;
-    Map data;
+    std::size_t size_ = 0;
+    std::uint64_t zeroCounter_ = 0;
+    MapBasisVectorToSparseComplex data_;
 };
 
 }  // namespace qx::core
