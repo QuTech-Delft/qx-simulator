@@ -14,13 +14,7 @@ public:
     explicit InstructionExecutor(core::QuantumState &s) : quantumState(s){};
 
     void operator()(Circuit::Measure const &m) {
-        quantumState.measure(m.qubitIndex, &random::randomZeroOneDouble);
-    }
-    void operator()(Circuit::MeasureAll const &) {
-        quantumState.measureAll(&random::randomZeroOneDouble);
-    }
-    void operator()(Circuit::PrepZ const &r) {
-        quantumState.prep(r.qubitIndex, &random::randomZeroOneDouble);
+        quantumState.measure(m.bitIndex, m.qubitIndex, &random::randomZeroOneDouble);
     }
     void operator()(Circuit::MeasurementRegisterOperation const &op) {
         op.operation(quantumState.getMeasurementRegister());
@@ -78,10 +72,6 @@ void Circuit::execute(core::QuantumState &quantumState, error_models::ErrorModel
         // std::visit(instructionExecutor, instruction);
         if (auto *measure = std::get_if<Circuit::Measure>(&instruction)) {
             instruction_executor(*measure);
-        } else if (auto *measureAll = std::get_if<Circuit::MeasureAll>(&instruction)) {
-            instruction_executor(*measureAll);
-        } else if (auto *prepZ = std::get_if<Circuit::PrepZ>(&instruction)) {
-            instruction_executor(*prepZ);
         } else if (auto *classicalOp = std::get_if<Circuit::MeasurementRegisterOperation>(&instruction)) {
             instruction_executor(*classicalOp);
         } else if (auto *instruction1 = std::get_if<Circuit::Unitary<1>>(&instruction)) {

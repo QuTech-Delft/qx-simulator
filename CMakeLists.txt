@@ -111,6 +111,7 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 #=============================================================================#
 
 find_package(absl)
+find_package(Boost REQUIRED)
 find_package(libqasm REQUIRED CONFIG)
 
 
@@ -138,8 +139,9 @@ target_compile_features(qx PRIVATE
     cxx_std_23
 )
 
-target_include_directories(qx
-    PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/"
+target_include_directories(qx PUBLIC
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/"
+    "${Boost_INCLUDE_DIRS}"
 )
 
 if(CMAKE_COMPILER_IS_GNUCXX)
@@ -207,8 +209,12 @@ target_link_libraries(qx PUBLIC
 # Executables                                                                 #
 #=============================================================================#
 
-add_executable("qx-simulator" "${CMAKE_CURRENT_SOURCE_DIR}/src/qx-simulator/Simulator.cpp")
-target_link_libraries(qx-simulator qx)
+add_executable(qx-simulator
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx-simulator/Simulator.cpp"
+)
+target_link_libraries(qx-simulator PRIVATE
+    qx
+)
 
 #=============================================================================#
 # Testing                                                                     #
@@ -230,6 +236,17 @@ endif()
 if(QX_BUILD_PYTHON)
     add_subdirectory(python)
 endif()
+
+
+#=============================================================================#
+# Debug info                                                                  #
+#=============================================================================#
+
+message(STATUS
+    "[${PROJECT_NAME}] Target include directories:\n"
+    "      CMAKE_CURRENT_SOURCE_DIR/include/: ${CMAKE_CURRENT_SOURCE_DIR}/include/\n"
+    "      Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}\n"
+)
 
 
 #=============================================================================#

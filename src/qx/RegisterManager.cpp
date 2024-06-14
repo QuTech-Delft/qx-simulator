@@ -57,7 +57,7 @@ Register::~Register() = default;
 QubitRegister::QubitRegister(const V3OneProgram &program) try
     : Register(program, is_qubit_variable, config::MAX_QUBIT_NUMBER) {
 } catch (const RegisterManagerError &e) {
-    throw RegisterManagerError{ fmt::format("Qubit register size exceeds maximum allowed: {} > {}",
+    throw RegisterManagerError{ fmt::format("qubit register size exceeds maximum allowed: {} > {}",
                                             e.what(), config::MAX_QUBIT_NUMBER) };
 }
 
@@ -66,7 +66,7 @@ QubitRegister::~QubitRegister() = default;
 BitRegister::BitRegister(const V3OneProgram &program) try
     : Register(program, is_bit_variable, config::MAX_BIT_NUMBER) {
 } catch (const RegisterManagerError &e) {
-    throw RegisterManagerError{ fmt::format("Bit register size exceeds maximum allowed: {} > {}",
+    throw RegisterManagerError{ fmt::format("bit register size exceeds maximum allowed: {} > {}",
                                             e.what(), config::MAX_BIT_NUMBER) };
 }
 

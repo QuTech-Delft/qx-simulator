@@ -15,6 +15,7 @@ namespace qx {
 class Circuit {
 public:
     struct Measure {
+        core::BitIndex bitIndex{};
         core::QubitIndex qubitIndex{};
     };
     struct MeasureAll {

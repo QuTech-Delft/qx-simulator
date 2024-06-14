@@ -4,6 +4,7 @@
 #include <algorithm>  // for_each, sort
 #include <complex>
 #include <cstdint>  // size_t, uint64_t
+#include <numeric>  // accumulate
 #include <stdexcept>  // runtime_error
 #include <utility>  // pair
 #include <vector>
@@ -59,6 +60,12 @@ public:
     void clear();
     [[nodiscard]] std::size_t size() const;
     [[nodiscard]] std::vector<std::complex<double>> toVector() const;
+
+    template <typename T, typename F>
+    T accumulate(T init, F &&f) {
+        cleanUpZeros();
+        return std::accumulate(data_.begin(), data_.end(), init, f);
+    }
 
     template <typename F>
     void forEach(F &&f) {

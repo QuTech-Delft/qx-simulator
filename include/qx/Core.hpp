@@ -1,6 +1,7 @@
 #pragma once
 
-#include <cstdint>  // size_t
+#include <boost/dynamic_bitset/dynamic_bitset.hpp>
+#include <cstdint>  // size_t, uint32_t
 #include <cstdlib>  // abs
 #include <complex>
 
@@ -19,6 +20,7 @@ struct BitIndex {
 };
 
 using BasisVector = utils::Bitset<config::MAX_QUBIT_NUMBER>;
+using BitMeasurementRegister = boost::dynamic_bitset<uint32_t>;
 
 inline constexpr bool isNotNull(std::complex<double> c) {
 #if defined(_MSC_VER)
