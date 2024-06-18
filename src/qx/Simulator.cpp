@@ -14,6 +14,7 @@
 #include <fstream>
 #include <iostream>
 #include <optional>
+#include <variant>  // monostate
 #include <vector>
 
 
@@ -44,7 +45,7 @@ std::variant<V3OneProgram, SimulationError> getV3ProgramOrError(V3AnalysisResult
     return program;
 }
 
-std::variant<SimulationResult, SimulationError>
+std::variant<std::monostate, SimulationResult, SimulationError>
 execute(
     V3AnalysisResult const& analysisResult,
     std::size_t iterations,
@@ -88,7 +89,7 @@ execute(
 
 }  // namespace
 
-std::variant<SimulationResult, SimulationError>
+std::variant<std::monostate, SimulationResult, SimulationError>
 executeString(
     std::string const &s,
     std::size_t iterations,
@@ -103,7 +104,7 @@ executeString(
     }
 }
 
-std::variant<SimulationResult, SimulationError>
+std::variant<std::monostate, SimulationResult, SimulationError>
 executeFile(
     std::string const &filePath,
     std::size_t iterations,

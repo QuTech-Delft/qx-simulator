@@ -15,7 +15,7 @@
 }
 
 // Map the output of execute_string/execute_file to a simple Python class for user-friendliness.
-%typemap(out) std::variant<qx::SimulationResult, qx::SimulationError> {
+%typemap(out) std::variant<std::monostate, qx::SimulationResult, qx::SimulationError> {
     if (std::holds_alternative<qx::SimulationResult>($1)) {
         auto pmod = PyImport_ImportModule("qxelarator");
         auto pclass = PyObject_GetAttrString(pmod, "SimulationResult");

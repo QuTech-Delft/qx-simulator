@@ -45,7 +45,6 @@ struct SimulationResult {
     using State = std::vector<SuperposedState>;
 
 public:
-    SimulationResult() = delete;
     SimulationResult(std::uint64_t requestedShots, std::uint64_t doneShots, RegisterManager const &registerManager);
 
     // Given a state string from the State vector, a qubit variable name, and an optional sub index,
