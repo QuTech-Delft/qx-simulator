@@ -72,7 +72,7 @@ public:
 private:
     template <typename F>
     void forAllNonZeroStates(F &&f) {
-        state.forEach([&f, this](auto const &kv) {
+        state.forEach([&f](auto const &kv) {
             f(kv.first, kv.second);
         });
     }
