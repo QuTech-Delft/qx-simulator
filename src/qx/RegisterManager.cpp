@@ -54,6 +54,14 @@ Register::~Register() = default;
     return index_to_variable_name_.at(index);
 }
 
+[[nodiscard]] VariableNameToRangeMapT const& Register::getVariableNameToRangeMap() const {
+    return variable_name_to_range_;
+}
+
+[[nodiscard]] IndexToVariableNameMapT const& Register::getIndexToVariableNameMap() const {
+    return index_to_variable_name_;
+}
+
 QubitRegister::QubitRegister(const V3OneProgram &program) try
     : Register(program, is_qubit_variable, config::MAX_QUBIT_NUMBER) {
 } catch (const RegisterManagerError &e) {
@@ -99,6 +107,14 @@ RegisterManager::RegisterManager(const V3OneProgram &program)
 
 [[nodiscard]] VariableName RegisterManager::get_bit_variable_name(const std::size_t &index) const {
     return bit_register_.at(index);
+}
+
+[[nodiscard]] QubitRegister const& RegisterManager::get_qubit_register() const {
+    return qubit_register_;
+}
+
+[[nodiscard]] BitRegister const& RegisterManager::get_bit_register() const {
+    return bit_register_;
 }
 
 }  // namespace qx

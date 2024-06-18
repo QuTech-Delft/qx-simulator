@@ -5,24 +5,42 @@
 
 namespace qx::core {
 
-QuantumState::QuantumState(std::size_t qubit_register_size, std::size_t bit_register_size)
-    : numberOfQubits(qubit_register_size)
-    , numberOfBits(bit_register_size)
-    , data(static_cast<size_t>(1) << numberOfQubits)
-    , bitMeasurementRegister{ numberOfBits } {
+void QuantumState::checkQuantumState() {
     if (numberOfQubits == 0) {
-        throw QuantumStateError{ "quantum state needs at least one qubit" };
+        throw QuantumStateError{ "number of qubits needs to be at least 1" };
     }
     if (numberOfQubits > config::MAX_QUBIT_NUMBER) {
-        throw QuantumStateError{ fmt::format("quantum state size exceeds maximum allowed: {} > {}", numberOfQubits,
+        throw QuantumStateError{ fmt::format("number of qubits exceeds maximum allowed: {} > {}", numberOfQubits,
                                              config::MAX_QUBIT_NUMBER) };
     }
-    if (numberOfQubits > config::MAX_BIT_NUMBER) {
-        throw QuantumStateError{ fmt::format("quantum state size exceeds maximum allowed: {} > {}", numberOfQubits,
-                                             config::MAX_QUBIT_NUMBER) };
+    if (numberOfBits > config::MAX_BIT_NUMBER) {
+        throw QuantumStateError{ fmt::format("number of bits exceeds maximum allowed: {} > {}", numberOfBits,
+                                             config::MAX_BIT_NUMBER) };
     }
+    if (not isNormalized()) {
+        throw QuantumStateError{ "quantum state is not normalized" };
+    }
+}
+
+QuantumState::QuantumState(std::size_t qubit_register_size, std::size_t bit_register_size)
+    : numberOfQubits{ qubit_register_size }
+    , numberOfBits{ bit_register_size }
+    , data{ static_cast<size_t>(1) << numberOfQubits }
+    , bitMeasurementRegister{ numberOfBits } {
+
     data[BasisVector{}] = SparseComplex{ 1. };  // start initialized in state 00...000
-};
+    checkQuantumState();
+}
+
+QuantumState::QuantumState(std::size_t qubit_register_size, std::size_t bit_register_size,
+                           std::initializer_list<std::pair<std::string, std::complex<double>>> values)
+    : numberOfQubits{ qubit_register_size }
+    , numberOfBits{ bit_register_size }
+    , data{ static_cast<size_t>(1) << numberOfQubits, values }
+    , bitMeasurementRegister{ numberOfBits } {
+
+    checkQuantumState();
+}
 
 [[nodiscard]] std::size_t QuantumState::getNumberOfQubits() const {
     return numberOfQubits;
@@ -32,37 +50,21 @@ QuantumState::QuantumState(std::size_t qubit_register_size, std::size_t bit_regi
     return numberOfBits;
 }
 
+[[nodiscard]] bool QuantumState::isNormalized() {
+    return isNull(data.norm() - 1.);
+}
+
 void QuantumState::reset() {
     data.clear();
     data[BasisVector{}] = SparseComplex{ 1. };  // start initialized in state 00...000
     measurementRegister.reset();
+    bitMeasurementRegister.reset();
 }
-
-void QuantumState::testInitialize(
-    std::initializer_list<std::pair<std::string, std::complex<double>>> values) {
-    data.clear();
-    double norm{};
-    for (auto const &[state_string, amplitude] : values) {
-        data[BasisVector{ state_string }] = SparseComplex{ amplitude };
-        norm += std::norm(amplitude);
-    }
-    assert(!isNotNull(norm - 1));
-}
-
-// Explicit instantiation for use in Circuit::execute, otherwise linking error.
-
-template QuantumState &QuantumState::apply<1>(
-    DenseUnitaryMatrix<1 << 1> const &m, std::array<QubitIndex, 1> const &operands);
-
-template QuantumState &QuantumState::apply<2>(
-    DenseUnitaryMatrix<1 << 2> const &m, std::array<QubitIndex, 2> const &operands);
-
-template QuantumState &QuantumState::apply<3>(
-    DenseUnitaryMatrix<1 << 3> const &m, std::array<QubitIndex, 3> const &operands);
 
 [[nodiscard]] const BasisVector& QuantumState::getMeasurementRegister() const {
     return measurementRegister;
 }
+
 [[nodiscard]] const BitMeasurementRegister& QuantumState::getBitMeasurementRegister() const {
     return bitMeasurementRegister;
 }
@@ -92,7 +94,6 @@ void QuantumState::collapseQubit(QubitIndex qubitIndex, bool measuredState, doub
                            ? probabilityOfMeasuringOne
                            : (1 - probabilityOfMeasuringOne);
     data *= std::sqrt(1 / probability);
-
 }
 
 }  // namespace qx::core

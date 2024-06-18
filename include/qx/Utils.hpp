@@ -84,6 +84,8 @@ public:
         return data[0];
     }
 
+    // Convert to string
+    // Notice the least significant bits go to the right
     [[nodiscard]] std::string toString() const {
         std::string result;
         for (std::size_t i = 0; i < NumberOfBits; ++i) {
@@ -91,6 +93,13 @@ public:
         }
         assert(result.size() == NumberOfBits);
         return result;
+    }
+
+    // Convert to string, then return the rightmost n bits
+    // Notice the least significant bits go to the right
+    [[nodiscard]] std::string toSubstring(size_t n) const {
+        auto ret = toString();
+        return ret.substr(ret.size() - n, ret.size());
     }
 
 private:

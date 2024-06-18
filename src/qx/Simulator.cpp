@@ -76,10 +76,11 @@ execute(
         while (iterations--) {
             quantumState.reset();
             circuit.execute(quantumState, std::monostate{});
-            simulationResultAccumulator.append(quantumState.getMeasurementRegister());
+            simulationResultAccumulator.appendMeasurement(quantumState.getMeasurementRegister());
+            simulationResultAccumulator.appendBitMeasurement(quantumState.getBitMeasurementRegister());
         }
 
-        return simulationResultAccumulator.get();
+        return simulationResultAccumulator.getSimulationResult(register_manager);
     } catch (const SimulationError &err) {
         return err;
     }

@@ -1,6 +1,7 @@
 #include "qx/Core.hpp"
 #include "qx/GateConvertor.hpp"
 #include "qx/Gates.hpp"
+#include "qx/Instructions.hpp" // Measure, Unitary
 #include "qx/OperandsHelper.hpp"
 
 #include <fmt/format.h>
@@ -40,7 +41,7 @@ void GateConvertor::addGates(
                 static_cast<std::size_t>(operands[op][i]->value)};
         }
 
-        Circuit::Unitary<NumberOfQubitOperands> unitary{matrix, ops};
+        Unitary<NumberOfQubitOperands> unitary{matrix, ops};
 
         auto controlBits = std::make_shared<std::vector<core::QubitIndex>>();
         circuit_.add_instruction(unitary, controlBits);
@@ -136,7 +137,7 @@ void GateConvertor::addGates(const V3Instruction &instruction) {
         auto controlBits = std::make_shared<std::vector<core::QubitIndex>>();
         for (size_t i{ 0 }; i < bit_indices.size(); ++i) {
             circuit_.add_instruction(
-                Circuit::Measure{
+                Measure{
                     core::BitIndex{ static_cast<std::size_t>(bit_indices[i]->value) },
                     core::QubitIndex{ static_cast<std::size_t>(qubit_indices[i]->value) }
                 },

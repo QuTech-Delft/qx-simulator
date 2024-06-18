@@ -1,7 +1,9 @@
 #pragma once
 
 #include "qx/CompileTimeConfiguration.hpp"
-#include "qx/Core.hpp"  // Complex
+#include "qx/Core.hpp"  // BasisVector, BitMeasurementRegister Complex
+#include "qx/QuantumState.hpp"
+#include "qx/RegisterManager.hpp"
 
 #include <absl/container/btree_map.h>
 #include <compare>  // partial_ordering
@@ -15,52 +17,78 @@
 
 namespace qx {
 
+
 namespace core {
 class QuantumState;
 }
 
-struct Result {
+
+struct Measurement {
     std::string state;
     std::uint64_t count;
-    std::partial_ordering operator<=>(const Result &other) const = default;
+
+    std::partial_ordering operator<=>(const Measurement &other) const = default;
 };
 
-struct State {
+
+struct SuperposedState {
     std::string value;
     core::Complex amplitude;
-    bool operator==(const State &other) const = default;
-    std::partial_ordering operator<=>(const State &other) const = default;
+
+    bool operator==(const SuperposedState &other) const = default;
+    std::partial_ordering operator<=>(const SuperposedState &other) const = default;
 };
 
+
 struct SimulationResult {
-    using Results = std::vector<Result>;
-    using States = std::vector<State>;
+    using Measurements = std::vector<Measurement>;
+    using State = std::vector<SuperposedState>;
+
     std::uint64_t shotsRequested = 0;
     std::uint64_t shotsDone = 0;
-    Results results;
-    States states;
+
+    State state;
+
+    Measurements measurements;
+    Measurements bitRegisterMeasurements;
+
+    VariableNameToRangeMapT qubitRegister;
+    VariableNameToRangeMapT bitRegister;
 };
 
 std::ostream &operator<<(std::ostream &os, const SimulationResult &result);
 
-using state_t = core::BasisVector;
-using count_t = std::uint64_t;
 
 class SimulationResultAccumulator {
+    using state_string_t = std::string;
+    using count_t = std::uint64_t;
+
 public:
     explicit SimulationResultAccumulator(core::QuantumState &s);
-    void append(core::BasisVector measuredState);
-    SimulationResult get();
+    void appendMeasurement(core::BasisVector const& measurement);
+    void appendBitMeasurement(core::BitMeasurementRegister const& bitMeasurement);
+    SimulationResult getSimulationResult(const RegisterManager &registerManager);
 
 private:
     template <typename F>
-    void forAllNonZeroStates(F &&f);
-    std::string getStateString(core::BasisVector s);
+    void forAllNonZeroStates(F &&f) {
+        state.forEach([&f, this](auto const &kv) {
+            f(kv.first, kv.second);
+        });
+    }
 
-    core::QuantumState &quantumState;
-    absl::btree_map<state_t, count_t> measuredStates;
-    std::uint64_t measuredStatesCount = 0;
+    core::QuantumState &state;
+
+    // TODO: we are keeping a "double-entry bookkeeping" until we can get rid of measurements
+    //   measurements needs to be replaced with bitMeasurements with the introduction of bit variables,
+    //   but this replacement cannot be executed until all the QX simulator clients start using bitMeasurements
+    absl::btree_map<state_string_t, count_t> measurements;
+    absl::btree_map<state_string_t, count_t> bitMeasurements;
+
+    std::uint64_t measurementsCount = 0;
+    std::uint64_t bitMeasurementsCount = 0;
 };
+
 
 }  // namespace qx
 

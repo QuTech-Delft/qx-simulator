@@ -1,6 +1,7 @@
 #include "qx/SparseArray.hpp"
 
 #include <complex>
+#include <fmt/format.h>
 
 
 namespace qx::core {
@@ -40,8 +41,19 @@ bool compareSparseElements(const SparseElement &lhs, const SparseElement &rhs) {
 }
 
 SparseArray::SparseArray(std::size_t s)
-    : size_(s)
+    : size_{ s }
 {}
+
+SparseArray::SparseArray(std::size_t s, std::initializer_list<std::pair<std::string, std::complex<double>>> values)
+    : size_{ s } {
+    for (auto const &[basis_vector_string, complex_value] : values) {
+        if ((static_cast<size_t>(1) << basis_vector_string.size()) > s) {
+            throw SparseArrayError{
+                fmt::format("found value '{}' for a sparse array of size {}", basis_vector_string, s) };
+        }
+        data_[BasisVector{ basis_vector_string }] = SparseComplex{ complex_value };
+    }
+}
 
 SparseArray& SparseArray::operator=(MapBasisVectorToSparseComplex map) {
     data_ = std::move(map);
@@ -88,6 +100,13 @@ void SparseArray::clear() {
     return size_;
 }
 
+[[nodiscard]] double SparseArray::norm() {
+    return accumulate<double>(0., [](double total, auto const &kv){
+        auto const& [basisVector, sparseComplex] = kv;
+        return total + std::norm(sparseComplex.value);
+    });
+}
+
 [[nodiscard]] std::vector<std::complex<double>> SparseArray::toVector() const {
     auto result = std::vector<std::complex<double>>(size_, 0.);
     for (auto const &[basisVector, sparseComplex] : data_) {
@@ -99,7 +118,7 @@ void SparseArray::clear() {
 void SparseArray::cleanUpZeros() {
     absl::erase_if(data_, [](auto const &kv) {
         auto const &[_, sparseComplex] = kv;
-        return !isNotNull(sparseComplex.value);
+        return isNull(sparseComplex.value);
     });
     zeroCounter_ = 0;
 }

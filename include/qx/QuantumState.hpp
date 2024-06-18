@@ -34,7 +34,7 @@ void applyImpl(DenseUnitaryMatrix<1 << NumberOfOperands> const &matrix,
     }
     for (std::size_t i = 0; i < (1 << NumberOfOperands); ++i) {
         std::complex<double> addedValue = sparseComplex.value * matrix.at(i, reducedIndex.toSizeT());
-        if (isNotNull(addedValue)) {
+        if (not isNull(addedValue)) {
             auto newIndex = index;
             for (std::size_t k = 0; k < NumberOfOperands; ++k) {
                 newIndex.set(operands[NumberOfOperands - k - 1].value, utils::getBit(i, k));
@@ -47,16 +47,22 @@ void applyImpl(DenseUnitaryMatrix<1 << NumberOfOperands> const &matrix,
 
 
 class QuantumState {
+    void checkQuantumState();
+
 public:
-    explicit QuantumState(std::size_t qubit_register_size, std::size_t bit_register_size);
+    QuantumState(std::size_t qubit_register_size, std::size_t bit_register_size);
+    QuantumState(std::size_t qubit_register_size, std::size_t bit_register_size,
+                 std::initializer_list<std::pair<std::string, std::complex<double>>> values);
     [[nodiscard]] std::size_t getNumberOfQubits() const;
     [[nodiscard]] std::size_t getNumberOfBits() const;
+    [[nodiscard]] bool isNormalized();
     void reset();
-    void testInitialize(std::initializer_list<std::pair<std::string, std::complex<double>>> values);
 
     template <std::size_t NumberOfOperands>
-    QuantumState &apply(DenseUnitaryMatrix<1 << NumberOfOperands> const &m,
+    QuantumState &apply(
+        DenseUnitaryMatrix<1 << NumberOfOperands> const &m,
         std::array<QubitIndex, NumberOfOperands> const &operands) {
+
         assert(NumberOfOperands <= numberOfQubits &&
                "Quantum gate has more operands than the number of qubits in this quantum state");
         assert(std::find_if(operands.begin(), operands.end(),
@@ -93,9 +99,12 @@ public:
     }
 
 private:
-    std::size_t const numberOfQubits = 1;
-    std::size_t const numberOfBits = 1;
+    std::size_t numberOfQubits = 1;
+    std::size_t numberOfBits = 1;
     SparseArray data;
+    // TODO: we are keeping a "double-entry bookkeeping" until we can get rid of measurements
+    //   measurements needs to be replaced with bitMeasurements with the introduction of bit variables,
+    //   but this replacement cannot be executed until all the QX simulator clients start using bitMeasurements
     BasisVector measurementRegister{};
     BitMeasurementRegister bitMeasurementRegister{};
 };

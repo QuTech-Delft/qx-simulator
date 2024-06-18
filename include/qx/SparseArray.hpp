@@ -47,6 +47,7 @@ public:
 public:
     SparseArray() = delete;
     explicit SparseArray(std::size_t s);
+    SparseArray(std::size_t s, std::initializer_list<std::pair<std::string, std::complex<double>>> values);
 
     [[nodiscard]] ConstIterator begin() const;
     [[nodiscard]] ConstIterator end() const;
@@ -59,6 +60,7 @@ public:
 
     void clear();
     [[nodiscard]] std::size_t size() const;
+    [[nodiscard]] double norm();
     [[nodiscard]] std::vector<std::complex<double>> toVector() const;
 
     template <typename T, typename F>

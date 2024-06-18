@@ -58,16 +58,14 @@ TEST_F(QuantumStateTest, apply_hadamard) {
 }
 
 TEST_F(QuantumStateTest, apply_cnot) {
-    QuantumState victim{ 2, 2 };
-    victim.testInitialize({{"10", 0.123}, {"11", std::sqrt(1 - std::pow(0.123, 2))}});
+    QuantumState victim{ 2, 2, {{"10", 0.123}, {"11", std::sqrt(1 - std::pow(0.123, 2))}} };
     checkEq(victim, {0, 0, 0.123, std::sqrt(1 - std::pow(0.123, 2))});
     victim.apply<2>(gates::CNOT, std::array<QubitIndex, 2>{QubitIndex{1}, QubitIndex{0}});
     checkEq(victim, {0, 0, std::sqrt(1 - std::pow(0.123, 2)), 0.123});
 }
 
 TEST_F(QuantumStateTest, measure_on_non_superposed_state) {
-    QuantumState victim{ 2, 2 };
-    victim.testInitialize({{"10", 0.123}, {"11", std::sqrt(1 - std::pow(0.123, 2))}});
+    QuantumState victim{ 2, 2, {{"10", 0.123}, {"11", std::sqrt(1 - std::pow(0.123, 2))}} };
     victim.measure(BitIndex{1}, QubitIndex{1}, []() { return 0.9485; });
     checkEq(victim, {0, 0, 0.123, std::sqrt(1 - std::pow(0.123, 2))});
     victim.measure(BitIndex{1}, QubitIndex{1}, []() { return 0.045621; });
@@ -76,16 +74,14 @@ TEST_F(QuantumStateTest, measure_on_non_superposed_state) {
 }
 
 TEST_F(QuantumStateTest, measure_on_superposed_state__case_0) {
-    QuantumState victim{ 2, 2 };
-    victim.testInitialize({{"10", 0.123}, {"11", std::sqrt(1 - std::pow(0.123, 2))}});
+    QuantumState victim{ 2, 2, {{"10", 0.123}, {"11", std::sqrt(1 - std::pow(0.123, 2))}} };
     victim.measure(BitIndex{0}, QubitIndex{0}, []() { return 0.994; });
     checkEq(victim, {0, 0, 1, 0});
     EXPECT_EQ(victim.getMeasurementRegister(), BasisVector("00"));
 }
 
 TEST_F(QuantumStateTest, measure_on_superposed_state__case_1) {
-    QuantumState victim{ 2, 2 };
-    victim.testInitialize({{"10", 0.123}, {"11", std::sqrt(1 - std::pow(0.123, 2))}});
+    QuantumState victim{ 2, 2, {{"10", 0.123}, {"11", std::sqrt(1 - std::pow(0.123, 2))}} };
     victim.measure(BitIndex{0}, QubitIndex{0}, []() { return 0.254; });
     checkEq(victim, {0, 0, 0, 1});
     EXPECT_EQ(victim.getMeasurementRegister(), BasisVector("01"));

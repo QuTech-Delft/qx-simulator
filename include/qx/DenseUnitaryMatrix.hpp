@@ -5,7 +5,7 @@
 #include <complex>  // conj
 #include <stdexcept>  // runtime_error
 
-#include "qx/Core.hpp"  // isNotNull
+#include "qx/Core.hpp"  // isNull
 
 
 namespace qx::core {
@@ -47,7 +47,7 @@ public:
     constexpr bool operator==(DenseUnitaryMatrix<N> const &other) const {
         for (std::size_t i = 0; i < N; ++i) {
             for (std::size_t j = 0; j < N; ++j) {
-                if (isNotNull(at(i, j) - other.at(i, j))) {
+                if (not isNull(at(i, j) - other.at(i, j))) {
                     return false;
                 }
             }
@@ -55,8 +55,7 @@ public:
         return true;
     }
 
-    constexpr DenseUnitaryMatrix<N>
-    operator*(DenseUnitaryMatrix<N> const &other) const {
+    constexpr DenseUnitaryMatrix<N> operator*(DenseUnitaryMatrix<N> const &other) const {
         Matrix m;
         for (std::size_t i = 0; i < N; ++i) {
             for (std::size_t j = 0; j < N; ++j) {

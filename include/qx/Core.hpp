@@ -4,35 +4,13 @@
 #include <cstdint>  // size_t, uint32_t
 #include <cstdlib>  // abs
 #include <complex>
+#include <fmt/ostream.h>
 
 #include "qx/CompileTimeConfiguration.hpp"  // EPS, MAX_QUBIT_NUMBER
 #include "qx/Utils.hpp"
 
 
 namespace qx::core {
-
-struct QubitIndex {
-    std::size_t value;
-};
-
-struct BitIndex {
-    std::size_t value;
-};
-
-using BasisVector = utils::Bitset<config::MAX_QUBIT_NUMBER>;
-using BitMeasurementRegister = boost::dynamic_bitset<uint32_t>;
-
-inline constexpr bool isNotNull(std::complex<double> c) {
-#if defined(_MSC_VER)
-    return c.real() > config::EPS ||
-           -c.real() > config::EPS ||
-           c.imag() > config::EPS ||
-           -c.imag() > config::EPS;
-#else
-    return std::abs(c.real()) > config::EPS ||
-           std::abs(c.imag()) > config::EPS;
-#endif
-}
 
 struct Complex {
     double real = 0;
@@ -46,4 +24,32 @@ struct Complex {
     auto operator<=>(const Complex &other) const = default;
 };
 
+struct QubitIndex {
+    std::size_t value;
+};
+
+struct BitIndex {
+    std::size_t value;
+};
+
+using BasisVector = utils::Bitset<config::MAX_QUBIT_NUMBER>;
+
+using BitMeasurementRegister = boost::dynamic_bitset<uint32_t>;
+
+inline constexpr bool isNotNull(std::complex<double> c) {
+#if defined(_MSC_VER)
+    return
+        c.real() > config::EPS || -c.real() > config::EPS ||
+        c.imag() > config::EPS || -c.imag() > config::EPS;
+#else
+    return std::abs(c.real()) > config::EPS || std::abs(c.imag()) > config::EPS;
+#endif
+}
+
+inline constexpr bool isNull(std::complex<double> c) {
+    return not isNotNull(c);
+}
+
 }  // namespace qx::core
+
+template <> struct fmt::formatter<qx::core::BitMeasurementRegister> : fmt::ostream_formatter {};

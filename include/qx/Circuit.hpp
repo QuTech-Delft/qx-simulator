@@ -2,6 +2,7 @@
 
 #include "qx/Core.hpp"  // BasisVector
 #include "qx/ErrorModels.hpp"
+#include "qx/Instructions.hpp"
 #include "qx/RegisterManager.hpp"
 #include "qx/V3xLibqasmInterface.hpp"
 
@@ -14,45 +15,6 @@ namespace qx {
 
 class Circuit {
 public:
-    struct Measure {
-        core::BitIndex bitIndex{};
-        core::QubitIndex qubitIndex{};
-    };
-    struct MeasureAll {
-    };
-    struct PrepZ {
-        core::QubitIndex qubitIndex{};
-    };
-    struct MeasurementRegisterOperation {
-        std::function<void(core::BasisVector const &)> operation;
-    };
-    template <std::size_t NumberOfOperands> struct Unitary {
-        // Matrix is stored inline but could also be a pointer.
-        core::DenseUnitaryMatrix<1 << NumberOfOperands> matrix{};
-        std::array<core::QubitIndex, NumberOfOperands> operands{};
-    };
-    using Instruction =
-        std::variant<
-            Measure,
-            MeasureAll,
-            PrepZ,
-            MeasurementRegisterOperation,
-            Unitary<1>,
-            Unitary<2>,
-            Unitary<3>
-        >;
-    using ControlBits = std::shared_ptr<std::vector<core::QubitIndex>>;
-
-    struct ControlledInstruction {
-        ControlledInstruction(Instruction instruction, ControlBits control_bits)
-            : instruction(std::move(instruction)), control_bits(std::move(control_bits)){};
-
-        Instruction instruction;
-        std::shared_ptr<std::vector<core::QubitIndex>> control_bits;
-    };
-
-    // We could in the future add loops and if/else...
-
     Circuit(V3OneProgram &program, RegisterManager &register_manager);
     [[nodiscard]] RegisterManager& get_register_manager() const;
     void add_instruction(Instruction instruction, ControlBits control_bits);

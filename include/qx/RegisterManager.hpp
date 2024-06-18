@@ -40,11 +40,10 @@ struct RegisterManagerError : public SimulationError {
     explicit RegisterManagerError(const std::string &message);
 };
 
+using VariableNameToRangeMapT = std::unordered_map<VariableName, Range>;
+using IndexToVariableNameMapT = std::vector<VariableName>;
 
 class Register {
-    using VariableNameToRangeMapT = std::unordered_map<VariableName, Range>;
-    using IndexToVariableNameMapT = std::vector<VariableName>;
-private:
     std::size_t register_size_;
     VariableNameToRangeMapT variable_name_to_range_;
     IndexToVariableNameMapT index_to_variable_name_;
@@ -54,20 +53,22 @@ public:
     [[nodiscard]] std::size_t size() const;
     [[nodiscard]] virtual Range at(const VariableName &name) const;
     [[nodiscard]] virtual VariableName at(const std::size_t &index) const;
+    [[nodiscard]] virtual VariableNameToRangeMapT const& getVariableNameToRangeMap() const;
+    [[nodiscard]] virtual IndexToVariableNameMapT const& getIndexToVariableNameMap() const;
 };
 
 
 class QubitRegister : public Register {
 public:
     explicit QubitRegister(const V3OneProgram &program);
-    virtual ~QubitRegister() override;
+    ~QubitRegister() override;
 };
 
 
 class BitRegister : public Register {
 public:
     explicit BitRegister(const V3OneProgram &program);
-    virtual ~BitRegister() override;
+    ~BitRegister() override;
 };
 
 
@@ -87,6 +88,8 @@ public:
     [[nodiscard]] Range get_bit_range(const VariableName &name) const;
     [[nodiscard]] VariableName get_qubit_variable_name(const std::size_t &index) const;
     [[nodiscard]] VariableName get_bit_variable_name(const std::size_t &index) const;
+    [[nodiscard]] QubitRegister const& get_qubit_register() const;
+    [[nodiscard]] BitRegister const& get_bit_register() const;
 };
 
 }  // namespace qx
