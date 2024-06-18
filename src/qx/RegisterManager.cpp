@@ -50,16 +50,13 @@ Register::~Register() = default;
     return variable_name_to_range_.at(name);
 }
 
+[[nodiscard]] Index Register::at(const VariableName &name, const std::optional<Index> &subIndex) const {
+    auto range = variable_name_to_range_.at(name);
+    return range.first + subIndex.value_or(0);
+}
+
 [[nodiscard]] VariableName Register::at(const std::size_t &index) const {
     return index_to_variable_name_.at(index);
-}
-
-[[nodiscard]] VariableNameToRangeMapT const& Register::getVariableNameToRangeMap() const {
-    return variable_name_to_range_;
-}
-
-[[nodiscard]] IndexToVariableNameMapT const& Register::getIndexToVariableNameMap() const {
-    return index_to_variable_name_;
 }
 
 QubitRegister::QubitRegister(const V3OneProgram &program) try
@@ -99,6 +96,16 @@ RegisterManager::RegisterManager(const V3OneProgram &program)
 
 [[nodiscard]] Range RegisterManager::get_bit_range(const VariableName &name) const {
     return bit_register_.at(name);
+}
+
+[[nodiscard]] Index RegisterManager::get_qubit_index(const VariableName &name,
+                                                     const std::optional<Index> &subIndex) const {
+    return qubit_register_.at(name, subIndex);
+}
+
+[[nodiscard]] Index RegisterManager::get_bit_index(const VariableName &name,
+                                                   const std::optional<Index> &subIndex) const {
+    return bit_register_.at(name, subIndex);
 }
 
 [[nodiscard]] VariableName RegisterManager::get_qubit_variable_name(const std::size_t &index) const {

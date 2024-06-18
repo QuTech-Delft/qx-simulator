@@ -5,6 +5,7 @@
 #include "v3x/cqasm-semantic-gen.hpp"
 
 #include <cstdint>  // size_t
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -29,10 +30,11 @@ namespace qx {
 
 using VariableName = std::string;
 
+using Index = std::size_t;
 
 struct Range {
-    std::size_t first;
-    std::size_t size;
+    Index first;
+    Index size;
 };
 
 
@@ -52,9 +54,8 @@ public:
     virtual ~Register() = 0;
     [[nodiscard]] std::size_t size() const;
     [[nodiscard]] virtual Range at(const VariableName &name) const;
+    [[nodiscard]] virtual Index at(const VariableName &name, const std::optional<Index> &subIndex) const;
     [[nodiscard]] virtual VariableName at(const std::size_t &index) const;
-    [[nodiscard]] virtual VariableNameToRangeMapT const& getVariableNameToRangeMap() const;
-    [[nodiscard]] virtual IndexToVariableNameMapT const& getIndexToVariableNameMap() const;
 };
 
 
@@ -86,8 +87,10 @@ public:
     [[nodiscard]] std::size_t get_bit_register_size() const;
     [[nodiscard]] Range get_qubit_range(const VariableName &name) const;
     [[nodiscard]] Range get_bit_range(const VariableName &name) const;
-    [[nodiscard]] VariableName get_qubit_variable_name(const std::size_t &index) const;
-    [[nodiscard]] VariableName get_bit_variable_name(const std::size_t &index) const;
+    [[nodiscard]] Index get_qubit_index(const VariableName &name, const std::optional<Index> &subIndex) const;
+    [[nodiscard]] Index get_bit_index(const VariableName &name, const std::optional<Index> &subIndex) const;
+    [[nodiscard]] VariableName get_qubit_variable_name(const Index &index) const;
+    [[nodiscard]] VariableName get_bit_variable_name(const Index &index) const;
     [[nodiscard]] QubitRegister const& get_qubit_register() const;
     [[nodiscard]] BitRegister const& get_bit_register() const;
 };
