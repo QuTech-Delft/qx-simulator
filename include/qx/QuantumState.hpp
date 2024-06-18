@@ -86,14 +86,17 @@ public:
     [[nodiscard]] const BitMeasurementRegister &getBitMeasurementRegister() const;
     [[nodiscard]] double getProbabilityOfMeasuringOne(QubitIndex qubitIndex);
     [[nodiscard]] double getProbabilityOfMeasuringZero(QubitIndex qubitIndex);
-    void collapseQubit(QubitIndex qubitIndex, bool measuredState, double probabilityOfMeasuringOne);
+    void collapseQubit(QubitIndex qubitIndex, bool measuredState, double measuredStateProbability);
 
+    // measuredState will be true if we measured a 1, or false if we measured a 0
+    // measuredStateProbability will be the probability of measuring 1 if we measured a 1,
+    //   or the probability of measuring 0 if we measured a 0
     template <typename F>
     void measure(BitIndex bitIndex, QubitIndex qubitIndex, F &&randomGenerator) {
         auto probabilityOfMeasuringOne = getProbabilityOfMeasuringOne(qubitIndex);
-        // measuredState will be true if we measured a 1, or false if we measured a 0
         auto measuredState = (randomGenerator() < probabilityOfMeasuringOne);
-        collapseQubit(qubitIndex, measuredState, probabilityOfMeasuringOne);
+        auto measuredStateProbability = measuredState ? probabilityOfMeasuringOne : (1 - probabilityOfMeasuringOne);
+        collapseQubit(qubitIndex, measuredState, measuredStateProbability);
         measurementRegister.set(qubitIndex.value, measuredState);
         bitMeasurementRegister.set(bitIndex.value, measuredState);
     }
