@@ -233,8 +233,8 @@ b = measure qq[0]
     auto actual = runFromString(cqasm, iterations);
 
     auto error = static_cast<std::uint64_t>(static_cast<double>(iterations)/2 * 0.05);
-    EXPECT_EQ(actual.bitRegisterMeasurements.size(), 2);
-    for (auto const& bitMeasurement : actual.bitRegisterMeasurements) {
+    EXPECT_EQ(actual.bitMeasurements.size(), 2);
+    for (auto const& bitMeasurement : actual.bitMeasurements) {
         EXPECT_EQ(actual.getBitMeasurement(bitMeasurement.state, "bb", 0), 1);
         EXPECT_LT(std::abs(static_cast<long long>(iterations/2 - bitMeasurement.count)), error);
     }

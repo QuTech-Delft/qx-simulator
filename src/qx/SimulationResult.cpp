@@ -17,37 +17,48 @@ SimulationResult::SimulationResult(std::uint64_t requestedShots, std::uint64_t d
     , bitRegister{ registerManager.get_bit_register() }
 {}
 
-std::uint8_t SimulationResult::getQubitState(std::string const& stateString, std::string const& qubitVariableName,
+std::uint8_t SimulationResult::getQubitState(state_string_t const& stateString, std::string const& qubitVariableName,
                                              std::optional<Index> subIndex) {
     auto index = qubitRegister.at(qubitVariableName, subIndex);
     return static_cast<std::uint8_t>(stateString[stateString.size() - index - 1] - '0');
 }
 
-std::uint8_t SimulationResult::getBitMeasurement(std::string const& stateString, std::string const& bitVariableName,
+std::uint8_t SimulationResult::getBitMeasurement(state_string_t const& stateString, std::string const& bitVariableName,
                                                  std::optional<Index> subIndex) {
     auto index = bitRegister.at(bitVariableName, subIndex);
     return static_cast<std::uint8_t>(stateString[stateString.size() - index - 1] - '0');
 }
 
 std::ostream &operator<<(std::ostream &os, const SimulationResult &simulationResult) {
-    fmt::print("\nFinal quantum state\n");
+    fmt::print(os, "State:\n");
     for (auto const &superposedState : simulationResult.state) {
-        fmt::print("{1}  {2:.{0}f} + {3:.{0}f}i  (norm = {4:.{0}f})\n",
+        fmt::print(os, "\t{1}  {2:.{0}f} + {3:.{0}f}i  (norm = {4:.{0}f})\n",
                    config::OUTPUT_DECIMALS,
                    superposedState.value,
                    superposedState.amplitude.real,
                    superposedState.amplitude.imag,
                    superposedState.amplitude.norm);
     }
-    fmt::print("\nMeasurement register averaging\n");
-    for (auto const &result : simulationResult.measurements) {
-        fmt::print("{1}  {2}/{3}  (count/shots % = {4:.{0}f})\n",
+    fmt::print(os, "Measurements:\n");
+    for (auto const &measurement : simulationResult.measurements) {
+        fmt::print(os, "\t{1}  {2}/{3}  (count/shots % = {4:.{0}f})\n",
                    config::OUTPUT_DECIMALS,
-                   result.state,
-                   result.count,
+                   measurement.state,
+                   measurement.count,
                    simulationResult.shotsDone,
-                   static_cast<double>(result.count) / static_cast<double>(simulationResult.shotsDone));
+                   static_cast<double>(measurement.count) / static_cast<double>(simulationResult.shotsDone));
     }
+    fmt::print(os, "Bit measurements:\n");
+    for (auto const &bitMeasurement : simulationResult.bitMeasurements) {
+        fmt::print(os, "\t{1}  {2}/{3}  (count/shots % = {4:.{0}f})\n",
+                   config::OUTPUT_DECIMALS,
+                   bitMeasurement.state,
+                   bitMeasurement.count,
+                   simulationResult.shotsDone,
+                   static_cast<double>(bitMeasurement.count) / static_cast<double>(simulationResult.shotsDone));
+    }
+    fmt::print(os, "Qubit register:\n\t{}\n", simulationResult.qubitRegister);
+    fmt::print(os, "Bit register:\n\t{}", simulationResult.bitRegister);
     return os;
 }
 
@@ -78,7 +89,7 @@ SimulationResult SimulationResultAccumulator::getSimulationResult(RegisterManage
         [this, &simulationResult](core::BasisVector const& superposedState, core::SparseComplex const& sparseComplex) {
             auto stateString = superposedState.toSubstring(state.getNumberOfQubits());
             auto c = sparseComplex.value;
-            auto amplitude = core::Complex{ .real = c.real(), .imag = c.imag(), .norm = std::norm(c) };
+            auto amplitude = amplitude_t{ c.real(), c.imag(), std::norm(c) };
             simulationResult.state.push_back(SuperposedState{ stateString, amplitude });
         }
     );
@@ -87,7 +98,7 @@ SimulationResult SimulationResultAccumulator::getSimulationResult(RegisterManage
         simulationResult.measurements.push_back(Measurement{ stateString, count });
     }
     for (auto const& [stateString, count] : bitMeasurements) {
-        simulationResult.bitRegisterMeasurements.push_back(Measurement{ stateString, count });
+        simulationResult.bitMeasurements.push_back(Measurement{ stateString, count });
     }
 
     return simulationResult;

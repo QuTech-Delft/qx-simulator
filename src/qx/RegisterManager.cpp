@@ -4,6 +4,7 @@
 
 #include <algorithm>  // fill
 #include <fmt/format.h>
+#include <fmt/ranges.h>
 #include <range/v3/numeric/accumulate.hpp>
 #include <range/v3/view/filter.hpp>
 #include <range/v3/view/transform.hpp>
@@ -57,6 +58,17 @@ Register::~Register() = default;
 
 [[nodiscard]] VariableName Register::at(const std::size_t &index) const {
     return index_to_variable_name_.at(index);
+}
+
+[[nodiscard]] std::string Register::toString() const {
+    auto entries = ranges::accumulate(variable_name_to_range_, std::string{},
+        [first=true](auto total, auto const& kv) mutable {
+            auto const& [variableName, range] = kv;
+            total += fmt::format("{}{}: {}", first ? "" : ", ", variableName, range);
+            first = false;
+            return total;
+    });
+    return fmt::format("{{ {0} }}", entries);
 }
 
 QubitRegister::QubitRegister(const V3OneProgram &program) try
@@ -122,6 +134,20 @@ RegisterManager::RegisterManager(const V3OneProgram &program)
 
 [[nodiscard]] BitRegister const& RegisterManager::get_bit_register() const {
     return bit_register_;
+}
+
+std::ostream& operator<<(std::ostream& os, Range const& range) {
+    return os << fmt::format("[{}{}]",
+                             range.first,
+                             range.size == 1 ? "" : fmt::format("..{}", range.first + range.size - 1));
+}
+
+std::ostream& operator<<(std::ostream& os, QubitRegister const& qubitRegister) {
+    return os << qubitRegister.toString();
+}
+
+std::ostream& operator<<(std::ostream& os, BitRegister const& bitRegister) {
+    return os << bitRegister.toString();
 }
 
 }  // namespace qx

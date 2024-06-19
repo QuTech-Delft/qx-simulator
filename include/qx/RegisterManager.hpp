@@ -5,6 +5,7 @@
 #include "v3x/cqasm-semantic-gen.hpp"
 
 #include <cstdint>  // size_t
+#include <fmt/ostream.h>
 #include <optional>
 #include <string>
 #include <unordered_map>
@@ -56,6 +57,7 @@ public:
     [[nodiscard]] virtual Range at(const VariableName &name) const;
     [[nodiscard]] virtual Index at(const VariableName &name, const std::optional<Index> &subIndex) const;
     [[nodiscard]] virtual VariableName at(const std::size_t &index) const;
+    [[nodiscard]] virtual std::string toString() const;
 };
 
 
@@ -95,4 +97,15 @@ public:
     [[nodiscard]] BitRegister const& get_bit_register() const;
 };
 
+
+std::ostream& operator<<(std::ostream& os, Range const& range);
+std::ostream& operator<<(std::ostream& os, QubitRegister const& qubitRegister);
+std::ostream& operator<<(std::ostream& os, BitRegister const& bitRegister);
+
+
 }  // namespace qx
+
+
+template <> struct fmt::formatter<qx::Range> : fmt::ostream_formatter {};
+template <> struct fmt::formatter<qx::QubitRegister> : fmt::ostream_formatter {};
+template <> struct fmt::formatter<qx::BitRegister> : fmt::ostream_formatter {};
