@@ -4,7 +4,6 @@
 
 #include <algorithm>  // fill
 #include <fmt/format.h>
-#include <fmt/ranges.h>
 #include <range/v3/numeric/accumulate.hpp>
 #include <range/v3/view/filter.hpp>
 #include <range/v3/view/transform.hpp>
@@ -91,8 +90,8 @@ BitRegister::~BitRegister() = default;
 
 RegisterManager::RegisterManager(const V3OneProgram &program)
     : qubit_register_{ program }
-    , bit_register_{ program } {
-}
+    , bit_register_{ program }
+{}
 
 [[nodiscard]] std::size_t RegisterManager::get_qubit_register_size() const {
     return qubit_register_.size();
