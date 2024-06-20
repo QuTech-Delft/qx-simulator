@@ -1,77 +1,107 @@
+#include "qx/Core.hpp"  // BasisVector
+#include "qx/QuantumState.hpp"
 #include "qx/SimulationResult.hpp"
 
-#include "qx/Core.hpp"
-#include <iomanip>
-#include <iostream>
-#include <variant>
+#include <cstdint>  // uint8_t
+#include <fmt/core.h>
+#include <ostream>
 
 
 namespace qx {
 
-void SimulationResultAccumulator::append(BasisVector measuredState) {
-    assert(measuredStates.size() <= (1u << quantumState.getNumberOfQubits()));
-    measuredStates[measuredState]++;
-    nMeasurements++;
+SimulationResult::SimulationResult(std::uint64_t requestedShots, std::uint64_t doneShots,
+                                   RegisterManager const& registerManager)
+    : shotsRequested{ requestedShots }
+    , shotsDone{ doneShots }
+    , qubitRegister{ registerManager.get_qubit_register() }
+    , bitRegister{ registerManager.get_bit_register() }
+{}
+
+std::uint8_t SimulationResult::getQubitState(state_string_t const& stateString, std::string const& qubitVariableName,
+                                             std::optional<Index> subIndex) {
+    auto index = qubitRegister.at(qubitVariableName, subIndex);
+    return static_cast<std::uint8_t>(stateString[stateString.size() - index - 1] - '0');
 }
 
-std::ostream &operator<<(std::ostream &os, SimulationResult const &r) {
-    os << std::setprecision(config::OUTPUT_DECIMALS) << std::fixed;
-    os << "-------------------------------------------" << std::endl;
+std::uint8_t SimulationResult::getBitMeasurement(state_string_t const& stateString, std::string const& bitVariableName,
+                                                 std::optional<Index> subIndex) {
+    auto index = bitRegister.at(bitVariableName, subIndex);
+    return static_cast<std::uint8_t>(stateString[stateString.size() - index - 1] - '0');
+}
 
-    os << "Final quantum state" << std::endl;
-
-    for (auto const &kv : r.state) {
-        auto const &stateString = kv.first;
-        auto const &amplitude = kv.second;
-        os << stateString << "       " << amplitude.real << " + "
-           << amplitude.imag << "*i   "
-           << " (p = " << amplitude.norm << ")" << std::endl;
+std::ostream &operator<<(std::ostream &os, const SimulationResult &simulationResult) {
+    fmt::print(os, "State:\n");
+    for (auto const &superposedState : simulationResult.state) {
+        fmt::print(os, "\t{1}  {2:.{0}f} + {3:.{0}f}i  (norm = {4:.{0}f})\n",
+                   config::OUTPUT_DECIMALS,
+                   superposedState.value,
+                   superposedState.amplitude.real,
+                   superposedState.amplitude.imag,
+                   superposedState.amplitude.norm);
     }
-
-    os << std::endl << "Measurement register averaging" << std::endl;
-
-    for (const auto &kv : r.results) {
-        const auto &stateString = kv.first;
-        const auto &count = kv.second;
-        os << stateString << "       " << count << "/" << r.shots_done << " ("
-           << static_cast<double>(count) / static_cast<double>(r.shots_done) << ")" << std::endl;
+    fmt::print(os, "Measurements:\n");
+    for (auto const &measurement : simulationResult.measurements) {
+        fmt::print(os, "\t{1}  {2}/{3}  (count/shots % = {4:.{0}f})\n",
+                   config::OUTPUT_DECIMALS,
+                   measurement.state,
+                   measurement.count,
+                   simulationResult.shotsDone,
+                   static_cast<double>(measurement.count) / static_cast<double>(simulationResult.shotsDone));
     }
+    fmt::print(os, "Bit measurements:\n");
+    for (auto const &bitMeasurement : simulationResult.bitMeasurements) {
+        fmt::print(os, "\t{1}  {2}/{3}  (count/shots % = {4:.{0}f})\n",
+                   config::OUTPUT_DECIMALS,
+                   bitMeasurement.state,
+                   bitMeasurement.count,
+                   simulationResult.shotsDone,
+                   static_cast<double>(bitMeasurement.count) / static_cast<double>(simulationResult.shotsDone));
+    }
+    fmt::print(os, "Qubit register:\n\t{}\n", simulationResult.qubitRegister);
+    fmt::print(os, "Bit register:\n\t{}", simulationResult.bitRegister);
     return os;
 }
 
-SimulationResult SimulationResultAccumulator::get() {
-    SimulationResult simulationResult;
-    simulationResult.shots_requested = nMeasurements;
-    simulationResult.shots_done = nMeasurements;
+SimulationResultAccumulator::SimulationResultAccumulator(core::QuantumState &s)
+    : state(s)
+{}
 
-    assert(nMeasurements > 0);
+void SimulationResultAccumulator::appendMeasurement(core::BasisVector const& measurement) {
+    assert(measurements.size() < (static_cast<size_t>(1) << state.getNumberOfQubits()));
+    auto measuredStateString{ measurement.toSubstring(state.getNumberOfQubits()) };
+    measurements[measuredStateString]++;
+    measurementsCount++;
+}
 
-    for (const auto &kv : measuredStates) {
-        const auto &state = kv.first;
-        const auto &count = kv.second;
+void SimulationResultAccumulator::appendBitMeasurement(core::BitMeasurementRegister const& bitMeasurement) {
+    assert(bitMeasurements.size() < (static_cast<size_t>(1) << state.getNumberOfQubits()));
+    auto bitMeasuredStateString{ fmt::format("{}", bitMeasurement) };
+    bitMeasurements[bitMeasuredStateString]++;
+    bitMeasurementsCount++;
+}
 
-        simulationResult.results.emplace_back(getStateString(state), count);
+SimulationResult SimulationResultAccumulator::getSimulationResult(RegisterManager const& registerManager) {
+    assert(measurementsCount > 0);
+
+    SimulationResult simulationResult{ measurementsCount, measurementsCount, registerManager };
+
+    forAllNonZeroStates(
+        [this, &simulationResult](core::BasisVector const& superposedState, core::SparseComplex const& sparseComplex) {
+            auto stateString = superposedState.toSubstring(state.getNumberOfQubits());
+            auto c = sparseComplex.value;
+            auto amplitude = amplitude_t{ c.real(), c.imag(), std::norm(c) };
+            simulationResult.state.push_back(SuperposedState{ stateString, amplitude });
+        }
+    );
+
+    for (auto const& [stateString, count] : measurements) {
+        simulationResult.measurements.push_back(Measurement{ stateString, count });
+    }
+    for (auto const& [stateString, count] : bitMeasurements) {
+        simulationResult.bitMeasurements.push_back(Measurement{ stateString, count });
     }
 
-    forAllNonZeroStates([&simulationResult](auto stateString, auto c) {
-        simulationResult.state.push_back(std::make_pair(
-            stateString, Complex{ .real = c.real(), .imag = c.imag(), .norm = std::norm(c) }));
-    });
-
     return simulationResult;
-}
-
-template <typename F>
-void SimulationResultAccumulator::forAllNonZeroStates(F &&f) {
-    quantumState.forEach(
-        [&f, this](auto const &kv) { f(getStateString(kv.first), kv.second); });
-}
-
-std::string SimulationResultAccumulator::getStateString(BasisVector s) {
-    auto str = s.toString();
-
-    return str.substr(str.size() - quantumState.getNumberOfQubits(),
-                      str.size());
 }
 
 } // namespace qx

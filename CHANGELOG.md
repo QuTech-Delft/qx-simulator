@@ -74,8 +74,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-- Removed submodules and `deps` folder, replaced with CMake FetchContent.
 - C++23.
+- Manage dependencies via CMake FetchContent.
 - gtest instead of doctest.
 - Various fixes to GitHub actions.
 - Fixed bug in bitset due to bool automatic casting to 32 bits.
@@ -84,7 +84,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Removed
 
--
+- Submodules and `deps` folder.
 
 ## [ 0.6.2 ] - [ 2023-02-21 ]
 

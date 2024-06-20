@@ -2,9 +2,12 @@
 
 #include "qx/Simulator.hpp"
 
+#include <variant>  // monostate
+
+
 namespace qxelarator {
 
-std::variant<qx::SimulationResult, qx::SimulationError>
+std::variant<std::monostate, qx::SimulationResult, qx::SimulationError>
 execute_string(
     std::string const &s,
     std::size_t iterations = 1,
@@ -14,7 +17,7 @@ execute_string(
     return qx::executeString(s, iterations, seed, version);
 }
 
-std::variant<qx::SimulationResult, qx::SimulationError>
+std::variant<std::monostate, qx::SimulationResult, qx::SimulationError>
 execute_file(
     std::string const &filePath,
     std::size_t iterations = 1,
