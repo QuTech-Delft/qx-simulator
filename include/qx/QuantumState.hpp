@@ -50,11 +50,10 @@ class QuantumState {
     void checkQuantumState();
 
 public:
-    QuantumState(std::size_t qubit_register_size, std::size_t bit_register_size);
-    QuantumState(std::size_t qubit_register_size, std::size_t bit_register_size,
+    QuantumState(std::size_t qubit_register_size);
+    QuantumState(std::size_t qubit_register_size,
                  std::initializer_list<std::pair<std::string, std::complex<double>>> values);
     [[nodiscard]] std::size_t getNumberOfQubits() const;
-    [[nodiscard]] std::size_t getNumberOfBits() const;
     [[nodiscard]] bool isNormalized();
     void reset();
 
@@ -83,7 +82,6 @@ public:
     }
 
     [[nodiscard]] const BasisVector &getMeasurementRegister() const;
-    [[nodiscard]] const BitMeasurementRegister &getBitMeasurementRegister() const;
     [[nodiscard]] double getProbabilityOfMeasuringOne(QubitIndex qubitIndex);
     [[nodiscard]] double getProbabilityOfMeasuringZero(QubitIndex qubitIndex);
     void collapseQubit(QubitIndex qubitIndex, bool measuredState, double measuredStateProbability);
@@ -92,24 +90,18 @@ public:
     // measuredStateProbability will be the probability of measuring 1 if we measured a 1,
     //   or the probability of measuring 0 if we measured a 0
     template <typename F>
-    void measure(BitIndex bitIndex, QubitIndex qubitIndex, F &&randomGenerator) {
+    void measure(QubitIndex qubitIndex, F &&randomGenerator) {
         auto probabilityOfMeasuringOne = getProbabilityOfMeasuringOne(qubitIndex);
         auto measuredState = (randomGenerator() < probabilityOfMeasuringOne);
         auto measuredStateProbability = measuredState ? probabilityOfMeasuringOne : (1 - probabilityOfMeasuringOne);
         collapseQubit(qubitIndex, measuredState, measuredStateProbability);
         measurementRegister.set(qubitIndex.value, measuredState);
-        bitMeasurementRegister.set(bitIndex.value, measuredState);
     }
 
 private:
     std::size_t numberOfQubits = 1;
-    std::size_t numberOfBits = 1;
     SparseArray data;
-    // TODO: we are keeping a "double-entry bookkeeping" until we can get rid of measurements
-    //   measurements needs to be replaced with bitMeasurements with the introduction of bit variables,
-    //   but this replacement cannot be executed until all the QX simulator clients start using bitMeasurements
     BasisVector measurementRegister{};
-    BitMeasurementRegister bitMeasurementRegister{};
 };
 
 }  // namespace qx::core

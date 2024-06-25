@@ -9,25 +9,10 @@
 
 namespace qx {
 
-SimulationResult::SimulationResult(std::uint64_t requestedShots, std::uint64_t doneShots,
-                                   RegisterManager const& registerManager)
+SimulationResult::SimulationResult(std::uint64_t requestedShots, std::uint64_t doneShots)
     : shotsRequested{ requestedShots }
     , shotsDone{ doneShots }
-    , qubitRegister{ registerManager.get_qubit_register() }
-    , bitRegister{ registerManager.get_bit_register() }
 {}
-
-std::uint8_t SimulationResult::getQubitState(state_string_t const& stateString, std::string const& qubitVariableName,
-                                             std::optional<Index> subIndex) {
-    auto index = qubitRegister.at(qubitVariableName, subIndex);
-    return static_cast<std::uint8_t>(stateString[stateString.size() - index - 1] - '0');
-}
-
-std::uint8_t SimulationResult::getBitMeasurement(state_string_t const& stateString, std::string const& bitVariableName,
-                                                 std::optional<Index> subIndex) {
-    auto index = bitRegister.at(bitVariableName, subIndex);
-    return static_cast<std::uint8_t>(stateString[stateString.size() - index - 1] - '0');
-}
 
 std::ostream &operator<<(std::ostream &os, const SimulationResult &simulationResult) {
     fmt::print(os, "State:\n");
@@ -48,17 +33,6 @@ std::ostream &operator<<(std::ostream &os, const SimulationResult &simulationRes
                    simulationResult.shotsDone,
                    static_cast<double>(measurement.count) / static_cast<double>(simulationResult.shotsDone));
     }
-    fmt::print(os, "Bit measurements:\n");
-    for (auto const &bitMeasurement : simulationResult.bitMeasurements) {
-        fmt::print(os, "\t{1}  {2}/{3}  (count/shots % = {4:.{0}f})\n",
-                   config::OUTPUT_DECIMALS,
-                   bitMeasurement.state,
-                   bitMeasurement.count,
-                   simulationResult.shotsDone,
-                   static_cast<double>(bitMeasurement.count) / static_cast<double>(simulationResult.shotsDone));
-    }
-    fmt::print(os, "Qubit register:\n\t{}\n", simulationResult.qubitRegister);
-    fmt::print(os, "Bit register:\n\t{}", simulationResult.bitRegister);
     return os;
 }
 
@@ -73,17 +47,10 @@ void SimulationResultAccumulator::appendMeasurement(core::BasisVector const& mea
     measurementsCount++;
 }
 
-void SimulationResultAccumulator::appendBitMeasurement(core::BitMeasurementRegister const& bitMeasurement) {
-    assert(bitMeasurements.size() < (static_cast<size_t>(1) << state.getNumberOfQubits()));
-    auto bitMeasuredStateString{ fmt::format("{}", bitMeasurement) };
-    bitMeasurements[bitMeasuredStateString]++;
-    bitMeasurementsCount++;
-}
-
-SimulationResult SimulationResultAccumulator::getSimulationResult(RegisterManager const& registerManager) {
+SimulationResult SimulationResultAccumulator::getSimulationResult() {
     assert(measurementsCount > 0);
 
-    SimulationResult simulationResult{ measurementsCount, measurementsCount, registerManager };
+    SimulationResult simulationResult{ measurementsCount, measurementsCount };
 
     forAllNonZeroStates(
         [this, &simulationResult](core::BasisVector const& superposedState, core::SparseComplex const& sparseComplex) {
@@ -96,9 +63,6 @@ SimulationResult SimulationResultAccumulator::getSimulationResult(RegisterManage
 
     for (auto const& [stateString, count] : measurements) {
         simulationResult.measurements.push_back(Measurement{ stateString, count });
-    }
-    for (auto const& [stateString, count] : bitMeasurements) {
-        simulationResult.bitMeasurements.push_back(Measurement{ stateString, count });
     }
 
     return simulationResult;

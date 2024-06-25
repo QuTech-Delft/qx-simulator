@@ -29,6 +29,5 @@ using V3Value = v3_values::Value;
 using V3Variable = v3_semantic::Variable;
 
 bool is_qubit_variable(const V3Variable &variable);
-bool is_bit_variable(const V3Variable &variable);
 
 }  // namespace qx

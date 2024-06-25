@@ -14,7 +14,6 @@
 namespace qx {
 
 struct Measure {
-    core::BitIndex bitIndex{};
     core::QubitIndex qubitIndex{};
 };
 

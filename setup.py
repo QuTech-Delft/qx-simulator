@@ -94,7 +94,6 @@ class build_ext(_build_ext):
                 ['-s:a']['compiler.cppstd=23']
                 ['-s:a']['build_type=' + build_type]
 
-                ['-o:a']['boost/*:header_only=True']
                 ['-o:a']['qx/*:build_python=True']
                 ['-o:a']['qx/*:cpu_compatibility_mode=' + cpu_compatibility_mode]
                 # The Python library needs the compatibility headers
