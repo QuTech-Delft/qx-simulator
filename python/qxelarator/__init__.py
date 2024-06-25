@@ -19,7 +19,7 @@ class SimulationResult:
     def __repr__(self):
         return f"""Shots requested: {self.shots_requested}
 Shots done: {self.shots_done}
-Results: {self.results}
+Measurements: {self.results}
 State: {self.state}"""
 
 class SimulationError:

@@ -91,19 +91,17 @@ class build_ext(_build_ext):
 
             cmd = (local['conan']['create']['.']
                 ['--version'][get_version()]
-                ['-s:h']['compiler.cppstd=23']
-                ['-s:b']['compiler.cppstd=23']
-                ['-s:h']['build_type=' + build_type]
-                ['-s:b']['build_type=' + build_type]
+                ['-s:a']['compiler.cppstd=23']
+                ['-s:a']['build_type=' + build_type]
 
-                ['-o']['qx/*:build_python=True']
-                ['-o']['qx/*:cpu_compatibility_mode=' + cpu_compatibility_mode]
+                ['-o:a']['qx/*:build_python=True']
+                ['-o:a']['qx/*:cpu_compatibility_mode=' + cpu_compatibility_mode]
                 # The Python library needs the compatibility headers
-                ['-o']['qx/*:python_dir=' + re.escape(os.path.dirname(target))]
-                ['-o']['qx/*:python_ext=' + re.escape(os.path.basename(target))]
+                ['-o:a']['qx/*:python_dir=' + re.escape(os.path.dirname(target))]
+                ['-o:a']['qx/*:python_ext=' + re.escape(os.path.basename(target))]
                 # (Ab)use static libs for the intermediate libraries
                 # to avoid dealing with R(UN)PATH nonsense on Linux/OSX as much as possible
-                ['-o']["qx/*:shared=False"]
+                ['-o:a']["qx/*:shared=False"]
 
                 ['-b']['missing']
                 ['-tf']['']

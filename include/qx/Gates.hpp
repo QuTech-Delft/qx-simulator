@@ -1,6 +1,6 @@
 #pragma once
 
-#include "qx/Core.hpp"
+#include "qx/DenseUnitaryMatrix.hpp"
 
 
 namespace qx::gates {
