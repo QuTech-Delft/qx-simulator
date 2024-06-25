@@ -69,15 +69,13 @@ void QuantumState::reset() {
 // Update data after a measurement
 //
 // measuredState will be true if we measured a 1, or false if we measured a 0
-// measuredStateProbability will be the probability of measuring 1 if we measured a 1,
-//   or the probability of measuring 0 if we measured a 0
-void QuantumState::collapseQubit(QubitIndex qubitIndex, bool measuredState, double measuredStateProbability) {
+void QuantumState::collapseQubit(QubitIndex qubitIndex, bool measuredState, double probabilityOfMeasuringOne) {
     data.eraseIf([qubitIndex, measuredState](auto const &kv) {
         auto const &[basisVector, _] = kv;
         auto currentState = basisVector.test(qubitIndex.value);
         return currentState != measuredState;
     });
-    data *= std::sqrt(1 / measuredStateProbability);
+    data *= std::sqrt(1 / (measuredState ? probabilityOfMeasuringOne : (1 - probabilityOfMeasuringOne)));
 }
 
 }  // namespace qx::core
