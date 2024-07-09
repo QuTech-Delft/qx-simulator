@@ -127,7 +127,13 @@ ctest -C Debug --output-on-failure
 
 ### From Python
 
-The `qxelarator` module should provide access to a single API:
+The `qxelarator` module can be imported from another Python file with:
+
+```python
+import qxelarator
+```
+
+It should thenprovide access to a single API:
 - `execute_string`.
 
 ## Licensing
