@@ -20,7 +20,7 @@ For development, see:
 - `test`: test files.
 - `python`: SWIG interface.
 
-For build process, continuous integration, and documentation:
+For build process, and continuous integration:
 
 - `.github`: GitHub Actions configuration files.
 - `conan`: Conan profiles.
@@ -46,7 +46,7 @@ You'll need to create a default profile before using it for the first time.
 
 The installation of dependencies, as well as the compilation, can be done in one go.
 
-```
+```shell
 git clone https://github.com/QuTech-Delft/qx-simulator.git
 cd qx-simulator
 conan profile detect
@@ -76,7 +76,7 @@ All the `tests`, except for `linux-x64` profiles, enable Address Sanitizer.
 
 Profiles are a shorthand for command line options. The command above could be written, similarly,  as: 
 
-```
+```shell
 conan build . -s:a compiler.cppstd=23-s:a qx/*:build_type=Debug -c tools.build:skip_test=False -b missing
 ```
 
@@ -96,7 +96,7 @@ Tests are disabled by default. To enable them, use `-c tools.build:skip_test=Fal
 
 Install from the project root directory as follows:
 
-```
+```shell
 python3 -m pip install --verbose .
 ```
 
@@ -112,13 +112,13 @@ python3 -m pytest
 
 The `CMakeLists.txt` file in the root directory includes install targets:
 
-```
+```shell
 conan create --version 0.7.1 . -pr:a=tests-debug -b missing
 ```
 
 You can test if it works by doing:
 
-```
+```shell
 cd test/Debug
 ctest -C Debug --output-on-failure
 ```
