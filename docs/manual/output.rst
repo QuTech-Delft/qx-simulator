@@ -54,7 +54,7 @@ The result is now:
     State: {'00': (0.9999999999999998+0j)}
 
 
-You can there notice that the final quantum state is collapsed to "00", because of the measurements.
+You can notice that the final quantum state is collapsed to "00", because of the measurements.
 The ket ``|00>`` doesn't have amplitude exactly 1 because of the approximation of real numbers
 done by floating point arithmetic inside the simulator, something to keep in mind when interpreting the results.
 Again, the ``State`` section is the quantum state at the end of the 100th iteration.

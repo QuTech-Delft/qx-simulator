@@ -69,7 +69,7 @@ void QuantumState::reset() {
 // Update data after a measurement
 //
 // measuredState will be true if we measured a 1, or false if we measured a 0
-void QuantumState::collapseQubit(QubitIndex qubitIndex, bool measuredState, double probabilityOfMeasuringOne) {
+void QuantumState::collapseQubitState(QubitIndex qubitIndex, bool measuredState, double probabilityOfMeasuringOne) {
     data.eraseIf([qubitIndex, measuredState](auto const &kv) {
         auto const &[basisVector, _] = kv;
         auto currentState = basisVector.test(qubitIndex.value);
