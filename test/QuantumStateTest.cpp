@@ -66,25 +66,39 @@ TEST_F(QuantumStateTest, apply_cnot) {
 
 TEST_F(QuantumStateTest, measure_on_non_superposed_state) {
     QuantumState victim{ 2, {{"10", 0.123}, {"11", std::sqrt(1 - std::pow(0.123, 2))}} };
-    victim.measure(QubitIndex{1}, []() { return 0.9485; });
+    victim.apply_measure(QubitIndex{ 1 }, []() { return 0.9485; });
     checkEq(victim, {0, 0, 0.123, std::sqrt(1 - std::pow(0.123, 2))});
-    victim.measure(QubitIndex{1}, []() { return 0.045621; });
+    victim.apply_measure(QubitIndex{ 1 }, []() { return 0.045621; });
     checkEq(victim, {0, 0, 0.123, std::sqrt(1 - std::pow(0.123, 2))});
     EXPECT_EQ(victim.getMeasurementRegister(), BasisVector("10"));
 }
 
 TEST_F(QuantumStateTest, measure_on_superposed_state__case_0) {
     QuantumState victim{ 2, {{"10", 0.123}, {"11", std::sqrt(1 - std::pow(0.123, 2))}} };
-    victim.measure(QubitIndex{0}, []() { return 0.994; });
+    victim.apply_measure(QubitIndex{ 0 }, []() { return 0.994; });
     checkEq(victim, {0, 0, 1, 0});
     EXPECT_EQ(victim.getMeasurementRegister(), BasisVector("00"));
 }
 
 TEST_F(QuantumStateTest, measure_on_superposed_state__case_1) {
     QuantumState victim{ 2, {{"10", 0.123}, {"11", std::sqrt(1 - std::pow(0.123, 2))}} };
-    victim.measure(QubitIndex{0}, []() { return 0.254; });
+    victim.apply_measure(QubitIndex{ 0 }, []() { return 0.254; });
     checkEq(victim, {0, 0, 0, 1});
     EXPECT_EQ(victim.getMeasurementRegister(), BasisVector("01"));
+}
+
+TEST_F(QuantumStateTest, reset__case_0) {
+    // Reset leads to a non-deterministic global quantum state because of the state collapse
+    QuantumState victim{ 2, {{"00", 0.123}, {"11", std::sqrt(1 - std::pow(0.123, 2))}} };
+    victim.apply_reset(QubitIndex{ 0 }, []() { return 0.994; });
+    checkEq(victim, {1, 0, 0, 0});
+}
+
+TEST_F(QuantumStateTest, reset__case_1) {
+    // Prep leads to a non-deterministic global quantum state because of the state collapse
+    QuantumState victim{ 2, {{"00", 0.123}, {"11", std::sqrt(1 - std::pow(0.123, 2))}} };
+    victim.apply_reset(QubitIndex{ 0 }, []() { return 0.245; });
+    checkEq(victim, {0, 0, 1, 0});
 }
 
 } // namespace qx::core

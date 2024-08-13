@@ -11,6 +11,7 @@
 #include "qx/Core.hpp"  // BasisVector, QubitIndex
 #include "qx/CompileTimeConfiguration.hpp"  // MAX_QUBIT_NUMBER
 #include "qx/DenseUnitaryMatrix.hpp"
+#include "qx/Gates.hpp"
 #include "qx/RegisterManager.hpp"
 #include "qx/SparseArray.hpp"
 
@@ -48,6 +49,9 @@ void applyImpl(DenseUnitaryMatrix<1 << NumberOfOperands> const &matrix,
 
 class QuantumState {
     void checkQuantumState();
+
+    void resetData();
+    void resetMeasurementRegister();
 
 public:
     QuantumState(std::size_t qubit_register_size);
@@ -88,11 +92,25 @@ public:
 
     // measuredState will be true if we measured a 1, or false if we measured a 0
     template <typename F>
-    void measure(QubitIndex qubitIndex, F &&randomGenerator) {
+    bool apply_measure(QubitIndex qubitIndex, F &&randomGenerator) {
         auto probabilityOfMeasuringOne = getProbabilityOfMeasuringOne(qubitIndex);
         auto measuredState = (randomGenerator() < probabilityOfMeasuringOne);
         collapseQubitState(qubitIndex, measuredState, probabilityOfMeasuringOne);
         measurementRegister.set(qubitIndex.value, measuredState);
+        return measuredState;
+    }
+
+    // reset performs a measurement and a conditional Pauli X based on the outcome of the measurement
+    template <typename F>
+    void apply_reset(QubitIndex qubitIndex, F &&randomGenerator) {
+        if (apply_measure(qubitIndex, randomGenerator)) {
+            auto operand = std::array<core::QubitIndex, 1>{ { qubitIndex } };
+            apply(gates::X, operand);
+        }
+    }
+
+    void apply_reset_all() {
+        resetData();
     }
 
 private:

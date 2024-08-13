@@ -42,10 +42,18 @@ QuantumState::QuantumState(std::size_t qubit_register_size,
     return isNull(data.norm() - 1.);
 }
 
-void QuantumState::reset() {
+void QuantumState::resetData() {
     data.clear();
     data[BasisVector{}] = SparseComplex{ 1. };  // start initialized in state 00...000
+}
+
+void QuantumState::resetMeasurementRegister() {
     measurementRegister.reset();
+}
+
+void QuantumState::reset() {
+    resetData();
+    resetMeasurementRegister();
 }
 
 [[nodiscard]] const BasisVector& QuantumState::getMeasurementRegister() const {
