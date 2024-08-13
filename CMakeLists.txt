@@ -111,6 +111,7 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 #=============================================================================#
 
 find_package(absl)
+find_package(Boost REQUIRED)
 find_package(libqasm REQUIRED CONFIG)
 
 
@@ -141,6 +142,7 @@ target_compile_features(qx PRIVATE
 
 target_include_directories(qx PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}/include/"
+    "${Boost_INCLUDE_DIRS}"
 )
 
 if(CMAKE_COMPILER_IS_GNUCXX)
@@ -244,6 +246,7 @@ endif()
 message(STATUS
     "[${PROJECT_NAME}] Target include directories:\n"
     "      CMAKE_CURRENT_SOURCE_DIR/include/: ${CMAKE_CURRENT_SOURCE_DIR}/include/\n"
+    "      Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}\n"
 )
 
 

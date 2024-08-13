@@ -1,8 +1,10 @@
 #pragma once
 
+#include <boost/dynamic_bitset/dynamic_bitset.hpp>
 #include <cstdint>  // size_t, uint32_t
 #include <cstdlib>  // abs
 #include <complex>
+#include <fmt/ostream.h>
 
 #include "qx/CompileTimeConfiguration.hpp"  // EPS, MAX_QUBIT_NUMBER
 #include "qx/Utils.hpp"
@@ -26,7 +28,13 @@ struct QubitIndex {
     std::size_t value;
 };
 
+struct BitIndex {
+    std::size_t value;
+};
+
 using BasisVector = utils::Bitset<config::MAX_QUBIT_NUMBER>;
+
+using BitMeasurementRegister = boost::dynamic_bitset<uint32_t>;
 
 inline constexpr bool isNotNull(std::complex<double> c) {
 #if defined(_MSC_VER)
@@ -43,3 +51,5 @@ inline constexpr bool isNull(std::complex<double> c) {
 }
 
 }  // namespace qx::core
+
+template <> struct fmt::formatter<qx::core::BitMeasurementRegister> : fmt::ostream_formatter {};

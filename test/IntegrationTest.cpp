@@ -214,4 +214,30 @@ b1 = measure q1
     EXPECT_LT(std::abs(static_cast<long long>(iterations/2 - actual.measurements[1].count)), error);
 }
 
+TEST_F(IntegrationTest, bit_measurement_register) {
+    std::size_t iterations = 10'000;
+    auto cqasm = R"(
+version 3.0
+
+qubit[2] qq
+X qq[0]
+bit[2] bb
+bb[0] = measure qq[0]
+
+qubit q
+H q
+CNOT q, qq[0]
+bit b
+b = measure qq[0]
+)";
+    auto actual = runFromString(cqasm, iterations);
+
+    auto error = static_cast<std::uint64_t>(static_cast<double>(iterations)/2 * 0.05);
+    EXPECT_EQ(actual.bitMeasurements.size(), 2);
+    for (auto const& bitMeasurement : actual.bitMeasurements) {
+        EXPECT_EQ(actual.getBitMeasurement(bitMeasurement.state, "bb", 0), 1);
+        EXPECT_LT(std::abs(static_cast<long long>(iterations/2 - bitMeasurement.count)), error);
+    }
+}
+
 } // namespace qx
