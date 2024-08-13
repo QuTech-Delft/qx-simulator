@@ -1,9 +1,9 @@
 #include "qx/CompileTimeConfiguration.hpp"
 #include "qx/RegisterManager.hpp"
-#include "qx/SimulationError.hpp"
 #include "qx/V3xLibqasmInterface.hpp"
 
 #include <algorithm>  // fill
+#include <fmt/format.h>
 #include <range/v3/numeric/accumulate.hpp>
 #include <range/v3/view/filter.hpp>
 #include <range/v3/view/transform.hpp>
@@ -11,11 +11,9 @@
 
 namespace qx {
 
-struct RegisterManagerError : public SimulationError {
-    explicit RegisterManagerError(const std::string &message)
-        : SimulationError{ message }
-    {}
-};
+RegisterManagerError::RegisterManagerError(const std::string &message)
+    : SimulationError{ message }
+{}
 
 RegisterManager::RegisterManager(const V3OneProgram &program) {
     auto &&qubit_variables = program->variables.get_vec()

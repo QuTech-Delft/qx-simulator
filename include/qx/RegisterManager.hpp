@@ -1,5 +1,6 @@
 #pragma once
 
+#include "qx/SimulationError.hpp"
 #include "qx/V3xLibqasmInterface.hpp"
 #include "v3x/cqasm-semantic-gen.hpp"
 
@@ -16,6 +17,10 @@ using VariableName = std::string;
 struct QubitRange {
     std::size_t first;
     std::size_t size;
+};
+
+struct RegisterManagerError : public SimulationError {
+    explicit RegisterManagerError(const std::string &message);
 };
 
 /*
