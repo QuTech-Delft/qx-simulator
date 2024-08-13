@@ -44,7 +44,7 @@ Build outputs may go into:
 This version of QX Simulator can only be compiled via the Conan package manager.
 You'll need to create a default profile before using it for the first time.
 
-The installation of dependencies, as well as the compilation, can be done in one go.
+The installation and compilation of dependencies can be done in one go.
 
 ```shell
 git clone https://github.com/QuTech-Delft/qx-simulator.git
