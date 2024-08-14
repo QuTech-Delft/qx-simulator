@@ -1,4 +1,5 @@
-#include <fmt/format.h>
+#include <fmt/core.h>
+#include <ostream>
 
 #include "qx/QuantumState.hpp"
 
@@ -22,7 +23,7 @@ QuantumState::QuantumState(std::size_t qubit_register_size)
     : numberOfQubits{ qubit_register_size }
     , data{ static_cast<size_t>(1) << numberOfQubits } {
 
-    data[BasisVector{}] = SparseComplex{ 1. };  // start initialized in state 00...000
+    resetData();
     checkQuantumState();
 }
 
@@ -40,6 +41,10 @@ QuantumState::QuantumState(std::size_t qubit_register_size,
 
 [[nodiscard]] bool QuantumState::isNormalized() {
     return isNull(data.norm() - 1.);
+}
+
+[[nodiscard]] std::vector<std::complex<double>> QuantumState::toVector() const {
+    return data.toVector();
 }
 
 void QuantumState::resetData() {
@@ -84,6 +89,10 @@ void QuantumState::collapseQubitState(QubitIndex qubitIndex, bool measuredState,
         return currentState != measuredState;
     });
     data *= std::sqrt(1 / (measuredState ? probabilityOfMeasuringOne : (1 - probabilityOfMeasuringOne)));
+}
+
+std::ostream& operator<<(std::ostream &os, const QuantumState &state) {
+    return os << fmt::format("[{}]", fmt::join(state.toVector(), ", "));
 }
 
 }  // namespace qx::core

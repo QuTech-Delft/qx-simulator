@@ -33,27 +33,18 @@ public:
 
 TEST_F(QuantumStateTest, apply_identity) {
     QuantumState victim{ 3 };
-
     EXPECT_EQ(victim.getNumberOfQubits(), 3);
     checkEq(victim, {1, 0, 0, 0, 0, 0, 0, 0});
-
     victim.apply<3>(DenseUnitaryMatrix<8>::identity(),
                     std::array<QubitIndex, 3>{QubitIndex{0}, QubitIndex{1}, QubitIndex{2}});
-
     checkEq(victim, {1, 0, 0, 0, 0, 0, 0, 0});
 }
 
 TEST_F(QuantumStateTest, apply_hadamard) {
     QuantumState victim{ 3 };
-
     EXPECT_EQ(victim.getNumberOfQubits(), 3);
     checkEq(victim, {1, 0, 0, 0, 0, 0, 0, 0});
-
-    victim.apply<1>(
-        DenseUnitaryMatrix<2>({{{1 / std::sqrt(2), 1 / std::sqrt(2)},
-                                {1 / std::sqrt(2), -1 / std::sqrt(2)}}}),
-        std::array<QubitIndex, 1>{QubitIndex{1}});
-
+    victim.apply<1>(gates::H, std::array<QubitIndex, 1>{QubitIndex{1}});
     checkEq(victim, {1 / std::sqrt(2), 0, 1 / std::sqrt(2), 0, 0, 0, 0, 0});
 }
 
@@ -87,18 +78,26 @@ TEST_F(QuantumStateTest, measure_on_superposed_state__case_1) {
     EXPECT_EQ(victim.getMeasurementRegister(), BasisVector("01"));
 }
 
+// Reset leads to a non-deterministic global quantum state because of the state collapse
 TEST_F(QuantumStateTest, reset__case_0) {
-    // Reset leads to a non-deterministic global quantum state because of the state collapse
     QuantumState victim{ 2, {{"00", 0.123}, {"11", std::sqrt(1 - std::pow(0.123, 2))}} };
     victim.apply_reset(QubitIndex{ 0 }, []() { return 0.994; });
     checkEq(victim, {1, 0, 0, 0});
+    EXPECT_EQ(victim.getMeasurementRegister(), BasisVector("00"));
 }
 
 TEST_F(QuantumStateTest, reset__case_1) {
-    // Prep leads to a non-deterministic global quantum state because of the state collapse
     QuantumState victim{ 2, {{"00", 0.123}, {"11", std::sqrt(1 - std::pow(0.123, 2))}} };
     victim.apply_reset(QubitIndex{ 0 }, []() { return 0.245; });
     checkEq(victim, {0, 0, 1, 0});
+    EXPECT_EQ(victim.getMeasurementRegister(), BasisVector("00"));
+}
+
+TEST_F(QuantumStateTest, reset__all) {
+    QuantumState victim{ 2, {{"00", 0.123}, {"11", std::sqrt(1 - std::pow(0.123, 2))}} };
+    victim.apply_reset_all();
+    checkEq(victim, QuantumState{ 2 }.toVector());
+    EXPECT_EQ(victim.getMeasurementRegister(), BasisVector("00"));
 }
 
 } // namespace qx::core

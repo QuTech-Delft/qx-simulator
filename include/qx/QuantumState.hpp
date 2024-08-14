@@ -3,7 +3,9 @@
 #include <array>
 #include <cstdint>  // size_t
 #include <complex>  // norm
+#include <fmt/ostream.h>
 #include <initializer_list>
+#include <ostream>
 #include <stdexcept>
 #include <string>
 #include <utility>  // invoke, pair
@@ -59,6 +61,7 @@ public:
                  std::initializer_list<std::pair<std::string, std::complex<double>>> values);
     [[nodiscard]] std::size_t getNumberOfQubits() const;
     [[nodiscard]] bool isNormalized();
+    [[nodiscard]] std::vector<std::complex<double>> toVector() const;
     void reset();
 
     template <std::size_t NumberOfOperands>
@@ -92,18 +95,21 @@ public:
 
     // measuredState will be true if we measured a 1, or false if we measured a 0
     template <typename F>
-    bool apply_measure(QubitIndex qubitIndex, F &&randomGenerator) {
+    void apply_measure(QubitIndex qubitIndex, F &&randomGenerator) {
         auto probabilityOfMeasuringOne = getProbabilityOfMeasuringOne(qubitIndex);
         auto measuredState = (randomGenerator() < probabilityOfMeasuringOne);
         collapseQubitState(qubitIndex, measuredState, probabilityOfMeasuringOne);
         measurementRegister.set(qubitIndex.value, measuredState);
-        return measuredState;
     }
 
     // reset performs a measurement and a conditional Pauli X based on the outcome of the measurement
+    // reset does not modify the measurement register
     template <typename F>
     void apply_reset(QubitIndex qubitIndex, F &&randomGenerator) {
-        if (apply_measure(qubitIndex, randomGenerator)) {
+        auto probabilityOfMeasuringOne = getProbabilityOfMeasuringOne(qubitIndex);
+        auto measuredState = (randomGenerator() < probabilityOfMeasuringOne);
+        collapseQubitState(qubitIndex, measuredState, probabilityOfMeasuringOne);
+        if (measuredState) {
             auto operand = std::array<core::QubitIndex, 1>{ { qubitIndex } };
             apply(gates::X, operand);
         }
@@ -119,4 +125,8 @@ private:
     BasisVector measurementRegister{};
 };
 
+std::ostream& operator<<(std::ostream &os, const QuantumState &array);
+
 }  // namespace qx::core
+
+template <> struct fmt::formatter<qx::core::QuantumState> : fmt::ostream_formatter {};

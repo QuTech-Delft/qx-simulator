@@ -1,7 +1,8 @@
 #include "qx/SparseArray.hpp"
 
 #include <complex>
-#include <fmt/format.h>
+#include <fmt/core.h>
+#include <ostream>
 
 
 namespace qx::core {
@@ -121,6 +122,10 @@ void SparseArray::cleanUpZeros() {
         return isNull(sparseComplex.value);
     });
     zeroCounter_ = 0;
+}
+
+std::ostream& operator<<(std::ostream &os, const SparseArray &array) {
+    return os << fmt::format("[{}]", fmt::join(array.toVector(), ", "));
 }
 
 }  // namespace qx::core
