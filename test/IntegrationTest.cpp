@@ -227,14 +227,14 @@ reset q
 )";
     auto actual = runFromString(cqasm, iterations);
 
-    // b value should always be "1" because reset does not modify the measurement register
+    // Expected q state should always be |0> because reset modifies the qubit state
+    EXPECT_EQ(actual.state[0].value, "1");
+    EXPECT_EQ(actual.state[0].amplitude, (core::Complex{ .real = 1, .imag = 0, .norm = 1 }));
+
+    // Expected b value should always be "1" because reset does not modify the measurement register
     EXPECT_EQ(actual.measurements.size(), 1);
     EXPECT_TRUE(actual.measurements[0].state == "1");
     EXPECT_EQ(actual.measurements[0].count, iterations);
-
-    // q state should always be |0> because reset modifies the qubit state
-    EXPECT_EQ(actual.state[0].value, "1");
-    EXPECT_EQ(actual.state[0].amplitude, (core::Complex{ .real = 1, .imag = 0, .norm = 1 }));
 }
 
 TEST_F(IntegrationTest, reset__x_cnot_reset_measure) {
@@ -245,21 +245,28 @@ version 3.0
 qubit[2] q
 bit[2] b
 X q[0]
-CNOT q[1], q[0]
+CNOT q[0], q[1]
 reset q[0]
 b = measure q
 )";
     auto actual = runFromString(cqasm, iterations);
 
-    // b value should always be "00" because q0 will always be in |0> state and q1 is entangled with it
-    EXPECT_EQ(actual.measurements.size(), 1);
-    EXPECT_TRUE(actual.measurements[0].state == "00");
-    EXPECT_EQ(actual.measurements[0].count, iterations);
-
-    // q state should always be |00> because reset sets q0 state to |0>, and q1 is entangled with it
-    EXPECT_EQ(actual.state.size(), 1);
-    EXPECT_EQ(actual.state[0].value, "00");
+    // Expected q state should be |00>+|10>
+    // State is |00>+|11> after creating the Bell state
+    // Then reset sets q to |0>, leaving the state as |00>+|10>
+    // And that is what is measured
     EXPECT_EQ(actual.state[0].amplitude, (core::Complex{ .real = 1, .imag = 0, .norm = 1 }));
+    EXPECT_EQ(actual.state,
+        (SimulationResult::State{
+            { "00", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } },
+            { "10", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } }
+        }));
+
+    // Expected b value should be "00" 50% of the cases and "10" 50% of the cases
+    auto error = static_cast<std::uint64_t>(static_cast<double>(iterations)/2 * 0.05);
+    EXPECT_EQ(actual.measurements.size(), 2);
+    EXPECT_TRUE(actual.measurements[0].state == "00" || actual.measurements[0].state == "10");
+    EXPECT_LT(std::abs(static_cast<long long>(iterations/2 - actual.measurements[0].count)), error);
 }
 
 TEST_F(IntegrationTest, reset__x_cnot_measure_reset) {
@@ -270,29 +277,30 @@ version 3.0
 qubit[2] q
 bit[2] b
 X q[0]
-CNOT q[1], q[0]
+CNOT q[0], q[1]
 b = measure q
 reset q[0]
 )";
     auto actual = runFromString(cqasm, iterations);
 
-    // Expected b value should be "11" 50% of the cases and "00" 50% of the cases
-    // because the measure happens right after creating the Bell state,
-    // and reset does not modify the measurement register
-    auto error = static_cast<std::uint64_t>(static_cast<double>(iterations)/2 * 0.05);
-    EXPECT_EQ(actual.measurements.size(), 2);
-    EXPECT_TRUE(actual.measurements[0].state == "00" || actual.measurements[0].state == "10");
-    EXPECT_LT(std::abs(static_cast<long long>(iterations/2 - actual.measurements[0].count)), error);
-
     // Expected q state should be |00>+|10>
-    // because the measure collapses the qubit states while at superposition,
-    // leaving them as |11>+|00>, but then reset sets q0 state to |0>.
+    // State is |00>+|11> after creating the Bell state
+    // And that is what is measured
+    // Then reset sets q0 to |0>, leaving the state as |00>+|10>
     EXPECT_EQ(actual.state[0].amplitude, (core::Complex{ .real = 1, .imag = 0, .norm = 1 }));
     EXPECT_EQ(actual.state,
         (SimulationResult::State{
             { "00", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } },
             { "10", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } }
         }));
+
+    // Expected b value should be "00" 50% of the cases and "11" 50% of the cases
+    // because the measure happens right after creating the Bell state,
+    // and reset does not modify the measurement register
+    auto error = static_cast<std::uint64_t>(static_cast<double>(iterations)/2 * 0.05);
+    EXPECT_EQ(actual.measurements.size(), 2);
+    EXPECT_TRUE(actual.measurements[0].state == "00" || actual.measurements[0].state == "11");
+    EXPECT_LT(std::abs(static_cast<long long>(iterations/2 - actual.measurements[0].count)), error);
 }
 
 } // namespace qx
