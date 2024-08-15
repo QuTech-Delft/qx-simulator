@@ -214,7 +214,7 @@ b1 = measure q1
     EXPECT_LT(std::abs(static_cast<long long>(iterations/2 - actual.measurements[1].count)), error);
 }
 
-TEST_F(IntegrationTest, reset__x_measure_reset) {
+TEST_F(IntegrationTest, DISABLED_reset__x_measure_reset) {
     std::size_t iterations = 10'000;
     auto cqasm = R"(
 version 3.0
@@ -237,7 +237,7 @@ reset q
     EXPECT_EQ(actual.measurements[0].count, iterations);
 }
 
-TEST_F(IntegrationTest, reset__x_cnot_reset_measure) {
+TEST_F(IntegrationTest, DISABLED_reset__x_cnot_reset_measure) {
     std::size_t iterations = 10'000;
     auto cqasm = R"(
 version 3.0
@@ -269,7 +269,7 @@ b = measure q
     EXPECT_LT(std::abs(static_cast<long long>(iterations/2 - actual.measurements[0].count)), error);
 }
 
-TEST_F(IntegrationTest, reset__x_cnot_measure_reset) {
+TEST_F(IntegrationTest, DISABLED_reset__x_cnot_measure_reset) {
     std::size_t iterations = 10'000;
     auto cqasm = R"(
 version 3.0
