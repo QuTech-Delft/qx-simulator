@@ -102,9 +102,6 @@ private:
     std::size_t numberOfQubits = 1;
     std::size_t numberOfBits = 1;
     SparseArray data;
-    // TODO: we are keeping a "double-entry bookkeeping" until we can get rid of measurements
-    //   measurements needs to be replaced with bitMeasurements with the introduction of bit variables,
-    //   but this replacement cannot be executed until all the QX simulator clients start using bitMeasurements
     BasisVector measurementRegister{};
     BitMeasurementRegister bitMeasurementRegister{};
 };

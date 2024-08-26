@@ -96,10 +96,6 @@ private:
     }
 
     core::QuantumState &state;
-
-    // TODO: we are keeping a "double-entry bookkeeping" until we can get rid of measurements
-    //   measurements needs to be replaced with bitMeasurements with the introduction of bit variables,
-    //   but this replacement cannot be executed until all the QX simulator clients start using bitMeasurements
     absl::btree_map<state_string_t, count_t> measurements;
     absl::btree_map<state_string_t, count_t> bitMeasurements;
 
