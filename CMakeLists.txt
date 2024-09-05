@@ -111,7 +111,9 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 #=============================================================================#
 
 find_package(absl REQUIRED)
-find_package(libqasm REQUIRED CONFIG)
+find_package(fmt REQUIRED)
+find_package(libqasm REQUIRED)
+find_package(range-v3 REQUIRED)
 
 
 #=============================================================================#
@@ -200,7 +202,9 @@ endif()
 
 target_link_libraries(qx PUBLIC
     absl::flat_hash_map
+    fmt::fmt
     libqasm::libqasm
+    range-v3::range-v3
 )
 
 #=============================================================================#
