@@ -2,6 +2,7 @@
 
 #include <complex>
 #include <fmt/core.h>
+#include <fmt/ranges.h>
 #include <ostream>
 
 
@@ -20,7 +21,7 @@ SparseComplex::SparseComplex(const SparseComplex &other) {
 }
 
 SparseComplex::SparseComplex(SparseComplex &&other) noexcept {
-    value = std::move(other.value);
+    value = other.value;
 }
 
 SparseComplex& SparseComplex::operator=(const SparseComplex &other) {
@@ -32,7 +33,7 @@ SparseComplex& SparseComplex::operator=(const SparseComplex &other) {
 
 SparseComplex& SparseComplex::operator=(SparseComplex &&other) noexcept {
     if (std::abs(other.value) >= config::EPS) {
-        value = std::move(other.value);
+        value = other.value;
     }
     return *this;
 }
