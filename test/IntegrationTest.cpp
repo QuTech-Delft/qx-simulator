@@ -290,7 +290,7 @@ b = measure q
     // Expected q state should be |00>+|10>
     // State is |00>+|11> after creating the Bell state
     // Then reset sets q to |0>, leaving the state as |00>+|10>
-    // The measure provokes a collapse of the state to either |00> or |11>
+    // The measure provokes a collapse of the state to either |00> or |10>
     EXPECT_TRUE(actual.state[0].value.ends_with('0'));
     EXPECT_EQ(actual.state[0].amplitude, (core::Complex{ .real = 1, .imag = 0, .norm = 1 }));
 

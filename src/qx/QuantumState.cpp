@@ -127,9 +127,9 @@ void QuantumState::updateDataAfterMeasurement(QubitIndex qubitIndex, bool measur
 //     Basis vector: amplitude
 //            q1 q0: (real, imag)
 //             0  0: ( 0.7,    0)
-//             0  1: (   0,    0)  <-- 01 is reset to 00, 01 amplitude set to 0, old 01 amplitude added to 00
+//             0  1: (   0,    0)  <-- 01 is reset to 00, old 01 amplitude added to 00, 01 amplitude set to 0
 //             1  0: ( 0.7,    0)
-//             1  1: (   0,    0)  <-- 11 is reset to 10, 11 amplitude set to 0, old 11 amplitude added to 10
+//             1  1: (   0,    0)  <-- 11 is reset to 10, old 11 amplitude added to 10, 11 amplitude set to 0
 void QuantumState::updateDataAfterReset(QubitIndex qubitIndex) {
     auto newData = data;
     for (auto const &[basisVector, amplitude]: data) {
