@@ -132,7 +132,8 @@ void QuantumState::updateDataAfterMeasurement(QubitIndex qubitIndex, bool measur
 //             1  1: (   0,    0)  <-- 11 is reset to 10, old 11 amplitude added to 10, 11 amplitude set to 0
 void QuantumState::updateDataAfterReset(QubitIndex qubitIndex) {
     auto newData = data;
-    for (auto const &[basisVector, amplitude]: data) {
+    data.forEach([qubitIndex, &newData](auto const &kv) {
+        auto const &[basisVector, amplitude] = kv;
         if (basisVector.test(qubitIndex.value)) {
             auto basisVectorAfterReset = basisVector;
             basisVectorAfterReset.set(qubitIndex.value, false);
@@ -141,7 +142,7 @@ void QuantumState::updateDataAfterReset(QubitIndex qubitIndex) {
             );
             newData[basisVector].value = 0;
         }
-    }
+    });
     data = std::move(newData);
 }
 
