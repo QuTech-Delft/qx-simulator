@@ -91,31 +91,24 @@ public:
     [[nodiscard]] const BasisVector &getMeasurementRegister() const;
     [[nodiscard]] double getProbabilityOfMeasuringOne(QubitIndex qubitIndex);
     [[nodiscard]] double getProbabilityOfMeasuringZero(QubitIndex qubitIndex);
-    void collapseQubitState(QubitIndex qubitIndex, bool measuredState, double probabilityOfMeasuringOne);
+    void updateDataAfterMeasurement(QubitIndex qubitIndex, bool measuredState, double probabilityOfMeasuringOne);
+    void updateDataAfterReset(QubitIndex qubitIndex);
 
     // measuredState will be true if we measured a 1, or false if we measured a 0
     template <typename F>
-    void apply_measure(QubitIndex qubitIndex, F &&randomGenerator) {
+    void applyMeasure(QubitIndex qubitIndex, F &&randomGenerator) {
         auto probabilityOfMeasuringOne = getProbabilityOfMeasuringOne(qubitIndex);
         auto measuredState = (randomGenerator() < probabilityOfMeasuringOne);
-        collapseQubitState(qubitIndex, measuredState, probabilityOfMeasuringOne);
+        updateDataAfterMeasurement(qubitIndex, measuredState, probabilityOfMeasuringOne);
         measurementRegister.set(qubitIndex.value, measuredState);
     }
 
-    // reset performs a measurement and a conditional Pauli X based on the outcome of the measurement
     // reset does not modify the measurement register
-    template <typename F>
-    void apply_reset(QubitIndex qubitIndex, F &&randomGenerator) {
-        auto probabilityOfMeasuringOne = getProbabilityOfMeasuringOne(qubitIndex);
-        auto measuredState = (randomGenerator() < probabilityOfMeasuringOne);
-        collapseQubitState(qubitIndex, measuredState, probabilityOfMeasuringOne);
-        if (measuredState) {
-            auto operand = std::array<core::QubitIndex, 1>{ { qubitIndex } };
-            apply(gates::X, operand);
-        }
+    void applyReset(QubitIndex qubitIndex) {
+        updateDataAfterReset(qubitIndex);
     }
 
-    void apply_reset_all() {
+    void applyResetAll() {
         resetData();
     }
 
