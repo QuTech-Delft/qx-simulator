@@ -29,10 +29,14 @@ qubit[2] q
 H q[0]
 CNOT q[0], q[1]
 )";
-    auto actual = runFromString(cqasm, 1, "3.0");
+    std::size_t iterations = 1;
+    auto actual = runFromString(cqasm, iterations, "3.0");
 
-    EXPECT_EQ(actual.shotsRequested, 1);
-    EXPECT_EQ(actual.shotsDone, 1);
+    EXPECT_EQ(actual.shotsRequested, iterations);
+    EXPECT_EQ(actual.shotsDone, iterations);
+
+    // Expected q state should be |00>+|11>
+    // State is |00>+|11> after creating the Bell state
     EXPECT_EQ(actual.state,
         (SimulationResult::State{
             { "00", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } },
@@ -48,10 +52,12 @@ qubit[6] q
 X q[0:2]
 CNOT q[0:2], q[3:5]
 )";
-    auto actual = runFromString(cqasm, 2);
+    std::size_t iterations = 2;
+    auto actual = runFromString(cqasm, iterations);
 
+    // Expected q state should be |111111>
     EXPECT_EQ(actual.state,
-              (SimulationResult::State{ { "111111", core::Complex{ .real = 1, .imag = 0, .norm = 1 } } }));
+        (SimulationResult::State{ { "111111", core::Complex{ .real = 1, .imag = 0, .norm = 1 } } }));
 }
 
 TEST_F(IntegrationTest, too_many_qubits) {
@@ -91,10 +97,15 @@ I q[0]
 CNOT q[0], q[1]
 I q[1]
 )";
-    auto actual = runFromString(cqasm, 1, "3.0");
+    std::size_t iterations = 1;
+    auto actual = runFromString(cqasm, iterations, "3.0");
 
-    EXPECT_EQ(actual.shotsRequested, 1);
-    EXPECT_EQ(actual.shotsDone, 1);
+    EXPECT_EQ(actual.shotsRequested, iterations);
+    EXPECT_EQ(actual.shotsDone, iterations);
+
+    // Expected q state should be |00>+|11>
+    // State is |00>+|11> after creating the Bell state
+    // Identity gates do not modify the state of the qubits
     EXPECT_EQ(actual.state,
         (SimulationResult::State{
             { "00", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } },
@@ -103,7 +114,6 @@ I q[1]
 }
 
 TEST_F(IntegrationTest, measure) {
-    std::size_t iterations = 10'000;
     auto cqasm = R"(
 version 3.0
 
@@ -116,18 +126,20 @@ CNOT q[1], q[2]
 
 b = measure q
 )";
+    std::size_t iterations = 10'000;
     auto actual = runFromString(cqasm, iterations);
 
+    // Expected q state should be |001> or |111>
+    EXPECT_TRUE(actual.state[0].value.ends_with('1'));
+    EXPECT_EQ(actual.state[0].amplitude, (core::Complex{ .real = 1, .imag = 0, .norm = 1 }));
+
+    // Expected b value should be "001" 50% of the cases and "111" 50% of the cases
     auto error = static_cast<std::uint64_t>(static_cast<double>(iterations)/2 * 0.05);
     EXPECT_EQ(actual.measurements.size(), 2);
     EXPECT_EQ(actual.measurements[0].state, "001");
     EXPECT_LT(std::abs(static_cast<long long>(iterations/2 - actual.measurements[0].count)), error);
     EXPECT_EQ(actual.measurements[1].state, "111");
     EXPECT_LT(std::abs(static_cast<long long>(iterations/2 - actual.measurements[1].count)), error);
-
-    // State could be 001 or 111
-    EXPECT_TRUE(actual.state[0].value.ends_with('1'));
-    EXPECT_EQ(actual.state[0].amplitude, (core::Complex{ .real = 1, .imag = 0, .norm = 1 }));
 }
 
 TEST_F(IntegrationTest, multiple_measure_instructions) {
@@ -148,20 +160,20 @@ b[2] = measure q[2]
     std::size_t iterations = 10'000;
     auto actual = runFromString(cqasm, iterations);
 
+    // Expected q state should be |001> or |111>
+    EXPECT_TRUE(actual.state[0].value.ends_with('1'));
+    EXPECT_EQ(actual.state[0].amplitude, (core::Complex{ .real = 1, .imag = 0, .norm = 1 }));
+
+    // Expected b value should be "001" 50% of the cases and "111" 50% of the cases
     auto error = static_cast<std::uint64_t>(static_cast<double>(iterations)/2 * 0.05);
     EXPECT_EQ(actual.measurements.size(), 2);
     EXPECT_EQ(actual.measurements[0].state, "001");
     EXPECT_LT(std::abs(static_cast<long long>(iterations/2 - actual.measurements[0].count)), error);
     EXPECT_EQ(actual.measurements[1].state, "111");
     EXPECT_LT(std::abs(static_cast<long long>(iterations/2 - actual.measurements[1].count)), error);
-
-    // State could be 001 or 111
-    EXPECT_TRUE(actual.state[0].value.ends_with('1'));
-    EXPECT_EQ(actual.state[0].amplitude, (core::Complex{ .real = 1, .imag = 0, .norm = 1 }));
 }
 
 TEST_F(IntegrationTest, mid_circuit_measure_instruction) {
-    std::size_t iterations = 10'000;
     auto cqasm = R"(
 version 3.0
 
@@ -175,9 +187,10 @@ H q[1]
 CNOT q[1], q[0]
 b = measure q
 )";
+    std::size_t iterations = 10'000;
     auto actual = runFromString(cqasm, iterations);
 
-    // Expected output state: |00>+|11> or |01>+|10>
+    // Expected q state should be |00>+|11> or |01>+|10>
     auto error = static_cast<std::uint64_t>(static_cast<double>(iterations)/2 * 0.05);
     EXPECT_EQ(actual.measurements.size(), 2);
     EXPECT_TRUE(actual.measurements[0].state == "00" || actual.measurements[0].state == "01");
@@ -187,7 +200,6 @@ b = measure q
 }
 
 TEST_F(IntegrationTest, multiple_qubit_bit_definitions_and_mid_circuit_measure_instructions) {
-    std::size_t iterations = 10'000;
     auto cqasm = R"(
 version 3.0
 
@@ -203,9 +215,10 @@ bit b1
 b0 = measure q0
 b1 = measure q1
 )";
+    std::size_t iterations = 10'000;
     auto actual = runFromString(cqasm, iterations);
 
-    // Expected output state: |00>+|11> or |01>+|10>
+    // Expected q1-q0 state should be |00>+|11> or |01>+|10>
     auto error = static_cast<std::uint64_t>(static_cast<double>(iterations)/2 * 0.05);
     EXPECT_EQ(actual.measurements.size(), 2);
     EXPECT_TRUE(actual.measurements[0].state == "00" || actual.measurements[0].state == "01");
@@ -214,8 +227,7 @@ b1 = measure q1
     EXPECT_LT(std::abs(static_cast<long long>(iterations/2 - actual.measurements[1].count)), error);
 }
 
-TEST_F(IntegrationTest, DISABLED_reset__x_measure_reset) {
-    std::size_t iterations = 10'000;
+TEST_F(IntegrationTest, reset__x_measure_reset) {
     auto cqasm = R"(
 version 3.0
 
@@ -225,10 +237,11 @@ X q
 b = measure q
 reset q
 )";
+    std::size_t iterations = 10'000;
     auto actual = runFromString(cqasm, iterations);
 
     // Expected q state should always be |0> because reset modifies the qubit state
-    EXPECT_EQ(actual.state[0].value, "1");
+    EXPECT_EQ(actual.state[0].value, "0");
     EXPECT_EQ(actual.state[0].amplitude, (core::Complex{ .real = 1, .imag = 0, .norm = 1 }));
 
     // Expected b value should always be "1" because reset does not modify the measurement register
@@ -237,14 +250,37 @@ reset q
     EXPECT_EQ(actual.measurements[0].count, iterations);
 }
 
-TEST_F(IntegrationTest, DISABLED_reset__x_cnot_reset_measure) {
+TEST_F(IntegrationTest, reset__bell_state_then_reset) {
     std::size_t iterations = 10'000;
     auto cqasm = R"(
 version 3.0
 
 qubit[2] q
 bit[2] b
-X q[0]
+H q[0]
+CNOT q[0], q[1]
+reset q[0]
+)";
+    auto actual = runFromString(cqasm, iterations);
+
+    // Expected q state should be |00>+|10>
+    // State is |00>+|11> after creating the Bell state
+    // Then reset sets q to |0>, leaving the state as |00>+|10>
+    EXPECT_EQ(actual.state,
+        (SimulationResult::State{
+            { "00", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } },
+            { "10", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } }
+        }));
+}
+
+TEST_F(IntegrationTest, reset__bell_state_then_reset_and_measure) {
+    std::size_t iterations = 10'000;
+    auto cqasm = R"(
+version 3.0
+
+qubit[2] q
+bit[2] b
+H q[0]
 CNOT q[0], q[1]
 reset q[0]
 b = measure q
@@ -254,13 +290,9 @@ b = measure q
     // Expected q state should be |00>+|10>
     // State is |00>+|11> after creating the Bell state
     // Then reset sets q to |0>, leaving the state as |00>+|10>
-    // And that is what is measured
+    // The measure provokes a collapse of the state to either |00> or |11>
+    EXPECT_TRUE(actual.state[0].value.ends_with('0'));
     EXPECT_EQ(actual.state[0].amplitude, (core::Complex{ .real = 1, .imag = 0, .norm = 1 }));
-    EXPECT_EQ(actual.state,
-        (SimulationResult::State{
-            { "00", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } },
-            { "10", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } }
-        }));
 
     // Expected b value should be "00" 50% of the cases and "10" 50% of the cases
     auto error = static_cast<std::uint64_t>(static_cast<double>(iterations)/2 * 0.05);
@@ -269,30 +301,26 @@ b = measure q
     EXPECT_LT(std::abs(static_cast<long long>(iterations/2 - actual.measurements[0].count)), error);
 }
 
-TEST_F(IntegrationTest, DISABLED_reset__x_cnot_measure_reset) {
+TEST_F(IntegrationTest, reset__bell_state_then_measure_and_reset) {
     std::size_t iterations = 10'000;
     auto cqasm = R"(
 version 3.0
 
 qubit[2] q
 bit[2] b
-X q[0]
+H q[0]
 CNOT q[0], q[1]
 b = measure q
 reset q[0]
 )";
     auto actual = runFromString(cqasm, iterations);
 
-    // Expected q state should be |00>+|10>
+    // Expected q state should be |00> or |10>
     // State is |00>+|11> after creating the Bell state
-    // And that is what is measured
-    // Then reset sets q0 to |0>, leaving the state as |00>+|10>
+    // The measure provokes a collapse of the state to either |00> or |11>
+    // Then reset sets q0 to |0>, leaving the state as |00> or |10>
+    EXPECT_TRUE(actual.state[0].value.ends_with('0'));
     EXPECT_EQ(actual.state[0].amplitude, (core::Complex{ .real = 1, .imag = 0, .norm = 1 }));
-    EXPECT_EQ(actual.state,
-        (SimulationResult::State{
-            { "00", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } },
-            { "10", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } }
-        }));
 
     // Expected b value should be "00" 50% of the cases and "11" 50% of the cases
     // because the measure happens right after creating the Bell state,
