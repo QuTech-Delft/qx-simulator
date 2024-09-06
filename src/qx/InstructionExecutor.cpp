@@ -9,7 +9,7 @@ InstructionExecutor::InstructionExecutor(core::QuantumState &s)
 {}
 
 void InstructionExecutor::operator()(Measure const &m) {
-    quantumState.applyMeasure(m.qubitIndex, &random::randomZeroOneDouble);
+    quantumState.applyMeasure(m.qubitIndex, m.bitIndex, &random::randomZeroOneDouble);
 }
 
 void InstructionExecutor::operator()(Reset const &r) {

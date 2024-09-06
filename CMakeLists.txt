@@ -110,7 +110,8 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 # Dependencies                                                                #
 #=============================================================================#
 
-find_package(absl REQUIRED)
+find_package(absl  REQUIRED)
+find_package(Boost REQUIRED)
 find_package(fmt REQUIRED)
 find_package(libqasm REQUIRED)
 find_package(range-v3 REQUIRED)
@@ -142,6 +143,7 @@ target_compile_features(qx PRIVATE
 
 target_include_directories(qx PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}/include/"
+    "${Boost_INCLUDE_DIRS}"
 )
 
 if(CMAKE_COMPILER_IS_GNUCXX)
@@ -248,6 +250,7 @@ message(STATUS
     "[${PROJECT_NAME}] Target include directories:\n"
     "      CMAKE_CURRENT_SOURCE_DIR/include/: ${CMAKE_CURRENT_SOURCE_DIR}/include/\n"
     "      absl_INCLUDE_DIRS: ${absl_INCLUDE_DIRS}\n"
+    "      Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}\n"
     "      fmt_INCLUDE_DIRS: ${fmt_INCLUDE_DIRS}\n"
     "      libqasm_INCLUDE_DIRS: ${libqasm_INCLUDE_DIRS}\n"
     "      range-v3_INCLUDE_DIRS: ${range-v3_INCLUDE_DIRS}\n"
