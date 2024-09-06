@@ -13,29 +13,41 @@ void QuantumState::checkQuantumState() {
         throw QuantumStateError{ fmt::format("number of qubits exceeds maximum allowed: {} > {}", numberOfQubits,
                                              config::MAX_QUBIT_NUMBER) };
     }
+    if (numberOfBits > config::MAX_BIT_NUMBER) {
+        throw QuantumStateError{ fmt::format("number of bits exceeds maximum allowed: {} > {}", numberOfBits,
+                                             config::MAX_BIT_NUMBER) };
+    }
     if (not isNormalized()) {
         throw QuantumStateError{ "quantum state is not normalized" };
     }
 }
 
-QuantumState::QuantumState(std::size_t qubit_register_size)
+QuantumState::QuantumState(std::size_t qubit_register_size, std::size_t bit_register_size)
     : numberOfQubits{ qubit_register_size }
-    , data{ static_cast<size_t>(1) << numberOfQubits } {
+    , numberOfBits{ bit_register_size }
+    , data{ static_cast<size_t>(1) << numberOfQubits }
+    , bitMeasurementRegister{ numberOfBits } {
 
     data[BasisVector{}] = SparseComplex{ 1. };  // start initialized in state 00...000
     checkQuantumState();
 }
 
-QuantumState::QuantumState(std::size_t qubit_register_size,
+QuantumState::QuantumState(std::size_t qubit_register_size, std::size_t bit_register_size,
                            std::initializer_list<std::pair<std::string, std::complex<double>>> values)
     : numberOfQubits{ qubit_register_size }
-    , data{ static_cast<size_t>(1) << numberOfQubits, values } {
+    , numberOfBits{ bit_register_size }
+    , data{ static_cast<size_t>(1) << numberOfQubits, values }
+    , bitMeasurementRegister{ numberOfBits } {
 
     checkQuantumState();
 }
 
 [[nodiscard]] std::size_t QuantumState::getNumberOfQubits() const {
     return numberOfQubits;
+}
+
+[[nodiscard]] std::size_t QuantumState::getNumberOfBits() const {
+    return numberOfBits;
 }
 
 [[nodiscard]] bool QuantumState::isNormalized() {
@@ -46,10 +58,15 @@ void QuantumState::reset() {
     data.clear();
     data[BasisVector{}] = SparseComplex{ 1. };  // start initialized in state 00...000
     measurementRegister.reset();
+    bitMeasurementRegister.reset();
 }
 
 [[nodiscard]] const BasisVector& QuantumState::getMeasurementRegister() const {
     return measurementRegister;
+}
+
+[[nodiscard]] const BitMeasurementRegister& QuantumState::getBitMeasurementRegister() const {
+    return bitMeasurementRegister;
 }
 
 [[nodiscard]] double QuantumState::getProbabilityOfMeasuringOne(QubitIndex qubitIndex) {

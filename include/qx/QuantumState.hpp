@@ -50,10 +50,11 @@ class QuantumState {
     void checkQuantumState();
 
 public:
-    QuantumState(std::size_t qubit_register_size);
-    QuantumState(std::size_t qubit_register_size,
+    QuantumState(std::size_t qubit_register_size, std::size_t bit_register_size);
+    QuantumState(std::size_t qubit_register_size, std::size_t bit_register_size,
                  std::initializer_list<std::pair<std::string, std::complex<double>>> values);
     [[nodiscard]] std::size_t getNumberOfQubits() const;
+    [[nodiscard]] std::size_t getNumberOfBits() const;
     [[nodiscard]] bool isNormalized();
     void reset();
 
@@ -82,23 +83,27 @@ public:
     }
 
     [[nodiscard]] const BasisVector &getMeasurementRegister() const;
+    [[nodiscard]] const BitMeasurementRegister &getBitMeasurementRegister() const;
     [[nodiscard]] double getProbabilityOfMeasuringOne(QubitIndex qubitIndex);
     [[nodiscard]] double getProbabilityOfMeasuringZero(QubitIndex qubitIndex);
     void collapseQubitState(QubitIndex qubitIndex, bool measuredState, double probabilityOfMeasuringOne);
 
     // measuredState will be true if we measured a 1, or false if we measured a 0
     template <typename F>
-    void measure(QubitIndex qubitIndex, F &&randomGenerator) {
+    void measure(QubitIndex qubitIndex, BitIndex bitIndex, F &&randomGenerator) {
         auto probabilityOfMeasuringOne = getProbabilityOfMeasuringOne(qubitIndex);
         auto measuredState = (randomGenerator() < probabilityOfMeasuringOne);
         collapseQubitState(qubitIndex, measuredState, probabilityOfMeasuringOne);
         measurementRegister.set(qubitIndex.value, measuredState);
+        bitMeasurementRegister.set(bitIndex.value, measuredState);
     }
 
 private:
     std::size_t numberOfQubits = 1;
+    std::size_t numberOfBits = 1;
     SparseArray data;
     BasisVector measurementRegister{};
+    BitMeasurementRegister bitMeasurementRegister{};
 };
 
 }  // namespace qx::core
