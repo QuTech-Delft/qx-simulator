@@ -83,16 +83,16 @@ TEST_F(QuantumStateTest, measure_on_superposed_state__measured_state_is_1) {
 }
 
 TEST_F(QuantumStateTest, reset) {
-    QuantumState victim{ 2, {{"00", 0.123}, {"11", std::sqrt(1 - std::pow(0.123, 2))}} };
+    QuantumState victim{ 2, 2, {{"00", 0.123}, {"11", std::sqrt(1 - std::pow(0.123, 2))}} };
     victim.applyReset(QubitIndex{ 0 });
     checkEq(victim, {0.123, 0, std::sqrt(1 - std::pow(0.123, 2)), 0});  // 00 and 10
     EXPECT_EQ(victim.getMeasurementRegister(), BasisVector("00"));
 }
 
 TEST_F(QuantumStateTest, reset_all) {
-    QuantumState victim{ 2, {{"00", 0.123}, {"11", std::sqrt(1 - std::pow(0.123, 2))}} };
+    QuantumState victim{ 2, 2, {{"00", 0.123}, {"11", std::sqrt(1 - std::pow(0.123, 2))}} };
     victim.applyResetAll();
-    checkEq(victim, QuantumState{ 2 }.toVector());
+    checkEq(victim, QuantumState{ 2, 2 }.toVector());
     EXPECT_EQ(victim.getMeasurementRegister(), BasisVector("00"));
 }
 
