@@ -1,6 +1,9 @@
-#include <fmt/format.h>
-
 #include "qx/QuantumState.hpp"
+
+#include <complex>
+#include <fmt/core.h>
+#include <fmt/ranges.h>
+#include <ostream>
 
 
 namespace qx::core {
@@ -28,7 +31,7 @@ QuantumState::QuantumState(std::size_t qubit_register_size, std::size_t bit_regi
     , data{ static_cast<size_t>(1) << numberOfQubits }
     , bitMeasurementRegister{ numberOfBits } {
 
-    data[BasisVector{}] = SparseComplex{ 1. };  // start initialized in state 00...000
+    resetData();
     checkQuantumState();
 }
 
@@ -54,11 +57,23 @@ QuantumState::QuantumState(std::size_t qubit_register_size, std::size_t bit_regi
     return isNull(data.norm() - 1.);
 }
 
-void QuantumState::reset() {
+[[nodiscard]] std::vector<std::complex<double>> QuantumState::toVector() const {
+    return data.toVector();
+}
+
+void QuantumState::resetData() {
     data.clear();
     data[BasisVector{}] = SparseComplex{ 1. };  // start initialized in state 00...000
+}
+
+void QuantumState::resetMeasurementRegister() {
     measurementRegister.reset();
     bitMeasurementRegister.reset();
+}
+
+void QuantumState::reset() {
+    resetData();
+    resetMeasurementRegister();
 }
 
 [[nodiscard]] const BasisVector& QuantumState::getMeasurementRegister() const {
@@ -86,13 +101,70 @@ void QuantumState::reset() {
 // Update data after a measurement
 //
 // measuredState will be true if we measured a 1, or false if we measured a 0
-void QuantumState::collapseQubitState(QubitIndex qubitIndex, bool measuredState, double probabilityOfMeasuringOne) {
+//
+// Example:
+//   Given the following data representing a quantum state,
+//   where data is a map of basis vectors to amplitudes,
+//   basis vectors are shown below with qubit indices growing from right to left,
+//   and amplitudes are complex numbers:
+//     Basis vector: amplitude
+//            q1 q0: (real, imag)
+//             0  0: ( 0.7,    0)
+//             0  1: (   0,    0)
+//             1  0: (   0,    0)
+//             1  1: ( 0.7,    0)
+//   And considering qubit 0 was measured as 0.
+//   This function:
+//     1) Erases all the entries in data for which qubit 0 is not 0, i.e., entry 11.
+//     2) Normalizes data (all the squares of all the amplitudes add up to 1).
+void QuantumState::updateDataAfterMeasurement(QubitIndex qubitIndex, bool measuredState, double probabilityOfMeasuringOne) {
     data.eraseIf([qubitIndex, measuredState](auto const &kv) {
         auto const &[basisVector, _] = kv;
         auto currentState = basisVector.test(qubitIndex.value);
         return currentState != measuredState;
     });
     data *= std::sqrt(1 / (measuredState ? probabilityOfMeasuringOne : (1 - probabilityOfMeasuringOne)));
+}
+
+// Update data after a reset of a single qubit
+//
+// Example:
+//   Given the following data representing a quantum state,
+//   where data is a map of basis vectors to amplitudes,
+//   basis vectors are shown below with qubit indices growing from right to left,
+//   and amplitudes are complex numbers:
+//     Basis vector: amplitude
+//            q1 q0: (real, imag)
+//             0  0: ( 0.7,    0)
+//             0  1: (   0,    0)
+//             1  0: (   0,    0)
+//             1  1: ( 0.7,    0)
+//   And considering qubit 0 is the one being reset.
+//   This function would update data as follows:
+//     Basis vector: amplitude
+//            q1 q0: (real, imag)
+//             0  0: ( 0.7,    0)
+//             0  1: (   0,    0)  <-- 01 is reset to 00, old 01 amplitude added to 00, 01 amplitude set to 0
+//             1  0: ( 0.7,    0)
+//             1  1: (   0,    0)  <-- 11 is reset to 10, old 11 amplitude added to 10, 11 amplitude set to 0
+void QuantumState::updateDataAfterReset(QubitIndex qubitIndex) {
+    auto newData = data;
+    data.forEach([qubitIndex, &newData](auto const &kv) {
+        auto const &[basisVector, amplitude] = kv;
+        if (basisVector.test(qubitIndex.value)) {
+            auto basisVectorAfterReset = basisVector;
+            basisVectorAfterReset.set(qubitIndex.value, false);
+            newData[basisVectorAfterReset].value = std::sqrt(
+                std::norm(newData[basisVectorAfterReset].value) + std::norm(amplitude.value)
+            );
+            newData[basisVector].value = 0;
+        }
+    });
+    data = std::move(newData);
+}
+
+std::ostream& operator<<(std::ostream &os, const QuantumState &state) {
+    return os << fmt::format("[{}]", fmt::join(state.toVector(), ", "));
 }
 
 }  // namespace qx::core

@@ -80,7 +80,7 @@ Using a constant seed for random number generation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 By default QX-simulator will generate different random numbers for different executions of a given circuit.
-This means that ``measure`` and error models will make simulation results non-deterministic.
+This means that ``measure``, ``reset``, and error models will make simulation results non-deterministic.
 
 In some cases this is not desired.
 To make the output of the simulator deterministic over different runs, you can pass a constant ``seed`` parameter:

@@ -13,6 +13,8 @@ public:
     explicit InstructionExecutor(core::QuantumState &s);
 
     void operator()(Measure const &m);
+    void operator()(Reset const &m);
+    void operator()(ResetAll const &m);
     void operator()(MeasurementRegisterOperation const &op);
 
     template <std::size_t N>

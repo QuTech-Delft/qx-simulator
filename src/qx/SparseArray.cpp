@@ -1,7 +1,9 @@
 #include "qx/SparseArray.hpp"
 
 #include <complex>
-#include <fmt/format.h>
+#include <fmt/core.h>
+#include <fmt/ranges.h>
+#include <ostream>
 
 
 namespace qx::core {
@@ -19,7 +21,7 @@ SparseComplex::SparseComplex(const SparseComplex &other) {
 }
 
 SparseComplex::SparseComplex(SparseComplex &&other) noexcept {
-    value = std::move(other.value);
+    value = other.value;
 }
 
 SparseComplex& SparseComplex::operator=(const SparseComplex &other) {
@@ -31,7 +33,7 @@ SparseComplex& SparseComplex::operator=(const SparseComplex &other) {
 
 SparseComplex& SparseComplex::operator=(SparseComplex &&other) noexcept {
     if (std::abs(other.value) >= config::EPS) {
-        value = std::move(other.value);
+        value = other.value;
     }
     return *this;
 }
@@ -121,6 +123,10 @@ void SparseArray::cleanUpZeros() {
         return isNull(sparseComplex.value);
     });
     zeroCounter_ = 0;
+}
+
+std::ostream& operator<<(std::ostream &os, const SparseArray &array) {
+    return os << fmt::format("[{}]", fmt::join(array.toVector(), ", "));
 }
 
 }  // namespace qx::core

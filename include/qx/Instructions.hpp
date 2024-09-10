@@ -18,6 +18,13 @@ struct Measure {
     core::BitIndex bitIndex{};
 };
 
+struct Reset {
+    core::QubitIndex qubitIndex{};
+};
+
+struct ResetAll {
+};
+
 struct MeasurementRegisterOperation {
     std::function<void(core::BasisVector const &)> operation;
 };
@@ -31,6 +38,8 @@ struct Unitary {
 
 using Instruction = std::variant<
     Measure,
+    Reset,
+    ResetAll,
     MeasurementRegisterOperation,
     Unitary<1>,
     Unitary<2>,
