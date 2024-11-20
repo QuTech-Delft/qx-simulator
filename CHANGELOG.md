@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## [ 0.7.2 ] - [ 2024-11-20 ]
+
+### Added
+
+- Integrate with libqasm 0.6.7 release.
+- Add `reset` instruction.
+- Make QX simulator aware of bit (register) variables.
+
+### Changed
+
+### Removed
+
+
 ## [ 0.7.1 ] - [ 2024-05-22 ]
 
 ### Added
@@ -12,9 +25,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Allow multiple qubit/bit (register) definitions and mid-circuit measurements.
 
 ### Changed
-
-- Update `conanfile.py` to request `libqasm/0.6.6` and use `tools.build.skip_test`.
-- Update GitHub workflows with some improvements taken from `libqasm`.
 
 ### Removed
 
@@ -50,7 +60,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Removed
 
-- 
 
 ## [ 0.6.4 ] - [ 2023-09-21 ]
 
@@ -64,7 +73,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Removed
 
--
 
 ## [ 0.6.3 ] - [ 2023-09-19 ]
 
@@ -86,6 +94,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Submodules and `deps` folder.
 
+
 ## [ 0.6.2 ] - [ 2023-02-21 ]
 
 ### Added
@@ -102,7 +111,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Removed
 
-- 
 
 ## [ 0.6.1 ] - [ 2023-02-01 ]
 
@@ -129,6 +137,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Most Python tests. Already covered in C++ integration test, and they didn't check much anyway.
 
+
 ## [ 0.6.0 ] - [ 2023-01-19 ]
 
 Almost a complete rewrite. No functional change except it's faster.
@@ -154,6 +163,7 @@ Almost a complete rewrite. No functional change except it's faster.
 - SSE, AVX and other intrinsics.
 - `get_measurement_outcome` and `get_state` methods. Now accessible via JSON output.
 
+
 ## [ 0.5.5 ] - [ 2023-01-12 ]
 
 ### Added
@@ -165,8 +175,8 @@ Almost a complete rewrite. No functional change except it's faster.
 - Fixed issue #118: quantum state is always displayed, as well as measurement register averaging.
 
 ### Removed
-- 
 
+ 
 ## [ 0.5.4 ] - [ 2023-01-06 ]
 
 ### Added
@@ -186,6 +196,7 @@ Almost a complete rewrite. No functional change except it's faster.
 - Parallel gates in `gate.h` (they were executed sequentially).
 - Some non-needed and/or obsolete code.
 
+
 ## [ 0.5.3 ] - [ 2023-01-02 ]
 
 ### Added
@@ -194,17 +205,12 @@ Almost a complete rewrite. No functional change except it's faster.
 
 ### Changed
 
--
-
 ### Removed
 
--
 
 ## [ 0.5.2 ] - [ 2022-12-7 ]
 
 ### Added
-
--
 
 ### Changed
 
@@ -212,7 +218,6 @@ Almost a complete rewrite. No functional change except it's faster.
 
 ### Removed
 
--
 
 ## [ 0.5.1 ] - [ 2022-12-6 ]
 
@@ -230,16 +235,17 @@ Almost a complete rewrite. No functional change except it's faster.
 
 - Python 3.6 support.
 
+
 ## [ 0.5.0 ] - [ 2022-11-15 ]
 
 ### Added
 
+- `measure_all` gate. Does no longer measure each qubit separately.
 - `-j <filename>` CLI option to output JSON to a file.
 - Possible to use the simulator without OpenMP.
 
 ### Changed
 
-- `measure_all` gate added. Does no longer measure each qubit separately.
 - Move to C++11: smart pointers, etc.
 - Format of output has been changed.
   You no longer need to add a `display` gate to output the quantum state at the end of the circuit.
@@ -260,23 +266,19 @@ Almost a complete rewrite. No functional change except it's faster.
 - Headers no longer include `.cc` file.
 - Moved implementations to `.cc` files instead of headers.
 
+
 ## [ 0.4.2 ] - [ 2021-06-01 ]
 
 ### Added
 
--
-
 ### Changed
 
--
-
 ### Removed
-
--
 
 ### Fixed
 
 - Wheels no longer require exotic CPU extensions to work.
+
 
 ## [ 0.4.1 ] - [ 2021-05-20 ]
 
@@ -289,11 +291,7 @@ Almost a complete rewrite. No functional change except it's faster.
 
 ### Changed
 
--
-
 ### Removed
-
--
 
 ### Fixed
 
@@ -301,11 +299,10 @@ Almost a complete rewrite. No functional change except it's faster.
 - Build on Windows using MSVC.
 - Python build process on various platforms.
 
+
 ## [ 0.4.0 ] - [ 2021-05-20 ]
 
 ### Added
-
--
 
 ### Changed
 
@@ -313,11 +310,10 @@ Almost a complete rewrite. No functional change except it's faster.
 
 ### Removed
 
--
-
 ### Fixed
 
 - Various bugs and inefficiencies related to multithreading.
+
 
 ## [ 0.3.0 ] - [ 2019-05-01 ]
 
@@ -328,43 +324,29 @@ Almost a complete rewrite. No functional change except it's faster.
 
 ### Changed
 
--
-
 ### Removed
-
--
 
 ### Fixed
 
--
 
 ## [ 0.2.5 ] - [ 2018-12-21 ]
 
 ### Added
 
--
-
 ### Changed
 
--
-
 ### Removed
-
--
 
 ### Fixed
 
 - Fixed issue with libqasm submodule, this release is now with the correct version.
 
+
 ## [ 0.2.4 ] - [ 2018-12-14 ]
 
 ### Added
 
--
-
 ### Changed
-
--
 
 ### Removed
 
@@ -374,11 +356,10 @@ Almost a complete rewrite. No functional change except it's faster.
 
 - Single qubit operations now accept integers as arguments, previously it required floats.
 
+
 ## [ 0.2.3 ] - [ 2018-11-05 ]
 
 ### Added
-
--
 
 ### Changed
 
@@ -386,30 +367,24 @@ Almost a complete rewrite. No functional change except it's faster.
 
 ### Removed
 
--
-
 ### Fixed
 
 - Fixed pthread mutex locking bug in XPU worker.
+
 
 ## [ 0.2.2 ] - [ 2018-09-25 ]
 
 ### Added
 
--
-
 ### Changed
 
--
-
 ### Removed
-
--
 
 ### Fixed
 
 - Fixed bug in measurement and preparation implementation for large number of qubits.
 - Fixed verbose GNU Compiler warnings under Linux.
+
 
 ## [ 0.2.1 ] - [ 2018-09-04 ]
 
@@ -421,15 +396,10 @@ Almost a complete rewrite. No functional change except it's faster.
 
 ### Changed
 
--
-
 ### Removed
-
--
 
 ### Fixed
 
--
 
 ## [ 0.2.0 ] - [ 2018-08-23 ]
 
@@ -448,8 +418,6 @@ Almost a complete rewrite. No functional change except it's faster.
 - Re-implemented classical NOT gate for full binary-controlled gate support.
 
 ### Removed
-
--
 
 ### Fixed
 
