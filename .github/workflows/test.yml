@@ -27,6 +27,7 @@ jobs:
         with:
           build_type: ${{ matrix.build_type }}
           conan_profile_host: conan/profiles/tests-${{ matrix.build_type }}-${{ matrix.compiler }}-linux-x64
+          conan_profile_build: conan/profiles/tests-${{ matrix.build_type }}-${{ matrix.compiler }}-linux-x64
           shell: bash
 
   cpp-linux-arm64:
@@ -60,6 +61,7 @@ jobs:
         with:
           build_type: ${{ matrix.build_type }}
           conan_profile_host: conan/profiles/tests-${{ matrix.build_type }}-gcc-linux-arm64
+          conan_profile_build: conan/profiles/tests-${{ matrix.build_type }}-gcc-linux-arm64
           shell: bash
 
   cpp-macos-x64:
@@ -78,6 +80,7 @@ jobs:
         with:
           build_type: ${{ matrix.build_type }}
           conan_profile_host: conan/profiles/tests-${{ matrix.build_type }}-apple_clang-macos-x64
+          conan_profile_build: conan/profiles/tests-${{ matrix.build_type }}-apple_clang-macos-x64
           shell: bash
 
   cpp-macos-arm64:
@@ -96,6 +99,7 @@ jobs:
         with:
           build_type: ${{ matrix.build_type }}
           conan_profile_host: conan/profiles/tests-${{ matrix.build_type }}-apple_clang-macos-arm64
+          conan_profile_build: conan/profiles/tests-${{ matrix.build_type }}-apple_clang-macos-arm64
           shell: bash
 
   cpp-windows-x64:
