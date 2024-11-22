@@ -11,6 +11,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Integrate with libqasm 0.6.7 release.
 - Add `reset` instruction.
 - Make QX simulator aware of bit (register) variables.
+- Update `test` and `assets` workflows.
 
 ### Changed
 
