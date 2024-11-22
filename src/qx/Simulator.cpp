@@ -14,6 +14,7 @@
 #include <fstream>
 #include <iostream>
 #include <optional>
+#include <variant>  // monostate
 #include <vector>
 
 
@@ -44,7 +45,7 @@ std::variant<V3OneProgram, SimulationError> getV3ProgramOrError(V3AnalysisResult
     return program;
 }
 
-std::variant<SimulationResult, SimulationError>
+std::variant<std::monostate, SimulationResult, SimulationError>
 execute(
     V3AnalysisResult const& analysisResult,
     std::size_t iterations,
@@ -66,17 +67,21 @@ execute(
 
     try {
         auto register_manager = RegisterManager{ program };
-        auto quantumState = core::QuantumState{ register_manager.get_qubit_register_size() };
+        auto quantumState = core::QuantumState{
+            register_manager.get_qubit_register_size(),
+            register_manager.get_bit_register_size()
+        };
         auto circuit = Circuit{ program, register_manager };
         auto simulationResultAccumulator = SimulationResultAccumulator{ quantumState };
 
         while (iterations--) {
             quantumState.reset();
             circuit.execute(quantumState, std::monostate{});
-            simulationResultAccumulator.append(quantumState.getMeasurementRegister());
+            simulationResultAccumulator.appendMeasurement(quantumState.getMeasurementRegister());
+            simulationResultAccumulator.appendBitMeasurement(quantumState.getBitMeasurementRegister());
         }
 
-        return simulationResultAccumulator.get();
+        return simulationResultAccumulator.getSimulationResult(register_manager);
     } catch (const SimulationError &err) {
         return err;
     }
@@ -84,7 +89,7 @@ execute(
 
 }  // namespace
 
-std::variant<SimulationResult, SimulationError>
+std::variant<std::monostate, SimulationResult, SimulationError>
 executeString(
     std::string const &s,
     std::size_t iterations,
@@ -99,7 +104,7 @@ executeString(
     }
 }
 
-std::variant<SimulationResult, SimulationError>
+std::variant<std::monostate, SimulationResult, SimulationError>
 executeFile(
     std::string const &filePath,
     std::size_t iterations,

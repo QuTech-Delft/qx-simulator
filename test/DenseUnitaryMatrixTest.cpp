@@ -1,4 +1,4 @@
-#include "qx/Core.hpp"
+#include "qx/DenseUnitaryMatrix.hpp"
 
 #include <gmock/gmock.h>  // ThrowsMessage
 #include <gtest/gtest.h>
