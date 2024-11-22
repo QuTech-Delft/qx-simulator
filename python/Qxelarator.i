@@ -15,7 +15,7 @@
 }
 
 // Map the output of execute_string/execute_file to a simple Python class for user-friendliness.
-%typemap(out) std::variant<qx::SimulationResult, qx::SimulationError> {
+%typemap(out) std::variant<std::monostate, qx::SimulationResult, qx::SimulationError> {
     if (std::holds_alternative<qx::SimulationResult>($1)) {
         auto pmod = PyImport_ImportModule("qxelarator");
         auto pclass = PyObject_GetAttrString(pmod, "SimulationResult");
@@ -26,18 +26,18 @@
 
         auto const* cppSimulationResult = std::get_if<qx::SimulationResult>(&$1);
 
-        PyObject_SetAttrString(simulationResult, "shots_done", PyLong_FromUnsignedLongLong(cppSimulationResult->shots_done));
-        PyObject_SetAttrString(simulationResult, "shots_requested", PyLong_FromUnsignedLongLong(cppSimulationResult->shots_requested));
+        PyObject_SetAttrString(simulationResult, "shots_done", PyLong_FromUnsignedLongLong(cppSimulationResult->shotsDone));
+        PyObject_SetAttrString(simulationResult, "shots_requested", PyLong_FromUnsignedLongLong(cppSimulationResult->shotsRequested));
 
         auto results = PyDict_New();
-        for(auto const& x: cppSimulationResult->results) {
-            PyDict_SetItemString(results, x.first.c_str(), PyLong_FromUnsignedLongLong(x.second));
+        for(auto const& [stateString, count]: cppSimulationResult->measurements) {
+            PyDict_SetItemString(results, stateString.c_str(), PyLong_FromUnsignedLongLong(count));
         }
         PyObject_SetAttrString(simulationResult, "results", results);
 
         auto state = PyDict_New();
-        for(auto const& x: cppSimulationResult->state) {
-            PyDict_SetItemString(state, x.first.c_str(), PyComplex_FromCComplex({ .real = x.second.real, .imag = x.second.imag }));
+        for(auto const& [stateString, amplitude]: cppSimulationResult->state) {
+            PyDict_SetItemString(state, stateString.c_str(), PyComplex_FromCComplex({ .real = amplitude.real, .imag = amplitude.imag }));
         }
         PyObject_SetAttrString(simulationResult, "state", state);
 

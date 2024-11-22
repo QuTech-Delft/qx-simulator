@@ -1,0 +1,4 @@
+include(default)
+
+[options]
+boost/*:header_only=True

@@ -21,17 +21,18 @@ The most straightforward way to execute a cQasm file is using the ``qxelarator.e
     >>> r
     Shots requested: 1
     Shots done: 1
-    Results: {'00': 1}
+    Measurements: {'00': 1}
     State: {'00': (0.7071067811865475+0j), '01': (0.7071067811865475+0j)}
 
 
-The return value is a ``qxelarator.SimulationResult`` object and offers access to aggregated measurement register results and final quantum state:
+The return value is a ``qxelarator.SimulationResult`` object and offers access to
+aggregated measurement register results and final quantum state:
 
 .. code-block:: pycon
 
     >>> isinstance(r, qxelarator.SimulationResult)
     True
-    >>> r.results
+    >>> r.measurements
     {'00': 1}
     >>> r.state["00"]
     (0.7071067811865475+0j)
@@ -44,7 +45,7 @@ You can also execute a cQasm file:
     >>> qxelarator.execute_file("bell_pair.qc")
     Shots requested: 1
     Shots done: 1
-    Results: {'11': 1}
+    Measurements: {'11': 1}
     State: {'11': (1+0j)}
 
 
@@ -69,7 +70,7 @@ To simulate a quantum circuit multiple times, pass an integer number of iteratio
     >>> qxelarator.execute_file("bell_pair.qc", iterations = 10)
     Shots requested: 10
     Shots done: 10
-    Results: {'00': 3, '11': 7}
+    Measurements: {'00': 3, '11': 7}
     State: {'11': (1+0j)}
 
 
@@ -79,9 +80,10 @@ Using a constant seed for random number generation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 By default QX-simulator will generate different random numbers for different executions of a given circuit.
-This means that ``measure``, ``prep_z`` and error models will make simulation results non-deterministic.
+This means that ``measure``, ``reset``, and error models will make simulation results non-deterministic.
 
-In some cases this is not desired. To make the output of the simulator deterministic over different runs, you can pass a constant ``seed`` parameter:
+In some cases this is not desired.
+To make the output of the simulator deterministic over different runs, you can pass a constant ``seed`` parameter:
 
 .. code-block:: python
 

@@ -1,6 +1,7 @@
 #include "qx/Core.hpp"
 #include "qx/GateConvertor.hpp"
 #include "qx/Gates.hpp"
+#include "qx/Instructions.hpp" // Measure, Unitary
 #include "qx/OperandsHelper.hpp"
 
 #include <fmt/format.h>
@@ -40,7 +41,7 @@ void GateConvertor::addGates(
                 static_cast<std::size_t>(operands[op][i]->value)};
         }
 
-        Circuit::Unitary<NumberOfQubitOperands> unitary{matrix, ops};
+        Unitary<NumberOfQubitOperands> unitary{matrix, ops};
 
         auto controlBits = std::make_shared<std::vector<core::QubitIndex>>();
         circuit_.add_instruction(unitary, controlBits);
@@ -102,6 +103,16 @@ void GateConvertor::addGates(const V3Instruction &instruction) {
             gates::CZ,
             { operands_helper.get_register_operand(0), operands_helper.get_register_operand(1) }
         );
+    } else if (name == "CR") {
+        addGates<2>(
+            gates::CR(operands_helper.get_float_operand(2)),
+            { operands_helper.get_register_operand(0), operands_helper.get_register_operand(1) }
+        );
+    } else if (name == "CRk") {
+        addGates<2>(
+            gates::CR(static_cast<double>(gates::PI) / std::pow(2, operands_helper.get_int_operand(2) - 1)),
+            { operands_helper.get_register_operand(0), operands_helper.get_register_operand(1) }
+        );
     } else if (name == "SWAP") {
         addGates<2>(
             gates::SWAP,
@@ -112,14 +123,14 @@ void GateConvertor::addGates(const V3Instruction &instruction) {
             gates::X90,
             { operands_helper.get_register_operand(0) }
         );
-    } else if (name == "mX90") {
-        return addGates<1>(
-            gates::MX90,
-            { operands_helper.get_register_operand(0) }
-        );
     } else if (name == "Y90") {
         return addGates<1>(
             gates::Y90,
+            { operands_helper.get_register_operand(0) }
+        );
+    } else if (name == "mX90") {
+        return addGates<1>(
+            gates::MX90,
             { operands_helper.get_register_operand(0) }
         );
     } else if (name == "mY90") {
@@ -131,21 +142,31 @@ void GateConvertor::addGates(const V3Instruction &instruction) {
         // A measure statement has the following syntax: b = measure q
         // The left-hand side operand, b, is the operand 0
         // The right-hand side operand, q, is the operand 1
-        for (const auto &q: operands_helper.get_register_operand(1)) {
-            auto controlBits = std::make_shared<std::vector<core::QubitIndex>>();
-            circuit_.add_instruction(Circuit::Measure{ core::QubitIndex{ static_cast<std::size_t>(q->value) } },
-                                     controlBits);
+        const auto &bit_indices = operands_helper.get_register_operand(0);
+        const auto &qubit_indices = operands_helper.get_register_operand(1);
+        auto controlBits = std::make_shared<std::vector<core::QubitIndex>>();
+        for (size_t i{ 0 }; i < qubit_indices.size(); ++i) {
+            circuit_.add_instruction(
+                Measure{
+                    core::QubitIndex{ static_cast<std::size_t>(qubit_indices[i]->value) },
+                    core::BitIndex{ static_cast<std::size_t>(bit_indices[i]->value) }
+                },
+                controlBits);
         }
-    } else if (name == "CR") {
-        addGates<2>(
-            gates::CR(operands_helper.get_float_operand(2)),
-            { operands_helper.get_register_operand(0), operands_helper.get_register_operand(1) }
-        );
-    } else if (name == "CRk") {
-        addGates<2>(
-            gates::CR(static_cast<double>(gates::PI) / std::pow(2, operands_helper.get_int_operand(2) - 1)),
-            { operands_helper.get_register_operand(0), operands_helper.get_register_operand(1) }
-        );
+    } else if (name == "reset") {
+        auto controlBits = std::make_shared<std::vector<core::QubitIndex>>();
+        if (instruction.operands.empty()) {
+            circuit_.add_instruction(ResetAll{}, controlBits);
+        } else {
+            const auto &qubit_indices = operands_helper.get_register_operand(0);
+            for (size_t i{ 0 }; i < qubit_indices.size(); ++i) {
+                circuit_.add_instruction(
+                    Reset{
+                        core::QubitIndex{ static_cast<std::size_t>(qubit_indices[i]->value) }
+                    },
+                    controlBits);
+            }
+        }
     } else {
         throw GateConvertorError{ fmt::format("Unsupported gate or instruction: {}", name) };
     }
