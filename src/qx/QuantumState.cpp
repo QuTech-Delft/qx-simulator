@@ -45,11 +45,6 @@ QuantumState::QuantumState(std::size_t qubit_register_size,
 void QuantumState::reset() {
     data.clear();
     data[BasisVector{}] = SparseComplex{ 1. };  // start initialized in state 00...000
-    measurementRegister.reset();
-}
-
-[[nodiscard]] const BasisVector& QuantumState::getMeasurementRegister() const {
-    return measurementRegister;
 }
 
 [[nodiscard]] double QuantumState::getProbabilityOfMeasuringOne(QubitIndex qubitIndex) {

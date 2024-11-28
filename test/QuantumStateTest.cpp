@@ -65,26 +65,29 @@ TEST_F(QuantumStateTest, apply_cnot) {
 }
 
 TEST_F(QuantumStateTest, measure_on_non_superposed_state) {
+    auto measurement_register = core::BasisVector{};
     QuantumState victim{ 2, {{"10", 0.123}, {"11", std::sqrt(1 - std::pow(0.123, 2))}} };
-    victim.measure(QubitIndex{1}, []() { return 0.9485; });
+    victim.measure(QubitIndex{1}, []() { return 0.9485; }, measurement_register);
     checkEq(victim, {0, 0, 0.123, std::sqrt(1 - std::pow(0.123, 2))});
-    victim.measure(QubitIndex{1}, []() { return 0.045621; });
+    victim.measure(QubitIndex{1}, []() { return 0.045621; }, measurement_register);
     checkEq(victim, {0, 0, 0.123, std::sqrt(1 - std::pow(0.123, 2))});
-    EXPECT_EQ(victim.getMeasurementRegister(), BasisVector("10"));
+    EXPECT_EQ(measurement_register, BasisVector{ "10" });
 }
 
 TEST_F(QuantumStateTest, measure_on_superposed_state__case_0) {
+    auto measurement_register = core::BasisVector{};
     QuantumState victim{ 2, {{"10", 0.123}, {"11", std::sqrt(1 - std::pow(0.123, 2))}} };
-    victim.measure(QubitIndex{0}, []() { return 0.994; });
+    victim.measure(QubitIndex{0}, []() { return 0.994; }, measurement_register);
     checkEq(victim, {0, 0, 1, 0});
-    EXPECT_EQ(victim.getMeasurementRegister(), BasisVector("00"));
+    EXPECT_EQ(measurement_register, BasisVector("00"));
 }
 
 TEST_F(QuantumStateTest, measure_on_superposed_state__case_1) {
+    auto measurement_register = core::BasisVector{};
     QuantumState victim{ 2, {{"10", 0.123}, {"11", std::sqrt(1 - std::pow(0.123, 2))}} };
-    victim.measure(QubitIndex{0}, []() { return 0.254; });
+    victim.measure(QubitIndex{0}, []() { return 0.254; }, measurement_register);
     checkEq(victim, {0, 0, 0, 1});
-    EXPECT_EQ(victim.getMeasurementRegister(), BasisVector("01"));
+    EXPECT_EQ(measurement_register, BasisVector("01"));
 }
 
 } // namespace qx::core

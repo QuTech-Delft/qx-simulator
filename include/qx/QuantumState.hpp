@@ -81,14 +81,13 @@ public:
         data.forEachSorted(f);
     }
 
-    [[nodiscard]] const BasisVector &getMeasurementRegister() const;
     [[nodiscard]] double getProbabilityOfMeasuringOne(QubitIndex qubitIndex);
     [[nodiscard]] double getProbabilityOfMeasuringZero(QubitIndex qubitIndex);
     void collapseQubitState(QubitIndex qubitIndex, bool measuredState, double probabilityOfMeasuringOne);
 
     // measuredState will be true if we measured a 1, or false if we measured a 0
     template <typename F>
-    void measure(QubitIndex qubitIndex, F &&randomGenerator) {
+    void measure(QubitIndex qubitIndex, F &&randomGenerator, core::BasisVector &measurementRegister) {
         auto probabilityOfMeasuringOne = getProbabilityOfMeasuringOne(qubitIndex);
         auto measuredState = (randomGenerator() < probabilityOfMeasuringOne);
         collapseQubitState(qubitIndex, measuredState, probabilityOfMeasuringOne);
@@ -98,7 +97,6 @@ public:
 private:
     std::size_t numberOfQubits = 1;
     SparseArray data;
-    BasisVector measurementRegister{};
 };
 
 }  // namespace qx::core

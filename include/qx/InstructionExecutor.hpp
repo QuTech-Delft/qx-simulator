@@ -1,5 +1,6 @@
 #pragma once
 
+#include "qx/Core.hpp"
 #include "qx/Instructions.hpp"
 #include "qx/QuantumState.hpp"
 
@@ -10,18 +11,19 @@ namespace qx{
 
 class InstructionExecutor {
 public:
-    explicit InstructionExecutor(core::QuantumState &s);
+    explicit InstructionExecutor(core::QuantumState &state, core::BasisVector &measurement_register);
 
     void operator()(Measure const &m);
     void operator()(MeasurementRegisterOperation const &op);
 
     template <std::size_t N>
     void operator()(Unitary<N> const &u) {
-        quantumState.apply(u.matrix, u.operands);
+        state_.apply(u.matrix, u.operands);
     }
 
 private:
-    core::QuantumState &quantumState;
+    core::QuantumState &state_;
+    core::BasisVector &measurement_register_;
 };
 
 } // namespace qx
