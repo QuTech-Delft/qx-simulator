@@ -1,8 +1,9 @@
 #pragma once
 
 #include "qx/CompileTimeConfiguration.hpp"
-#include "qx/Core.hpp"  // BasisVector, Complex
+#include "qx/Core.hpp"  // BasisVector, BitMeasurementRegister Complex
 #include "qx/QuantumState.hpp"
+#include "qx/RegisterManager.hpp"
 
 #include <absl/container/btree_map.h>
 #include <compare>  // partial_ordering
@@ -49,14 +50,31 @@ struct SimulationResult {
     using State = std::vector<SuperposedState>;
 
 public:
-    SimulationResult(std::uint64_t requestedShots, std::uint64_t doneShots);
+    SimulationResult(std::uint64_t requestedShots, std::uint64_t doneShots, RegisterManager const& registerManager);
+
+    // Given a state string from the State vector, a qubit variable name, and an optional sub index,
+    // return the value of that qubit in the state string
+    // The sub index is used to access a given qubit when the qubit variable is of array type
+    // Notice that the final index in the state string is determined by the qubit register
+    std::uint8_t getQubitState(state_string_t const& stateString, std::string const& qubitVariableName,
+                               std::optional<Index> subIndex);
+    // Given a state string from the State vector, a bit variable name, and an optional sub index,
+    // return the value of that bit in the state string
+    // The sub index is used to access a given bit when the bit variable is of array type
+    // Notice that the final index in the state string is determined by the bit register
+    std::uint8_t getBitMeasurement(state_string_t const& stateString, std::string const& bitVariableName,
+                                   std::optional<Index> subIndex);
 
 public:
     std::uint64_t shotsRequested;
     std::uint64_t shotsDone;
 
+    QubitRegister qubitRegister;
+    BitRegister bitRegister;
+
     State state;
     Measurements measurements;
+    Measurements bitMeasurements;
 };
 
 std::ostream &operator<<(std::ostream &os, const SimulationResult &result);
@@ -66,7 +84,8 @@ class SimulationResultAccumulator {
 public:
     explicit SimulationResultAccumulator(core::QuantumState &s);
     void appendMeasurement(core::BasisVector const& measurement);
-    SimulationResult getSimulationResult();
+    void appendBitMeasurement(core::BitMeasurementRegister const& bitMeasurement);
+    SimulationResult getSimulationResult(RegisterManager const& registerManager);
 
 private:
     template <typename F>
@@ -78,7 +97,10 @@ private:
 
     core::QuantumState &state;
     absl::btree_map<state_string_t, count_t> measurements;
+    absl::btree_map<state_string_t, count_t> bitMeasurements;
+
     std::uint64_t measurementsCount = 0;
+    std::uint64_t bitMeasurementsCount = 0;
 };
 
 

@@ -4,7 +4,9 @@
 #include <algorithm>  // for_each, sort
 #include <complex>
 #include <cstdint>  // size_t, uint64_t
+#include <fmt/ostream.h>
 #include <numeric>  // accumulate
+#include <ostream>
 #include <stdexcept>  // runtime_error
 #include <utility>  // pair
 #include <vector>
@@ -111,4 +113,9 @@ private:
     MapBasisVectorToSparseComplex data_;
 };
 
+std::ostream& operator<<(std::ostream &os, const SparseArray &array);
+
 }  // namespace qx::core
+
+template <> struct fmt::formatter<std::complex<double>> : fmt::ostream_formatter {};
+template <> struct fmt::formatter<qx::core::SparseArray> : fmt::ostream_formatter {};

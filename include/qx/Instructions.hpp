@@ -15,6 +15,14 @@ namespace qx {
 
 struct Measure {
     core::QubitIndex qubitIndex{};
+    core::BitIndex bitIndex{};
+};
+
+struct Reset {
+    core::QubitIndex qubitIndex{};
+};
+
+struct ResetAll {
 };
 
 struct MeasurementRegisterOperation {
@@ -30,6 +38,8 @@ struct Unitary {
 
 using Instruction = std::variant<
     Measure,
+    Reset,
+    ResetAll,
     MeasurementRegisterOperation,
     Unitary<1>,
     Unitary<2>,

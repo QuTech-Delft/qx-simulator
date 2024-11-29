@@ -53,6 +53,10 @@ void Circuit::execute(core::QuantumState &quantumState, core::BasisVector &measu
         // std::visit(instructionExecutor, instruction);
         if (auto *measure = std::get_if<Measure>(&instruction)) {
             instruction_executor(*measure);
+        } else if (auto *reset = std::get_if<Reset>(&instruction)) {
+            instruction_executor(*reset);
+        } else if (auto *reset_all = std::get_if<ResetAll>(&instruction)) {
+            instruction_executor(*reset_all);
         } else if (auto *classicalOp = std::get_if<MeasurementRegisterOperation>(&instruction)) {
             instruction_executor(*classicalOp);
         } else if (auto *instruction1 = std::get_if<Unitary<1>>(&instruction)) {

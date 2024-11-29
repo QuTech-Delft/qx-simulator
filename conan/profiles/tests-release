@@ -1,4 +1,4 @@
-include(default)
+include(base)
 
 [settings]
 compiler.cppstd=23

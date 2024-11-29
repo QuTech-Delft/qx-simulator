@@ -3,7 +3,9 @@
 #include <array>
 #include <cstdint>  // size_t
 #include <complex>  // norm
+#include <fmt/ostream.h>
 #include <initializer_list>
+#include <ostream>
 #include <stdexcept>
 #include <string>
 #include <utility>  // invoke, pair
@@ -11,6 +13,7 @@
 #include "qx/Core.hpp"  // BasisVector, QubitIndex
 #include "qx/CompileTimeConfiguration.hpp"  // MAX_QUBIT_NUMBER
 #include "qx/DenseUnitaryMatrix.hpp"
+#include "qx/Gates.hpp"
 #include "qx/RegisterManager.hpp"
 #include "qx/SparseArray.hpp"
 
@@ -49,12 +52,17 @@ void applyImpl(DenseUnitaryMatrix<1 << NumberOfOperands> const &matrix,
 class QuantumState {
     void checkQuantumState();
 
+    void resetData();
+    void resetMeasurementRegister();
+
 public:
-    QuantumState(std::size_t qubit_register_size);
-    QuantumState(std::size_t qubit_register_size,
+    QuantumState(std::size_t qubit_register_size, std::size_t bit_register_size);
+    QuantumState(std::size_t qubit_register_size, std::size_t bit_register_size,
                  std::initializer_list<std::pair<std::string, std::complex<double>>> values);
     [[nodiscard]] std::size_t getNumberOfQubits() const;
+    [[nodiscard]] std::size_t getNumberOfBits() const;
     [[nodiscard]] bool isNormalized();
+    [[nodiscard]] std::vector<std::complex<double>> toVector() const;
     void reset();
 
     template <std::size_t NumberOfOperands>
@@ -83,20 +91,37 @@ public:
 
     [[nodiscard]] double getProbabilityOfMeasuringOne(QubitIndex qubitIndex);
     [[nodiscard]] double getProbabilityOfMeasuringZero(QubitIndex qubitIndex);
-    void collapseQubitState(QubitIndex qubitIndex, bool measuredState, double probabilityOfMeasuringOne);
+    void updateDataAfterMeasurement(QubitIndex qubitIndex, bool measuredState, double probabilityOfMeasuringOne);
+    void updateDataAfterReset(QubitIndex qubitIndex);
 
     // measuredState will be true if we measured a 1, or false if we measured a 0
     template <typename F>
-    void measure(QubitIndex qubitIndex, F &&randomGenerator, core::BasisVector &measurementRegister) {
+    void applyMeasure(QubitIndex qubitIndex, BitIndex bitIndex, F &&randomGenerator,
+                      core::BasisVector &measurementRegister, core::BasisVector &bitMeasurementRegister) {
         auto probabilityOfMeasuringOne = getProbabilityOfMeasuringOne(qubitIndex);
         auto measuredState = (randomGenerator() < probabilityOfMeasuringOne);
-        collapseQubitState(qubitIndex, measuredState, probabilityOfMeasuringOne);
+        updateDataAfterMeasurement(qubitIndex, measuredState, probabilityOfMeasuringOne);
         measurementRegister.set(qubitIndex.value, measuredState);
+        bitMeasurementRegister.set(bitIndex.value, measuredState);
+    }
+
+    // reset does not modify the measurement register
+    void applyReset(QubitIndex qubitIndex) {
+        updateDataAfterReset(qubitIndex);
+    }
+
+    void applyResetAll() {
+        resetData();
     }
 
 private:
     std::size_t numberOfQubits = 1;
+    std::size_t numberOfBits = 1;
     SparseArray data;
 };
 
+std::ostream& operator<<(std::ostream &os, const QuantumState &array);
+
 }  // namespace qx::core
+
+template <> struct fmt::formatter<qx::core::QuantumState> : fmt::ostream_formatter {};

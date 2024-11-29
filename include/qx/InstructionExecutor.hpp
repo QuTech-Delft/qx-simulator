@@ -14,6 +14,8 @@ public:
     explicit InstructionExecutor(core::QuantumState &state, core::BasisVector &measurement_register);
 
     void operator()(Measure const &m);
+    void operator()(Reset const &m);
+    void operator()(ResetAll const &m);
     void operator()(MeasurementRegisterOperation const &op);
 
     template <std::size_t N>

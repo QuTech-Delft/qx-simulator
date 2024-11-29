@@ -27,7 +27,7 @@ protected:
     }
 
 private:
-    core::QuantumState state{ 3 }; // Using a mock or a TestQuantumState would be beneficial here.
+    core::QuantumState state{ 3, 3 }; // Using a mock or a TestQuantumState would be beneficial here.
 };
 
 TEST_F(ErrorModelsTest, depolarizing_channel__probability_1) {
