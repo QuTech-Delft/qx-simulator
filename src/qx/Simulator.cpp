@@ -71,13 +71,15 @@ execute(
             register_manager.get_qubit_register_size(),
             register_manager.get_bit_register_size()
         };
+        auto measurement_register = core::BasisVector{};
+        auto bit_measurement_register = core::BitMeasurementRegister{ register_manager.get_bit_register_size() };
         auto circuit = Circuit{ program, register_manager };
         auto simulationResultAccumulator = SimulationResultAccumulator{ quantum_state };
 
         while (iterations--) {
             quantum_state.reset();
-            auto measurement_register = core::BasisVector{};
-            auto bit_measurement_register = core::BasisVector{};
+            measurement_register.reset();
+            bit_measurement_register.reset();
             circuit.execute(quantum_state, measurement_register, bit_measurement_register, std::monostate{});
             simulationResultAccumulator.appendMeasurement(measurement_register);
             simulationResultAccumulator.appendBitMeasurement(bit_measurement_register);

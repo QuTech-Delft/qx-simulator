@@ -53,7 +53,6 @@ class QuantumState {
     void checkQuantumState();
 
     void resetData();
-    void resetMeasurementRegister();
 
 public:
     QuantumState(std::size_t qubit_register_size, std::size_t bit_register_size);
@@ -97,7 +96,7 @@ public:
     // measuredState will be true if we measured a 1, or false if we measured a 0
     template <typename F>
     void applyMeasure(QubitIndex qubitIndex, BitIndex bitIndex, F &&randomGenerator,
-                      core::BasisVector &measurementRegister, core::BasisVector &bitMeasurementRegister) {
+                      core::BasisVector &measurementRegister, core::BitMeasurementRegister &bitMeasurementRegister) {
         auto probabilityOfMeasuringOne = getProbabilityOfMeasuringOne(qubitIndex);
         auto measuredState = (randomGenerator() < probabilityOfMeasuringOne);
         updateDataAfterMeasurement(qubitIndex, measuredState, probabilityOfMeasuringOne);

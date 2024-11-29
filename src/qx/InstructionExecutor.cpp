@@ -4,13 +4,16 @@
 
 namespace qx {
 
-InstructionExecutor::InstructionExecutor(core::QuantumState &state, core::BasisVector &measurement_register)
+InstructionExecutor::InstructionExecutor(core::QuantumState &state, core::BasisVector &measurement_register,
+                                         core::BitMeasurementRegister &bit_measurement_register)
     : state_{ state }
     , measurement_register_{ measurement_register }
+    , bit_measurement_register_{ bit_measurement_register }
 {}
 
 void InstructionExecutor::operator()(Measure const &m) {
-    state_.applyMeasure(m.qubitIndex, m.bitIndex, &random::randomZeroOneDouble, measurement_register);
+    state_.applyMeasure(m.qubitIndex, m.bitIndex, &random::randomZeroOneDouble, measurement_register_,
+                        bit_measurement_register_);
 }
 
 void InstructionExecutor::operator()(Reset const &r) {

@@ -11,7 +11,8 @@ namespace qx{
 
 class InstructionExecutor {
 public:
-    explicit InstructionExecutor(core::QuantumState &state, core::BasisVector &measurement_register);
+    explicit InstructionExecutor(core::QuantumState &state, core::BasisVector &measurement_register,
+                                 core::BitMeasurementRegister &bit_measurement_register);
 
     void operator()(Measure const &m);
     void operator()(Reset const &m);
@@ -26,6 +27,7 @@ public:
 private:
     core::QuantumState &state_;
     core::BasisVector &measurement_register_;
+    core::BitMeasurementRegister &bit_measurement_register_;
 };
 
 } // namespace qx
