@@ -18,7 +18,9 @@ public:
     Circuit(V3OneProgram &program, RegisterManager &register_manager);
     [[nodiscard]] RegisterManager& get_register_manager() const;
     void add_instruction(Instruction instruction, ControlBits control_bits);
-    void execute(core::QuantumState &quantumState, error_models::ErrorModel const &errorModel) const;
+    void execute(core::QuantumState &quantumState, core::BasisVector &measurementRegister,
+                 core::BitMeasurementRegister &bitMeasurementRegister,
+                 error_models::ErrorModel const &errorModel) const;
 
 private:
     V3OneProgram program_;

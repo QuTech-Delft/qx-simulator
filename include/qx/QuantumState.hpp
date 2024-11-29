@@ -53,7 +53,6 @@ class QuantumState {
     void checkQuantumState();
 
     void resetData();
-    void resetMeasurementRegister();
 
 public:
     QuantumState(std::size_t qubit_register_size, std::size_t bit_register_size);
@@ -89,8 +88,6 @@ public:
         data.forEachSorted(f);
     }
 
-    [[nodiscard]] const BasisVector &getMeasurementRegister() const;
-    [[nodiscard]] const BitMeasurementRegister &getBitMeasurementRegister() const;
     [[nodiscard]] double getProbabilityOfMeasuringOne(QubitIndex qubitIndex);
     [[nodiscard]] double getProbabilityOfMeasuringZero(QubitIndex qubitIndex);
     void updateDataAfterMeasurement(QubitIndex qubitIndex, bool measuredState, double probabilityOfMeasuringOne);
@@ -98,7 +95,8 @@ public:
 
     // measuredState will be true if we measured a 1, or false if we measured a 0
     template <typename F>
-    void applyMeasure(QubitIndex qubitIndex, BitIndex bitIndex, F &&randomGenerator) {
+    void applyMeasure(QubitIndex qubitIndex, BitIndex bitIndex, F &&randomGenerator,
+                      core::BasisVector &measurementRegister, core::BitMeasurementRegister &bitMeasurementRegister) {
         auto probabilityOfMeasuringOne = getProbabilityOfMeasuringOne(qubitIndex);
         auto measuredState = (randomGenerator() < probabilityOfMeasuringOne);
         updateDataAfterMeasurement(qubitIndex, measuredState, probabilityOfMeasuringOne);
@@ -119,8 +117,6 @@ private:
     std::size_t numberOfQubits = 1;
     std::size_t numberOfBits = 1;
     SparseArray data;
-    BasisVector measurementRegister{};
-    BitMeasurementRegister bitMeasurementRegister{};
 };
 
 std::ostream& operator<<(std::ostream &os, const QuantumState &array);

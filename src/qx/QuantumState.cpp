@@ -28,8 +28,7 @@ void QuantumState::checkQuantumState() {
 QuantumState::QuantumState(std::size_t qubit_register_size, std::size_t bit_register_size)
     : numberOfQubits{ qubit_register_size }
     , numberOfBits{ bit_register_size }
-    , data{ static_cast<size_t>(1) << numberOfQubits }
-    , bitMeasurementRegister{ numberOfBits } {
+    , data{ static_cast<size_t>(1) << numberOfQubits } {
 
     resetData();
     checkQuantumState();
@@ -39,8 +38,7 @@ QuantumState::QuantumState(std::size_t qubit_register_size, std::size_t bit_regi
                            std::initializer_list<std::pair<std::string, std::complex<double>>> values)
     : numberOfQubits{ qubit_register_size }
     , numberOfBits{ bit_register_size }
-    , data{ static_cast<size_t>(1) << numberOfQubits, values }
-    , bitMeasurementRegister{ numberOfBits } {
+    , data{ static_cast<size_t>(1) << numberOfQubits, values } {
 
     checkQuantumState();
 }
@@ -66,22 +64,8 @@ void QuantumState::resetData() {
     data[BasisVector{}] = SparseComplex{ 1. };  // start initialized in state 00...000
 }
 
-void QuantumState::resetMeasurementRegister() {
-    measurementRegister.reset();
-    bitMeasurementRegister.reset();
-}
-
 void QuantumState::reset() {
     resetData();
-    resetMeasurementRegister();
-}
-
-[[nodiscard]] const BasisVector& QuantumState::getMeasurementRegister() const {
-    return measurementRegister;
-}
-
-[[nodiscard]] const BitMeasurementRegister& QuantumState::getBitMeasurementRegister() const {
-    return bitMeasurementRegister;
 }
 
 [[nodiscard]] double QuantumState::getProbabilityOfMeasuringOne(QubitIndex qubitIndex) {

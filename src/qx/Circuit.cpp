@@ -1,4 +1,5 @@
 #include "qx/Circuit.hpp"
+#include "qx/Core.hpp"
 #include "qx/GateConvertor.hpp"
 #include "qx/InstructionExecutor.hpp"
 #include "qx/Instructions.hpp"
@@ -27,8 +28,10 @@ void Circuit::add_instruction(Instruction instruction, ControlBits control_bits)
     controlled_instructions_.emplace_back(std::move(instruction), std::move(control_bits));
 }
 
-void Circuit::execute(core::QuantumState &quantumState, error_models::ErrorModel const &errorModel) const {
-    InstructionExecutor instruction_executor(quantumState);
+void Circuit::execute(core::QuantumState &quantumState, core::BasisVector &measurementRegister,
+                      core::BitMeasurementRegister &bitMeasurementRegister,
+                      error_models::ErrorModel const &errorModel) const {
+    InstructionExecutor instruction_executor{ quantumState, measurementRegister, bitMeasurementRegister };
     for (auto const &controlled_instruction: controlled_instructions_) {
         if (auto *depolarizing_channel = std::get_if<error_models::DepolarizingChannel>(&errorModel)) {
             depolarizing_channel->addError(quantumState);
@@ -38,7 +41,6 @@ void Circuit::execute(core::QuantumState &quantumState, error_models::ErrorModel
 
         auto const &controlBits = controlled_instruction.control_bits;
         if (controlBits) {
-            auto measurementRegister = quantumState.getMeasurementRegister();
             auto isBitNotSet = [&measurementRegister](auto const &cb) {
                 return !measurementRegister.test(cb.value);
             };
