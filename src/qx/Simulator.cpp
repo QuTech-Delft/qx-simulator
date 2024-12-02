@@ -14,6 +14,8 @@
 #include <fstream>
 #include <iostream>
 #include <optional>
+#include <range/v3/numeric/accumulate.hpp>
+#include <range/v3/view/iota.hpp>
 #include <variant>  // monostate
 #include <vector>
 
@@ -67,12 +69,11 @@ std::variant<std::monostate, SimulationResult, SimulationError> execute(
     try {
         auto register_manager = RegisterManager{ program };
         auto circuit = Circuit{ program, register_manager };
-        auto simulationResultAccumulator = SimulationResultAccumulator{};
-
-        while (iterations--) {
-            simulationResultAccumulator.add(circuit.execute(std::monostate{}));
-        }
-
+        auto simulationResultAccumulator = ranges::accumulate(ranges::views::iota(static_cast<size_t>(0), iterations),
+            SimulationResultAccumulator{}, [&circuit](auto &acc, auto) {
+                acc.add(circuit.execute(std::monostate{}));
+                return acc;
+            });
         return simulationResultAccumulator.getSimulationResult(register_manager);
     } catch (const SimulationError &err) {
         return err;
