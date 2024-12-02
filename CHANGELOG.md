@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## [ 0.7.3 ] - [ xxxx-yy-zz ]
+
+### Added
+
+### Changed
+
+- Take measurement register out of `QuantumState`. 
+- Change `Circuit::execute` to return a `SimulationIterationResult`.
+
+### Removed
+
+
 ## [ 0.7.2 ] - [ 2024-11-20 ]
 
 ### Added
