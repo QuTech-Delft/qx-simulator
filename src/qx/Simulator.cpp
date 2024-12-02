@@ -45,8 +45,7 @@ std::variant<V3OneProgram, SimulationError> getV3ProgramOrError(V3AnalysisResult
     return program;
 }
 
-std::variant<std::monostate, SimulationResult, SimulationError>
-execute(
+std::variant<std::monostate, SimulationResult, SimulationError> execute(
     V3AnalysisResult const& analysisResult,
     std::size_t iterations,
     std::optional<std::uint_fast64_t> seed) {
@@ -67,22 +66,11 @@ execute(
 
     try {
         auto register_manager = RegisterManager{ program };
-        auto quantum_state = core::QuantumState{
-            register_manager.get_qubit_register_size(),
-            register_manager.get_bit_register_size()
-        };
-        auto measurement_register = core::BasisVector{};
-        auto bit_measurement_register = core::BitMeasurementRegister{ register_manager.get_bit_register_size() };
         auto circuit = Circuit{ program, register_manager };
-        auto simulationResultAccumulator = SimulationResultAccumulator{ quantum_state };
+        auto simulationResultAccumulator = SimulationResultAccumulator{};
 
         while (iterations--) {
-            quantum_state.reset();
-            measurement_register.reset();
-            bit_measurement_register.reset();
-            circuit.execute(quantum_state, measurement_register, bit_measurement_register, std::monostate{});
-            simulationResultAccumulator.appendMeasurement(measurement_register);
-            simulationResultAccumulator.appendBitMeasurement(bit_measurement_register);
+            simulationResultAccumulator.add(circuit.execute(std::monostate{}));
         }
 
         return simulationResultAccumulator.getSimulationResult(register_manager);
@@ -93,8 +81,7 @@ execute(
 
 }  // namespace
 
-std::variant<std::monostate, SimulationResult, SimulationError>
-executeString(
+std::variant<std::monostate, SimulationResult, SimulationError> executeString(
     std::string const &s,
     std::size_t iterations,
     std::optional<std::uint_fast64_t> seed,

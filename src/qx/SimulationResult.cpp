@@ -9,6 +9,21 @@
 
 namespace qx {
 
+//---------------------------//
+// SimulationIterationResult //
+//---------------------------//
+
+SimulationIterationResult::SimulationIterationResult(RegisterManager const& registerManager)
+    : state{ registerManager.get_qubit_register_size(), registerManager.get_bit_register_size() }
+    , measurement_register{}
+    , bit_measurement_register{ registerManager.get_bit_register_size() }
+{}
+
+
+//------------------//
+// SimulationResult //
+//------------------//
+
 SimulationResult::SimulationResult(std::uint64_t requestedShots, std::uint64_t doneShots,
                                    RegisterManager const& registerManager)
     : shotsRequested{ requestedShots }
@@ -62,9 +77,16 @@ std::ostream &operator<<(std::ostream &os, const SimulationResult &simulationRes
     return os;
 }
 
-SimulationResultAccumulator::SimulationResultAccumulator(core::QuantumState &s)
-    : state(s)
-{}
+
+//-----------------------------//
+// SimulationResultAccumulator //
+//-----------------------------//
+
+void SimulationResultAccumulator::add(SimulationIterationResult const& simulationIterationResult) {
+    state = simulationIterationResult.state;
+    appendMeasurement(simulationIterationResult.measurement_register);
+    appendBitMeasurement(simulationIterationResult.bit_measurement_register);
+}
 
 void SimulationResultAccumulator::appendMeasurement(core::BasisVector const& measurement) {
     assert(measurements.size() < (static_cast<size_t>(1) << state.getNumberOfQubits()));
