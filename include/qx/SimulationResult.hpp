@@ -54,6 +54,12 @@ struct SimulationIterationResult {
 };
 
 
+// Circuit::execute returns a SimulationIterationResult.
+// However, Instruction::execute receives a SimulationContext.
+// They are both the same concept, a wrapper of a quantum state and some measurement registers.
+using SimulationContext = SimulationIterationResult;
+
+
 struct SimulationResult {
     using Measurements = std::vector<Measurement>;
     using State = std::vector<SuperposedState>;
