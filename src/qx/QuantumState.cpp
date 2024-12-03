@@ -25,6 +25,10 @@ void QuantumState::checkQuantumState() {
     }
 }
 
+QuantumState::QuantumState()
+    : QuantumState{ 1, 1 }
+{}
+
 QuantumState::QuantumState(std::size_t qubit_register_size, std::size_t bit_register_size)
     : numberOfQubits{ qubit_register_size }
     , numberOfBits{ bit_register_size }

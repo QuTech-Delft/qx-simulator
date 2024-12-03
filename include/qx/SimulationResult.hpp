@@ -45,6 +45,15 @@ struct SuperposedState {
 };
 
 
+struct SimulationIterationResult {
+    core::QuantumState state;
+    core::BasisVector measurement_register;
+    core::BitMeasurementRegister bit_measurement_register;
+
+    explicit SimulationIterationResult(RegisterManager const& registerManager);
+};
+
+
 struct SimulationResult {
     using Measurements = std::vector<Measurement>;
     using State = std::vector<SuperposedState>;
@@ -82,7 +91,7 @@ std::ostream &operator<<(std::ostream &os, const SimulationResult &result);
 
 class SimulationResultAccumulator {
 public:
-    explicit SimulationResultAccumulator(core::QuantumState &s);
+    void add(const SimulationIterationResult &simulationIterationResult);
     void appendMeasurement(core::BasisVector const& measurement);
     void appendBitMeasurement(core::BitMeasurementRegister const& bitMeasurement);
     SimulationResult getSimulationResult(RegisterManager const& registerManager);
@@ -95,7 +104,7 @@ private:
         });
     }
 
-    core::QuantumState &state;
+    core::QuantumState state;
     absl::btree_map<state_string_t, count_t> measurements;
     absl::btree_map<state_string_t, count_t> bitMeasurements;
 

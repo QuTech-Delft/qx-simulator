@@ -28,21 +28,21 @@ void Circuit::add_instruction(Instruction instruction, ControlBits control_bits)
     controlled_instructions_.emplace_back(std::move(instruction), std::move(control_bits));
 }
 
-void Circuit::execute(core::QuantumState &quantumState, core::BasisVector &measurementRegister,
-                      core::BitMeasurementRegister &bitMeasurementRegister,
-                      error_models::ErrorModel const &errorModel) const {
-    InstructionExecutor instruction_executor{ quantumState, measurementRegister, bitMeasurementRegister };
+[[nodiscard]] SimulationIterationResult Circuit::execute(error_models::ErrorModel const &errorModel) const {
+    InstructionExecutor instruction_executor{ register_manager_ };
+    auto &simulation_iteration_result = instruction_executor.getSimulationIterationResult();
+
     for (auto const &controlled_instruction: controlled_instructions_) {
         if (auto *depolarizing_channel = std::get_if<error_models::DepolarizingChannel>(&errorModel)) {
-            depolarizing_channel->addError(quantumState);
+            depolarizing_channel->addError(simulation_iteration_result.state);
         } else {
             assert(std::get_if<std::monostate>(&errorModel) && "Unimplemented error model");
         }
 
         auto const &controlBits = controlled_instruction.control_bits;
         if (controlBits) {
-            auto isBitNotSet = [&measurementRegister](auto const &cb) {
-                return !measurementRegister.test(cb.value);
+            auto isBitNotSet = [&simulation_iteration_result](auto const &cb) {
+                return !simulation_iteration_result.measurement_register.test(cb.value);
             };
             if (std::any_of(controlBits->begin(), controlBits->end(), isBitNotSet)) {
                 continue;
@@ -71,6 +71,8 @@ void Circuit::execute(core::QuantumState &quantumState, core::BasisVector &measu
             assert(false && "Unimplemented circuit instruction");
         }
     }
+
+    return simulation_iteration_result;
 }
 
 } // namespace qx

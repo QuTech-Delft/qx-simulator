@@ -2,7 +2,9 @@
 
 #include "qx/Core.hpp"
 #include "qx/Instructions.hpp"
+#include "qx/RegisterManager.hpp"
 #include "qx/QuantumState.hpp"
+#include "qx/SimulationResult.hpp"
 
 #include <cstddef>  // size_t
 
@@ -11,8 +13,7 @@ namespace qx{
 
 class InstructionExecutor {
 public:
-    explicit InstructionExecutor(core::QuantumState &state, core::BasisVector &measurement_register,
-                                 core::BitMeasurementRegister &bit_measurement_register);
+    explicit InstructionExecutor(RegisterManager &register_manager);
 
     void operator()(Measure const &m);
     void operator()(Reset const &m);
@@ -21,13 +22,13 @@ public:
 
     template <std::size_t N>
     void operator()(Unitary<N> const &u) {
-        state_.apply(u.matrix, u.operands);
+        simulation_iteration_result_.state.apply(u.matrix, u.operands);
     }
 
+    SimulationIterationResult &getSimulationIterationResult();
+
 private:
-    core::QuantumState &state_;
-    core::BasisVector &measurement_register_;
-    core::BitMeasurementRegister &bit_measurement_register_;
+    SimulationIterationResult simulation_iteration_result_;
 };
 
 } // namespace qx

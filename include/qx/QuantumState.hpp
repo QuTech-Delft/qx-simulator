@@ -55,6 +55,7 @@ class QuantumState {
     void resetData();
 
 public:
+    QuantumState();
     QuantumState(std::size_t qubit_register_size, std::size_t bit_register_size);
     QuantumState(std::size_t qubit_register_size, std::size_t bit_register_size,
                  std::initializer_list<std::pair<std::string, std::complex<double>>> values);
@@ -114,8 +115,8 @@ public:
     }
 
 private:
-    std::size_t numberOfQubits = 1;
-    std::size_t numberOfBits = 1;
+    std::size_t numberOfQubits;
+    std::size_t numberOfBits;
     SparseArray data;
 };
 
