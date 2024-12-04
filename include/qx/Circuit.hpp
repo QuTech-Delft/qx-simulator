@@ -7,7 +7,7 @@
 #include "qx/SimulationResult.hpp"
 #include "qx/V3xLibqasmInterface.hpp"
 
-#include<memory>  // shared_ptr
+#include <memory>  // shared_ptr
 #include <optional>
 #include <string>
 #include <vector>
