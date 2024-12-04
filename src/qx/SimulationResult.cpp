@@ -9,16 +9,6 @@
 
 namespace qx {
 
-//----------------------------//
-// SimulationIterationContext //
-//----------------------------//
-
-SimulationIterationContext::SimulationIterationContext(RegisterManager const& registerManager)
-    : state{ registerManager.get_qubit_register_size(), registerManager.get_bit_register_size() }
-    , measurement_register{}
-    , bit_measurement_register{ registerManager.get_bit_register_size() }
-{}
-
 
 //------------------//
 // SimulationResult //
@@ -76,6 +66,17 @@ std::ostream &operator<<(std::ostream &os, const SimulationResult &simulationRes
     fmt::print(os, "Bit register:\n\t{}", simulationResult.bitRegister);
     return os;
 }
+
+
+//----------------------------//
+// SimulationIterationContext //
+//----------------------------//
+
+SimulationIterationContext::SimulationIterationContext(RegisterManager const& registerManager)
+    : state{ registerManager.get_qubit_register_size(), registerManager.get_bit_register_size() }
+      , measurement_register{}
+      , bit_measurement_register{ registerManager.get_bit_register_size() }
+{}
 
 
 //--------------------------------//

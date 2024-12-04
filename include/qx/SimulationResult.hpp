@@ -23,6 +23,20 @@ class QuantumState;
 }
 
 
+// A simulation consists of a number of iterations, each executing a circuit composed by a list of instructions.
+//
+// Each instruction is executed within a given SimulationIterationContext:
+// - a quantum state, and
+// - some measurement registers.
+// The SimulationIterationContext is reset at the beginning of every iteration,
+// returned at the end of the iteration as a simulation iteration result,
+// and accumulated by a SimulationIterationAccumulator.
+//
+// The final SimulationResult is composed by the SimulationIterationAccumulator at the end of a simulation:
+// - the quantum state is just the state of the last iteration.
+// - the measurement registers contain all the measurements for all the iterations.
+
+
 using state_string_t = std::string;
 using count_t = std::uint64_t;
 using amplitude_t = core::Complex;
@@ -44,6 +58,10 @@ struct SuperposedState {
     std::partial_ordering operator<=>(const SuperposedState &other) const = default;
 };
 
+
+//------------------//
+// SimulationResult //
+//------------------//
 
 struct SimulationResult {
     using Measurements = std::vector<Measurement>;
@@ -80,12 +98,10 @@ public:
 std::ostream &operator<<(std::ostream &os, const SimulationResult &result);
 
 
-// A simulation consists of a number of iterations, each executing a circuit composed by a list of instructions.
-// Each instruction is executed within a given SimulationIterationContext:
-// a quantum state, and some measurement registers.
-// This SimulationIterationContext is reset at the beginning of every iteration.
-// And the final SimulationIterationContext is returned as a simulation iteration result,
-// and accumulated by a SimulationIterationAccumulator.
+//----------------------------//
+// SimulationIterationContext //
+//----------------------------//
+
 struct SimulationIterationContext {
     core::QuantumState state;
     core::BasisVector measurement_register;
@@ -94,6 +110,10 @@ struct SimulationIterationContext {
     explicit SimulationIterationContext(RegisterManager const& registerManager);
 };
 
+
+//--------------------------------//
+// SimulationIterationAccumulator //
+//--------------------------------//
 
 class SimulationIterationAccumulator {
 public:
