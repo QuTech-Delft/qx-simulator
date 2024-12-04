@@ -16,6 +16,8 @@
 namespace qx {
 
 class Circuit {
+    static void add_error(SimulationContext &context, error_models::ErrorModel const &errorModel);
+
 public:
     Circuit(V3OneProgram &program, RegisterManager &register_manager);
     [[nodiscard]] RegisterManager& get_register_manager() const;
