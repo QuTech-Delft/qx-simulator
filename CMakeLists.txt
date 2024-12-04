@@ -125,7 +125,7 @@ add_library(qx
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Circuit.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/ErrorModels.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/GateConvertor.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/InstructionExecutor.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Instructions.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/OperandsHelper.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/QuantumState.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Qxelarator.cpp"

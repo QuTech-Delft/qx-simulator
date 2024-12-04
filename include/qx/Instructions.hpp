@@ -2,62 +2,82 @@
 
 #include "qx/Core.hpp"  // BasisVector, BitIndex, QubitIndex
 #include "qx/DenseUnitaryMatrix.hpp"
+#include "qx/SimulationResult.hpp"
 
 #include <array>
 #include <cstddef>  // size_t
-#include <functional>  // function
 #include <memory> // shared_ptr
-#include <variant>
 #include <vector>
 
 
 namespace qx {
 
-struct Measure {
-    core::QubitIndex qubitIndex{};
-    core::BitIndex bitIndex{};
+
+struct Instruction {
+    virtual ~Instruction() = default;
+    virtual void execute(SimulationIterationContext &context) = 0;
 };
 
-struct Reset {
-    core::QubitIndex qubitIndex{};
+
+using ControlBits = std::vector<core::BitIndex>;
+
+
+struct ControlledInstruction : public Instruction {
+    ControlBits control_bits;
+    std::shared_ptr<Instruction> instruction;
+
+    ~ControlledInstruction() = default;
+    ControlledInstruction(ControlBits const& control_bits, std::shared_ptr<Instruction> instruction);
+    void execute(SimulationIterationContext &context) override;
 };
 
-struct ResetAll {
-};
 
-struct MeasurementRegisterOperation {
-    std::function<void(core::BasisVector const &)> operation;
-};
+template <std::size_t N>
+using matrix_t = core::DenseUnitaryMatrix<1 << N>;
+template <std::size_t N>
+using operands_t = std::array<core::QubitIndex, N>;
+
 
 template <std::size_t NumberOfOperands>
-struct Unitary {
+struct Unitary : public Instruction {
     // Matrix is stored inline but could also be a pointer.
-    core::DenseUnitaryMatrix<1 << NumberOfOperands> matrix{};
-    std::array<core::QubitIndex, NumberOfOperands> operands{};
-};
+    matrix_t<NumberOfOperands> matrix{};
+    operands_t<NumberOfOperands> operands{};
 
-using Instruction = std::variant<
-    Measure,
-    Reset,
-    ResetAll,
-    MeasurementRegisterOperation,
-    Unitary<1>,
-    Unitary<2>,
-    Unitary<3>
->;
-
-using ControlBits = std::shared_ptr<std::vector<core::QubitIndex>>;
-
-struct ControlledInstruction {
-    ControlledInstruction(Instruction instruction, ControlBits control_bits)
-        : instruction(std::move(instruction))
-        , control_bits(std::move(control_bits))
+    ~Unitary() = default;
+    Unitary(matrix_t<NumberOfOperands> matrix, operands_t<NumberOfOperands> operands)
+        : matrix{ std::move(matrix) }
+        , operands{ std::move(operands) }
     {}
-
-    Instruction instruction;
-    ControlBits control_bits;
+    void execute(SimulationIterationContext &context) override {
+        context.state.apply(matrix, operands);
+    }
 };
 
-// We could in the future add loops and if/else...
+
+struct NonUnitary : public Instruction {
+    ~NonUnitary() = default;
+    void execute(SimulationIterationContext &context) override = 0;
+};
+
+
+struct Measure : public NonUnitary {
+    core::QubitIndex qubitIndex{};
+    core::BitIndex bitIndex{};
+
+    ~Measure() = default;
+    Measure(core::QubitIndex const& qubitIndex, core::BitIndex const& bitIndex);
+    void execute(SimulationIterationContext &context) override;
+};
+
+
+struct Reset : public NonUnitary {
+    std::optional<core::QubitIndex> qubitIndex{};
+
+    ~Reset() = default;
+    Reset(std::optional<core::QubitIndex> qubitIndex);
+    void execute(SimulationIterationContext &context) override;
+};
+
 
 }  // namespace qx

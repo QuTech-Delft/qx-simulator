@@ -23,6 +23,20 @@ class QuantumState;
 }
 
 
+// A simulation consists of a number of iterations, each executing a circuit composed by a list of instructions.
+//
+// Each instruction is executed within a given SimulationIterationContext:
+// - a quantum state, and
+// - some measurement registers.
+// The SimulationIterationContext is reset at the beginning of every iteration,
+// returned at the end of the iteration as a simulation iteration result,
+// and accumulated by a SimulationIterationAccumulator.
+//
+// The final SimulationResult is composed by the SimulationIterationAccumulator at the end of a simulation:
+// - the quantum state is just the state of the last iteration.
+// - the measurement registers contain all the measurements for all the iterations.
+
+
 using state_string_t = std::string;
 using count_t = std::uint64_t;
 using amplitude_t = core::Complex;
@@ -45,14 +59,9 @@ struct SuperposedState {
 };
 
 
-struct SimulationIterationResult {
-    core::QuantumState state;
-    core::BasisVector measurement_register;
-    core::BitMeasurementRegister bit_measurement_register;
-
-    explicit SimulationIterationResult(RegisterManager const& registerManager);
-};
-
+//------------------//
+// SimulationResult //
+//------------------//
 
 struct SimulationResult {
     using Measurements = std::vector<Measurement>;
@@ -89,9 +98,26 @@ public:
 std::ostream &operator<<(std::ostream &os, const SimulationResult &result);
 
 
-class SimulationResultAccumulator {
+//----------------------------//
+// SimulationIterationContext //
+//----------------------------//
+
+struct SimulationIterationContext {
+    core::QuantumState state;
+    core::BasisVector measurement_register;
+    core::BitMeasurementRegister bit_measurement_register;
+
+    explicit SimulationIterationContext(RegisterManager const& registerManager);
+};
+
+
+//--------------------------------//
+// SimulationIterationAccumulator //
+//--------------------------------//
+
+class SimulationIterationAccumulator {
 public:
-    void add(const SimulationIterationResult &simulationIterationResult);
+    void add(const SimulationIterationContext &simulationIterationContext);
     void appendMeasurement(core::BasisVector const& measurement);
     void appendBitMeasurement(core::BitMeasurementRegister const& bitMeasurement);
     SimulationResult getSimulationResult(RegisterManager const& registerManager);

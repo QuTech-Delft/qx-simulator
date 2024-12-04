@@ -9,16 +9,6 @@
 
 namespace qx {
 
-//---------------------------//
-// SimulationIterationResult //
-//---------------------------//
-
-SimulationIterationResult::SimulationIterationResult(RegisterManager const& registerManager)
-    : state{ registerManager.get_qubit_register_size(), registerManager.get_bit_register_size() }
-    , measurement_register{}
-    , bit_measurement_register{ registerManager.get_bit_register_size() }
-{}
-
 
 //------------------//
 // SimulationResult //
@@ -78,31 +68,42 @@ std::ostream &operator<<(std::ostream &os, const SimulationResult &simulationRes
 }
 
 
-//-----------------------------//
-// SimulationResultAccumulator //
-//-----------------------------//
+//----------------------------//
+// SimulationIterationContext //
+//----------------------------//
 
-void SimulationResultAccumulator::add(SimulationIterationResult const& simulationIterationResult) {
-    state = simulationIterationResult.state;
-    appendMeasurement(simulationIterationResult.measurement_register);
-    appendBitMeasurement(simulationIterationResult.bit_measurement_register);
+SimulationIterationContext::SimulationIterationContext(RegisterManager const& registerManager)
+    : state{ registerManager.get_qubit_register_size(), registerManager.get_bit_register_size() }
+      , measurement_register{}
+      , bit_measurement_register{ registerManager.get_bit_register_size() }
+{}
+
+
+//--------------------------------//
+// SimulationIterationAccumulator //
+//--------------------------------//
+
+void SimulationIterationAccumulator::add(SimulationIterationContext const& context) {
+    state = context.state;
+    appendMeasurement(context.measurement_register);
+    appendBitMeasurement(context.bit_measurement_register);
 }
 
-void SimulationResultAccumulator::appendMeasurement(core::BasisVector const& measurement) {
+void SimulationIterationAccumulator::appendMeasurement(core::BasisVector const& measurement) {
     assert(measurements.size() < (static_cast<size_t>(1) << state.getNumberOfQubits()));
     auto measuredStateString{ measurement.toSubstring(state.getNumberOfQubits()) };
     measurements[measuredStateString]++;
     measurementsCount++;
 }
 
-void SimulationResultAccumulator::appendBitMeasurement(core::BitMeasurementRegister const& bitMeasurement) {
+void SimulationIterationAccumulator::appendBitMeasurement(core::BitMeasurementRegister const& bitMeasurement) {
     assert(bitMeasurements.size() < (static_cast<size_t>(1) << state.getNumberOfQubits()));
     auto bitMeasuredStateString{ fmt::format("{}", bitMeasurement) };
     bitMeasurements[bitMeasuredStateString]++;
     bitMeasurementsCount++;
 }
 
-SimulationResult SimulationResultAccumulator::getSimulationResult(RegisterManager const& registerManager) {
+SimulationResult SimulationIterationAccumulator::getSimulationResult(RegisterManager const& registerManager) {
     assert(measurementsCount > 0);
 
     SimulationResult simulationResult{ measurementsCount, measurementsCount, registerManager };

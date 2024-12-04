@@ -7,6 +7,7 @@
 #include "qx/SimulationResult.hpp"
 #include "qx/V3xLibqasmInterface.hpp"
 
+#include <memory>  // shared_ptr
 #include <optional>
 #include <string>
 #include <vector>
@@ -15,16 +16,18 @@
 namespace qx {
 
 class Circuit {
+    static void add_error(SimulationIterationContext &context, error_models::ErrorModel const &errorModel);
+
 public:
     Circuit(V3OneProgram &program, RegisterManager &register_manager);
     [[nodiscard]] RegisterManager& get_register_manager() const;
-    void add_instruction(Instruction instruction, ControlBits control_bits);
-    [[nodiscard]] SimulationIterationResult execute(error_models::ErrorModel const &errorModel) const;
+    void add_instruction(std::shared_ptr<Instruction> instruction);
+    [[nodiscard]] SimulationIterationContext execute(error_models::ErrorModel const &errorModel) const;
 
 private:
     V3OneProgram program_;
     RegisterManager &register_manager_;
-    std::vector<ControlledInstruction> controlled_instructions_;
+    std::vector<std::shared_ptr<Instruction>> instructions_;
 };
 
 }  // namespace qx
