@@ -19,7 +19,7 @@ struct Instruction {
 };
 
 
-using ControlBits = std::vector<core::QubitIndex>;
+using ControlBits = std::vector<core::BitIndex>;
 
 
 struct ControlledInstruction : public Instruction {
