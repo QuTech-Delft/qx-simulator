@@ -45,21 +45,6 @@ struct SuperposedState {
 };
 
 
-struct SimulationIterationResult {
-    core::QuantumState state;
-    core::BasisVector measurement_register;
-    core::BitMeasurementRegister bit_measurement_register;
-
-    explicit SimulationIterationResult(RegisterManager const& registerManager);
-};
-
-
-// Circuit::execute returns a SimulationIterationResult.
-// However, Instruction::execute receives a SimulationContext.
-// They are both the same concept, a wrapper of a quantum state and some measurement registers.
-using SimulationContext = SimulationIterationResult;
-
-
 struct SimulationResult {
     using Measurements = std::vector<Measurement>;
     using State = std::vector<SuperposedState>;
@@ -95,9 +80,24 @@ public:
 std::ostream &operator<<(std::ostream &os, const SimulationResult &result);
 
 
-class SimulationResultAccumulator {
+// A simulation consists of a number of iterations, each executing a circuit composed by a list of instructions.
+// Each instruction is executed within a given SimulationIterationContext:
+// a quantum state, and some measurement registers.
+// This SimulationIterationContext is reset at the beginning of every iteration.
+// And the final SimulationIterationContext is returned as a simulation iteration result,
+// and accumulated by a SimulationIterationAccumulator.
+struct SimulationIterationContext {
+    core::QuantumState state;
+    core::BasisVector measurement_register;
+    core::BitMeasurementRegister bit_measurement_register;
+
+    explicit SimulationIterationContext(RegisterManager const& registerManager);
+};
+
+
+class SimulationIterationAccumulator {
 public:
-    void add(const SimulationIterationResult &simulationIterationResult);
+    void add(const SimulationIterationContext &simulationIterationContext);
     void appendMeasurement(core::BasisVector const& measurement);
     void appendBitMeasurement(core::BitMeasurementRegister const& bitMeasurement);
     SimulationResult getSimulationResult(RegisterManager const& registerManager);

@@ -13,7 +13,7 @@ ControlledInstruction::ControlledInstruction(ControlBits const& control_bits, st
 {}
 
 
-void ControlledInstruction::execute(SimulationContext &context) {
+void ControlledInstruction::execute(SimulationIterationContext &context) {
     auto is_bit_set = [&context](auto const &control_bit) {
         return context.measurement_register.test(control_bit.value);
     };
@@ -29,7 +29,7 @@ Measure::Measure(core::QubitIndex const& qubitIndex, core::BitIndex const& bitIn
 {}
 
 
-void Measure::execute(SimulationContext &context) {
+void Measure::execute(SimulationIterationContext &context) {
     context.state.applyMeasure(
         qubitIndex,
         bitIndex,
@@ -45,7 +45,7 @@ Reset::Reset(std::optional<core::QubitIndex> qubitIndex)
 {}
 
 
-void Reset::execute(SimulationContext &context) {
+void Reset::execute(SimulationIterationContext &context) {
     if (qubitIndex.has_value()) {
         context.state.applyReset(qubitIndex.value());
     } else {

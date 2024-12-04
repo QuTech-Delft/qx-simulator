@@ -15,7 +15,7 @@ namespace qx {
 
 struct Instruction {
     virtual ~Instruction() = default;
-    virtual void execute(SimulationContext &context) = 0;
+    virtual void execute(SimulationIterationContext &context) = 0;
 };
 
 
@@ -28,7 +28,7 @@ struct ControlledInstruction : public Instruction {
 
     ~ControlledInstruction() = default;
     ControlledInstruction(ControlBits const& control_bits, std::shared_ptr<Instruction> instruction);
-    void execute(SimulationContext &context) override;
+    void execute(SimulationIterationContext &context) override;
 };
 
 
@@ -49,7 +49,7 @@ struct Unitary : public Instruction {
         : matrix{ std::move(matrix) }
         , operands{ std::move(operands) }
     {}
-    void execute(SimulationContext &context) override {
+    void execute(SimulationIterationContext &context) override {
         context.state.apply(matrix, operands);
     }
 };
@@ -57,7 +57,7 @@ struct Unitary : public Instruction {
 
 struct NonUnitary : public Instruction {
     ~NonUnitary() = default;
-    void execute(SimulationContext &context) override = 0;
+    void execute(SimulationIterationContext &context) override = 0;
 };
 
 
@@ -67,7 +67,7 @@ struct Measure : public NonUnitary {
 
     ~Measure() = default;
     Measure(core::QubitIndex const& qubitIndex, core::BitIndex const& bitIndex);
-    void execute(SimulationContext &context) override;
+    void execute(SimulationIterationContext &context) override;
 };
 
 
@@ -76,7 +76,7 @@ struct Reset : public NonUnitary {
 
     ~Reset() = default;
     Reset(std::optional<core::QubitIndex> qubitIndex);
-    void execute(SimulationContext &context) override;
+    void execute(SimulationIterationContext &context) override;
 };
 
 
