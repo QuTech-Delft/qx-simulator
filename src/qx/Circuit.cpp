@@ -1,4 +1,5 @@
 #include "qx/Circuit.hpp"
+#include "qx/CircuitBuilder.hpp"
 #include "qx/Instructions.hpp"
 #include "qx/SimulationResult.hpp"
 
@@ -6,6 +7,14 @@
 
 
 namespace qx {
+
+Circuit::Circuit(V3OneProgram const &program, RegisterManager const &register_manager)
+    : program{ program }
+    , register_manager{ register_manager }
+{
+    CircuitBuilder{ *this }.build();
+}
+
 
 void Circuit::add_instruction(std::shared_ptr<Instruction> instruction) {
     instructions_.emplace_back(std::move(instruction));
@@ -19,10 +28,8 @@ void Circuit::add_instruction(std::shared_ptr<Instruction> instruction) {
     }
 }
 
-[[nodiscard]] SimulationIterationContext Circuit::execute(
-    RegisterManager const &registerManager,
-    error_models::ErrorModel const &errorModel) const {
-    auto context = SimulationIterationContext{ registerManager };
+[[nodiscard]] SimulationIterationContext Circuit::execute(error_models::ErrorModel const &errorModel) const {
+    auto context = SimulationIterationContext{ register_manager };
     std::for_each(instructions_.begin(), instructions_.end(),
         [&context, &errorModel](auto const& instruction) {
             add_error(context, errorModel);

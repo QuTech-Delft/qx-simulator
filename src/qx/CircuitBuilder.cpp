@@ -11,14 +11,13 @@
 
 namespace qx {
 
-CircuitBuilder::CircuitBuilder(V3OneProgram const& program, RegisterManager const& register_manager)
-    : program_{ program }
-    , register_manager_{ register_manager }
-    , circuit_{}
+CircuitBuilder::CircuitBuilder(Circuit &circuit)
+    : circuit_{ circuit }
 {}
 
 Circuit CircuitBuilder::build() {
-    std::for_each(program_->block->statements.begin(), program_->block->statements.end(),
+    auto const& statements = circuit_.program->block->statements;
+    std::for_each(statements.begin(), statements.end(),
         [this](auto const& statement) {
             statement->visit(*this);
         });
@@ -31,7 +30,7 @@ void CircuitBuilder::visit_node(V3Node &) {
 
 void CircuitBuilder::visit_instruction(V3Instruction &instruction) {
     auto &name = instruction.instruction_ref->name;
-    auto operands_helper = OperandsHelper{ instruction, register_manager_ };
+    auto operands_helper = OperandsHelper{ instruction, circuit_.register_manager };
     
     if (name == "TOFFOLI") {
         visit_gate_instruction<3>(

@@ -23,25 +23,23 @@ struct CircuitBuilderError : public SimulationError {
  */
 class CircuitBuilder : public V3RecursiveVisitor {
 public:
-    CircuitBuilder(V3OneProgram const& program, RegisterManager const& register_manager);
+    explicit CircuitBuilder(Circuit &circuit);
     Circuit build();
+
+private:
+    template <std::size_t N>
+    using ast_operands_t = std::array<V3Many<V3ConstInt>, N>;
 
 private:
     void visit_node(V3Node &) override;
     void visit_instruction(V3Instruction &instr) override;
-
-    template <std::size_t N>
-    using ast_operands_t = std::array<V3Many<V3ConstInt>, N>;
-
     template <std::size_t NumberOfQubitOperands>
     void visit_gate_instruction(
         matrix_t<NumberOfQubitOperands> matrix,
         ast_operands_t<NumberOfQubitOperands> operands);
 
 private:
-    V3OneProgram const& program_;
-    RegisterManager const& register_manager_;
-    Circuit circuit_;
+    Circuit &circuit_;
 };
 
 }  // namespace qx
