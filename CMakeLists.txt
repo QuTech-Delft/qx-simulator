@@ -123,8 +123,8 @@ find_package(range-v3 REQUIRED)
 
 add_library(qx
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Circuit.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/CircuitBuilder.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/ErrorModels.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/GateConvertor.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Instructions.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/OperandsHelper.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/QuantumState.cpp"

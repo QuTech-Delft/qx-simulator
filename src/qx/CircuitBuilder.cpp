@@ -1,138 +1,121 @@
+#include "qx/CircuitBuilder.hpp"
 #include "qx/Core.hpp"
-#include "qx/GateConvertor.hpp"
 #include "qx/Gates.hpp"
-#include "qx/Instructions.hpp"  // Measure, Unitary
+#include "qx/Instructions.hpp" // Measure, Unitary
 #include "qx/OperandsHelper.hpp"
 
+#include <algorithm>  // for_each
 #include <fmt/format.h>
 #include <memory>  // make_shared
 
 
 namespace qx {
 
-GateConvertor::GateConvertor(Circuit &circuit)
+CircuitBuilder::CircuitBuilder(Circuit &circuit)
     : circuit_{ circuit }
 {}
 
-void GateConvertor::visit_instruction(V3Instruction &instruction) {
-    addGates(instruction);
-}
-
-void GateConvertor::visit_node(V3Node &) {
-    throw GateConvertorError{ "Statement not supported by the simulator" };
-}
-
-template <std::size_t NumberOfQubitOperands>
-void GateConvertor::addGates(
-    matrix_t<NumberOfQubitOperands> matrix,
-    std::array<V3Many<V3ConstInt>, NumberOfQubitOperands> operands) {
-    static_assert(NumberOfQubitOperands > 0);
-
-#ifndef NDEBUG
-    std::for_each(operands.begin(), operands.end(),
-        [&operands](V3Many<V3ConstInt> const &ops) {
-            assert(ops.size() == operands[0].size());
+Circuit CircuitBuilder::build() {
+    auto const& statements = circuit_.program->block->statements;
+    std::for_each(statements.begin(), statements.end(),
+        [this](auto const& statement) {
+            statement->visit(*this);
         });
-#endif
-
-    for (std::size_t i = 0; i < operands[0].size(); ++i) {
-        operands_t<NumberOfQubitOperands> ops{};
-        for (std::size_t op = 0; op < NumberOfQubitOperands; ++op) {
-            ops[op] = core::QubitIndex{
-                static_cast<std::size_t>(operands[op][i]->value)};
-        }
-
-        circuit_.add_instruction(std::make_shared<Unitary<NumberOfQubitOperands>>(matrix, ops));
-    }
+    return circuit_;
 }
 
-void GateConvertor::addGates(const V3Instruction &instruction) {
-    auto &name = instruction.instruction_ref->name;
-    auto operands_helper = OperandsHelper{ instruction, circuit_.get_register_manager() };
+void CircuitBuilder::visit_node(V3Node &) {
+    throw CircuitBuilderError{ "unsupported node" };
+}
 
+void CircuitBuilder::visit_instruction(V3Instruction &instruction) {
+    auto &name = instruction.instruction_ref->name;
+    auto operands_helper = OperandsHelper{ instruction, circuit_.register_manager };
+    
     if (name == "TOFFOLI") {
-        addGates<3>(
+        visit_gate_instruction<3>(
             gates::TOFFOLI,
             {
                 operands_helper.get_register_operand(0),
                 operands_helper.get_register_operand(1),
                 operands_helper.get_register_operand(2)
-        });
+            }
+        );
     } else if (name == "I") {
-        addGates<1>(gates::IDENTITY, { operands_helper.get_register_operand(0) });
+        visit_gate_instruction<1>(gates::IDENTITY, { operands_helper.get_register_operand(0) });
     } else if (name == "X") {
-        addGates<1>(gates::X, { operands_helper.get_register_operand(0) });
+        visit_gate_instruction<1>(gates::X, { operands_helper.get_register_operand(0) });
     } else if (name == "Y") {
-        addGates<1>(gates::Y, { operands_helper.get_register_operand(0) });
+        visit_gate_instruction<1>(gates::Y, { operands_helper.get_register_operand(0) });
     } else if (name == "Z") {
-        addGates<1>(gates::Z, { operands_helper.get_register_operand(0) });
+        visit_gate_instruction<1>(gates::Z, { operands_helper.get_register_operand(0) });
     } else if (name == "H") {
-        addGates<1>(gates::H, { operands_helper.get_register_operand(0) });
+        visit_gate_instruction<1>(gates::H, { operands_helper.get_register_operand(0) });
     } else if (name == "S") {
-        addGates<1>(gates::S, { operands_helper.get_register_operand(0) });
+        visit_gate_instruction<1>(gates::S, { operands_helper.get_register_operand(0) });
     } else if (name == "Sdag") {
-        addGates<1>(gates::SDAG, { operands_helper.get_register_operand(0) });
+        visit_gate_instruction<1>(gates::SDAG, { operands_helper.get_register_operand(0) });
     } else if (name == "T") {
-        addGates<1>(gates::T, { operands_helper.get_register_operand(0) });
+        visit_gate_instruction<1>(gates::T, { operands_helper.get_register_operand(0) });
     } else if (name == "Tdag") {
-        addGates<1>(gates::TDAG, {operands_helper.get_register_operand(0) });
+        visit_gate_instruction<1>(gates::TDAG, {operands_helper.get_register_operand(0) });
     } else if (name == "Rx") {
-        addGates<1>(
+        visit_gate_instruction<1>(
             gates::RX(operands_helper.get_float_operand(1)),
             { operands_helper.get_register_operand(0) }
         );
     } else if (name == "Ry") {
-        addGates<1>(
+        visit_gate_instruction<1>(
             gates::RY(operands_helper.get_float_operand(1)),
             { operands_helper.get_register_operand(0) }
         );
     } else if (name == "Rz") {
-        addGates<1>(
+        visit_gate_instruction<1>(
             gates::RZ(operands_helper.get_float_operand(1)),
             { operands_helper.get_register_operand(0) }
         );
     } else if (name == "CNOT") {
-        addGates<2>(
+        visit_gate_instruction<2>(
             gates::CNOT,
             { operands_helper.get_register_operand(0), operands_helper.get_register_operand(1) }
         );
     } else if (name == "CZ") {
-        addGates<2>(
+        visit_gate_instruction<2>(
             gates::CZ,
             { operands_helper.get_register_operand(0), operands_helper.get_register_operand(1) }
         );
     } else if (name == "CR") {
-        addGates<2>(
+        visit_gate_instruction<2>(
             gates::CR(operands_helper.get_float_operand(2)),
             { operands_helper.get_register_operand(0), operands_helper.get_register_operand(1) }
         );
     } else if (name == "CRk") {
-        addGates<2>(
+        visit_gate_instruction<2>(
             gates::CR(static_cast<double>(gates::PI) / std::pow(2, operands_helper.get_int_operand(2) - 1)),
             { operands_helper.get_register_operand(0), operands_helper.get_register_operand(1) }
         );
     } else if (name == "SWAP") {
-        addGates<2>(
+        visit_gate_instruction<2>(
             gates::SWAP,
             { operands_helper.get_register_operand(0), operands_helper.get_register_operand(1) }
         );
     } else if (name == "X90") {
-        return addGates<1>(
+        return visit_gate_instruction<1>(
             gates::X90,
             { operands_helper.get_register_operand(0) }
         );
     } else if (name == "Y90") {
-        return addGates<1>(
+        return visit_gate_instruction<1>(
             gates::Y90,
             { operands_helper.get_register_operand(0) }
         );
     } else if (name == "mX90") {
-        return addGates<1>(
+        return visit_gate_instruction<1>(
             gates::MX90,
             { operands_helper.get_register_operand(0) }
         );
     } else if (name == "mY90") {
-        return addGates<1>(
+        return visit_gate_instruction<1>(
             gates::MY90,
             { operands_helper.get_register_operand(0) }
         );
@@ -160,7 +143,30 @@ void GateConvertor::addGates(const V3Instruction &instruction) {
             }
         }
     } else {
-        throw GateConvertorError{ fmt::format("Unsupported gate or instruction: {}", name) };
+        throw CircuitBuilderError{ fmt::format("unsupported instruction: '{}'", name) };
+    }
+}
+
+template <std::size_t NumberOfQubitOperands>
+void CircuitBuilder::visit_gate_instruction(
+    matrix_t<NumberOfQubitOperands> matrix,
+    ast_operands_t<NumberOfQubitOperands> operands) {
+    static_assert(NumberOfQubitOperands > 0);
+
+#ifndef NDEBUG
+    std::for_each(operands.begin(), operands.end(),
+        [&operands](V3Many<V3ConstInt> const &ops) {
+            assert(ops.size() == operands[0].size());
+        });
+#endif
+
+    for (std::size_t i = 0; i < operands[0].size(); ++i) {
+        operands_t<NumberOfQubitOperands> ops{};
+        for (std::size_t op = 0; op < NumberOfQubitOperands; ++op) {
+            ops[op] = core::QubitIndex{ static_cast<std::size_t>(operands[op][i]->value) };
+        }
+
+        circuit_.add_instruction(std::make_shared<Unitary<NumberOfQubitOperands>>(matrix, ops));
     }
 }
 
