@@ -1,5 +1,4 @@
 #include "qx/Circuit.hpp"
-#include "qx/GateConvertor.hpp"
 #include "qx/Instructions.hpp"
 #include "qx/SimulationResult.hpp"
 
@@ -7,20 +6,6 @@
 
 
 namespace qx {
-
-Circuit::Circuit(V3OneProgram &program, RegisterManager &register_manager)
-    : program_{ program }
-    , register_manager_{ register_manager } {
-
-    GateConvertor gateConvertor{ *this };
-    for (const auto &statement: program_->block->statements) {
-        statement->visit(gateConvertor);
-    }
-}
-
-[[nodiscard]] RegisterManager& Circuit::get_register_manager() const {
-    return register_manager_;
-}
 
 void Circuit::add_instruction(std::shared_ptr<Instruction> instruction) {
     instructions_.emplace_back(std::move(instruction));
@@ -34,8 +19,10 @@ void Circuit::add_instruction(std::shared_ptr<Instruction> instruction) {
     }
 }
 
-[[nodiscard]] SimulationIterationContext Circuit::execute(error_models::ErrorModel const &errorModel) const {
-    auto context = SimulationIterationContext{ register_manager_ };
+[[nodiscard]] SimulationIterationContext Circuit::execute(
+    RegisterManager const &registerManager,
+    error_models::ErrorModel const &errorModel) const {
+    auto context = SimulationIterationContext{ registerManager };
     std::for_each(instructions_.begin(), instructions_.end(),
         [&context, &errorModel](auto const& instruction) {
             add_error(context, errorModel);

@@ -26,8 +26,8 @@ struct ControlledInstruction : public Instruction {
     ControlBits control_bits;
     std::shared_ptr<Instruction> instruction;
 
-    ~ControlledInstruction() = default;
-    ControlledInstruction(ControlBits const& control_bits, std::shared_ptr<Instruction> instruction);
+    ~ControlledInstruction() override = default;
+    ControlledInstruction(ControlBits control_bits, std::shared_ptr<Instruction> instruction);
     void execute(SimulationIterationContext &context) override;
 };
 
@@ -44,7 +44,7 @@ struct Unitary : public Instruction {
     matrix_t<NumberOfOperands> matrix{};
     operands_t<NumberOfOperands> operands{};
 
-    ~Unitary() = default;
+    ~Unitary() override = default;
     Unitary(matrix_t<NumberOfOperands> matrix, operands_t<NumberOfOperands> operands)
         : matrix{ std::move(matrix) }
         , operands{ std::move(operands) }
@@ -56,7 +56,7 @@ struct Unitary : public Instruction {
 
 
 struct NonUnitary : public Instruction {
-    ~NonUnitary() = default;
+    ~NonUnitary() override = default;
     void execute(SimulationIterationContext &context) override = 0;
 };
 
@@ -65,7 +65,7 @@ struct Measure : public NonUnitary {
     core::QubitIndex qubitIndex{};
     core::BitIndex bitIndex{};
 
-    ~Measure() = default;
+    ~Measure() override = default;
     Measure(core::QubitIndex const& qubitIndex, core::BitIndex const& bitIndex);
     void execute(SimulationIterationContext &context) override;
 };
@@ -74,8 +74,8 @@ struct Measure : public NonUnitary {
 struct Reset : public NonUnitary {
     std::optional<core::QubitIndex> qubitIndex{};
 
-    ~Reset() = default;
-    Reset(std::optional<core::QubitIndex> qubitIndex);
+    ~Reset() override = default;
+    explicit Reset(std::optional<core::QubitIndex> qubitIndex);
     void execute(SimulationIterationContext &context) override;
 };
 

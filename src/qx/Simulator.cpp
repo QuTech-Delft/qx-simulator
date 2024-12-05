@@ -1,7 +1,6 @@
 #include "qx/Simulator.hpp"
 
-#include "qx/Circuit.hpp"
-#include "qx/ErrorModels.hpp"
+#include "qx/CircuitBuilder.hpp"
 #include "qx/V3xLibqasmInterface.hpp"
 #include "qx/Random.hpp"
 #include "qx/RegisterManager.hpp"
@@ -11,13 +10,11 @@
 
 #include <fmt/format.h>
 #include <fmt/ranges.h>
-#include <fstream>
 #include <iostream>
 #include <optional>
 #include <range/v3/numeric/accumulate.hpp>
 #include <range/v3/view/iota.hpp>
 #include <variant>  // monostate
-#include <vector>
 
 
 namespace qx {
@@ -68,11 +65,12 @@ std::variant<std::monostate, SimulationResult, SimulationError> execute(
 
     try {
         auto register_manager = RegisterManager{ program };
-        auto circuit = Circuit{ program, register_manager };
+        auto circuit_builder = CircuitBuilder{ program, register_manager };
+        auto circuit = circuit_builder.build();
         auto simulationIterationAccumulator = ranges::accumulate(
             ranges::views::iota(static_cast<size_t>(0), iterations),
-            SimulationIterationAccumulator{}, [&circuit](auto &acc, auto) {
-                acc.add(circuit.execute(std::monostate{}));
+            SimulationIterationAccumulator{}, [&circuit, &register_manager](auto &acc, auto) {
+                acc.add(circuit.execute(register_manager, std::monostate{}));
                 return acc;
             });
         return simulationIterationAccumulator.getSimulationResult(register_manager);
@@ -97,8 +95,7 @@ std::variant<std::monostate, SimulationResult, SimulationError> executeString(
     }
 }
 
-std::variant<std::monostate, SimulationResult, SimulationError>
-executeFile(
+std::variant<std::monostate, SimulationResult, SimulationError> executeFile(
     std::string const &filePath,
     std::size_t iterations,
     std::optional<std::uint_fast64_t> seed,

@@ -12,7 +12,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 - Take measurement register out of `QuantumState`. 
 - Change `Circuit::execute` to return a `SimulationIterationContext`.
-- Implement instructions as a hierarchy. 
+- Implement instructions as a hierarchy.
+- Reimplement `GateConvertor` as a `CircuitBuilder`.
 
 ### Removed
 

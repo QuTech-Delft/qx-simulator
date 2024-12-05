@@ -7,9 +7,9 @@
 namespace qx {
 
 
-ControlledInstruction::ControlledInstruction(ControlBits const& control_bits, std::shared_ptr<Instruction> instruction)
-    : control_bits{ control_bits }
-    , instruction{ instruction }
+ControlledInstruction::ControlledInstruction(ControlBits control_bits, std::shared_ptr<Instruction> instruction)
+    : control_bits{ std::move(control_bits) }
+    , instruction{ std::move(instruction) }
 {}
 
 
@@ -41,7 +41,7 @@ void Measure::execute(SimulationIterationContext &context) {
 
 
 Reset::Reset(std::optional<core::QubitIndex> qubitIndex)
-    : qubitIndex{ std::move(qubitIndex) }
+    : qubitIndex{ qubitIndex }
 {}
 
 

@@ -19,14 +19,13 @@ class Circuit {
     static void add_error(SimulationIterationContext &context, error_models::ErrorModel const &errorModel);
 
 public:
-    Circuit(V3OneProgram &program, RegisterManager &register_manager);
-    [[nodiscard]] RegisterManager& get_register_manager() const;
+    Circuit() = default;
     void add_instruction(std::shared_ptr<Instruction> instruction);
-    [[nodiscard]] SimulationIterationContext execute(error_models::ErrorModel const &errorModel) const;
+    [[nodiscard]] SimulationIterationContext execute(
+        RegisterManager const &registerManager,
+        error_models::ErrorModel const &errorModel) const;
 
 private:
-    V3OneProgram program_;
-    RegisterManager &register_manager_;
     std::vector<std::shared_ptr<Instruction>> instructions_;
 };
 
