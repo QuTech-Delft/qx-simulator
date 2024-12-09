@@ -65,7 +65,7 @@ QuantumState::QuantumState(std::size_t qubit_register_size, std::size_t bit_regi
 
 void QuantumState::reset_data() {
     data_.clear();
-    data_[BasisVector{}] = SparseComplex{ 1. };  // start initialized in state 00...000
+    data_[BasisVector{ number_of_qubits_ }] = SparseComplex{ 1. };  // start initialized in state 00...000
 }
 
 void QuantumState::reset() { reset_data();

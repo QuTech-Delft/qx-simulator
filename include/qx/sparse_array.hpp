@@ -1,13 +1,13 @@
 #pragma once
 
-#include <absl/container/flat_hash_map.h>
-#include <algorithm>  // for_each, sort
+#include <algorithm>  // erase_if, for_each, sort
 #include <complex>
 #include <cstdint>  // size_t, uint64_t
 #include <fmt/ostream.h>
 #include <numeric>  // accumulate
 #include <ostream>
 #include <stdexcept>  // runtime_error
+#include <unordered_map>
 #include <utility>  // pair
 #include <vector>
 
@@ -40,7 +40,7 @@ bool compareSparseElements(const SparseElement &lhs, const SparseElement &rhs);
 
 class SparseArray {
 public:
-    using MapBasisVectorToSparseComplex = absl::flat_hash_map<BasisVector, SparseComplex>;
+    using MapBasisVectorToSparseComplex = std::unordered_map<BasisVector, SparseComplex>;
     using VectorOfSparseElements = std::vector<SparseElement>;
     using Iterator = MapBasisVectorToSparseComplex::iterator;
     using ConstIterator = MapBasisVectorToSparseComplex::const_iterator;
@@ -86,7 +86,7 @@ public:
 
     template <typename F>
     void erase_if(F &&pred) {
-        absl::erase_if(data_, pred);
+        std::erase_if(data_, pred);
     }
 
     // Let f build a new SparseArray to replace *this, assuming f is linear.
@@ -97,7 +97,7 @@ public:
             clean_up_zeros();
         }
         ++zero_counter_;
-        MapBasisVectorToSparseComplex result;
+        MapBasisVectorToSparseComplex result{};
         for (auto const &[basis_vector, complex_value] : data_) {
             f(basis_vector, complex_value, result);
         }

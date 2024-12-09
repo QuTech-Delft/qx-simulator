@@ -21,9 +21,9 @@ public:
         victim.for_each([&non_zeros, &expected](auto const &sparseElement) {
             auto const &[basis_vector, sparse_complex] = sparseElement;
             EXPECT_GT(non_zeros, 0);
-            EXPECT_NEAR(expected[basis_vector.to_size_t()].real(), sparse_complex.value.real(),
+            EXPECT_NEAR(expected[basis_vector.to_ulong()].real(), sparse_complex.value.real(),
                         .000'000'000'000'01);
-            EXPECT_NEAR(expected[basis_vector.to_size_t()].imag(), sparse_complex.value.imag(),
+            EXPECT_NEAR(expected[basis_vector.to_ulong()].imag(), sparse_complex.value.imag(),
                         .000'000'000'000'01);
             --non_zeros;
         });
@@ -56,7 +56,7 @@ TEST_F(QuantumStateTest, apply_cnot) {
 }
 
 TEST_F(QuantumStateTest, measure_on_non_superposed_state) {
-    auto measurement_register = core::BasisVector{};
+    auto measurement_register = core::BasisVector{ 2 };
     auto bit_measurement_register = core::BitMeasurementRegister{ 2 };
     QuantumState victim{ 2, 2, {{"10", 0.123}, {"11", std::sqrt(1 - std::pow(0.123, 2))}} };
     victim.apply_measure(
@@ -65,31 +65,31 @@ TEST_F(QuantumStateTest, measure_on_non_superposed_state) {
     victim.apply_measure(
         QubitIndex{ 1 }, BitIndex{ 0 }, []() { return 0.045621; }, measurement_register, bit_measurement_register);
     checkEq(victim, {0, 0, 0.123, std::sqrt(1 - std::pow(0.123, 2))});
-    EXPECT_EQ(measurement_register, BasisVector{ "10" });
+    EXPECT_EQ(measurement_register, BasisVector{ std::string{ "10" } });
 }
 
 TEST_F(QuantumStateTest, measure_on_superposed_state__measured_state_is_0) {
     // The random generator function returns a number bigger than the probability of measuring 1, so we measure 0
     // 0.994 > 1 - 0.123^2
-    auto measurement_register = core::BasisVector{};
+    auto measurement_register = core::BasisVector{ 2 };
     auto bit_measurement_register = core::BitMeasurementRegister{ 2 };
     QuantumState victim{ 2, 2, {{"10", 0.123}, {"11", std::sqrt(1 - std::pow(0.123, 2))}} };
     victim.apply_measure(
         QubitIndex{ 0 }, BitIndex{ 0 }, []() { return 0.994; }, measurement_register, bit_measurement_register);
     checkEq(victim, {0, 0, 1, 0});  // 10
-    EXPECT_EQ(measurement_register, BasisVector{ "00" });
+    EXPECT_EQ(measurement_register, BasisVector{ std::string{ "00" } });
 }
 
 TEST_F(QuantumStateTest, measure_on_superposed_state__measured_state_is_1) {
     // The random generator function returns a number smaller than the probability of measuring 1, so we measure 1
     // 0.254 < 1 - 0.123^2
-    auto measurement_register = core::BasisVector{};
+    auto measurement_register = core::BasisVector{ 2 };
     auto bit_measurement_register = core::BitMeasurementRegister{ 2 };
     QuantumState victim{ 2, 2, {{"10", 0.123}, {"11", std::sqrt(1 - std::pow(0.123, 2))}} };
     victim.apply_measure(
         QubitIndex{ 0 }, BitIndex{ 0 }, []() { return 0.254; }, measurement_register, bit_measurement_register);
     checkEq(victim, {0, 0, 0, 1});  // 11
-    EXPECT_EQ(measurement_register, BasisVector{ "01" });
+    EXPECT_EQ(measurement_register, BasisVector{ std::string{ "01" } });
 }
 
 TEST_F(QuantumStateTest, reset) {

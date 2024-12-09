@@ -21,7 +21,7 @@ TEST(sparse_array, set) {
 
 #ifndef NDEBUG
     key.set(1);
-    ASSERT_EQ(key.to_size_t(), 6);
+    ASSERT_EQ(key.to_ulong(), 6);
     EXPECT_THAT(([&victim, &key]() { victim[key] = SparseComplex{ 0.1 }; }),
         ::testing::ThrowsMessage<SparseArrayError>("index out of bounds"));
 #endif

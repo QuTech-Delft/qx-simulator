@@ -5,11 +5,11 @@
 #include "qx/quantum_state.hpp"
 #include "qx/register_manager.hpp"
 
-#include <absl/container/btree_map.h>
 #include <compare>  // partial_ordering
 #include <complex>
 #include <cstdint>  // uint64_t
 #include <fmt/ostream.h>
+#include <map>
 #include <ostream>
 #include <string>
 #include <vector>
@@ -126,8 +126,8 @@ private:
     }
 
     core::QuantumState state;
-    absl::btree_map<state_string_t, count_t> measurements;
-    absl::btree_map<state_string_t, count_t> bit_measurements;
+    std::map<state_string_t, count_t> measurements;
+    std::map<state_string_t, count_t> bit_measurements;
 
     std::uint64_t measurements_count = 0;
     std::uint64_t bit_measurements_count = 0;
