@@ -1,6 +1,5 @@
 #pragma once
 
-#include "v3x/cqasm.hpp"
 #include "v3x/cqasm-semantic-gen.hpp"
 #include "v3x/cqasm-primitives.hpp"
 #include "v3x/cqasm-types.hpp"
@@ -11,7 +10,6 @@
 
 namespace qx {
 
-namespace cqasm_v3x_analyzer = cqasm::v3x::analyzer;
 namespace cqasm_v3x_ast = cqasm::v3x::ast;
 namespace cqasm_v3x_primitives = cqasm::v3x::primitives;
 namespace cqasm_v3x_semantic = cqasm::v3x::semantic;
@@ -19,7 +17,6 @@ namespace cqasm_v3x_tree = ::cqasm::tree;
 namespace cqasm_v3x_types = cqasm::v3x::types;
 namespace cqasm_v3x_values = cqasm::v3x::values;
 
-using CqasmV3xAnalysisResult = cqasm_v3x_analyzer::AnalysisResult;
 template <typename T>
 using CqasmV3xMany = cqasm_v3x_ast::Many<T>;
 using CqasmV3xConstInt = cqasm_v3x_values::ConstInt;
