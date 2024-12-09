@@ -6,8 +6,6 @@
 #include "qx/register_manager.hpp"
 #include "qx/simulation_result.hpp"
 
-#include "v3x/cqasm.hpp"
-
 #include <fmt/format.h>
 #include <fmt/ranges.h>
 #include <iostream>
@@ -19,41 +17,38 @@
 
 namespace qx {
 
-using V3AnalysisResult = cqasm::v3x::analyzer::AnalysisResult;
-using V3OneProgram = cqasm::v3x::ast::One<cqasm::v3x::semantic::Program>;
-
 namespace {
 
-V3AnalysisResult parseCqasmV3xFile(std::string const &filePath) {
+CqasmV3xAnalysisResult parse_cqasm_v3x_file(std::string const &file_path) {
     auto analyzer = cqasm::v3x::default_analyzer("3.0");
-    return analyzer.analyze_file(filePath);
+    return analyzer.analyze_file(file_path);
 }
 
-V3AnalysisResult parseCqasmV3xString(std::string const &s) {
+CqasmV3xAnalysisResult parse_cqasm_v3x_string(std::string const &s) {
     auto analyzer = cqasm::v3x::default_analyzer("3.0");
     return analyzer.analyze_string(s, std::nullopt);
 }
 
-std::variant<V3OneProgram, SimulationError> getV3ProgramOrError(V3AnalysisResult const& analysisResult) {
-    if (!analysisResult.errors.empty()) {
-        auto error = fmt::format("Cannot parse and analyze cQASM v3:\n{}", fmt::join(analysisResult.errors, "\n"));
+std::variant<TreeOne<CqasmV3xProgram>, SimulationError> get_analysis_result(CqasmV3xAnalysisResult const& analysis_result) {
+    if (!analysis_result.errors.empty()) {
+        auto error = fmt::format("Cannot parse and analyze cQASM v3:\n{}", fmt::join(analysis_result.errors, "\n"));
         return SimulationError{ error };
     }
-    auto program = analysisResult.root;
+    auto program = analysis_result.root;
     assert(!program.empty());
     return program;
 }
 
 std::variant<std::monostate, SimulationResult, SimulationError> execute(
-    V3AnalysisResult const& analysisResult,
+    CqasmV3xAnalysisResult const&cqasm_v3x_analysis_result,
     std::size_t iterations,
     std::optional<std::uint_fast64_t> seed) {
 
-    auto programOrError = getV3ProgramOrError(analysisResult);
-    if (auto* error = std::get_if<SimulationError>(&programOrError)) {
+    auto analysis_result = get_analysis_result(cqasm_v3x_analysis_result);
+    if (auto* error = std::get_if<SimulationError>(&analysis_result)) {
         return *error;
     }
-    auto program = std::get<V3OneProgram>(programOrError);
+    auto program = std::get<TreeOne<CqasmV3xProgram>>(analysis_result);
     assert(!program.empty());
 
     if (iterations <= 0) {
@@ -66,13 +61,13 @@ std::variant<std::monostate, SimulationResult, SimulationError> execute(
     try {
         auto register_manager = RegisterManager{ program };
         auto circuit = Circuit{ program, register_manager };
-        auto simulationIterationAccumulator = ranges::accumulate(
+        auto simulation_iteration_accumulator = ranges::accumulate(
             ranges::views::iota(static_cast<size_t>(0), iterations),
             SimulationIterationAccumulator{}, [&circuit](auto &acc, auto) {
                 acc.add(circuit.execute(std::monostate{}));
                 return acc;
             });
-        return simulationIterationAccumulator.getSimulationResult(register_manager);
+        return simulation_iteration_accumulator.get_simulation_result(register_manager);
     } catch (const SimulationError &err) {
         return err;
     }
@@ -80,29 +75,29 @@ std::variant<std::monostate, SimulationResult, SimulationError> execute(
 
 }  // namespace
 
-std::variant<std::monostate, SimulationResult, SimulationError> executeString(
+std::variant<std::monostate, SimulationResult, SimulationError> execute_string(
     std::string const &s,
     std::size_t iterations,
     std::optional<std::uint_fast64_t> seed,
     std::string cqasm_version) {
 
     if (cqasm_version == "3.0") {
-        auto analysisResult = parseCqasmV3xString(s);
-        return execute(analysisResult, iterations, seed);
+        auto analysis_result = parse_cqasm_v3x_string(s);
+        return execute(analysis_result, iterations, seed);
     } else {
         return SimulationError{ fmt::format("Unknown cqasm version: {}", cqasm_version) };
     }
 }
 
-std::variant<std::monostate, SimulationResult, SimulationError> executeFile(
-    std::string const &filePath,
+std::variant<std::monostate, SimulationResult, SimulationError> execute_file(
+    std::string const &file_path,
     std::size_t iterations,
     std::optional<std::uint_fast64_t> seed,
     std::string cqasm_version) {
 
     if (cqasm_version == "3.0") {
-        auto analysisResult = parseCqasmV3xFile(filePath);
-        return execute(analysisResult, iterations, seed);
+        auto analysis_result = parse_cqasm_v3x_file(file_path);
+        return execute(analysis_result, iterations, seed);
     } else {
         return SimulationError{ fmt::format("Unknown cqasm version: {}", cqasm_version) };
     }

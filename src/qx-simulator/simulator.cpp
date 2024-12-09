@@ -24,48 +24,48 @@ void print_banner() {
 
 
 int main(int argc, char **argv) {
-    std::string filePath;
+    std::string file_path;
     size_t iterations = 1;
     print_banner();
 
-    int argIndex = 1;
-    bool argParsingFailed = false;
-    while (argIndex < argc) {
-        auto currentArg = argv[argIndex];
+    int arg_index = 1;
+    bool arg_parsing_failed = false;
+    while (arg_index < argc) {
+        auto current_arg = argv[arg_index];
 
-        if (std::string(currentArg) == "-c") {
-            if (argIndex + 1 >= argc) {
-                argParsingFailed = true;
+        if (std::string(current_arg) == "-c") {
+            if (arg_index + 1 >= argc) {
+                arg_parsing_failed = true;
             } else {
-                iterations = atoi(argv[++argIndex]);
+                iterations = atoi(argv[++arg_index]);
             }
         } else {
-            if (argIndex + 1 < argc) {
-                argParsingFailed = true;
+            if (arg_index + 1 < argc) {
+                arg_parsing_failed = true;
             } else {
-                filePath = std::string(currentArg);
+                file_path = std::string(current_arg);
             }
         }
 
-        if (argParsingFailed) {
+        if (arg_parsing_failed) {
             break;
         }
 
-        ++argIndex;
+        ++arg_index;
     }
 
-    if (filePath.empty() || argParsingFailed) {
+    if (file_path.empty() || arg_parsing_failed) {
         fmt::print(std::cerr, "Usage: {} [-c iterations] file.qc\n", argv[0]);
         return -1;
     }
-    fmt::print("Will execute {} time{} file '{}'...\n", iterations, (iterations > 1 ? "s" : ""), filePath);
+    fmt::print("Will execute {} time{} file '{}'...\n", iterations, (iterations > 1 ? "s" : ""), file_path);
 
-    auto simulationResult = qx::executeFile(filePath, iterations);
-    if (auto* error = std::get_if<qx::SimulationError>(&simulationResult)) {
+    auto simulation_result = qx::execute_file(file_path, iterations);
+    if (auto* error = std::get_if<qx::SimulationError>(&simulation_result)) {
         fmt::print(std::cerr, "{}\n", error->what());
         return 1;
     }
 
-    fmt::print("{}\n", std::get<qx::SimulationResult>(simulationResult));
+    fmt::print("{}\n", std::get<qx::SimulationResult>(simulation_result));
     return 0;
 }

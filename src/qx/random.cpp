@@ -10,9 +10,9 @@ class RandomNumberGenerator {
 public:
     using RandomNumberGeneratorType = std::mt19937_64;
 
-    static RandomNumberGeneratorType &getInstance() {
+    static RandomNumberGeneratorType &get_instance() {
         static RandomNumberGenerator instance;
-        return instance.randomNumberGenerator;
+        return instance.random_number_generator;
     }
 
     RandomNumberGenerator(RandomNumberGenerator const &) = delete;
@@ -21,60 +21,58 @@ public:
 
 private:
     RandomNumberGenerator() {
-        std::random_device rd;
-        randomNumberGenerator.seed(rd());
+        random_number_generator.seed(std::random_device{}());
     }
 
-    RandomNumberGeneratorType randomNumberGenerator;
+    RandomNumberGeneratorType random_number_generator;
 };
 } // namespace
 
 void seed(std::uint_fast64_t seedValue) {
-    RandomNumberGenerator::getInstance().seed(seedValue);
+    RandomNumberGenerator::get_instance().seed(seedValue);
 }
 
-double randomZeroOneDouble() {
+double random_zero_one_double() {
     // std::uniform_real_distribution<double> does not give the same result
     // across platforms, so use this instead.
 
-    double result = uniformMinMaxIntegerDistribution(
-        0, UINT_FAST64_MAX, static_cast<double>(RandomNumberGenerator::getInstance()()));
+    double result = uniform_min_max_integer_distribution(
+        0, UINT_FAST64_MAX, static_cast<double>(RandomNumberGenerator::get_instance()()));
+
     assert(0. <= result && result <= 1.);
+
     return result;
 }
 
-std::uint_fast64_t randomInteger(std::uint_fast64_t min,
-                                 std::uint_fast64_t max) {
-    // std::uniform_int_distribution<std::uint_fast64_t> is not consistent
-    // across platforms.
+std::uint_fast64_t random_integer(std::uint_fast64_t min, std::uint_fast64_t max) {
+    // std::uniform_int_distribution<std::uint_fast64_t> is not consistent across platforms.
     assert(min <= max);
     assert(max - min < UINT_FAST64_MAX);
 
-    std::uint_fast64_t numberOfBuckets = max - min + 1;
-    std::uint_fast64_t bucketSize = UINT_FAST64_MAX / numberOfBuckets;
-    std::uint_fast64_t limit = numberOfBuckets * bucketSize;
+    std::uint_fast64_t number_of_buckets = max - min + 1;
+    std::uint_fast64_t bucket_size = UINT_FAST64_MAX / number_of_buckets;
+    std::uint_fast64_t limit = number_of_buckets * bucket_size;
 
-    assert(limit == numberOfBuckets * bucketSize);
+    assert(limit == number_of_buckets * bucket_size);
     assert(limit <= UINT_FAST64_MAX);
 
     std::uint_fast64_t r;
     do {
-        r = RandomNumberGenerator::getInstance()();
+        r = RandomNumberGenerator::get_instance()();
     } while (r >= limit);
 
-    std::uint_fast64_t bucketIndex = r / bucketSize;
+    std::uint_fast64_t bucket_index = r / bucket_size;
 
-    assert(bucketIndex < numberOfBuckets);
+    assert(bucket_index < number_of_buckets);
 
-    std::size_t result = min + bucketIndex;
+    std::size_t result = min + bucket_index;
 
     assert(min <= result && result <= max);
 
     return result;
 }
 
-double uniformMinMaxIntegerDistribution(std::uint_fast64_t min,
-                                        std::uint_fast64_t max, double x) {
+double uniform_min_max_integer_distribution(std::uint_fast64_t min, std::uint_fast64_t max, double x) {
     assert(min <= max);
 
     if (x < static_cast<double>(min)) {
@@ -88,7 +86,7 @@ double uniformMinMaxIntegerDistribution(std::uint_fast64_t min,
     return (std::floor(x - static_cast<double>(min)) + 1) / (static_cast<double>(max - min) + 1);
 }
 
-double uniformZeroOneContinuousDistribution(double x) {
+double uniform_zero_one_continuous_distribution(double x) {
     if (x < 0) {
         return 0;
     }

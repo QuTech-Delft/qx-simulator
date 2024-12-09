@@ -1,5 +1,6 @@
 #pragma once
 
+#include "v3x/cqasm.hpp"
 #include "v3x/cqasm-semantic-gen.hpp"
 #include "v3x/cqasm-primitives.hpp"
 #include "v3x/cqasm-types.hpp"
@@ -10,25 +11,30 @@
 
 namespace qx {
 
-namespace v3_ast = cqasm::v3x::ast;
-namespace v3_primitives = cqasm::v3x::primitives;
-namespace v3_semantic = cqasm::v3x::semantic;
-namespace v3_tree = ::cqasm::tree;
-namespace v3_types = cqasm::v3x::types;
-namespace v3_values = cqasm::v3x::values;
+namespace cqasm_v3x_analyzer = cqasm::v3x::analyzer;
+namespace cqasm_v3x_ast = cqasm::v3x::ast;
+namespace cqasm_v3x_primitives = cqasm::v3x::primitives;
+namespace cqasm_v3x_semantic = cqasm::v3x::semantic;
+namespace cqasm_v3x_tree = ::cqasm::tree;
+namespace cqasm_v3x_types = cqasm::v3x::types;
+namespace cqasm_v3x_values = cqasm::v3x::values;
 
-template <typename T> using V3Many = v3_ast::Many<T>;
-using V3ConstInt = v3_values::ConstInt;
-using V3Instruction = v3_semantic::Instruction;
-using V3Node = v3_semantic::Node;
-using V3OneProgram = v3_tree::One<v3_semantic::Program>;
-using V3OneVariable = v3_tree::One<v3_semantic::Variable>;
-using V3RecursiveVisitor = v3_semantic::RecursiveVisitor;
-using V3Type = v3_types::Type;
-using V3Value = v3_values::Value;
-using V3Variable = v3_semantic::Variable;
+using CqasmV3xAnalysisResult = cqasm_v3x_analyzer::AnalysisResult;
+template <typename T>
+using CqasmV3xMany = cqasm_v3x_ast::Many<T>;
+using CqasmV3xConstInt = cqasm_v3x_values::ConstInt;
+using CqasmV3xIndices = CqasmV3xMany<CqasmV3xConstInt>;
+using CqasmV3xInstruction = cqasm_v3x_semantic::Instruction;
+using CqasmV3xNode = cqasm_v3x_semantic::Node;
+using CqasmV3xProgram = cqasm_v3x_semantic::Program;
+using CqasmV3xRecursiveVisitor = cqasm_v3x_semantic::RecursiveVisitor;
+using CqasmV3xType = cqasm_v3x_types::Type;
+using CqasmV3xValue = cqasm_v3x_values::Value;
+using CqasmV3xVariable = cqasm_v3x_semantic::Variable;
+template <typename T>
+using TreeOne = cqasm_v3x_tree::One<T>;
 
-bool is_qubit_variable(const V3Variable &variable);
-bool is_bit_variable(const V3Variable &variable);
+bool is_qubit_variable(const CqasmV3xVariable &variable);
+bool is_bit_variable(const CqasmV3xVariable &variable);
 
 }  // namespace qx

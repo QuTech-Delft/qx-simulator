@@ -18,11 +18,6 @@
 namespace qx {
 
 
-namespace core {
-class QuantumState;
-}
-
-
 // A simulation consists of a number of iterations, each executing a circuit composed by a list of instructions.
 //
 // Each instruction is executed within a given SimulationIterationContext:
@@ -68,31 +63,31 @@ struct SimulationResult {
     using State = std::vector<SuperposedState>;
 
 public:
-    SimulationResult(std::uint64_t requestedShots, std::uint64_t doneShots, RegisterManager const& registerManager);
+    SimulationResult(std::uint64_t requestedShots, std::uint64_t doneShots, RegisterManager const& register_manager);
 
     // Given a state string from the State vector, a qubit variable name, and an optional sub index,
     // return the value of that qubit in the state string
     // The sub index is used to access a given qubit when the qubit variable is of array type
     // Notice that the final index in the state string is determined by the qubit register
-    std::uint8_t getQubitState(state_string_t const& stateString, std::string const& qubitVariableName,
-                               std::optional<Index> subIndex);
+    std::uint8_t get_qubit_state(state_string_t const& state_string, std::string const& qubit_variable_name,
+                               std::optional<Index> sub_index);
     // Given a state string from the State vector, a bit variable name, and an optional sub index,
     // return the value of that bit in the state string
     // The sub index is used to access a given bit when the bit variable is of array type
     // Notice that the final index in the state string is determined by the bit register
-    std::uint8_t getBitMeasurement(state_string_t const& stateString, std::string const& bitVariableName,
-                                   std::optional<Index> subIndex);
+    std::uint8_t get_bit_measurement(state_string_t const& state_string, std::string const& bit_variable_name,
+                                   std::optional<Index> sub_index);
 
 public:
-    std::uint64_t shotsRequested;
-    std::uint64_t shotsDone;
+    std::uint64_t shots_requested;
+    std::uint64_t shots_done;
 
-    QubitRegister qubitRegister;
-    BitRegister bitRegister;
+    QubitRegister qubit_register;
+    BitRegister bit_register;
 
     State state;
     Measurements measurements;
-    Measurements bitMeasurements;
+    Measurements bit_measurements;
 };
 
 std::ostream &operator<<(std::ostream &os, const SimulationResult &result);
@@ -107,7 +102,7 @@ struct SimulationIterationContext {
     core::BasisVector measurement_register;
     core::BitMeasurementRegister bit_measurement_register;
 
-    explicit SimulationIterationContext(RegisterManager const& registerManager);
+    explicit SimulationIterationContext(RegisterManager const& register_manager);
 };
 
 
@@ -117,25 +112,25 @@ struct SimulationIterationContext {
 
 class SimulationIterationAccumulator {
 public:
-    void add(const SimulationIterationContext &simulationIterationContext);
-    void appendMeasurement(core::BasisVector const& measurement);
-    void appendBitMeasurement(core::BitMeasurementRegister const& bitMeasurement);
-    SimulationResult getSimulationResult(RegisterManager const& registerManager);
+    void add(const SimulationIterationContext &context);
+    void append_measurement(core::BasisVector const& measurement);
+    void append_bit_measurement(core::BitMeasurementRegister const& bit_measurement);
+    SimulationResult get_simulation_result(RegisterManager const& register_manager);
 
 private:
     template <typename F>
     void forAllNonZeroStates(F &&f) {
-        state.forEach([&f](auto const &kv) {
+        state.for_each([&f](auto const &kv) {
             f(kv.first, kv.second);
         });
     }
 
     core::QuantumState state;
     absl::btree_map<state_string_t, count_t> measurements;
-    absl::btree_map<state_string_t, count_t> bitMeasurements;
+    absl::btree_map<state_string_t, count_t> bit_measurements;
 
-    std::uint64_t measurementsCount = 0;
-    std::uint64_t bitMeasurementsCount = 0;
+    std::uint64_t measurements_count = 0;
+    std::uint64_t bit_measurements_count = 0;
 };
 
 

@@ -7,7 +7,7 @@
 namespace qx::config {
 
 // Epsilon for double comparison
-static constexpr double EPS = 0.000000000001;
+static constexpr double EPSILON = 0.000'000'000'001;
 
 // Number of decimals in output
 static constexpr std::uint8_t const OUTPUT_DECIMALS = 8;

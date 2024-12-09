@@ -25,14 +25,14 @@ SparseComplex::SparseComplex(SparseComplex &&other) noexcept {
 }
 
 SparseComplex& SparseComplex::operator=(const SparseComplex &other) {
-    if (std::abs(other.value) >= config::EPS) {
+    if (std::abs(other.value) >= config::EPSILON) {
         value = other.value;
     }
     return *this;
 }
 
 SparseComplex& SparseComplex::operator=(SparseComplex &&other) noexcept {
-    if (std::abs(other.value) >= config::EPS) {
+    if (std::abs(other.value) >= config::EPSILON) {
         value = other.value;
     }
     return *this;
@@ -46,7 +46,7 @@ SparseArray::SparseArray(std::size_t s)
     : size_{ s }
 {}
 
-SparseArray::SparseArray(std::size_t s, std::initializer_list<std::pair<std::string, std::complex<double>>> values)
+SparseArray::SparseArray(std::size_t s, std::initializer_list<PairBasisVectorStringComplex> values)
     : size_{ s } {
     for (auto const &[basis_vector_string, complex_value] : values) {
         if ((static_cast<size_t>(1) << basis_vector_string.size()) > s) {
@@ -63,15 +63,15 @@ SparseArray& SparseArray::operator=(MapBasisVectorToSparseComplex map) {
 }
 
 SparseArray& SparseArray::operator*=(double d) {
-    for (auto &[_, sparseComplex] : data_) {
-        sparseComplex.value *= d;
+    for (auto &[_, sparse_complex] : data_) {
+        sparse_complex.value *= d;
     }
     return *this;
 }
 
 SparseComplex& SparseArray::operator[](const BasisVector &index) {
 #ifndef NDEBUG
-    if (index.toSizeT() >= size_) {
+    if (index.to_size_t() >= size_) {
         throw SparseArrayError{ "index out of bounds" };
     }
 #endif
@@ -104,29 +104,29 @@ void SparseArray::clear() {
 
 [[nodiscard]] double SparseArray::norm() {
     return accumulate<double>(0., [](double total, auto const &kv){
-        auto const& [basisVector, sparseComplex] = kv;
-        return total + std::norm(sparseComplex.value);
+        auto const& [basis_vector, sparse_complex] = kv;
+        return total + std::norm(sparse_complex.value);
     });
 }
 
-[[nodiscard]] std::vector<std::complex<double>> SparseArray::toVector() const {
+[[nodiscard]] std::vector<std::complex<double>> SparseArray::to_vector() const {
     auto result = std::vector<std::complex<double>>(size_, 0.);
-    for (auto const &[basisVector, sparseComplex] : data_) {
-        result[basisVector.toSizeT()] = sparseComplex.value;
+    for (auto const &[basis_vector, sparse_complex] : data_) {
+        result[basis_vector.to_size_t()] = sparse_complex.value;
     }
     return result;
 }
 
-void SparseArray::cleanUpZeros() {
+void SparseArray::clean_up_zeros() {
     absl::erase_if(data_, [](auto const &kv) {
-        auto const &[_, sparseComplex] = kv;
-        return isNull(sparseComplex.value);
+        auto const &[_, sparse_complex] = kv;
+        return is_null(sparse_complex.value);
     });
-    zeroCounter_ = 0;
+    zero_counter_ = 0;
 }
 
 std::ostream& operator<<(std::ostream &os, const SparseArray &array) {
-    return os << fmt::format("[{}]", fmt::join(array.toVector(), ", "));
+    return os << fmt::format("[{}]", fmt::join(array.to_vector(), ", "));
 }
 
 }  // namespace qx::core

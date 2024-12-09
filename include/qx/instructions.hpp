@@ -32,20 +32,15 @@ struct ControlledInstruction : public Instruction {
 };
 
 
-template <std::size_t N>
-using matrix_t = core::DenseUnitaryMatrix<1 << N>;
-template <std::size_t N>
-using operands_t = std::array<core::QubitIndex, N>;
-
 
 template <std::size_t NumberOfOperands>
 struct Unitary : public Instruction {
     // Matrix is stored inline but could also be a pointer.
-    matrix_t<NumberOfOperands> matrix{};
-    operands_t<NumberOfOperands> operands{};
+    core::matrix_t<NumberOfOperands> matrix{};
+    core::operands_t<NumberOfOperands> operands{};
 
     ~Unitary() override = default;
-    Unitary(matrix_t<NumberOfOperands> matrix, operands_t<NumberOfOperands> operands)
+    Unitary(core::matrix_t<NumberOfOperands> matrix, core::operands_t<NumberOfOperands> operands)
         : matrix{ std::move(matrix) }
         , operands{ std::move(operands) }
     {}
@@ -62,20 +57,20 @@ struct NonUnitary : public Instruction {
 
 
 struct Measure : public NonUnitary {
-    core::QubitIndex qubitIndex{};
-    core::BitIndex bitIndex{};
+    core::QubitIndex qubit_index{};
+    core::BitIndex bit_index{};
 
     ~Measure() override = default;
-    Measure(core::QubitIndex const& qubitIndex, core::BitIndex const& bitIndex);
+    Measure(core::QubitIndex const& qubit_index, core::BitIndex const& bit_index);
     void execute(SimulationIterationContext &context) override;
 };
 
 
 struct Reset : public NonUnitary {
-    std::optional<core::QubitIndex> qubitIndex{};
+    std::optional<core::QubitIndex> qubit_index{};
 
     ~Reset() override = default;
-    explicit Reset(std::optional<core::QubitIndex> qubitIndex);
+    explicit Reset(std::optional<core::QubitIndex> qubit_index);
     void execute(SimulationIterationContext &context) override;
 };
 

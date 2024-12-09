@@ -5,8 +5,9 @@
 #include <cstdlib>  // abs
 #include <complex>
 #include <fmt/ostream.h>
+#include <string_view>
 
-#include "qx/compile_time_configuration.hpp" // EPS, MAX_QUBIT_NUMBER
+#include "qx/compile_time_configuration.hpp" // EPSILON, MAX_QUBIT_NUMBER
 #include "qx/utils.hpp"
 
 namespace qx::core {
@@ -16,9 +17,9 @@ struct Complex {
     double imag = 0;
     double norm = 0;
     bool operator==(const Complex &other) const {
-        return std::abs(real - other.real) < config::EPS &&
-               std::abs(imag - other.imag) < config::EPS &&
-               std::abs(norm - other.norm) < config::EPS;
+        return std::abs(real - other.real) < config::EPSILON &&
+               std::abs(imag - other.imag) < config::EPSILON &&
+               std::abs(norm - other.norm) < config::EPSILON;
     }
     auto operator<=>(const Complex &other) const = default;
 };
@@ -35,18 +36,20 @@ using BasisVector = utils::Bitset<config::MAX_QUBIT_NUMBER>;
 
 using BitMeasurementRegister = boost::dynamic_bitset<uint32_t>;
 
-inline constexpr bool isNotNull(std::complex<double> c) {
+using PairBasisVectorStringComplex = std::pair<std::string_view, std::complex<double>>;
+
+inline constexpr bool is_not_null(std::complex<double> c) {
 #if defined(_MSC_VER)
     return
-        c.real() > config::EPS || -c.real() > config::EPS ||
-        c.imag() > config::EPS || -c.imag() > config::EPS;
+        c.real() > config::EPSILON || -c.real() > config::EPSILON ||
+        c.imag() > config::EPSILON || -c.imag() > config::EPSILON;
 #else
-    return std::abs(c.real()) > config::EPS || std::abs(c.imag()) > config::EPS;
+    return std::abs(c.real()) > config::EPSILON || std::abs(c.imag()) > config::EPSILON;
 #endif
 }
 
-inline constexpr bool isNull(std::complex<double> c) {
-    return not isNotNull(c);
+inline constexpr bool is_null(std::complex<double> c) {
+    return not is_not_null(c);
 }
 
 }  // namespace qx::core

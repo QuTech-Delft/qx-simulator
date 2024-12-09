@@ -15,11 +15,11 @@ RegisterManagerError::RegisterManagerError(const std::string &message)
     : SimulationError{ message }
 {}
 
-Register::Register(const V3OneProgram &program, auto &&is_of_type, std::size_t max_register_size) {
+Register::Register(const TreeOne<CqasmV3xProgram> &program, auto &&is_of_type, std::size_t max_register_size) {
     auto &&variables = program->variables.get_vec()
-       | ranges::views::filter([&](const V3OneVariable &variable) { return is_of_type(*variable); });
+       | ranges::views::filter([&](const TreeOne<CqasmV3xVariable> &variable) { return is_of_type(*variable); });
     auto &&variable_sizes = variables
-        | ranges::views::transform([](const V3OneVariable &variable) { return v3_types::size_of(variable->typ); });
+        | ranges::views::transform([](const TreeOne<CqasmV3xVariable> &variable) { return cqasm_v3x_types::size_of(variable->typ); });
     register_size_ = ranges::accumulate(variable_sizes, size_t{});
 
     if (register_size_ > max_register_size) {
@@ -50,16 +50,16 @@ Register::~Register() = default;
     return variable_name_to_range_.at(name);
 }
 
-[[nodiscard]] Index Register::at(const VariableName &name, const std::optional<Index> &subIndex) const {
+[[nodiscard]] Index Register::at(const VariableName &name, const std::optional<Index> &sub_index) const {
     auto range = variable_name_to_range_.at(name);
-    return range.first + subIndex.value_or(0);
+    return range.first + sub_index.value_or(0);
 }
 
 [[nodiscard]] VariableName Register::at(const std::size_t &index) const {
     return index_to_variable_name_.at(index);
 }
 
-[[nodiscard]] std::string Register::toString() const {
+[[nodiscard]] std::string Register::to_string() const {
     auto entries = ranges::accumulate(variable_name_to_range_, std::string{},
         [first=true](auto total, auto const& kv) mutable {
             auto const& [variableName, range] = kv;
@@ -70,7 +70,7 @@ Register::~Register() = default;
     return fmt::format("{{ {0} }}", entries);
 }
 
-QubitRegister::QubitRegister(const V3OneProgram &program) try
+QubitRegister::QubitRegister(const TreeOne<CqasmV3xProgram> &program) try
     : Register(program, is_qubit_variable, config::MAX_QUBIT_NUMBER) {
 } catch (const RegisterManagerError &e) {
     throw RegisterManagerError{ fmt::format("qubit register size exceeds maximum allowed: {} > {}",
@@ -79,7 +79,7 @@ QubitRegister::QubitRegister(const V3OneProgram &program) try
 
 QubitRegister::~QubitRegister() = default;
 
-BitRegister::BitRegister(const V3OneProgram &program) try
+BitRegister::BitRegister(const TreeOne<CqasmV3xProgram> &program) try
     : Register(program, is_bit_variable, config::MAX_BIT_NUMBER) {
 } catch (const RegisterManagerError &e) {
     throw RegisterManagerError{ fmt::format("bit register size exceeds maximum allowed: {} > {}",
@@ -88,7 +88,7 @@ BitRegister::BitRegister(const V3OneProgram &program) try
 
 BitRegister::~BitRegister() = default;
 
-RegisterManager::RegisterManager(const V3OneProgram &program)
+RegisterManager::RegisterManager(const TreeOne<CqasmV3xProgram> &program)
     : qubit_register_{ program }
     , bit_register_{ program }
 {}
@@ -110,13 +110,13 @@ RegisterManager::RegisterManager(const V3OneProgram &program)
 }
 
 [[nodiscard]] Index RegisterManager::get_qubit_index(const VariableName &name,
-                                                     const std::optional<Index> &subIndex) const {
-    return qubit_register_.at(name, subIndex);
+                                                     const std::optional<Index> &sub_index) const {
+    return qubit_register_.at(name, sub_index);
 }
 
 [[nodiscard]] Index RegisterManager::get_bit_index(const VariableName &name,
-                                                   const std::optional<Index> &subIndex) const {
-    return bit_register_.at(name, subIndex);
+                                                   const std::optional<Index> &sub_index) const {
+    return bit_register_.at(name, sub_index);
 }
 
 [[nodiscard]] VariableName RegisterManager::get_qubit_variable_name(const std::size_t &index) const {
@@ -141,12 +141,12 @@ std::ostream& operator<<(std::ostream& os, Range const& range) {
                              range.size == 1 ? "" : fmt::format("..{}", range.first + range.size - 1));
 }
 
-std::ostream& operator<<(std::ostream& os, QubitRegister const& qubitRegister) {
-    return os << qubitRegister.toString();
+std::ostream& operator<<(std::ostream& os, QubitRegister const& qubit_register) {
+    return os << qubit_register.to_string();
 }
 
-std::ostream& operator<<(std::ostream& os, BitRegister const& bitRegister) {
-    return os << bitRegister.toString();
+std::ostream& operator<<(std::ostream& os, BitRegister const& bit_register) {
+    return os << bit_register.to_string();
 }
 
 }  // namespace qx

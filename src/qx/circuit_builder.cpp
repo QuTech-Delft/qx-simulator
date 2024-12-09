@@ -24,11 +24,11 @@ Circuit CircuitBuilder::build() {
     return circuit_;
 }
 
-void CircuitBuilder::visit_node(V3Node &) {
+void CircuitBuilder::visit_node(CqasmV3xNode &) {
     throw CircuitBuilderError{ "unsupported node" };
 }
 
-void CircuitBuilder::visit_instruction(V3Instruction &instruction) {
+void CircuitBuilder::visit_instruction(CqasmV3xInstruction &instruction) {
     auto &name = instruction.instruction_ref->name;
     auto operands_helper = OperandsHelper{ instruction, circuit_.register_manager };
     
@@ -149,24 +149,27 @@ void CircuitBuilder::visit_instruction(V3Instruction &instruction) {
 
 template <std::size_t NumberOfQubitOperands>
 void CircuitBuilder::visit_gate_instruction(
-    matrix_t<NumberOfQubitOperands> matrix,
-    ast_operands_t<NumberOfQubitOperands> operands) {
+    core::matrix_t<NumberOfQubitOperands> matrix,
+    cqasm_v3x_operands_indices_t<NumberOfQubitOperands> operands_indices) {
     static_assert(NumberOfQubitOperands > 0);
 
 #ifndef NDEBUG
-    std::for_each(operands.begin(), operands.end(),
-        [&operands](V3Many<V3ConstInt> const &ops) {
-            assert(ops.size() == operands[0].size());
+    // SGMQ check: all the operands use the same number of indices
+    std::for_each(operands_indices.begin(), operands_indices.end(),
+        [&operands_indices](CqasmV3xIndices const &indices) {
+            assert(indices.size() == operands_indices[0].size());
         });
 #endif
 
-    for (std::size_t i = 0; i < operands[0].size(); ++i) {
-        operands_t<NumberOfQubitOperands> ops{};
-        for (std::size_t op = 0; op < NumberOfQubitOperands; ++op) {
-            ops[op] = core::QubitIndex{ static_cast<std::size_t>(operands[op][i]->value) };
+    // SGMQ unrolling: add one instruction for each operand's index
+    for (std::size_t i = 0; i < operands_indices[0].size(); ++i) {
+        core::operands_t<NumberOfQubitOperands> operands{};
+        for (std::size_t qubit_index = 0; qubit_index < NumberOfQubitOperands; ++qubit_index) {
+            operands[qubit_index] = core::QubitIndex{
+                static_cast<std::size_t>(operands_indices[qubit_index][i]->value)
+            };
         }
-
-        circuit_.add_instruction(std::make_shared<Unitary<NumberOfQubitOperands>>(matrix, ops));
+        circuit_.add_instruction(std::make_shared<Unitary<NumberOfQubitOperands>>(matrix, operands));
     }
 }
 

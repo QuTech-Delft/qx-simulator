@@ -51,26 +51,26 @@ class Register {
     VariableNameToRangeMapT variable_name_to_range_;
     IndexToVariableNameMapT index_to_variable_name_;
 public:
-    Register(const V3OneProgram &program, auto &&is_of_type, std::size_t max_register_size);
+    Register(const TreeOne<CqasmV3xProgram> &program, auto &&is_of_type, std::size_t max_register_size);
     virtual ~Register() = 0;
     [[nodiscard]] std::size_t size() const;
     [[nodiscard]] virtual Range at(const VariableName &name) const;
-    [[nodiscard]] virtual Index at(const VariableName &name, const std::optional<Index> &subIndex) const;
+    [[nodiscard]] virtual Index at(const VariableName &name, const std::optional<Index> &sub_index) const;
     [[nodiscard]] virtual VariableName at(const std::size_t &index) const;
-    [[nodiscard]] virtual std::string toString() const;
+    [[nodiscard]] virtual std::string to_string() const;
 };
 
 
 class QubitRegister : public Register {
 public:
-    explicit QubitRegister(const V3OneProgram &program);
+    explicit QubitRegister(const TreeOne<CqasmV3xProgram> &program);
     ~QubitRegister() override;
 };
 
 
 class BitRegister : public Register {
 public:
-    explicit BitRegister(const V3OneProgram &program);
+    explicit BitRegister(const TreeOne<CqasmV3xProgram> &program);
     ~BitRegister() override;
 };
 
@@ -84,13 +84,13 @@ public:
     RegisterManager& operator=(const RegisterManager&) = default;
     RegisterManager& operator=(RegisterManager&&) noexcept = default;
 public:
-    explicit RegisterManager(const V3OneProgram &program);
+    explicit RegisterManager(const TreeOne<CqasmV3xProgram> &program);
     [[nodiscard]] std::size_t get_qubit_register_size() const;
     [[nodiscard]] std::size_t get_bit_register_size() const;
     [[nodiscard]] Range get_qubit_range(const VariableName &name) const;
     [[nodiscard]] Range get_bit_range(const VariableName &name) const;
-    [[nodiscard]] Index get_qubit_index(const VariableName &name, const std::optional<Index> &subIndex) const;
-    [[nodiscard]] Index get_bit_index(const VariableName &name, const std::optional<Index> &subIndex) const;
+    [[nodiscard]] Index get_qubit_index(const VariableName &name, const std::optional<Index> &sub_index) const;
+    [[nodiscard]] Index get_bit_index(const VariableName &name, const std::optional<Index> &sub_index) const;
     [[nodiscard]] VariableName get_qubit_variable_name(const Index &index) const;
     [[nodiscard]] VariableName get_bit_variable_name(const Index &index) const;
     [[nodiscard]] QubitRegister const& get_qubit_register() const;
@@ -99,8 +99,8 @@ public:
 
 
 std::ostream& operator<<(std::ostream& os, Range const& range);
-std::ostream& operator<<(std::ostream& os, QubitRegister const& qubitRegister);
-std::ostream& operator<<(std::ostream& os, BitRegister const& bitRegister);
+std::ostream& operator<<(std::ostream& os, QubitRegister const& qubit_register);
+std::ostream& operator<<(std::ostream& os, BitRegister const& bit_register);
 
 
 }  // namespace qx

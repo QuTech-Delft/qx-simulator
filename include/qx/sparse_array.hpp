@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "qx/compile_time_configuration.hpp" // ZERO_CYCLE_SIZE
-#include "qx/core.hpp"                       // BasisVector, Complex, QubitIndex
+#include "qx/core.hpp"  // BasisVector, Complex, PairBasisVectorStringComplex, QubitIndex
 
 namespace qx::core {
 
@@ -48,7 +48,7 @@ public:
 public:
     SparseArray() = delete;
     explicit SparseArray(std::size_t s);
-    SparseArray(std::size_t s, std::initializer_list<std::pair<std::string, std::complex<double>>> values);
+    SparseArray(std::size_t s, std::initializer_list<PairBasisVectorStringComplex> values);
 
     [[nodiscard]] ConstIterator begin() const;
     [[nodiscard]] ConstIterator end() const;
@@ -62,53 +62,53 @@ public:
     void clear();
     [[nodiscard]] std::size_t size() const;
     [[nodiscard]] double norm();
-    [[nodiscard]] std::vector<std::complex<double>> toVector() const;
+    [[nodiscard]] std::vector<std::complex<double>> to_vector() const;
 
     template <typename T, typename F>
     T accumulate(T init, F &&f) {
-        cleanUpZeros();
+        clean_up_zeros();
         return std::accumulate(data_.begin(), data_.end(), init, f);
     }
 
     template <typename F>
-    void forEach(F &&f) {
-        cleanUpZeros();
+    void for_each(F &&f) {
+        clean_up_zeros();
         std::for_each(data_.begin(), data_.end(), f);
     }
 
     template <typename F>
-    void forEachSorted(F &&f) {
-        cleanUpZeros();
+    void for_each_sorted(F &&f) {
+        clean_up_zeros();
         VectorOfSparseElements sorted(data_.begin(), data_.end());
         std::sort(sorted.begin(), sorted.end(), compareSparseElements);
         std::for_each(sorted.begin(), sorted.end(), f);
     }
 
     template <typename F>
-    void eraseIf(F &&pred) {
+    void erase_if(F &&pred) {
         absl::erase_if(data_, pred);
     }
 
     // Let f build a new SparseArray to replace *this, assuming f is linear.
     template <typename F>
-    void applyLinear(F &&f) {
+    void apply_linear(F &&f) {
         // Every ZERO_CYCLE_SIZE gates, cleanup the 0s
-        if (zeroCounter_ >= config::ZERO_CYCLE_SIZE) {
-            cleanUpZeros();
+        if (zero_counter_ >= config::ZERO_CYCLE_SIZE) {
+            clean_up_zeros();
         }
-        ++zeroCounter_;
+        ++zero_counter_;
         MapBasisVectorToSparseComplex result;
-        for (auto const &[basisVector, complex_value] : data_) {
-            f(basisVector, complex_value, result);
+        for (auto const &[basis_vector, complex_value] : data_) {
+            f(basis_vector, complex_value, result);
         }
         data_.swap(result);
     }
 
 private:
-    void cleanUpZeros();
+    void clean_up_zeros();
 
     std::size_t size_ = 0;
-    std::uint64_t zeroCounter_ = 0;
+    std::uint64_t zero_counter_ = 0;
     MapBasisVectorToSparseComplex data_;
 };
 

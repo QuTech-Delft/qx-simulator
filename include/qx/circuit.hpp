@@ -16,15 +16,15 @@
 namespace qx {
 
 class Circuit {
-    static void add_error(SimulationIterationContext &context, error_models::ErrorModel const &errorModel);
+    static void add_error(SimulationIterationContext &context, error_models::ErrorModel const &error_model);
 
 public:
-    Circuit(V3OneProgram const &program, RegisterManager const &register_manager);
+    Circuit(TreeOne<CqasmV3xProgram> const &program, RegisterManager const &register_manager);
     void add_instruction(std::shared_ptr<Instruction> instruction);
-    [[nodiscard]] SimulationIterationContext execute(error_models::ErrorModel const &errorModel) const;
+    [[nodiscard]] SimulationIterationContext execute(error_models::ErrorModel const &error_model) const;
 
 public:
-    V3OneProgram const &program;
+    TreeOne<CqasmV3xProgram> const &program;
     RegisterManager const &register_manager;
 
 private:

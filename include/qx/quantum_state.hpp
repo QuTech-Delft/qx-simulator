@@ -25,98 +25,87 @@ struct QuantumStateError : public std::runtime_error {
 
 
 template <std::size_t NumberOfOperands>
-void applyImpl(DenseUnitaryMatrix<1 << NumberOfOperands> const &matrix,
-               std::array<QubitIndex, NumberOfOperands> const &operands,
-               BasisVector index,
-               SparseComplex const &sparseComplex,
-               SparseArray::MapBasisVectorToSparseComplex &storage) {
-    utils::Bitset<NumberOfOperands> reducedIndex;
+void apply_impl(matrix_t<NumberOfOperands> const &matrix,
+                operands_t<NumberOfOperands> const &operands,
+                BasisVector index,
+                SparseComplex const &sparse_complex,
+                SparseArray::MapBasisVectorToSparseComplex &storage) {
+    utils::Bitset<NumberOfOperands> reduced_index;
     for (std::size_t i = 0; i < NumberOfOperands; ++i) {
-        reducedIndex.set(i, index.test(operands[NumberOfOperands - i - 1].value));
+        reduced_index.set(i, index.test(operands[NumberOfOperands - i - 1].value));
     }
     for (std::size_t i = 0; i < (1 << NumberOfOperands); ++i) {
-        std::complex<double> addedValue = sparseComplex.value * matrix.at(i, reducedIndex.toSizeT());
-        if (not isNull(addedValue)) {
+        std::complex<double> added_value = sparse_complex.value * matrix.at(i, reduced_index.to_size_t());
+        if (not is_null(added_value)) {
             auto newIndex = index;
             for (std::size_t k = 0; k < NumberOfOperands; ++k) {
-                newIndex.set(operands[NumberOfOperands - k - 1].value, utils::getBit(i, k));
+                newIndex.set(operands[NumberOfOperands - k - 1].value, utils::get_bit(i, k));
             }
             auto it = storage.try_emplace(newIndex, SparseComplex{ 0. });
-            it.first->second.value += addedValue;
+            it.first->second.value += added_value;
         }
     }
 }
 
 
 class QuantumState {
-    void checkQuantumState();
+    void check_quantum_state();
 
-    void resetData();
+    void reset_data();
 
 public:
     QuantumState();
     QuantumState(std::size_t qubit_register_size, std::size_t bit_register_size);
     QuantumState(std::size_t qubit_register_size, std::size_t bit_register_size,
-                 std::initializer_list<std::pair<std::string, std::complex<double>>> values);
-    [[nodiscard]] std::size_t getNumberOfQubits() const;
-    [[nodiscard]] std::size_t getNumberOfBits() const;
-    [[nodiscard]] bool isNormalized();
-    [[nodiscard]] std::vector<std::complex<double>> toVector() const;
+                 std::initializer_list<PairBasisVectorStringComplex> values);
+    [[nodiscard]] std::size_t get_number_of_qubits() const;
+    [[nodiscard]] std::size_t get_number_of_bits() const;
+    [[nodiscard]] bool is_normalized();
+    [[nodiscard]] std::vector<std::complex<double>> to_vector() const;
     void reset();
 
     template <std::size_t NumberOfOperands>
-    QuantumState &apply(
-        DenseUnitaryMatrix<1 << NumberOfOperands> const &m,
-        std::array<QubitIndex, NumberOfOperands> const &operands) {
-
-        assert(NumberOfOperands <= numberOfQubits &&
+    QuantumState &apply(matrix_t<NumberOfOperands> const &m, operands_t<NumberOfOperands> const &operands) {
+        assert(NumberOfOperands <= number_of_qubits_ &&
                "Quantum gate has more operands than the number of qubits in this quantum state");
         assert(std::find_if(operands.begin(), operands.end(),
-                            [this](auto qubitIndex) {
-                                return qubitIndex.value >= numberOfQubits;
-                            }) == operands.end() &&
+               [this](auto qubit_index) { return qubit_index.value >= number_of_qubits_; }) == operands.end() &&
                "Operand refers to a non-existing qubit");
 
-        data.applyLinear([&m, &operands](auto index, auto value, auto &storage) {
-            applyImpl<NumberOfOperands>(m, operands, index, value, storage);
+        data_.apply_linear([&m, &operands](auto index, auto value, auto &storage) {
+            apply_impl<NumberOfOperands>(m, operands, index, value, storage);
         });
         return *this;
     }
 
     template <typename F>
-    void forEach(F &&f) {
-        data.forEachSorted(f);
+    void for_each(F &&f) {
+        data_.for_each_sorted(f);
     }
 
-    [[nodiscard]] double getProbabilityOfMeasuringOne(QubitIndex qubitIndex);
-    [[nodiscard]] double getProbabilityOfMeasuringZero(QubitIndex qubitIndex);
-    void updateDataAfterMeasurement(QubitIndex qubitIndex, bool measuredState, double probabilityOfMeasuringOne);
-    void updateDataAfterReset(QubitIndex qubitIndex);
+    [[nodiscard]] double get_probability_of_measuring_one(QubitIndex qubit_index);
+    [[nodiscard]] double get_probability_of_measuring_zero(QubitIndex qubit_index);
+    void update_data_after_measurement(QubitIndex qubit_index, bool measured_state, double probability_of_measuring_one);
+    void update_data_after_reset(QubitIndex qubit_index);
 
-    // measuredState will be true if we measured a 1, or false if we measured a 0
+    // measured_state will be true if we measured a 1, or false if we measured a 0
     template <typename F>
-    void applyMeasure(QubitIndex qubitIndex, BitIndex bitIndex, F &&randomGenerator,
-                      core::BasisVector &measurementRegister, core::BitMeasurementRegister &bitMeasurementRegister) {
-        auto probabilityOfMeasuringOne = getProbabilityOfMeasuringOne(qubitIndex);
-        auto measuredState = (randomGenerator() < probabilityOfMeasuringOne);
-        updateDataAfterMeasurement(qubitIndex, measuredState, probabilityOfMeasuringOne);
-        measurementRegister.set(qubitIndex.value, measuredState);
-        bitMeasurementRegister.set(bitIndex.value, measuredState);
+    void apply_measure(QubitIndex qubit_index, BitIndex bit_index, F &&random_generator,
+                      core::BasisVector &measurement_register, core::BitMeasurementRegister &bit_measurement_register) {
+        auto probability_of_measuring_one = get_probability_of_measuring_one(qubit_index);
+        auto measured_state = (random_generator() < probability_of_measuring_one);
+        update_data_after_measurement(qubit_index, measured_state, probability_of_measuring_one);
+        measurement_register.set(qubit_index.value, measured_state);
+        bit_measurement_register.set(bit_index.value, measured_state);
     }
 
-    // reset does not modify the measurement register
-    void applyReset(QubitIndex qubitIndex) {
-        updateDataAfterReset(qubitIndex);
-    }
-
-    void applyResetAll() {
-        resetData();
-    }
+    void apply_reset(QubitIndex qubit_index);
+    void apply_reset_all();
 
 private:
-    std::size_t numberOfQubits;
-    std::size_t numberOfBits;
-    SparseArray data;
+    std::size_t number_of_qubits_;
+    std::size_t number_of_bits_;
+    SparseArray data_;
 };
 
 std::ostream& operator<<(std::ostream &os, const QuantumState &array);

@@ -10,10 +10,10 @@ namespace qx {
 
 class IntegrationTest : public ::testing::Test {
 public:
-    static SimulationResult runFromString(
+    static SimulationResult run_from_string(
         const std::string &s, std::uint64_t iterations = 1, std::string cqasm_version = "3.0") {
 
-        auto result = executeString(s, iterations, std::nullopt, std::move(cqasm_version));
+        auto result = execute_string(s, iterations, std::nullopt, std::move(cqasm_version));
         EXPECT_TRUE(std::holds_alternative<SimulationResult>(result));
         return *std::get_if<SimulationResult>(&result);
     }
@@ -30,10 +30,10 @@ H q[0]
 CNOT q[0], q[1]
 )";
     std::size_t iterations = 1;
-    auto actual = runFromString(cqasm, iterations, "3.0");
+    auto actual = run_from_string(cqasm, iterations, "3.0");
 
-    EXPECT_EQ(actual.shotsRequested, iterations);
-    EXPECT_EQ(actual.shotsDone, iterations);
+    EXPECT_EQ(actual.shots_requested, iterations);
+    EXPECT_EQ(actual.shots_done, iterations);
 
     // Expected q state should be |00>+|11>
     // State is |00>+|11> after creating the Bell state
@@ -53,7 +53,7 @@ X q[0:2]
 CNOT q[0:2], q[3:5]
 )";
     std::size_t iterations = 2;
-    auto actual = runFromString(cqasm, iterations);
+    auto actual = run_from_string(cqasm, iterations);
 
     // Expected q state should be |111111>
     EXPECT_EQ(actual.state,
@@ -61,12 +61,12 @@ CNOT q[0:2], q[3:5]
 }
 
 TEST_F(IntegrationTest, too_many_qubits) {
-    EXPECT_TRUE(std::holds_alternative<SimulationResult>(executeString("version 3.0; qubit[62] q")));
-    EXPECT_TRUE(std::holds_alternative<SimulationResult>(executeString("version 3.0; qubit[63] q")));
-    EXPECT_TRUE(std::holds_alternative<SimulationResult>(executeString("version 3.0; qubit[64] q")));
+    EXPECT_TRUE(std::holds_alternative<SimulationResult>(execute_string("version 3.0; qubit[62] q")));
+    EXPECT_TRUE(std::holds_alternative<SimulationResult>(execute_string("version 3.0; qubit[63] q")));
+    EXPECT_TRUE(std::holds_alternative<SimulationResult>(execute_string("version 3.0; qubit[64] q")));
 
-    EXPECT_TRUE(std::holds_alternative<SimulationError>(executeString("version 3.0; qubit[65] q")));
-    EXPECT_TRUE(std::holds_alternative<SimulationError>(executeString("version 3.0; qubit[66] q")));
+    EXPECT_TRUE(std::holds_alternative<SimulationError>(execute_string("version 3.0; qubit[65] q")));
+    EXPECT_TRUE(std::holds_alternative<SimulationError>(execute_string("version 3.0; qubit[66] q")));
 }
 
 TEST_F(IntegrationTest, syntax_error) {
@@ -78,7 +78,7 @@ qubit q
 H q[0
 )";
 
-    auto result = executeString(cqasm);
+    auto result = execute_string(cqasm);
     auto message = std::string{ std::get_if<SimulationError>(&result)->what() };
     EXPECT_TRUE(std::holds_alternative<SimulationError>(result));
     EXPECT_THAT(message, ::testing::StartsWith("""\
@@ -98,10 +98,10 @@ CNOT q[0], q[1]
 I q[1]
 )";
     std::size_t iterations = 1;
-    auto actual = runFromString(cqasm, iterations, "3.0");
+    auto actual = run_from_string(cqasm, iterations, "3.0");
 
-    EXPECT_EQ(actual.shotsRequested, iterations);
-    EXPECT_EQ(actual.shotsDone, iterations);
+    EXPECT_EQ(actual.shots_requested, iterations);
+    EXPECT_EQ(actual.shots_done, iterations);
 
     // Expected q state should be |00>+|11>
     // State is |00>+|11> after creating the Bell state
@@ -127,7 +127,7 @@ CNOT q[1], q[2]
 b = measure q
 )";
     std::size_t iterations = 10'000;
-    auto actual = runFromString(cqasm, iterations);
+    auto actual = run_from_string(cqasm, iterations);
 
     // Expected q state should be |001> or |111>
     EXPECT_TRUE(actual.state[0].value.ends_with('1'));
@@ -158,7 +158,7 @@ b[1] = measure q[1]
 b[2] = measure q[2]
 )";
     std::size_t iterations = 10'000;
-    auto actual = runFromString(cqasm, iterations);
+    auto actual = run_from_string(cqasm, iterations);
 
     // Expected q state should be |001> or |111>
     EXPECT_TRUE(actual.state[0].value.ends_with('1'));
@@ -188,7 +188,7 @@ CNOT q[1], q[0]
 b = measure q
 )";
     std::size_t iterations = 10'000;
-    auto actual = runFromString(cqasm, iterations);
+    auto actual = run_from_string(cqasm, iterations);
 
     // Expected q state should be |00>+|11> or |01>+|10>
     auto error = static_cast<std::uint64_t>(static_cast<double>(iterations)/2 * 0.05);
@@ -216,7 +216,7 @@ b0 = measure q0
 b1 = measure q1
 )";
     std::size_t iterations = 10'000;
-    auto actual = runFromString(cqasm, iterations);
+    auto actual = run_from_string(cqasm, iterations);
 
     // Expected q1-q0 state should be |00>+|11> or |01>+|10>
     auto error = static_cast<std::uint64_t>(static_cast<double>(iterations)/2 * 0.05);
@@ -238,7 +238,7 @@ b = measure q
 reset q
 )";
     std::size_t iterations = 10'000;
-    auto actual = runFromString(cqasm, iterations);
+    auto actual = run_from_string(cqasm, iterations);
 
     // Expected q state should always be |0> because reset modifies the qubit state
     EXPECT_EQ(actual.state[0].value, "0");
@@ -261,7 +261,7 @@ H q[0]
 CNOT q[0], q[1]
 reset q[0]
 )";
-    auto actual = runFromString(cqasm, iterations);
+    auto actual = run_from_string(cqasm, iterations);
 
     // Expected q state should be |00>+|10>
     // State is |00>+|11> after creating the Bell state
@@ -285,7 +285,7 @@ CNOT q[0], q[1]
 reset q[0]
 b = measure q
 )";
-    auto actual = runFromString(cqasm, iterations);
+    auto actual = run_from_string(cqasm, iterations);
 
     // Expected q state should be |00>+|10>
     // State is |00>+|11> after creating the Bell state
@@ -313,7 +313,7 @@ CNOT q[0], q[1]
 b = measure q
 reset q[0]
 )";
-    auto actual = runFromString(cqasm, iterations);
+    auto actual = run_from_string(cqasm, iterations);
 
     // Expected q state should be |00> or |10>
     // State is |00>+|11> after creating the Bell state
@@ -347,15 +347,15 @@ bit b
 b = measure qq[0]
 )";
     std::size_t iterations = 10'000;
-    auto actual = runFromString(cqasm, iterations);
+    auto actual = run_from_string(cqasm, iterations);
 
     // Expected bb[0] value should always be "1"
     // Expected b value should be "0" 50% of the cases and "1" 50% of the cases
     auto error = static_cast<std::uint64_t>(static_cast<double>(iterations)/2 * 0.05);
-    EXPECT_EQ(actual.bitMeasurements.size(), 2);
-    for (auto const& bitMeasurement : actual.bitMeasurements) {
-        EXPECT_EQ(actual.getBitMeasurement(bitMeasurement.state, "bb", 0), 1);
-        EXPECT_LT(std::abs(static_cast<long long>(iterations/2 - bitMeasurement.count)), error);
+    EXPECT_EQ(actual.bit_measurements.size(), 2);
+    for (auto const& bit_measurement : actual.bit_measurements) {
+        EXPECT_EQ(actual.get_bit_measurement(bit_measurement.state, "bb", 0), 1);
+        EXPECT_LT(std::abs(static_cast<long long>(iterations/2 - bit_measurement.count)), error);
     }
 }
 

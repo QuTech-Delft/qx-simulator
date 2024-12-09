@@ -14,16 +14,16 @@ protected:
         random::seed(123);
     }
 
-    void checkState(const std::map<core::BasisVector, std::complex<double>> &expected) {
-        state.forEach([&expected](auto const &kv) {
-            auto const &[basisVector, sparseComplex] = kv;
-            ASSERT_EQ(expected.count(basisVector), 1);
-            EXPECT_EQ(expected.at(basisVector), sparseComplex.value);
+    void check_state(const std::map<core::BasisVector, std::complex<double>> &expected) {
+        state.for_each([&expected](auto const &kv) {
+            auto const &[basis_vector, sparse_complex] = kv;
+            ASSERT_EQ(expected.count(basis_vector), 1);
+            EXPECT_EQ(expected.at(basis_vector), sparse_complex.value);
         });
     }
 
-    template <typename ErrorModel> void addError(ErrorModel &errorModel) {
-        errorModel.addError(state);
+    template <typename ErrorModel> void add_error(ErrorModel &error_model) {
+        error_model.add_error(state);
     }
 
 private:
@@ -32,28 +32,28 @@ private:
 
 TEST_F(ErrorModelsTest, depolarizing_channel__probability_1) {
     DepolarizingChannel const channel(1.);
-    addError(channel);
+    add_error(channel);
     // X is applied to qubit 1.
-    checkState({{core::BasisVector{"010"}, 1. + 0.i}});
+    check_state({{core::BasisVector{"010"}, 1. + 0.i}});
 
-    addError(channel);
+    add_error(channel);
     // Z is applied to qubit 2.
-    checkState({{core::BasisVector{"010"}, 1. + 0.i}});
+    check_state({{core::BasisVector{"010"}, 1. + 0.i}});
 
-    addError(channel);
+    add_error(channel);
     // X is applied to qubit 0.
-    checkState({{core::BasisVector{"011"}, 1. + 0.i}});
+    check_state({{core::BasisVector{"011"}, 1. + 0.i}});
 }
 
 TEST_F(ErrorModelsTest, depolarizing_channel__probability_0) {
     DepolarizingChannel const channel(0.);
 
-    addError(channel);
-    addError(channel);
-    addError(channel);
-    addError(channel);
+    add_error(channel);
+    add_error(channel);
+    add_error(channel);
+    add_error(channel);
 
-    checkState({{core::BasisVector{"000"}, 1. + 0.i}});
+    check_state({{core::BasisVector{"000"}, 1. + 0.i}});
 }
 
 }  // namespace qx::error_models

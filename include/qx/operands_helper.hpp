@@ -14,12 +14,12 @@ class RegisterManager;
  */
 class OperandsHelper {
 public:
-    OperandsHelper(const V3Instruction &instruction, const RegisterManager &register_manager);
-    [[nodiscard]] V3Many<V3ConstInt> get_register_operand(int id) const;
+    OperandsHelper(const CqasmV3xInstruction &instruction, const RegisterManager &register_manager);
+    [[nodiscard]] CqasmV3xIndices get_register_operand(int id) const;
     [[nodiscard]] double get_float_operand(int id) const;
     [[nodiscard]] std::int64_t get_int_operand(int id) const;
 private:
-    const V3Instruction &instruction_;
+    const CqasmV3xInstruction &instruction_;
     const RegisterManager &register_manager_;
 };
 

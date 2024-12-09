@@ -8,11 +8,11 @@
 
 namespace qx::utils {
 
-static inline bool getBit(std::size_t x, std::size_t index) {
+static inline bool get_bit(std::size_t x, std::size_t index) {
     return (x >> index) & 1;
 }
 
-static inline void setBit(std::size_t &x, std::size_t index, bool value) {
+static inline void set_bit(std::size_t &x, std::size_t index, bool value) {
     x = (~(static_cast<std::size_t>(1) << index)       // 111...101...111, all 1s and 0 at index
          & x)                                          // xxx...x0x...xxx, x with 0 at index
         | (static_cast<std::size_t>(value) << index);  // xxx...xvx...xxx, x with value at index
@@ -31,7 +31,7 @@ public:
         NumberOfBits / BITS_IN_SIZE_T +
         (NumberOfBits % BITS_IN_SIZE_T >= 1 ? 1 : 0);
 
-    static constexpr std::size_t getNumberOfBits() {
+    static constexpr std::size_t get_number_of_bits() {
         return NumberOfBits;
     }
 
@@ -51,12 +51,12 @@ public:
 
     [[nodiscard]] inline bool test(std::size_t index) const {
         assert(index < NumberOfBits && "Bitset::test bit index out of range");
-        return getBit(data[index / BITS_IN_SIZE_T], index % BITS_IN_SIZE_T);
+        return get_bit(data[index / BITS_IN_SIZE_T], index % BITS_IN_SIZE_T);
     }
 
     inline void set(std::size_t index, bool value = true) {
         assert(index < NumberOfBits && "Bitset::set bit index out of range");
-        setBit(data[index / BITS_IN_SIZE_T], index % BITS_IN_SIZE_T, value);
+        set_bit(data[index / BITS_IN_SIZE_T], index % BITS_IN_SIZE_T, value);
     }
 
     inline bool operator<(Bitset<NumberOfBits> const &other) const {
@@ -77,7 +77,7 @@ public:
         return H::combine(std::move(h), bitset.data);
     }
 
-    [[nodiscard]] std::size_t toSizeT() const {
+    [[nodiscard]] std::size_t to_size_t() const {
 #if !defined(_MSC_VER)
         static_assert(STORAGE_SIZE == 1);
 #endif
@@ -86,7 +86,7 @@ public:
 
     // Convert to string
     // Notice the least significant bits go to the right
-    [[nodiscard]] std::string toString() const {
+    [[nodiscard]] std::string to_string() const {
         std::string result;
         for (std::size_t i = 0; i < NumberOfBits; ++i) {
             result += test(NumberOfBits - i - 1) ? '1' : '0';
@@ -97,8 +97,8 @@ public:
 
     // Convert to string, then return the rightmost n bits
     // Notice the least significant bits go to the right
-    [[nodiscard]] std::string toSubstring(size_t n) const {
-        auto ret = toString();
+    [[nodiscard]] std::string to_substring(size_t n) const {
+        auto ret = to_string();
         return ret.substr(ret.size() - n, ret.size());
     }
 

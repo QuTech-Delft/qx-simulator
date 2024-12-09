@@ -5,7 +5,7 @@
 #include <complex>  // conj
 #include <stdexcept>  // runtime_error
 
-#include "qx/core.hpp" // isNull
+#include "qx/core.hpp" // QubitIndex, is_null
 
 
 namespace qx::core {
@@ -47,7 +47,7 @@ public:
     constexpr bool operator==(DenseUnitaryMatrix<N> const &other) const {
         for (std::size_t i = 0; i < N; ++i) {
             for (std::size_t j = 0; j < N; ++j) {
-                if (not isNull(at(i, j) - other.at(i, j))) {
+                if (not is_null(at(i, j) - other.at(i, j))) {
                     return false;
                 }
             }
@@ -70,20 +70,25 @@ public:
     }
 
 private:
-    constexpr DenseUnitaryMatrix(Matrix const &m, bool checkIsUnitary)
+    constexpr DenseUnitaryMatrix(Matrix const &m, bool is_unitary_check)
         : matrix(m) {
-        if (checkIsUnitary) {
-            checkUnitary();
+        if (is_unitary_check) {
+            check_is_unitary();
         }
     }
 
-    constexpr void checkUnitary() const {
+    constexpr void check_is_unitary() const {
         if (*this * dagger() != identity()) {
-            throw std::runtime_error("Matrix is not unitary");
+            throw std::runtime_error{ "matrix is not unitary" };
         }
     }
 
     std::array<std::array<std::complex<double>, N>, N> const matrix;
 };
+
+template <std::size_t N>
+using matrix_t = core::DenseUnitaryMatrix<1 << N>;
+template <std::size_t N>
+using operands_t = std::array<core::QubitIndex, N>;
 
 }  // namespace qx::core

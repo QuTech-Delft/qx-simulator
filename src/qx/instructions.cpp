@@ -23,33 +23,28 @@ void ControlledInstruction::execute(SimulationIterationContext &context) {
 }
 
 
-Measure::Measure(core::QubitIndex const& qubitIndex, core::BitIndex const& bitIndex)
-    : qubitIndex{ qubitIndex }
-    , bitIndex{ bitIndex }
+Measure::Measure(core::QubitIndex const& qubit_index, core::BitIndex const& bit_index)
+    : qubit_index{ qubit_index }
+    , bit_index{ bit_index }
 {}
 
 
 void Measure::execute(SimulationIterationContext &context) {
-    context.state.applyMeasure(
-        qubitIndex,
-        bitIndex,
-        &random::randomZeroOneDouble,
-        context.measurement_register,
-        context.bit_measurement_register
-    );
+    context.state.apply_measure(qubit_index, bit_index, &random::random_zero_one_double, context.measurement_register,
+                                context.bit_measurement_register);
 }
 
 
-Reset::Reset(std::optional<core::QubitIndex> qubitIndex)
-    : qubitIndex{ qubitIndex }
+Reset::Reset(std::optional<core::QubitIndex> qubit_index)
+    : qubit_index{ qubit_index }
 {}
 
 
 void Reset::execute(SimulationIterationContext &context) {
-    if (qubitIndex.has_value()) {
-        context.state.applyReset(qubitIndex.value());
+    if (qubit_index.has_value()) {
+        context.state.apply_reset(qubit_index.value());
     } else {
-        context.state.applyResetAll();
+        context.state.apply_reset_all();
     }
 }
 

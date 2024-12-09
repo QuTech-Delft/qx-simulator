@@ -21,22 +21,22 @@ struct CircuitBuilderError : public SimulationError {
 /*
  * CircuitBuilder
  */
-class CircuitBuilder : public V3RecursiveVisitor {
+class CircuitBuilder : public CqasmV3xRecursiveVisitor {
 public:
     explicit CircuitBuilder(Circuit &circuit);
     Circuit build();
 
 private:
     template <std::size_t N>
-    using ast_operands_t = std::array<V3Many<V3ConstInt>, N>;
+    using cqasm_v3x_operands_indices_t = std::array<CqasmV3xIndices, N>;
 
 private:
-    void visit_node(V3Node &) override;
-    void visit_instruction(V3Instruction &instr) override;
+    void visit_node(CqasmV3xNode &) override;
+    void visit_instruction(CqasmV3xInstruction &instruction) override;
     template <std::size_t NumberOfQubitOperands>
     void visit_gate_instruction(
-        matrix_t<NumberOfQubitOperands> matrix,
-        ast_operands_t<NumberOfQubitOperands> operands);
+        core::matrix_t<NumberOfQubitOperands> matrix,
+        cqasm_v3x_operands_indices_t<NumberOfQubitOperands> operands_indices);
 
 private:
     Circuit &circuit_;
