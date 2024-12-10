@@ -118,7 +118,7 @@ void SparseArray::clear() {
 }
 
 void SparseArray::clean_up_zeros() {
-    std::erase_if(data_, [](auto const &kv) {
+    absl::erase_if(data_, [](auto const &kv) {
         auto const &[_, sparse_complex] = kv;
         return is_null(sparse_complex.value);
     });

@@ -47,6 +47,7 @@ class QxConan(ConanFile):
             self.test_requires("gtest/1.15.0")
 
     def requirements(self):
+        self.requires("abseil/20230125.3", transitive_headers=True)
         self.requires("boost/1.85.0")
         self.requires("fmt/11.0.2", transitive_headers=True)
         self.requires("libqasm/0.6.7", transitive_headers=True)

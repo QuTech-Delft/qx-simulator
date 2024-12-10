@@ -6,6 +6,8 @@
 #include "qx/register_manager.hpp"
 #include "qx/simulation_result.hpp"
 
+#include "v3x/cqasm.hpp"
+
 #include <fmt/format.h>
 #include <fmt/ranges.h>
 #include <iostream>
@@ -18,6 +20,10 @@
 namespace qx {
 
 namespace {
+
+// This alias has to go here and not in cqasm_v3x.hpp
+// Due to conflicts between absl, ANTLR, and SWIG
+using CqasmV3xAnalysisResult = cqasm::v3x::analyzer::AnalysisResult;
 
 CqasmV3xAnalysisResult parse_cqasm_v3x_file(std::string const &file_path) {
     auto analyzer = cqasm::v3x::default_analyzer("3.0");

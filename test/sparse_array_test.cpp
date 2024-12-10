@@ -11,10 +11,10 @@ namespace qx::core {
 using namespace std::complex_literals;
 
 TEST(sparse_array, set) {
-    SparseArray victim{ 5 };
+    auto victim = SparseArray{ 5 };
     EXPECT_EQ(victim.to_vector(), (std::vector<std::complex<double>>{ 0., 0., 0., 0., 0. }));
 
-    BasisVector key;
+    auto key = BasisVector{ 5 };
     key.set(2);
     victim[key] = SparseComplex{ 1i };
     EXPECT_EQ(victim.to_vector(), (std::vector<std::complex<double>>{ 0., 0., 0., 0., 1i }));
