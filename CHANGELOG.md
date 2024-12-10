@@ -14,6 +14,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Change `Circuit::execute` to return a `SimulationIterationContext`.
 - Implement instructions as a hierarchy.
 - Reimplement `GateConvertor` as a `CircuitBuilder`.
+- Change file, functions, and variable names.
 
 ### Removed
 

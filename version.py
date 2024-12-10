@@ -9,7 +9,7 @@ def get_version(verbose=0):
     inc_dir = root_dir + os.sep + "include"  # C++ include directory
     matcher = re.compile('[\t ]*#define[\t ]+QX_VERSION[\t ]+"(.*)"')
     version = None
-    with open(os.path.join(inc_dir, "qx", "Version.hpp"), "r") as f:
+    with open(os.path.join(inc_dir, "qx", "version.hpp"), "r") as f:
         for ln in f:
             m = matcher.match(ln)
             if m:
