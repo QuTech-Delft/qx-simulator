@@ -4,10 +4,7 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 
-## [ 1.0.0 ] - [ xxxx-yy-zz ]
-
-This release introduces an incompatible API change:
-- Change `qxelarator` API names to `execute_string` and `execute_file`.
+## [ 0.7.3 ] - [ xxxx-yy-zz ]
 
 ### Added
 
