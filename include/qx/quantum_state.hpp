@@ -37,11 +37,11 @@ void apply_impl(matrix_t<NumberOfOperands> const &matrix,
     for (std::size_t i = 0; i < (1 << NumberOfOperands); ++i) {
         std::complex<double> added_value = sparse_complex.value * matrix.at(i, reduced_index.to_size_t());
         if (not is_null(added_value)) {
-            auto newIndex = index;
+            auto new_index = index;
             for (std::size_t k = 0; k < NumberOfOperands; ++k) {
-                newIndex.set(operands[NumberOfOperands - k - 1].value, utils::get_bit(i, k));
+                new_index.set(operands[NumberOfOperands - k - 1].value, utils::get_bit(i, k));
             }
-            auto it = storage.try_emplace(newIndex, SparseComplex{ 0. });
+            auto it = storage.try_emplace(new_index, SparseComplex{ 0. });
             it.first->second.value += added_value;
         }
     }
