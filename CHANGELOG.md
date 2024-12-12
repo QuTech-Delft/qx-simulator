@@ -16,6 +16,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Reimplement `GateConvertor` as a `CircuitBuilder`.
 - Change file, functions, and variable names.
 - Implement `BasisVector` as a `boost::dynamic_bitset<uint32_t>`.
+- Implement `RegisterManager` as a singleton.
 
 ### Removed
 
