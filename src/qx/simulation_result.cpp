@@ -1,4 +1,4 @@
-#include "qx/core.hpp" // BasisVector
+#include "qx/core.hpp"
 #include "qx/quantum_state.hpp"
 #include "qx/register_manager.hpp"
 #include "qx/simulation_result.hpp"
@@ -93,7 +93,7 @@ void SimulationIterationAccumulator::add(SimulationIterationContext const& conte
     append_bit_measurement(context.bit_measurement_register);
 }
 
-void SimulationIterationAccumulator::append_measurement(core::BasisVector const& measurement) {
+void SimulationIterationAccumulator::append_measurement(core::MeasurementRegister const& measurement) {
     assert(measurements.size() < (static_cast<size_t>(1) << state.get_number_of_qubits()));
     auto measured_state_string{ core::to_substring(measurement, state.get_number_of_qubits()) };
     measurements[measured_state_string]++;

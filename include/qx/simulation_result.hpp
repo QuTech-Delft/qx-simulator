@@ -1,9 +1,9 @@
 #pragma once
 
 #include "qx/compile_time_configuration.hpp"
-#include "qx/core.hpp" // BasisVector, BitMeasurementRegister Complex
+#include "qx/core.hpp"
 #include "qx/quantum_state.hpp"
-#include "qx/register_manager.hpp"  // Index
+#include "qx/register_manager.hpp"
 
 #include <cstdint>  // uint64_t
 #include <fmt/ostream.h>
@@ -98,7 +98,7 @@ std::ostream &operator<<(std::ostream &os, const SimulationResult &result);
 
 struct SimulationIterationContext {
     core::QuantumState state;
-    core::BasisVector measurement_register;
+    core::MeasurementRegister measurement_register;
     core::BitMeasurementRegister bit_measurement_register;
 
     explicit SimulationIterationContext();
@@ -112,7 +112,7 @@ struct SimulationIterationContext {
 class SimulationIterationAccumulator {
 public:
     void add(const SimulationIterationContext &context);
-    void append_measurement(core::BasisVector const& measurement);
+    void append_measurement(core::MeasurementRegister const& measurement);
     void append_bit_measurement(core::BitMeasurementRegister const& bit_measurement);
     SimulationResult get_simulation_result();
 

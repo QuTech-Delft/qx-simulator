@@ -1,4 +1,4 @@
-#include "qx/core.hpp" // BasisVector
+#include "qx/core.hpp"
 #include "qx/gates.hpp"
 #include "qx/quantum_state.hpp"
 
@@ -56,7 +56,7 @@ TEST_F(QuantumStateTest, apply_cnot) {
 }
 
 TEST_F(QuantumStateTest, measure_on_non_superposed_state) {
-    auto measurement_register = core::BasisVector{ 2 };
+    auto measurement_register = core::MeasurementRegister{ 2 };
     auto bit_measurement_register = core::BitMeasurementRegister{ 2 };
     QuantumState victim{ 2, 2, {{"10", 0.123}, {"11", std::sqrt(1 - std::pow(0.123, 2))}} };
     victim.apply_measure(
@@ -71,7 +71,7 @@ TEST_F(QuantumStateTest, measure_on_non_superposed_state) {
 TEST_F(QuantumStateTest, measure_on_superposed_state__measured_state_is_0) {
     // The random generator function returns a number bigger than the probability of measuring 1, so we measure 0
     // 0.994 > 1 - 0.123^2
-    auto measurement_register = core::BasisVector{ 2 };
+    auto measurement_register = core::MeasurementRegister{ 2 };
     auto bit_measurement_register = core::BitMeasurementRegister{ 2 };
     QuantumState victim{ 2, 2, {{"10", 0.123}, {"11", std::sqrt(1 - std::pow(0.123, 2))}} };
     victim.apply_measure(
@@ -83,7 +83,7 @@ TEST_F(QuantumStateTest, measure_on_superposed_state__measured_state_is_0) {
 TEST_F(QuantumStateTest, measure_on_superposed_state__measured_state_is_1) {
     // The random generator function returns a number smaller than the probability of measuring 1, so we measure 1
     // 0.254 < 1 - 0.123^2
-    auto measurement_register = core::BasisVector{ 2 };
+    auto measurement_register = core::MeasurementRegister{ 2 };
     auto bit_measurement_register = core::BitMeasurementRegister{ 2 };
     QuantumState victim{ 2, 2, {{"10", 0.123}, {"11", std::sqrt(1 - std::pow(0.123, 2))}} };
     victim.apply_measure(
