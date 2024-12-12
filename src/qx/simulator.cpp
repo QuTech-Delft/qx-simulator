@@ -6,6 +6,9 @@
 #include "qx/register_manager.hpp"
 #include "qx/simulation_result.hpp"
 
+// This include can not go in cqasm_v3x.hpp, due to conflicts between ANTLR and SWIG
+#include "v3x/cqasm.hpp"  // default_analyzer
+
 #include <fmt/format.h>
 #include <fmt/ranges.h>
 #include <iostream>

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "v3x/cqasm.hpp"  // default_analyzer
 #include "v3x/cqasm-analyzer.hpp"
 #include "v3x/cqasm-analysis-result.hpp"
 #include "v3x/cqasm-primitives.hpp"
