@@ -91,7 +91,7 @@ Register::~Register() = default;
 //---------------//
 
 QubitRegister::QubitRegister(const TreeOne<CqasmV3xProgram> &program)
-    : Register(program, is_qubit_variable, config::MAX_QUBIT_NUMBER)
+    : Register{ program, is_qubit_variable, config::MAX_QUBIT_NUMBER }
 {}
 
 QubitRegister::~QubitRegister() = default;
@@ -102,7 +102,7 @@ QubitRegister::~QubitRegister() = default;
 //-----------------//
 
 BitRegister::BitRegister(const TreeOne<CqasmV3xProgram> &program)
-    : Register(program, is_bit_variable, config::MAX_BIT_NUMBER)
+    : Register{ program, is_bit_variable, config::MAX_BIT_NUMBER }
 {}
 
 BitRegister::~BitRegister() = default;
@@ -112,64 +112,65 @@ BitRegister::~BitRegister() = default;
 // RegisterManager //
 //-----------------//
 
-RegisterManager::RegisterManager(const TreeOne<CqasmV3xProgram> &program)
-    : qubit_register_{ program }
-    , bit_register_{ program }
-{}
-
-[[nodiscard]] /* static */ RegisterManager& RegisterManager::get_instance_impl(const TreeOne<CqasmV3xProgram> &program) {
-    static RegisterManager instance{ program };
+[[nodiscard]] /* static */ RegisterManager& RegisterManager::get_instance_impl() {
+    static auto instance = RegisterManager{};
     return instance;
 }
 
 /* static */ void RegisterManager::create_instance(const TreeOne<CqasmV3xProgram> &program) {
-    [[maybe_unused]] const auto &unused = get_instance_impl(program);
+    auto &instance = get_instance_impl();
+    instance.qubit_register_ = std::make_shared<QubitRegister>(program);
+    instance.bit_register_ = std::make_shared<BitRegister>(program);
 }
 
 [[nodiscard]] /* static */ RegisterManager& RegisterManager::get_instance() {
-    return get_instance_impl(TreeOne<CqasmV3xProgram>{});
+    auto &instance = get_instance_impl();
+    if (!instance.qubit_register_ or !instance.bit_register_) {
+        throw RegisterManagerError{ "uninitialized register manager" };
+    }
+    return instance;
 }
 
 [[nodiscard]] std::size_t RegisterManager::get_qubit_register_size() const {
-    return qubit_register_.size();
+    return qubit_register_->size();
 }
 
 [[nodiscard]] std::size_t RegisterManager::get_bit_register_size() const {
-    return bit_register_.size();
+    return bit_register_->size();
 }
 
 [[nodiscard]] Range RegisterManager::get_qubit_range(const VariableName &name) const {
-    return qubit_register_.at(name);
+    return qubit_register_->at(name);
 }
 
 [[nodiscard]] Range RegisterManager::get_bit_range(const VariableName &name) const {
-    return bit_register_.at(name);
+    return bit_register_->at(name);
 }
 
 [[nodiscard]] Index RegisterManager::get_qubit_index(const VariableName &name,
                                                      const std::optional<Index> &sub_index) const {
-    return qubit_register_.at(name, sub_index);
+    return qubit_register_->at(name, sub_index);
 }
 
 [[nodiscard]] Index RegisterManager::get_bit_index(const VariableName &name,
                                                    const std::optional<Index> &sub_index) const {
-    return bit_register_.at(name, sub_index);
+    return bit_register_->at(name, sub_index);
 }
 
 [[nodiscard]] VariableName RegisterManager::get_qubit_variable_name(const std::size_t &index) const {
-    return qubit_register_.at(index);
+    return qubit_register_->at(index);
 }
 
 [[nodiscard]] VariableName RegisterManager::get_bit_variable_name(const std::size_t &index) const {
-    return bit_register_.at(index);
+    return bit_register_->at(index);
 }
 
 [[nodiscard]] QubitRegister const& RegisterManager::get_qubit_register() const {
-    return qubit_register_;
+    return *qubit_register_;
 }
 
 [[nodiscard]] BitRegister const& RegisterManager::get_bit_register() const {
-    return bit_register_;
+    return *bit_register_;
 }
 
 std::ostream& operator<<(std::ostream& os, Range const& range) {

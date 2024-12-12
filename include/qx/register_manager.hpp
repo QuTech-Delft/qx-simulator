@@ -6,6 +6,7 @@
 
 #include <cstdint>  // size_t
 #include <fmt/ostream.h>
+#include <memory>  // shared_ptr
 #include <optional>
 #include <string>
 #include <unordered_map>
@@ -97,11 +98,11 @@ public:
 //-----------------//
 
 class RegisterManager {
-    QubitRegister qubit_register_;
-    BitRegister bit_register_;
+    std::shared_ptr<QubitRegister> qubit_register_;
+    std::shared_ptr<BitRegister> bit_register_;
 
-    explicit RegisterManager(const TreeOne<CqasmV3xProgram> &program);
-    [[nodiscard]] static RegisterManager& get_instance_impl(const TreeOne<CqasmV3xProgram> &program);
+    RegisterManager() = default;
+    [[nodiscard]] static RegisterManager& get_instance_impl();
 public:
     RegisterManager(const RegisterManager&) = delete;
     RegisterManager(RegisterManager&&) noexcept = delete;

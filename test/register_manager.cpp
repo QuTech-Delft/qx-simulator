@@ -77,7 +77,7 @@ TEST_F(RegisterManagerTest, create_instance_with_null_program) {
 TEST_F(RegisterManagerTest, get_instance_before_create_instance) {
     EXPECT_THAT(
         []() { [[maybe_unused]] const auto &unused = RegisterManager::get_instance(); },
-        ::testing::ThrowsMessage<std::runtime_error>("null pointer to program")
+        ::testing::ThrowsMessage<std::runtime_error>("uninitialized register manager")
     );
 }
 
@@ -85,7 +85,7 @@ TEST_F(RegisterManagerTest, get_instance_after_two_calls_to_create_instance) {
     RegisterManager::create_instance(program_with_2_qubits);
     RegisterManager::create_instance(program_with_4_qubits);
     const auto &register_manager = RegisterManager::get_instance();
-    EXPECT_EQ(register_manager.get_qubit_register_size(), 2);
+    EXPECT_EQ(register_manager.get_qubit_register_size(), 4);
 }
 
 }  // namespace qx
