@@ -11,11 +11,11 @@
 
 namespace qx {
 
+namespace cqasm_tree = ::cqasm::tree;
 namespace cqasm_v3x_analyzer = cqasm::v3x::analyzer;
 namespace cqasm_v3x_ast = cqasm::v3x::ast;
 namespace cqasm_v3x_primitives = cqasm::v3x::primitives;
 namespace cqasm_v3x_semantic = cqasm::v3x::semantic;
-namespace cqasm_v3x_tree = ::cqasm::tree;
 namespace cqasm_v3x_types = cqasm::v3x::types;
 namespace cqasm_v3x_values = cqasm::v3x::values;
 
@@ -32,7 +32,7 @@ using CqasmV3xType = cqasm_v3x_types::Type;
 using CqasmV3xValue = cqasm_v3x_values::Value;
 using CqasmV3xVariable = cqasm_v3x_semantic::Variable;
 template <typename T>
-using TreeOne = cqasm_v3x_tree::One<T>;
+using TreeOne = cqasm_tree::One<T>;
 
 bool is_qubit_variable(const CqasmV3xVariable &variable);
 bool is_bit_variable(const CqasmV3xVariable &variable);

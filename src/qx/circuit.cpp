@@ -8,9 +8,8 @@
 
 namespace qx {
 
-Circuit::Circuit(TreeOne<CqasmV3xProgram> const &program, RegisterManager const &register_manager)
+Circuit::Circuit(TreeOne<CqasmV3xProgram> const &program)
     : program{ program }
-    , register_manager{ register_manager }
 {
     CircuitBuilder{ *this }.build();
 }
@@ -29,7 +28,7 @@ void Circuit::add_instruction(std::shared_ptr<Instruction> instruction) {
 }
 
 [[nodiscard]] SimulationIterationContext Circuit::execute(error_models::ErrorModel const &error_model) const {
-    auto context = SimulationIterationContext{ register_manager };
+    auto context = SimulationIterationContext{};
     std::for_each(instructions_.begin(), instructions_.end(),
         [&context, &error_model](auto const& instruction) {
             add_error(context, error_model);

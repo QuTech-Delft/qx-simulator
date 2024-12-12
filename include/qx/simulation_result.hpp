@@ -3,7 +3,7 @@
 #include "qx/compile_time_configuration.hpp"
 #include "qx/core.hpp" // BasisVector, BitMeasurementRegister Complex
 #include "qx/quantum_state.hpp"
-#include "qx/register_manager.hpp"
+#include "qx/register_manager.hpp"  // Index
 
 #include <cstdint>  // uint64_t
 #include <fmt/ostream.h>
@@ -61,7 +61,7 @@ struct SimulationResult {
     using State = std::vector<SuperposedState>;
 
 public:
-    SimulationResult(std::uint64_t requestedShots, std::uint64_t doneShots, RegisterManager const& register_manager);
+    SimulationResult(std::uint64_t requestedShots, std::uint64_t doneShots);
 
     // Given a state string from the State vector, a qubit variable name, and an optional sub index,
     // return the value of that qubit in the state string
@@ -100,7 +100,7 @@ struct SimulationIterationContext {
     core::BasisVector measurement_register;
     core::BitMeasurementRegister bit_measurement_register;
 
-    explicit SimulationIterationContext(RegisterManager const& register_manager);
+    explicit SimulationIterationContext();
 };
 
 
@@ -113,7 +113,7 @@ public:
     void add(const SimulationIterationContext &context);
     void append_measurement(core::BasisVector const& measurement);
     void append_bit_measurement(core::BitMeasurementRegister const& bit_measurement);
-    SimulationResult get_simulation_result(RegisterManager const& register_manager);
+    SimulationResult get_simulation_result();
 
 private:
     template <typename F>

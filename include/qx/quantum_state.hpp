@@ -13,7 +13,6 @@
 #include "qx/core.hpp"  // BasisVector, BitMeasurementRegister, MeasurementRegister, QubitIndex
 #include "qx/dense_unitary_matrix.hpp"
 #include "qx/gates.hpp"
-#include "qx/register_manager.hpp"
 #include "qx/sparse_array.hpp"
 #include "qx/utils.hpp"
 

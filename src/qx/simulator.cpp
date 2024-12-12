@@ -62,15 +62,15 @@ std::variant<std::monostate, SimulationResult, SimulationError> execute(
     }
 
     try {
-        auto register_manager = RegisterManager{ program };
-        auto circuit = Circuit{ program, register_manager };
+        RegisterManager::create_instance(program);
+        auto circuit = Circuit{ program };
         auto simulation_iteration_accumulator = ranges::accumulate(
             ranges::views::iota(static_cast<size_t>(0), iterations),
             SimulationIterationAccumulator{}, [&circuit](auto &acc, auto) {
                 acc.add(circuit.execute(std::monostate{}));
                 return acc;
             });
-        return simulation_iteration_accumulator.get_simulation_result(register_manager);
+        return simulation_iteration_accumulator.get_simulation_result();
     } catch (const SimulationError &err) {
         return err;
     }

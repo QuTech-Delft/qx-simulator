@@ -11,11 +11,23 @@
 
 namespace qx {
 
+//----------------------//
+// RegisterManagerError //
+//----------------------//
+
 RegisterManagerError::RegisterManagerError(const std::string &message)
     : SimulationError{ message }
 {}
 
+
+//----------//
+// Register //
+//----------//
+
 Register::Register(const TreeOne<CqasmV3xProgram> &program, auto &&is_of_type, std::size_t max_register_size) {
+    if (program.empty()) {
+        throw RegisterManagerError{ "null pointer to program" };
+    }
     auto &&variables = program->variables.get_vec()
        | ranges::views::filter([&](const TreeOne<CqasmV3xVariable> &variable) { return is_of_type(*variable); });
     auto &&variable_sizes = variables
@@ -70,6 +82,11 @@ Register::~Register() = default;
     return fmt::format("{{ {0} }}", entries);
 }
 
+
+//---------------//
+// QubitRegister //
+//---------------//
+
 QubitRegister::QubitRegister(const TreeOne<CqasmV3xProgram> &program) try
     : Register(program, is_qubit_variable, config::MAX_QUBIT_NUMBER) {
 } catch (const RegisterManagerError &e) {
@@ -78,6 +95,11 @@ QubitRegister::QubitRegister(const TreeOne<CqasmV3xProgram> &program) try
 }
 
 QubitRegister::~QubitRegister() = default;
+
+
+//-----------------//
+// RegisterManager //
+//-----------------//
 
 BitRegister::BitRegister(const TreeOne<CqasmV3xProgram> &program) try
     : Register(program, is_bit_variable, config::MAX_BIT_NUMBER) {
@@ -88,10 +110,28 @@ BitRegister::BitRegister(const TreeOne<CqasmV3xProgram> &program) try
 
 BitRegister::~BitRegister() = default;
 
+
+//-----------------//
+// RegisterManager //
+//-----------------//
+
 RegisterManager::RegisterManager(const TreeOne<CqasmV3xProgram> &program)
     : qubit_register_{ program }
     , bit_register_{ program }
 {}
+
+[[nodiscard]] /* static */ RegisterManager& RegisterManager::get_instance_impl(const TreeOne<CqasmV3xProgram> &program) {
+    static RegisterManager instance{ program };
+    return instance;
+}
+
+/* static */ void RegisterManager::create_instance(const TreeOne<CqasmV3xProgram> &program) {
+    [[maybe_unused]] const auto &unused = get_instance_impl(program);
+}
+
+[[nodiscard]] /* static */ RegisterManager& RegisterManager::get_instance() {
+    return get_instance_impl(TreeOne<CqasmV3xProgram>{});
+}
 
 [[nodiscard]] std::size_t RegisterManager::get_qubit_register_size() const {
     return qubit_register_.size();

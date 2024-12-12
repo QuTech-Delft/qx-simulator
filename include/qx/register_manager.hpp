@@ -39,12 +39,21 @@ struct Range {
 };
 
 
+//----------------------//
+// RegisterManagerError //
+//----------------------//
+
 struct RegisterManagerError : public SimulationError {
     explicit RegisterManagerError(const std::string &message);
 };
 
 using VariableNameToRangeMapT = std::unordered_map<VariableName, Range>;
 using IndexToVariableNameMapT = std::vector<VariableName>;
+
+
+//----------//
+// Register //
+//----------//
 
 class Register {
     std::size_t register_size_;
@@ -61,12 +70,20 @@ public:
 };
 
 
+//---------------//
+// QubitRegister //
+//---------------//
+
 class QubitRegister : public Register {
 public:
     explicit QubitRegister(const TreeOne<CqasmV3xProgram> &program);
     ~QubitRegister() override;
 };
 
+
+//-------------//
+// BitRegister //
+//-------------//
 
 class BitRegister : public Register {
 public:
@@ -75,16 +92,24 @@ public:
 };
 
 
+//-----------------//
+// RegisterManager //
+//-----------------//
+
 class RegisterManager {
     QubitRegister qubit_register_;
     BitRegister bit_register_;
+
+    explicit RegisterManager(const TreeOne<CqasmV3xProgram> &program);
+    [[nodiscard]] static RegisterManager& get_instance_impl(const TreeOne<CqasmV3xProgram> &program);
 public:
     RegisterManager(const RegisterManager&) = delete;
     RegisterManager(RegisterManager&&) noexcept = delete;
     RegisterManager& operator=(const RegisterManager&) = default;
     RegisterManager& operator=(RegisterManager&&) noexcept = default;
 public:
-    explicit RegisterManager(const TreeOne<CqasmV3xProgram> &program);
+    static void create_instance(const TreeOne<CqasmV3xProgram> &program);
+    [[nodiscard]] static RegisterManager& get_instance();
     [[nodiscard]] std::size_t get_qubit_register_size() const;
     [[nodiscard]] std::size_t get_bit_register_size() const;
     [[nodiscard]] Range get_qubit_range(const VariableName &name) const;
