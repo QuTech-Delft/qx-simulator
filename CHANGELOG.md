@@ -10,13 +10,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-- Take measurement register out of `QuantumState`. 
-- Change `Circuit::execute` to return a `SimulationIterationContext`.
 - Implement instructions as a hierarchy.
-- Reimplement `GateConvertor` as a `CircuitBuilder`.
-- Change file, functions, and variable names.
+- Implement `GateConvertor` as a `CircuitBuilder`.
 - Implement `BasisVector` as a `boost::dynamic_bitset<uint32_t>`.
 - Implement `RegisterManager` as a singleton.
+- Change `QuantumState` by taking the measurement register out of it.
+- Change `Circuit::execute` to return a `SimulationIterationContext`.
+- Change file, functions, and variable names.
 
 ### Removed
 
