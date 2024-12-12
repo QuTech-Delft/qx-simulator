@@ -1,5 +1,6 @@
 #include "qx/sparse_array.hpp"
 
+#include <algorithm>  // erase_if
 #include <complex>
 #include <fmt/core.h>
 #include <fmt/ranges.h>
@@ -118,7 +119,7 @@ void SparseArray::clear() {
 }
 
 void SparseArray::clean_up_zeros() {
-    absl::erase_if(data_, [](auto const &kv) {
+    std::erase_if(data_, [](auto const &kv) {
         auto const &[_, sparse_complex] = kv;
         return is_null(sparse_complex.value);
     });
