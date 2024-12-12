@@ -10,12 +10,12 @@
 #include <string>
 #include <utility>  // invoke, pair
 
-#include "qx/compile_time_configuration.hpp" // MAX_QUBIT_NUMBER
-#include "qx/core.hpp"                       // BasisVector, QubitIndex
+#include "qx/core.hpp"  // BasisVector, BitMeasurementRegister, MeasurementRegister, QubitIndex
 #include "qx/dense_unitary_matrix.hpp"
 #include "qx/gates.hpp"
 #include "qx/register_manager.hpp"
 #include "qx/sparse_array.hpp"
+#include "qx/utils.hpp"
 
 namespace qx::core {
 
@@ -30,12 +30,12 @@ void apply_impl(matrix_t<NumberOfOperands> const &matrix,
                 BasisVector index,
                 SparseComplex const &sparse_complex,
                 SparseArray::MapBasisVectorToSparseComplex &storage) {
-    utils::Bitset<NumberOfOperands> reduced_index;
+    BasisVector reduced_index{ NumberOfOperands };
     for (std::size_t i = 0; i < NumberOfOperands; ++i) {
         reduced_index.set(i, index.test(operands[NumberOfOperands - i - 1].value));
     }
     for (std::size_t i = 0; i < (1 << NumberOfOperands); ++i) {
-        std::complex<double> added_value = sparse_complex.value * matrix.at(i, reduced_index.to_size_t());
+        std::complex<double> added_value = sparse_complex.value * matrix.at(i, reduced_index.to_ulong());
         if (not is_null(added_value)) {
             auto new_index = index;
             for (std::size_t k = 0; k < NumberOfOperands; ++k) {
@@ -69,8 +69,10 @@ public:
         assert(NumberOfOperands <= number_of_qubits_ &&
                "Quantum gate has more operands than the number of qubits in this quantum state");
         assert(std::find_if(operands.begin(), operands.end(),
-               [this](auto qubit_index) { return qubit_index.value >= number_of_qubits_; }) == operands.end() &&
-               "Operand refers to a non-existing qubit");
+            [this](auto qubit_index) {
+                return qubit_index.value >= number_of_qubits_; }
+            ) == operands.end()
+            && "Operand refers to a non-existing qubit");
 
         data_.apply_linear([&m, &operands](auto index, auto value, auto &storage) {
             apply_impl<NumberOfOperands>(m, operands, index, value, storage);
@@ -91,7 +93,8 @@ public:
     // measured_state will be true if we measured a 1, or false if we measured a 0
     template <typename F>
     void apply_measure(QubitIndex qubit_index, BitIndex bit_index, F &&random_generator,
-                      core::BasisVector &measurement_register, core::BitMeasurementRegister &bit_measurement_register) {
+                       core::MeasurementRegister &measurement_register,
+                       core::BitMeasurementRegister &bit_measurement_register) {
         auto probability_of_measuring_one = get_probability_of_measuring_one(qubit_index);
         auto measured_state = (random_generator() < probability_of_measuring_one);
         update_data_after_measurement(qubit_index, measured_state, probability_of_measuring_one);

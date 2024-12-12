@@ -74,7 +74,7 @@ std::ostream &operator<<(std::ostream &os, const SimulationResult &simulation_re
 
 SimulationIterationContext::SimulationIterationContext(RegisterManager const& register_manager)
     : state{ register_manager.get_qubit_register_size(), register_manager.get_bit_register_size() }
-    , measurement_register{}
+    , measurement_register{ register_manager.get_qubit_register_size() }
     , bit_measurement_register{ register_manager.get_bit_register_size() }
 {}
 
@@ -91,7 +91,7 @@ void SimulationIterationAccumulator::add(SimulationIterationContext const& conte
 
 void SimulationIterationAccumulator::append_measurement(core::BasisVector const& measurement) {
     assert(measurements.size() < (static_cast<size_t>(1) << state.get_number_of_qubits()));
-    auto measured_state_string{ measurement.to_substring(state.get_number_of_qubits()) };
+    auto measured_state_string{ core::to_substring(measurement, state.get_number_of_qubits()) };
     measurements[measured_state_string]++;
     measurements_count++;
 }
@@ -110,7 +110,7 @@ SimulationResult SimulationIterationAccumulator::get_simulation_result(RegisterM
 
     forAllNonZeroStates(
         [this, &simulation_result](core::BasisVector const& superposed_state, core::SparseComplex const& sparse_complex) {
-            auto state_string = superposed_state.to_substring(state.get_number_of_qubits());
+            auto state_string = core::to_substring(superposed_state, state.get_number_of_qubits());
             auto c = sparse_complex.value;
             auto amplitude = amplitude_t{ c.real(), c.imag(), std::norm(c) };
             simulation_result.state.push_back(SuperposedState{ state_string, amplitude });

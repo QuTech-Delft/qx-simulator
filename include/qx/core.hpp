@@ -5,10 +5,9 @@
 #include <cstdlib>  // abs
 #include <complex>
 #include <fmt/ostream.h>
-#include <string_view>
+#include <string>
 
-#include "qx/compile_time_configuration.hpp" // EPSILON, MAX_QUBIT_NUMBER
-#include "qx/utils.hpp"
+#include "qx/compile_time_configuration.hpp" // EPSILON
 
 namespace qx::core {
 
@@ -32,13 +31,12 @@ struct BitIndex {
     std::size_t value;
 };
 
-using BasisVector = utils::Bitset<config::MAX_QUBIT_NUMBER>;
-
+using BasisVector = boost::dynamic_bitset<uint32_t>;
+using MeasurementRegister = boost::dynamic_bitset<uint32_t>;
 using BitMeasurementRegister = boost::dynamic_bitset<uint32_t>;
+using PairBasisVectorStringComplex = std::pair<std::string, std::complex<double>>;
 
-using PairBasisVectorStringComplex = std::pair<std::string_view, std::complex<double>>;
-
-inline constexpr bool is_not_null(std::complex<double> c) {
+[[nodiscard]] inline constexpr bool is_not_null(std::complex<double> c) {
 #if defined(_MSC_VER)
     return
         c.real() > config::EPSILON || -c.real() > config::EPSILON ||
@@ -48,10 +46,18 @@ inline constexpr bool is_not_null(std::complex<double> c) {
 #endif
 }
 
-inline constexpr bool is_null(std::complex<double> c) {
+[[nodiscard]] inline constexpr bool is_null(std::complex<double> c) {
     return not is_not_null(c);
+}
+
+// Convert to string, then return the rightmost n bits
+// Notice the least significant bits go to the right
+[[nodiscard]] inline std::string to_substring(boost::dynamic_bitset<uint32_t> const& bs, size_t n) {
+    auto ret = std::string{};
+    boost::to_string(bs, ret);
+    return ret.substr(ret.size() - n, ret.size());
 }
 
 }  // namespace qx::core
 
-template <> struct fmt::formatter<qx::core::BitMeasurementRegister> : fmt::ostream_formatter {};
+template <> struct fmt::formatter< boost::dynamic_bitset<uint32_t>> : fmt::ostream_formatter {};

@@ -71,7 +71,7 @@ SparseArray& SparseArray::operator*=(double d) {
 
 SparseComplex& SparseArray::operator[](const BasisVector &index) {
 #ifndef NDEBUG
-    if (index.to_size_t() >= size_) {
+    if (index.to_ulong() >= size_) {
         throw SparseArrayError{ "index out of bounds" };
     }
 #endif
@@ -112,7 +112,7 @@ void SparseArray::clear() {
 [[nodiscard]] std::vector<std::complex<double>> SparseArray::to_vector() const {
     auto result = std::vector<std::complex<double>>(size_, 0.);
     for (auto const &[basis_vector, sparse_complex] : data_) {
-        result[basis_vector.to_size_t()] = sparse_complex.value;
+        result[basis_vector.to_ulong()] = sparse_complex.value;
     }
     return result;
 }
