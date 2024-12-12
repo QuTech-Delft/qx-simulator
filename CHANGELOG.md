@@ -15,8 +15,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Implement instructions as a hierarchy.
 - Reimplement `GateConvertor` as a `CircuitBuilder`.
 - Change file, functions, and variable names.
+- Implement `BasisVector` as a `boost::dynamic_bitset<uint32_t>`.
 
 ### Removed
+
+- Remove `abseil` library dependency.
 
 
 ## [ 0.7.2 ] - [ 2024-11-20 ]
