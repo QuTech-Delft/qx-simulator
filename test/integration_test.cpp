@@ -59,12 +59,13 @@ CNOT q[0:2], q[3:5]
         (SimulationResult::State{ { "111111", core::Complex{ .real = 1, .imag = 0, .norm = 1 } } }));
 }
 
-TEST_F(IntegrationTest, max_qubit_number) {
-    EXPECT_TRUE(std::holds_alternative<SimulationResult>(execute_string("version 3.0; qubit[64] q")));
-}
-
 TEST_F(IntegrationTest, too_many_qubits) {
+    EXPECT_TRUE(std::holds_alternative<SimulationResult>(execute_string("version 3.0; qubit[62] q")));
+    EXPECT_TRUE(std::holds_alternative<SimulationResult>(execute_string("version 3.0; qubit[63] q")));
+    EXPECT_TRUE(std::holds_alternative<SimulationResult>(execute_string("version 3.0; qubit[64] q")));
+
     EXPECT_TRUE(std::holds_alternative<SimulationError>(execute_string("version 3.0; qubit[65] q")));
+    EXPECT_TRUE(std::holds_alternative<SimulationError>(execute_string("version 3.0; qubit[66] q")));
 }
 
 TEST_F(IntegrationTest, syntax_error) {
