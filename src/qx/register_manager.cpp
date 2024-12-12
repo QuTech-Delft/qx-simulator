@@ -29,13 +29,16 @@ Register::Register(const TreeOne<CqasmV3xProgram> &program, auto &&is_of_type, s
         throw RegisterManagerError{ "null pointer to program" };
     }
     auto &&variables = program->variables.get_vec()
-       | ranges::views::filter([&](const TreeOne<CqasmV3xVariable> &variable) { return is_of_type(*variable); });
+       | ranges::views::filter(
+            [&](const TreeOne<CqasmV3xVariable> &variable) { return is_of_type(*variable); });
     auto &&variable_sizes = variables
-        | ranges::views::transform([](const TreeOne<CqasmV3xVariable> &variable) { return cqasm_v3x_types::size_of(variable->typ); });
+        | ranges::views::transform(
+            [](const TreeOne<CqasmV3xVariable> &variable) { return cqasm_v3x_types::size_of(variable->typ); });
     register_size_ = ranges::accumulate(variable_sizes, size_t{});
 
     if (register_size_ > max_register_size) {
-        throw RegisterManagerError{ fmt::format("{}", register_size_) };
+        throw RegisterManagerError{ fmt::format("register size exceeds maximum allowed: {} > {}",
+                                                register_size_, max_register_size) };
     }
 
     variable_name_to_range_.reserve(register_size_);
@@ -87,12 +90,9 @@ Register::~Register() = default;
 // QubitRegister //
 //---------------//
 
-QubitRegister::QubitRegister(const TreeOne<CqasmV3xProgram> &program) try
-    : Register(program, is_qubit_variable, config::MAX_QUBIT_NUMBER) {
-} catch (const RegisterManagerError &e) {
-    throw RegisterManagerError{ fmt::format("qubit register size exceeds maximum allowed: {} > {}",
-                                            e.what(), config::MAX_QUBIT_NUMBER) };
-}
+QubitRegister::QubitRegister(const TreeOne<CqasmV3xProgram> &program)
+    : Register(program, is_qubit_variable, config::MAX_QUBIT_NUMBER)
+{}
 
 QubitRegister::~QubitRegister() = default;
 
@@ -101,12 +101,9 @@ QubitRegister::~QubitRegister() = default;
 // RegisterManager //
 //-----------------//
 
-BitRegister::BitRegister(const TreeOne<CqasmV3xProgram> &program) try
-    : Register(program, is_bit_variable, config::MAX_BIT_NUMBER) {
-} catch (const RegisterManagerError &e) {
-    throw RegisterManagerError{ fmt::format("bit register size exceeds maximum allowed: {} > {}",
-                                            e.what(), config::MAX_BIT_NUMBER) };
-}
+BitRegister::BitRegister(const TreeOne<CqasmV3xProgram> &program)
+    : Register(program, is_bit_variable, config::MAX_BIT_NUMBER)
+{}
 
 BitRegister::~BitRegister() = default;
 
