@@ -1,9 +1,8 @@
 #pragma once
 
-#include "qx/quantum_state.hpp"
-
 #include <variant>
 
+#include "qx/quantum_state.hpp"
 
 namespace qx {
 
@@ -14,7 +13,7 @@ namespace error_models {
 class DepolarizingChannel {
 public:
     explicit DepolarizingChannel(double p);
-    void add_error(qx::core::QuantumState &quantum_state) const;
+    void add_error(qx::core::QuantumState& quantum_state) const;
 
 private:
     double probability;

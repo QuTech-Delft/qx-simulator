@@ -8,7 +8,6 @@
 #include "v3x/cqasm-values-gen.hpp"
 #include "v3x/cqasm-values.hpp"
 
-
 namespace qx {
 
 namespace cqasm_tree = ::cqasm::tree;
@@ -43,7 +42,7 @@ using CqasmV3xVariable = cqasm_v3x_semantic::Variable;
 using CqasmV3xVariables = CqasmV3xAny<CqasmV3xVariable>;
 using CqasmV3xVersion = cqasm_v3x_semantic::Version;
 
-bool is_qubit_variable(const CqasmV3xVariable &variable);
-bool is_bit_variable(const CqasmV3xVariable &variable);
+bool is_qubit_variable(const CqasmV3xVariable& variable);
+bool is_bit_variable(const CqasmV3xVariable& variable);
 
 }  // namespace qx

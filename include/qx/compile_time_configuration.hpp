@@ -3,7 +3,6 @@
 #include <cstddef>  // size_t
 #include <cstdint>  // uint64_t
 
-
 namespace qx::config {
 
 // Epsilon for double comparison
@@ -21,6 +20,6 @@ static constexpr std::size_t MAX_QUBIT_NUMBER = 64;
 
 // Maximum number of bits that can be used.
 // Just for sanity, as we maintain vectors of the size of the number of used bits.
-static constexpr std::size_t MAX_BIT_NUMBER = 1*1024*1024;  // 1 MB
+static constexpr std::size_t MAX_BIT_NUMBER = 1 * 1024 * 1024;  // 1 MB
 
 }  // namespace qx::config

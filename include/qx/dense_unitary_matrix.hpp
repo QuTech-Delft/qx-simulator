@@ -1,12 +1,11 @@
 #pragma once
 
 #include <array>
-#include <cstdint>  // size_t
 #include <complex>  // conj
+#include <cstdint>  // size_t
 #include <stdexcept>  // runtime_error
 
-#include "qx/core.hpp" // QubitIndex, is_null
-
+#include "qx/core.hpp"  // QubitIndex, is_null
 
 namespace qx::core {
 
@@ -26,8 +25,8 @@ public:
         return DenseUnitaryMatrix(m, false);
     }
 
-    explicit constexpr DenseUnitaryMatrix(Matrix const &m)
-        : DenseUnitaryMatrix(m, true) {}
+    explicit constexpr DenseUnitaryMatrix(Matrix const& m)
+    : DenseUnitaryMatrix(m, true) {}
 
     [[nodiscard]] inline constexpr const std::complex<double>& at(std::size_t i, std::size_t j) const {
         return matrix[i][j];
@@ -44,7 +43,7 @@ public:
         return DenseUnitaryMatrix(m, false);
     }
 
-    constexpr bool operator==(DenseUnitaryMatrix<N> const &other) const {
+    constexpr bool operator==(DenseUnitaryMatrix<N> const& other) const {
         for (std::size_t i = 0; i < N; ++i) {
             for (std::size_t j = 0; j < N; ++j) {
                 if (not is_null(at(i, j) - other.at(i, j))) {
@@ -55,7 +54,7 @@ public:
         return true;
     }
 
-    constexpr DenseUnitaryMatrix<N> operator*(DenseUnitaryMatrix<N> const &other) const {
+    constexpr DenseUnitaryMatrix<N> operator*(DenseUnitaryMatrix<N> const& other) const {
         Matrix m;
         for (std::size_t i = 0; i < N; ++i) {
             for (std::size_t j = 0; j < N; ++j) {
@@ -70,8 +69,8 @@ public:
     }
 
 private:
-    constexpr DenseUnitaryMatrix(Matrix const &m, bool is_unitary_check)
-        : matrix(m) {
+    constexpr DenseUnitaryMatrix(Matrix const& m, bool is_unitary_check)
+    : matrix(m) {
         if (is_unitary_check) {
             check_is_unitary();
         }

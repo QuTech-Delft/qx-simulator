@@ -19,6 +19,8 @@ using namespace std::complex_literals;
 #define __CONSTEXPR__
 #endif
 
+// clang-format off
+
 static __CONSTEXPR__ long double PI = std::numbers::pi_v<long double>;
 static __CONSTEXPR__ double SQRT_2 = std::numbers::sqrt2_v<long double>;
 
@@ -126,6 +128,8 @@ static __CONSTEXPR__ UnitaryMatrix<8> TOFFOLI{{{
     {0, 0, 0, 0, 0, 0, 0, 1},
     {0, 0, 0, 0, 0, 0, 1, 0}
 }}};
+
+// clang-format on
 
 #if !defined(_MSC_VER) && !defined(__clang__)
 static_assert(T * T == S);

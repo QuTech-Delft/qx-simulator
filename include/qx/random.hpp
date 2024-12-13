@@ -5,7 +5,6 @@
 #include <cstddef>
 #include <cstdint>
 
-
 namespace qx::random {
 
 void seed(std::uint_fast64_t seed_value);
@@ -20,4 +19,4 @@ double uniform_zero_one_continuous_distribution(double x);
 
 // TODO: add function for Bernoulli and use that in measure.
 
-} // namespace qx::random
+}  // namespace qx::random

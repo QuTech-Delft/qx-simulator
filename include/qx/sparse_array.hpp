@@ -1,9 +1,10 @@
 #pragma once
 
+#include <fmt/ostream.h>
+
 #include <algorithm>  // erase_if, for_each, sort
 #include <complex>
 #include <cstdint>  // size_t, uint64_t
-#include <fmt/ostream.h>
 #include <numeric>  // accumulate
 #include <ostream>
 #include <stdexcept>  // runtime_error
@@ -11,28 +12,26 @@
 #include <utility>  // pair
 #include <vector>
 
-#include "qx/compile_time_configuration.hpp" // ZERO_CYCLE_SIZE
+#include "qx/compile_time_configuration.hpp"  // ZERO_CYCLE_SIZE
 #include "qx/core.hpp"  // BasisVector, Complex, PairBasisVectorStringComplex, QubitIndex
 
 namespace qx::core {
 
 class QuantumState;
 
-
 struct SparseArrayError : public std::runtime_error {
-    explicit SparseArrayError(const std::string &message);
+    explicit SparseArrayError(const std::string& message);
 };
-
 
 struct SparseComplex {
     std::complex<double> value;
 
     SparseComplex() = default;
     explicit SparseComplex(std::complex<double> c);
-    SparseComplex(const SparseComplex &other);
-    SparseComplex(SparseComplex &&other) noexcept;
-    SparseComplex& operator=(const SparseComplex &other);
-    SparseComplex& operator=(SparseComplex &&other) noexcept;
+    SparseComplex(const SparseComplex& other);
+    SparseComplex(SparseComplex&& other) noexcept;
+    SparseComplex& operator=(const SparseComplex& other);
+    SparseComplex& operator=(SparseComplex&& other) noexcept;
 };
 using SparseElement = std::pair<BasisVector, SparseComplex>;
 bool compare_sparse_elements(const SparseElement& lhs, const SparseElement& rhs);
@@ -56,7 +55,7 @@ public:
 
     SparseArray& operator=(MapBasisVectorToSparseComplex map);
     SparseArray& operator*=(double d);
-    SparseComplex& operator[](const BasisVector &index);
+    SparseComplex& operator[](const BasisVector& index);
 
     void clear();
     [[nodiscard]] std::size_t size() const;
@@ -64,19 +63,19 @@ public:
     [[nodiscard]] std::vector<std::complex<double>> to_vector() const;
 
     template <typename T, typename F>
-    T accumulate(T init, F &&f) {
+    T accumulate(T init, F&& f) {
         clean_up_zeros();
         return std::accumulate(data_.begin(), data_.end(), init, f);
     }
 
     template <typename F>
-    void for_each(F &&f) {
+    void for_each(F&& f) {
         clean_up_zeros();
         std::for_each(data_.begin(), data_.end(), f);
     }
 
     template <typename F>
-    void for_each_sorted(F &&f) {
+    void for_each_sorted(F&& f) {
         clean_up_zeros();
         VectorOfSparseElements sorted(data_.begin(), data_.end());
         std::sort(sorted.begin(), sorted.end(), compare_sparse_elements);
@@ -84,20 +83,20 @@ public:
     }
 
     template <typename F>
-    void erase_if(F &&pred) {
+    void erase_if(F&& pred) {
         std::erase_if(data_, pred);
     }
 
     // Let f build a new SparseArray to replace *this, assuming f is linear.
     template <typename F>
-    void apply_linear(F &&f) {
+    void apply_linear(F&& f) {
         // Every ZERO_CYCLE_SIZE gates, cleanup the 0s
         if (zero_counter_ >= config::ZERO_CYCLE_SIZE) {
             clean_up_zeros();
         }
         ++zero_counter_;
         MapBasisVectorToSparseComplex result;
-        for (auto const &[basis_vector, complex_value] : data_) {
+        for (auto const& [basis_vector, complex_value] : data_) {
             f(basis_vector, complex_value, result);
         }
         data_.swap(result);
@@ -111,9 +110,11 @@ private:
     MapBasisVectorToSparseComplex data_;
 };
 
-std::ostream& operator<<(std::ostream &os, const SparseArray &array);
+std::ostream& operator<<(std::ostream& os, const SparseArray& array);
 
 }  // namespace qx::core
 
-template <> struct fmt::formatter<std::complex<double>> : fmt::ostream_formatter {};
-template <> struct fmt::formatter<qx::core::SparseArray> : fmt::ostream_formatter {};
+template <>
+struct fmt::formatter<std::complex<double>> : fmt::ostream_formatter {};
+template <>
+struct fmt::formatter<qx::core::SparseArray> : fmt::ostream_formatter {};

@@ -2,7 +2,6 @@
 
 #include <random>
 
-
 namespace qx::random {
 
 namespace {
@@ -10,23 +9,21 @@ class RandomNumberGenerator {
 public:
     using RandomNumberGeneratorType = std::mt19937_64;
 
-    static RandomNumberGeneratorType &get_instance() {
+    static RandomNumberGeneratorType& get_instance() {
         static RandomNumberGenerator instance;
         return instance.random_number_generator;
     }
 
-    RandomNumberGenerator(RandomNumberGenerator const &) = delete;
+    RandomNumberGenerator(RandomNumberGenerator const&) = delete;
 
-    void operator=(RandomNumberGenerator const &) = delete;
+    void operator=(RandomNumberGenerator const&) = delete;
 
 private:
-    RandomNumberGenerator() {
-        random_number_generator.seed(std::random_device{}());
-    }
+    RandomNumberGenerator() { random_number_generator.seed(std::random_device{}()); }
 
     RandomNumberGeneratorType random_number_generator;
 };
-} // namespace
+}  // namespace
 
 void seed(std::uint_fast64_t seed_value) {
     RandomNumberGenerator::get_instance().seed(seed_value);
@@ -98,4 +95,4 @@ double uniform_zero_one_continuous_distribution(double x) {
     return x;
 }
 
-} // namespace qx::random
+}  // namespace qx::random
