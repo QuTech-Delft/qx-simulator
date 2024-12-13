@@ -48,7 +48,9 @@ TEST_F(QuantumStateTest, apply_hadamard) {
 }
 
 TEST_F(QuantumStateTest, apply_cnot) {
-    QuantumState victim{ 2, 2, { { "10", 0.123 }, { "11", std::sqrt(1 - std::pow(0.123, 2)) } } };
+    QuantumState victim{
+        2, 2, { { "10", 0.123 }, { "11", std::sqrt(1 - std::pow(0.123, 2)) } }
+    };
     check_eq(victim, { 0, 0, 0.123, std::sqrt(1 - std::pow(0.123, 2)) });
     victim.apply<2>(gates::CNOT, std::array<QubitIndex, 2>{ QubitIndex{ 1 }, QubitIndex{ 0 } });
     check_eq(victim, { 0, 0, std::sqrt(1 - std::pow(0.123, 2)), 0.123 });
@@ -57,7 +59,9 @@ TEST_F(QuantumStateTest, apply_cnot) {
 TEST_F(QuantumStateTest, measure_on_non_superposed_state) {
     auto measurement_register = core::MeasurementRegister{ 2 };
     auto bit_measurement_register = core::BitMeasurementRegister{ 2 };
-    QuantumState victim{ 2, 2, { { "10", 0.123 }, { "11", std::sqrt(1 - std::pow(0.123, 2)) } } };
+    QuantumState victim{
+        2, 2, { { "10", 0.123 }, { "11", std::sqrt(1 - std::pow(0.123, 2)) } }
+    };
     victim.apply_measure(
         QubitIndex{ 1 }, BitIndex{ 1 }, []() { return 0.9485; }, measurement_register, bit_measurement_register);
     check_eq(victim, { 0, 0, 0.123, std::sqrt(1 - std::pow(0.123, 2)) });
@@ -72,7 +76,9 @@ TEST_F(QuantumStateTest, measure_on_superposed_state__measured_state_is_0) {
     // 0.994 > 1 - 0.123^2
     auto measurement_register = core::MeasurementRegister{ 2 };
     auto bit_measurement_register = core::BitMeasurementRegister{ 2 };
-    QuantumState victim{ 2, 2, { { "10", 0.123 }, { "11", std::sqrt(1 - std::pow(0.123, 2)) } } };
+    QuantumState victim{
+        2, 2, { { "10", 0.123 }, { "11", std::sqrt(1 - std::pow(0.123, 2)) } }
+    };
     victim.apply_measure(
         QubitIndex{ 0 }, BitIndex{ 0 }, []() { return 0.994; }, measurement_register, bit_measurement_register);
     check_eq(victim, { 0, 0, 1, 0 });  // 10
@@ -84,7 +90,9 @@ TEST_F(QuantumStateTest, measure_on_superposed_state__measured_state_is_1) {
     // 0.254 < 1 - 0.123^2
     auto measurement_register = core::MeasurementRegister{ 2 };
     auto bit_measurement_register = core::BitMeasurementRegister{ 2 };
-    QuantumState victim{ 2, 2, { { "10", 0.123 }, { "11", std::sqrt(1 - std::pow(0.123, 2)) } } };
+    QuantumState victim{
+        2, 2, { { "10", 0.123 }, { "11", std::sqrt(1 - std::pow(0.123, 2)) } }
+    };
     victim.apply_measure(
         QubitIndex{ 0 }, BitIndex{ 0 }, []() { return 0.254; }, measurement_register, bit_measurement_register);
     check_eq(victim, { 0, 0, 0, 1 });  // 11
@@ -92,13 +100,17 @@ TEST_F(QuantumStateTest, measure_on_superposed_state__measured_state_is_1) {
 }
 
 TEST_F(QuantumStateTest, reset) {
-    QuantumState victim{ 2, 2, { { "00", 0.123 }, { "11", std::sqrt(1 - std::pow(0.123, 2)) } } };
+    QuantumState victim{
+        2, 2, { { "00", 0.123 }, { "11", std::sqrt(1 - std::pow(0.123, 2)) } }
+    };
     victim.apply_reset(QubitIndex{ 0 });
     check_eq(victim, { 0.123, 0, std::sqrt(1 - std::pow(0.123, 2)), 0 });  // 00 and 10
 }
 
 TEST_F(QuantumStateTest, reset_all) {
-    QuantumState victim{ 2, 2, { { "00", 0.123 }, { "11", std::sqrt(1 - std::pow(0.123, 2)) } } };
+    QuantumState victim{
+        2, 2, { { "00", 0.123 }, { "11", std::sqrt(1 - std::pow(0.123, 2)) } }
+    };
     victim.apply_reset_all();
     check_eq(victim, QuantumState{ 2, 2 }.to_vector());
 }

@@ -36,8 +36,10 @@ CNOT q[0], q[1]
     // Expected q state should be |00>+|11>
     // State is |00>+|11> after creating the Bell state
     EXPECT_EQ(actual.state,
-        (SimulationResult::State{ { "00", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } },
-            { "11", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } } }));
+        (SimulationResult::State{
+            { "00", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } },
+            { "11", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } }
+    }));
 }
 
 TEST_F(IntegrationTest, range_operands) {
@@ -52,8 +54,10 @@ CNOT q[0:2], q[3:5]
     auto actual = run_from_string(cqasm, iterations);
 
     // Expected q state should be |111111>
-    EXPECT_EQ(
-        actual.state, (SimulationResult::State{ { "111111", core::Complex{ .real = 1, .imag = 0, .norm = 1 } } }));
+    EXPECT_EQ(actual.state,
+        (SimulationResult::State{
+            { "111111", core::Complex{ .real = 1, .imag = 0, .norm = 1 } }
+    }));
 }
 
 TEST_F(IntegrationTest, too_many_qubits) {
@@ -102,8 +106,10 @@ I q[1]
     // State is |00>+|11> after creating the Bell state
     // Identity gates do not modify the state of the qubits
     EXPECT_EQ(actual.state,
-        (SimulationResult::State{ { "00", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } },
-            { "11", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } } }));
+        (SimulationResult::State{
+            { "00", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } },
+            { "11", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } }
+    }));
 }
 
 TEST_F(IntegrationTest, measure) {
@@ -260,8 +266,10 @@ reset q[0]
     // State is |00>+|11> after creating the Bell state
     // Then reset sets q to |0>, leaving the state as |00>+|10>
     EXPECT_EQ(actual.state,
-        (SimulationResult::State{ { "00", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } },
-            { "10", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } } }));
+        (SimulationResult::State{
+            { "00", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } },
+            { "10", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } }
+    }));
 }
 
 TEST_F(IntegrationTest, reset__bell_state_then_reset_and_measure) {
