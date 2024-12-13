@@ -25,9 +25,6 @@ RegisterManagerError::RegisterManagerError(const std::string &message)
 //----------//
 
 Register::Register(const TreeOne<CqasmV3xProgram> &program, auto &&is_of_type, std::size_t max_register_size) {
-    if (program.empty()) {
-        throw RegisterManagerError{ "null pointer to program" };
-    }
     auto &&variables = program->variables.get_vec()
        | ranges::views::filter(
             [&](const TreeOne<CqasmV3xVariable> &variable) { return is_of_type(*variable); });

@@ -64,16 +64,6 @@ TEST_F(RegisterManagerTest, bit_register_size_exceeds_maximum_allowed) {
     );
 }
 
-TEST_F(RegisterManagerTest, create_instance_with_null_program) {
-    EXPECT_THAT(
-        [this]() {
-            RegisterManager::create_instance(null_program);
-            [[maybe_unused]] const auto &unused = RegisterManager::get_instance();
-        },
-        ::testing::ThrowsMessage<std::runtime_error>("null pointer to program")
-    );
-}
-
 TEST_F(RegisterManagerTest, get_instance_before_create_instance) {
     EXPECT_THAT(
         []() { [[maybe_unused]] const auto &unused = RegisterManager::get_instance(); },

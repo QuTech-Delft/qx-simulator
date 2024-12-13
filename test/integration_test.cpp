@@ -81,7 +81,7 @@ H q[0
     auto message = std::string{ std::get_if<SimulationError>(&result)->what() };
     EXPECT_TRUE(std::holds_alternative<SimulationError>(result));
     EXPECT_THAT(message, ::testing::StartsWith("""\
-Cannot parse and analyze cQASM v3:\n\
+cQASM v3 analyzer returned errors:\n\
 Error at <unknown file name>:6:6..7: missing ']' at '\\n'"""));
 }
 
