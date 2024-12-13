@@ -121,7 +121,7 @@ public:
 
 private:
     template <typename F>
-    void forAllNonZeroStates(F &&f) {
+    void for_all_non_zero_states(F&& f) {
         state.for_each([&f](auto const &kv) {
             f(kv.first, kv.second);
         });

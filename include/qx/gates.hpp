@@ -1,5 +1,7 @@
 #pragma once
 
+#include <numbers>
+
 #include "qx/dense_unitary_matrix.hpp"
 
 namespace qx::gates {
@@ -17,8 +19,8 @@ using namespace std::complex_literals;
 #define __CONSTEXPR__
 #endif
 
-static __CONSTEXPR__ long double PI = 3.141592653589793238462643383279502884L;
-static __CONSTEXPR__ double SQRT_2 = 1.414213562373095048801688724209698078L;
+static __CONSTEXPR__ long double PI = std::numbers::pi_v<long double>;
+static __CONSTEXPR__ double SQRT_2 = std::numbers::sqrt2_v<long double>;
 
 static __CONSTEXPR__ UnitaryMatrix<2> IDENTITY = UnitaryMatrix<2>::identity();
 

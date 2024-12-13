@@ -135,19 +135,18 @@ void QuantumState::update_data_after_measurement(QubitIndex qubit_index, bool me
 //             1  0: ( 0.7,    0)
 //             1  1: (   0,    0)  <-- 11 is reset to 10, old 11 amplitude added to 10, 11 amplitude set to 0
 void QuantumState::update_data_after_reset(QubitIndex qubit_index) {
-    auto newData = data_;
-    data_.for_each([qubit_index, &newData](auto const &kv) {
+    auto new_data = data_;
+    data_.for_each([qubit_index, &new_data](auto const& kv) {
         auto const &[basis_vector, amplitude] = kv;
         if (basis_vector.test(qubit_index.value)) {
             auto basis_vector_after_reset = basis_vector;
             basis_vector_after_reset.set(qubit_index.value, false);
-            newData[basis_vector_after_reset].value = std::sqrt(
-                std::norm(newData[basis_vector_after_reset].value) + std::norm(amplitude.value)
-            );
-            newData[basis_vector].value = 0;
+            new_data[basis_vector_after_reset].value =
+                std::sqrt(std::norm(new_data[basis_vector_after_reset].value) + std::norm(amplitude.value));
+            new_data[basis_vector].value = 0;
         }
     });
-    data_ = std::move(newData);
+    data_ = std::move(new_data);
 }
 
 // reset does not modify the measurement register

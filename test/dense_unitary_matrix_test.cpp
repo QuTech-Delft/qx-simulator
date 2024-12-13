@@ -37,11 +37,15 @@ TEST(dense_unitary_matrix_test, reject_non_unitary_matrices) {
 }
 
 TEST(dense_unitary_matrix_test, dagger) {
-    DenseUnitaryMatrix<2> m({{{1 / std::sqrt(2), 1 / std::sqrt(2)},
-                              {1i / std::sqrt(2), -1i / std::sqrt(2)}}});
+    DenseUnitaryMatrix<2> m({
+        { { 1 / std::numbers::sqrt2, 1 / std::numbers::sqrt2 },
+         { 1i / std::numbers::sqrt2, -1i / std::numbers::sqrt2 } }
+    });
 
-    DenseUnitaryMatrix<2> m_dag({{{1 / std::sqrt(2), -1i / std::sqrt(2)},
-                                 {1 / std::sqrt(2), 1i / std::sqrt(2)}}});
+    DenseUnitaryMatrix<2> m_dag({
+        { { 1 / std::numbers::sqrt2, -1i / std::numbers::sqrt2 },
+         { 1 / std::numbers::sqrt2, 1i / std::numbers::sqrt2 } }
+    });
 
     EXPECT_EQ(m.dagger(), m_dag);
 }

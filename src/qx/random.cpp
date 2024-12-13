@@ -28,8 +28,8 @@ private:
 };
 } // namespace
 
-void seed(std::uint_fast64_t seedValue) {
-    RandomNumberGenerator::get_instance().seed(seedValue);
+void seed(std::uint_fast64_t seed_value) {
+    RandomNumberGenerator::get_instance().seed(seed_value);
 }
 
 double random_zero_one_double() {

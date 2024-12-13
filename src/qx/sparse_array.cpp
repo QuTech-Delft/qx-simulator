@@ -39,7 +39,7 @@ SparseComplex& SparseComplex::operator=(SparseComplex &&other) noexcept {
     return *this;
 }
 
-bool compareSparseElements(const SparseElement &lhs, const SparseElement &rhs) {
+bool compare_sparse_elements(const SparseElement &lhs, const SparseElement &rhs) {
     return lhs.first < rhs.first;
 }
 

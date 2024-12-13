@@ -120,7 +120,7 @@ SimulationResult SimulationIterationAccumulator::get_simulation_result() {
         RegisterManager::get_instance().get_bit_register()
     };
 
-    forAllNonZeroStates(
+    for_all_non_zero_states(
         [this, &simulation_result](core::BasisVector const& superposed_state, core::SparseComplex const& sparse_complex) {
             auto state_string = core::to_substring(superposed_state, state.get_number_of_qubits());
             auto c = sparse_complex.value;

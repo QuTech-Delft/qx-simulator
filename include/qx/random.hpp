@@ -8,7 +8,7 @@
 
 namespace qx::random {
 
-void seed(std::uint_fast64_t seedValue);
+void seed(std::uint_fast64_t seed_value);
 
 double random_zero_one_double();
 

@@ -1,6 +1,8 @@
 Checks: |
   -*,
   clang-analyzer-*,
+  # boost/dynamic_bitset/dynamic_bitset.hpp: warning: Left shift by '64' overflows the capacity of 'result_type'
+  -clang-analyzer-core.BitwiseShift
   clang-diagnostic-*,
   misc-*,
   -misc-const-correctness,
@@ -17,25 +19,21 @@ Checks: |
 CheckOptions:
   - key: readability-identifier-naming.ClassCase
     value: CamelCase
-  - key: readability-identifier-naming.ClassIgnoredRegexp
-    value: "bf_cp|f_cp|uf_cp"
   - key: readability-identifier-naming.EnumCase
     value: CamelCase
   - key: readability-identifier-naming.FunctionCase
     value: lower_case
   - key: readability-identifier-naming.FunctionIgnoredRegexp
-    value: ".*_|SetUp|MOCK_METHOD|TEST|TEST_F|TestBody\
-      |DescribeNegationTo|DescribeTo|MatchAndExplain|ValuesEq\
-      |addErrorListener|copyNodeAnnotation|expandNodeAnnotation|setNodeAnnotation|syntaxError\
-      |visit.*"
+    value: "CR|RX|RY|RZ"
+  - key: readability-identifier-naming.VariableIgnoredRegexp
+    value: "EPSILON|MAX_BIT_NUMBER|MAX_QUBIT_NUMBER|OUTPUT_DECIMALS|PI|SQRT_2|ZERO_CYCLE_SIZE\
+      |CNOT|CZ|H|IDENTITY|MX90|MY90|MZ90|S|SDAG|SWAP|T|TDAG|TOFFOLI|X|X90|Y|Y90|Z|Z90"
   - key: readability-identifier-naming.MemberCase
     value: lower_case
   - key: readability-identifier-naming.MemberIgnoredRegexp
     value: ".*_"
   - key: readability-identifier-naming.ParameterCase
     value: lower_case
-  - key: readability-identifier-naming.ParameterIgnoredRegexp
-    value: ".*_|AnalysisResult|ParseResult"
   - key: readability-identifier-naming.UnionCase
     value: CamelCase
   - key: readability-identifier-naming.VariableCase

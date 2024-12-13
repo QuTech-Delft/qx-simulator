@@ -65,6 +65,7 @@ set(
 )
 mark_as_advanced(QX_PYTHON_EXT)
 
+
 #=============================================================================#
 # CMake weirdness and compatibility                                           #
 #=============================================================================#
@@ -104,6 +105,9 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 # but only the .dll is generated when there are no exported symbols.
 # This sort of fixes that (https://stackoverflow.com/questions/1941443)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+
+# Generate compile_commands.json build file for clang-tidy
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 
 #=============================================================================#
@@ -148,7 +152,6 @@ target_include_directories(qx PUBLIC
 if(CMAKE_COMPILER_IS_GNUCXX)
     target_compile_options(qx PRIVATE
         -Wall -Wextra -Werror -Wfatal-errors
-        -Wno-error=restrict
     )
 elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     target_compile_options(qx PRIVATE

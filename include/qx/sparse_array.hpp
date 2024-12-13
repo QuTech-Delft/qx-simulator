@@ -35,8 +35,7 @@ struct SparseComplex {
     SparseComplex& operator=(SparseComplex &&other) noexcept;
 };
 using SparseElement = std::pair<BasisVector, SparseComplex>;
-bool compareSparseElements(const SparseElement &lhs, const SparseElement &rhs);
-
+bool compare_sparse_elements(const SparseElement& lhs, const SparseElement& rhs);
 
 class SparseArray {
 public:
@@ -80,7 +79,7 @@ public:
     void for_each_sorted(F &&f) {
         clean_up_zeros();
         VectorOfSparseElements sorted(data_.begin(), data_.end());
-        std::sort(sorted.begin(), sorted.end(), compareSparseElements);
+        std::sort(sorted.begin(), sorted.end(), compare_sparse_elements);
         std::for_each(sorted.begin(), sorted.end(), f);
     }
 
