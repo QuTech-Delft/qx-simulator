@@ -15,12 +15,15 @@ namespace qx {
 // SimulationResult //
 //------------------//
 
-SimulationResult::SimulationResult(std::uint64_t shots_done, std::uint64_t shots_requested,
-                                   const QubitRegister &qubit_register, const BitRegister &bit_register)
+SimulationResult::SimulationResult(
+    std::uint64_t shots_done,
+    std::uint64_t shots_requested,
+    std::shared_ptr<QubitRegister> qubit_register,
+    std::shared_ptr<BitRegister> bit_register)
     : shots_requested{ shots_requested }
     , shots_done{ shots_done }
-    , qubit_register{ qubit_register }
-    , bit_register{ bit_register }
+    , qubit_register{ *qubit_register }
+    , bit_register{ *bit_register }
 {}
 
 std::uint8_t SimulationResult::get_qubit_state(state_string_t const& state_string, std::string const& qubit_variable_name,

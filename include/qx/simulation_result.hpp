@@ -61,8 +61,11 @@ struct SimulationResult {
     using State = std::vector<SuperposedState>;
 
 public:
-    SimulationResult(std::uint64_t shots_done, std::uint64_t shots_requested,
-                     const QubitRegister &qubit_register, const BitRegister &bit_register);
+    SimulationResult(
+        std::uint64_t shots_done,
+        std::uint64_t shots_requested,
+        std::shared_ptr<QubitRegister> qubit_register,
+        std::shared_ptr<BitRegister> bit_register);
 
     // Given a state string from the State vector, a qubit variable name, and an optional sub index,
     // return the value of that qubit in the state string

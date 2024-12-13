@@ -119,8 +119,8 @@ public:
     [[nodiscard]] Index get_bit_index(const VariableName &name, const std::optional<Index> &sub_index) const;
     [[nodiscard]] VariableName get_qubit_variable_name(const Index &index) const;
     [[nodiscard]] VariableName get_bit_variable_name(const Index &index) const;
-    [[nodiscard]] QubitRegister const& get_qubit_register() const;
-    [[nodiscard]] BitRegister const& get_bit_register() const;
+    [[nodiscard]] std::shared_ptr<QubitRegister> get_qubit_register() const;
+    [[nodiscard]] std::shared_ptr<BitRegister> get_bit_register() const;
 };
 
 

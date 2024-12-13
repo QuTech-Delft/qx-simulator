@@ -165,12 +165,12 @@ BitRegister::~BitRegister() = default;
     return bit_register_->at(index);
 }
 
-[[nodiscard]] QubitRegister const& RegisterManager::get_qubit_register() const {
-    return *qubit_register_;
+[[nodiscard]] std::shared_ptr<QubitRegister> RegisterManager::get_qubit_register() const {
+    return qubit_register_;
 }
 
-[[nodiscard]] BitRegister const& RegisterManager::get_bit_register() const {
-    return *bit_register_;
+[[nodiscard]] std::shared_ptr<BitRegister> RegisterManager::get_bit_register() const {
+    return bit_register_;
 }
 
 std::ostream& operator<<(std::ostream& os, Range const& range) {
