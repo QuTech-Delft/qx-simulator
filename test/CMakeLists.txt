@@ -6,13 +6,14 @@ add_executable(${PROJECT_NAME}_test)
 
 # Test sources
 target_sources(${PROJECT_NAME}_test PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}/dense_unitary_matrix_test.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/error_models_test.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/integration_test.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/BitsetTest.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/DenseUnitaryMatrixTest.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/ErrorModelsTest.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/IntegrationTest.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/QuantumStateTest.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/SparseArrayTest.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/quantum_state_test.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/random_test.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/register_manager.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/sparse_array_test.cpp"
 )
 
 target_compile_features(${PROJECT_NAME}_test PRIVATE

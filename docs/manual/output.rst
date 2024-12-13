@@ -88,7 +88,7 @@ since then the quantum state varies per iteration. For example:
 
 
 When simulating this circuit, the final quantum state in the ``State`` section is non-deterministic.
-However, the aggregated measurement register is very useful and the ratios like ``measurements["001"] / shotsDone``
+However, the aggregated measurement register is very useful and the ratios like ``measurements["001"] / shots_done``
 converge as the number of iterations grow.
 For 100 iterations:
 
