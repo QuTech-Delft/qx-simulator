@@ -30,7 +30,7 @@ void CircuitBuilder::visit_node(CqasmV3xNode &) {
 
 void CircuitBuilder::visit_instruction(CqasmV3xInstruction &instruction) {
     auto &name = instruction.instruction_ref->name;
-    auto operands_helper = OperandsHelper{ instruction, circuit_.register_manager };
+    auto operands_helper = OperandsHelper{ instruction };
     
     if (name == "TOFFOLI") {
         visit_gate_instruction<3>(

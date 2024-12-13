@@ -6,6 +6,7 @@
 
 #include <cstdint>  // size_t
 #include <fmt/ostream.h>
+#include <memory>  // shared_ptr
 #include <optional>
 #include <string>
 #include <unordered_map>
@@ -39,12 +40,21 @@ struct Range {
 };
 
 
+//----------------------//
+// RegisterManagerError //
+//----------------------//
+
 struct RegisterManagerError : public SimulationError {
     explicit RegisterManagerError(const std::string &message);
 };
 
 using VariableNameToRangeMapT = std::unordered_map<VariableName, Range>;
 using IndexToVariableNameMapT = std::vector<VariableName>;
+
+
+//----------//
+// Register //
+//----------//
 
 class Register {
     std::size_t register_size_;
@@ -61,12 +71,20 @@ public:
 };
 
 
+//---------------//
+// QubitRegister //
+//---------------//
+
 class QubitRegister : public Register {
 public:
     explicit QubitRegister(const TreeOne<CqasmV3xProgram> &program);
     ~QubitRegister() override;
 };
 
+
+//-------------//
+// BitRegister //
+//-------------//
 
 class BitRegister : public Register {
 public:
@@ -75,16 +93,24 @@ public:
 };
 
 
+//-----------------//
+// RegisterManager //
+//-----------------//
+
 class RegisterManager {
-    QubitRegister qubit_register_;
-    BitRegister bit_register_;
+    std::shared_ptr<QubitRegister> qubit_register_;
+    std::shared_ptr<BitRegister> bit_register_;
+
+    RegisterManager() = default;
+    [[nodiscard]] static RegisterManager& get_instance_impl();
 public:
     RegisterManager(const RegisterManager&) = delete;
     RegisterManager(RegisterManager&&) noexcept = delete;
     RegisterManager& operator=(const RegisterManager&) = default;
     RegisterManager& operator=(RegisterManager&&) noexcept = default;
 public:
-    explicit RegisterManager(const TreeOne<CqasmV3xProgram> &program);
+    static void create_instance(const TreeOne<CqasmV3xProgram> &program);
+    [[nodiscard]] static RegisterManager& get_instance();
     [[nodiscard]] std::size_t get_qubit_register_size() const;
     [[nodiscard]] std::size_t get_bit_register_size() const;
     [[nodiscard]] Range get_qubit_range(const VariableName &name) const;
@@ -93,8 +119,8 @@ public:
     [[nodiscard]] Index get_bit_index(const VariableName &name, const std::optional<Index> &sub_index) const;
     [[nodiscard]] VariableName get_qubit_variable_name(const Index &index) const;
     [[nodiscard]] VariableName get_bit_variable_name(const Index &index) const;
-    [[nodiscard]] QubitRegister const& get_qubit_register() const;
-    [[nodiscard]] BitRegister const& get_bit_register() const;
+    [[nodiscard]] std::shared_ptr<QubitRegister> get_qubit_register() const;
+    [[nodiscard]] std::shared_ptr<BitRegister> get_bit_register() const;
 };
 
 

@@ -1,5 +1,6 @@
-#include "qx/core.hpp" // BasisVector
+#include "qx/core.hpp"
 #include "qx/quantum_state.hpp"
+#include "qx/register_manager.hpp"
 #include "qx/simulation_result.hpp"
 
 #include <cstdint>  // uint8_t
@@ -14,12 +15,15 @@ namespace qx {
 // SimulationResult //
 //------------------//
 
-SimulationResult::SimulationResult(std::uint64_t requestedShots, std::uint64_t doneShots,
-                                   RegisterManager const& register_manager)
-    : shots_requested{ requestedShots }
-    , shots_done{ doneShots }
-    , qubit_register{ register_manager.get_qubit_register() }
-    , bit_register{ register_manager.get_bit_register() }
+SimulationResult::SimulationResult(
+    std::uint64_t shots_done,
+    std::uint64_t shots_requested,
+    std::shared_ptr<QubitRegister> qubit_register,
+    std::shared_ptr<BitRegister> bit_register)
+    : shots_requested{ shots_requested }
+    , shots_done{ shots_done }
+    , qubit_register{ *qubit_register }
+    , bit_register{ *bit_register }
 {}
 
 std::uint8_t SimulationResult::get_qubit_state(state_string_t const& state_string, std::string const& qubit_variable_name,
@@ -72,10 +76,13 @@ std::ostream &operator<<(std::ostream &os, const SimulationResult &simulation_re
 // SimulationIterationContext //
 //----------------------------//
 
-SimulationIterationContext::SimulationIterationContext(RegisterManager const& register_manager)
-    : state{ register_manager.get_qubit_register_size(), register_manager.get_bit_register_size() }
-    , measurement_register{ register_manager.get_qubit_register_size() }
-    , bit_measurement_register{ register_manager.get_bit_register_size() }
+SimulationIterationContext::SimulationIterationContext()
+    : state{
+          RegisterManager::get_instance().get_qubit_register_size(),
+          RegisterManager::get_instance().get_bit_register_size()
+      }
+    , measurement_register{ RegisterManager::get_instance().get_qubit_register_size() }
+    , bit_measurement_register{ RegisterManager::get_instance().get_bit_register_size() }
 {}
 
 
@@ -89,7 +96,7 @@ void SimulationIterationAccumulator::add(SimulationIterationContext const& conte
     append_bit_measurement(context.bit_measurement_register);
 }
 
-void SimulationIterationAccumulator::append_measurement(core::BasisVector const& measurement) {
+void SimulationIterationAccumulator::append_measurement(core::MeasurementRegister const& measurement) {
     assert(measurements.size() < (static_cast<size_t>(1) << state.get_number_of_qubits()));
     auto measured_state_string{ core::to_substring(measurement, state.get_number_of_qubits()) };
     measurements[measured_state_string]++;
@@ -103,10 +110,15 @@ void SimulationIterationAccumulator::append_bit_measurement(core::BitMeasurement
     bit_measurements_count++;
 }
 
-SimulationResult SimulationIterationAccumulator::get_simulation_result(RegisterManager const& register_manager) {
+SimulationResult SimulationIterationAccumulator::get_simulation_result() {
     assert(measurements_count > 0);
 
-    SimulationResult simulation_result{ measurements_count, measurements_count, register_manager };
+    SimulationResult simulation_result{
+        measurements_count,
+        measurements_count,
+        RegisterManager::get_instance().get_qubit_register(),
+        RegisterManager::get_instance().get_bit_register()
+    };
 
     forAllNonZeroStates(
         [this, &simulation_result](core::BasisVector const& superposed_state, core::SparseComplex const& sparse_complex) {

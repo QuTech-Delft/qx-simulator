@@ -33,12 +33,14 @@ CqasmV3xAnalysisResult parse_cqasm_v3x_string(std::string const &s) {
 }
 
 std::variant<TreeOne<CqasmV3xProgram>, SimulationError> get_analysis_result(CqasmV3xAnalysisResult const& analysis_result) {
-    if (!analysis_result.errors.empty()) {
-        auto error = fmt::format("Cannot parse and analyze cQASM v3:\n{}", fmt::join(analysis_result.errors, "\n"));
-        return SimulationError{ error };
+    auto const& errors = analysis_result.errors;
+    if (!errors.empty()) {
+        return SimulationError{ fmt::format("cQASM v3 analyzer returned errors:\n{}", fmt::join(errors, "\n")) };
     }
-    auto program = analysis_result.root;
-    assert(!program.empty());
+    auto const& program = analysis_result.root;
+    if (program.empty()) {
+        return SimulationError{ "cQASM v3 analyzer returned a null program" };
+    }
     return program;
 }
 
@@ -51,26 +53,25 @@ std::variant<std::monostate, SimulationResult, SimulationError> execute(
     if (auto* error = std::get_if<SimulationError>(&analysis_result)) {
         return *error;
     }
-    auto program = std::get<TreeOne<CqasmV3xProgram>>(analysis_result);
-    assert(!program.empty());
+    auto const& program = std::get<TreeOne<CqasmV3xProgram>>(analysis_result);
 
-    if (iterations <= 0) {
-        return SimulationError{ "Invalid number of iterations" };
+    if (iterations == 0) {
+        return SimulationError{ "invalid number of iterations" };
     }
     if (seed) {
         random::seed(*seed);
     }
 
     try {
-        auto register_manager = RegisterManager{ program };
-        auto circuit = Circuit{ program, register_manager };
+        RegisterManager::create_instance(program);
+        auto circuit = Circuit{ program };
         auto simulation_iteration_accumulator = ranges::accumulate(
             ranges::views::iota(static_cast<size_t>(0), iterations),
             SimulationIterationAccumulator{}, [&circuit](auto &acc, auto) {
                 acc.add(circuit.execute(std::monostate{}));
                 return acc;
             });
-        return simulation_iteration_accumulator.get_simulation_result(register_manager);
+        return simulation_iteration_accumulator.get_simulation_result();
     } catch (const SimulationError &err) {
         return err;
     }
@@ -84,12 +85,11 @@ std::variant<std::monostate, SimulationResult, SimulationError> execute_string(
     std::optional<std::uint_fast64_t> seed,
     std::string cqasm_version) {
 
-    if (cqasm_version == "3.0") {
-        auto analysis_result = parse_cqasm_v3x_string(s);
-        return execute(analysis_result, iterations, seed);
-    } else {
-        return SimulationError{ fmt::format("Unknown cqasm version: {}", cqasm_version) };
+    if (cqasm_version != "3.0") {
+        return SimulationError{ fmt::format("unknown cQASM version: {}", cqasm_version) };
     }
+    auto analysis_result = parse_cqasm_v3x_string(s);
+    return execute(analysis_result, iterations, seed);
 }
 
 std::variant<std::monostate, SimulationResult, SimulationError> execute_file(
@@ -98,12 +98,11 @@ std::variant<std::monostate, SimulationResult, SimulationError> execute_file(
     std::optional<std::uint_fast64_t> seed,
     std::string cqasm_version) {
 
-    if (cqasm_version == "3.0") {
-        auto analysis_result = parse_cqasm_v3x_file(file_path);
-        return execute(analysis_result, iterations, seed);
-    } else {
-        return SimulationError{ fmt::format("Unknown cqasm version: {}", cqasm_version) };
+    if (cqasm_version != "3.0") {
+        return SimulationError{ fmt::format("unknown cQASM version: {}", cqasm_version) };
     }
+    auto analysis_result = parse_cqasm_v3x_file(file_path);
+    return execute(analysis_result, iterations, seed);
 }
 
 } // namespace qx

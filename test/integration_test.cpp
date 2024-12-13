@@ -10,9 +10,8 @@ namespace qx {
 
 class IntegrationTest : public ::testing::Test {
 public:
-    static SimulationResult run_from_string(
-        const std::string &s, std::uint64_t iterations = 1, std::string cqasm_version = "3.0") {
-
+    static SimulationResult run_from_string(const std::string &s, std::uint64_t iterations = 1,
+                                            std::string cqasm_version = "3.0") {
         auto result = execute_string(s, iterations, std::nullopt, std::move(cqasm_version));
         EXPECT_TRUE(std::holds_alternative<SimulationResult>(result));
         return *std::get_if<SimulationResult>(&result);
@@ -82,7 +81,7 @@ H q[0
     auto message = std::string{ std::get_if<SimulationError>(&result)->what() };
     EXPECT_TRUE(std::holds_alternative<SimulationError>(result));
     EXPECT_THAT(message, ::testing::StartsWith("""\
-Cannot parse and analyze cQASM v3:\n\
+cQASM v3 analyzer returned errors:\n\
 Error at <unknown file name>:6:6..7: missing ']' at '\\n'"""));
 }
 

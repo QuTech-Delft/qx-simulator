@@ -2,7 +2,6 @@
 
 #include "qx/circuit.hpp"
 #include "qx/cqasm_v3x.hpp"
-#include "qx/register_manager.hpp"
 #include "qx/simulation_error.hpp"
 
 #include <algorithm>  // for_each

@@ -12,6 +12,7 @@ target_sources(${PROJECT_NAME}_test PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/quantum_state_test.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/random_test.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/register_manager.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/sparse_array_test.cpp"
 )
 

@@ -29,7 +29,7 @@ b = measure q
 
         self.assertIsInstance(simulation_error, qxelarator.SimulationError)
         self.assertTrue(simulation_error.message.startswith("""\
-Cannot parse and analyze cQASM v3:
+cQASM v3 analyzer returned errors:
 Error at <unknown file name>:6:5..6: extraneous input '\\n'\
 """))
 

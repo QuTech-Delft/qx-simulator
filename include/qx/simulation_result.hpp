@@ -1,7 +1,7 @@
 #pragma once
 
 #include "qx/compile_time_configuration.hpp"
-#include "qx/core.hpp" // BasisVector, BitMeasurementRegister Complex
+#include "qx/core.hpp"
 #include "qx/quantum_state.hpp"
 #include "qx/register_manager.hpp"
 
@@ -61,7 +61,11 @@ struct SimulationResult {
     using State = std::vector<SuperposedState>;
 
 public:
-    SimulationResult(std::uint64_t requestedShots, std::uint64_t doneShots, RegisterManager const& register_manager);
+    SimulationResult(
+        std::uint64_t shots_done,
+        std::uint64_t shots_requested,
+        std::shared_ptr<QubitRegister> qubit_register,
+        std::shared_ptr<BitRegister> bit_register);
 
     // Given a state string from the State vector, a qubit variable name, and an optional sub index,
     // return the value of that qubit in the state string
@@ -97,10 +101,10 @@ std::ostream &operator<<(std::ostream &os, const SimulationResult &result);
 
 struct SimulationIterationContext {
     core::QuantumState state;
-    core::BasisVector measurement_register;
+    core::MeasurementRegister measurement_register;
     core::BitMeasurementRegister bit_measurement_register;
 
-    explicit SimulationIterationContext(RegisterManager const& register_manager);
+    explicit SimulationIterationContext();
 };
 
 
@@ -111,9 +115,9 @@ struct SimulationIterationContext {
 class SimulationIterationAccumulator {
 public:
     void add(const SimulationIterationContext &context);
-    void append_measurement(core::BasisVector const& measurement);
+    void append_measurement(core::MeasurementRegister const& measurement);
     void append_bit_measurement(core::BitMeasurementRegister const& bit_measurement);
-    SimulationResult get_simulation_result(RegisterManager const& register_manager);
+    SimulationResult get_simulation_result();
 
 private:
     template <typename F>
