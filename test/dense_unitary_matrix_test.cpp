@@ -3,6 +3,7 @@
 #include <gmock/gmock.h>  // ThrowsMessage
 #include <gtest/gtest.h>
 
+#include <numbers>
 #include <stdexcept>  // runtime_error
 
 namespace qx::core {

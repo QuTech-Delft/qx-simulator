@@ -3,6 +3,7 @@
 #include <gtest/gtest.h>
 
 #include <algorithm>  // count_if
+#include <numbers>
 
 #include "qx/core.hpp"
 #include "qx/gates.hpp"
