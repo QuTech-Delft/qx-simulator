@@ -1,9 +1,9 @@
 #include "qx/simulator.hpp"
-#include "qx/version.hpp"
 
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 
+#include "qx/version.hpp"
 
 static constexpr char const* banner = R"(
 ===============================================================================================
@@ -16,14 +16,12 @@ static constexpr char const* banner = R"(
                      <   QuTech - TU Delft   |   Version {} ({})   >
 ===============================================================================================)";
 
-
 void print_banner() {
     fmt::print(banner, QX_VERSION, QX_RELEASE_YEAR);
     fmt::print("\n\n");
 }
 
-
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
     std::string file_path;
     size_t iterations = 1;
     print_banner();

@@ -1,13 +1,14 @@
 #pragma once
 
+#include <fmt/ostream.h>
+
 #include <boost/dynamic_bitset/dynamic_bitset.hpp>
+#include <complex>
 #include <cstdint>  // size_t, uint32_t
 #include <cstdlib>  // abs
-#include <complex>
-#include <fmt/ostream.h>
 #include <string>
 
-#include "qx/compile_time_configuration.hpp" // EPSILON
+#include "qx/compile_time_configuration.hpp"  // EPSILON
 
 namespace qx::core {
 
@@ -15,12 +16,11 @@ struct Complex {
     double real = 0;
     double imag = 0;
     double norm = 0;
-    bool operator==(const Complex &other) const {
-        return std::abs(real - other.real) < config::EPSILON &&
-               std::abs(imag - other.imag) < config::EPSILON &&
-               std::abs(norm - other.norm) < config::EPSILON;
+    bool operator==(const Complex& other) const {
+        return std::abs(real - other.real) < config::EPSILON && std::abs(imag - other.imag) < config::EPSILON &&
+            std::abs(norm - other.norm) < config::EPSILON;
     }
-    auto operator<=>(const Complex &other) const = default;
+    auto operator<=>(const Complex& other) const = default;
 };
 
 struct QubitIndex {
@@ -38,9 +38,8 @@ using PairBasisVectorStringComplex = std::pair<std::string, std::complex<double>
 
 [[nodiscard]] inline constexpr bool is_not_null(std::complex<double> c) {
 #if defined(_MSC_VER)
-    return
-        c.real() > config::EPSILON || -c.real() > config::EPSILON ||
-        c.imag() > config::EPSILON || -c.imag() > config::EPSILON;
+    return c.real() > config::EPSILON || -c.real() > config::EPSILON || c.imag() > config::EPSILON ||
+        -c.imag() > config::EPSILON;
 #else
     return std::abs(c.real()) > config::EPSILON || std::abs(c.imag()) > config::EPSILON;
 #endif
@@ -60,4 +59,5 @@ using PairBasisVectorStringComplex = std::pair<std::string, std::complex<double>
 
 }  // namespace qx::core
 
-template <> struct fmt::formatter< boost::dynamic_bitset<uint32_t>> : fmt::ostream_formatter {};
+template <>
+struct fmt::formatter<boost::dynamic_bitset<uint32_t>> : fmt::ostream_formatter {};

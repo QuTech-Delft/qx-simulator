@@ -1,0 +1,46 @@
+Checks: |
+  -*,
+  clang-analyzer-*,
+  # boost/dynamic_bitset/dynamic_bitset.hpp: warning: Left shift by '64' overflows the capacity of 'result_type'
+  -clang-analyzer-core.BitwiseShift
+  clang-diagnostic-*,
+  misc-*,
+  -misc-const-correctness,
+  -misc-include-cleaner
+  -misc-non-private-member-variables-in-classes,
+  -misc-no-recursion,
+  -misc-unused-alias-decls,
+  -misc-unused-parameters,
+  -misc-use-anonymous-namespace,
+  modernize-*,
+  -modernize-use-trailing-return-type,
+  readability-identifier-naming,
+
+CheckOptions:
+  - key: readability-identifier-naming.ClassCase
+    value: CamelCase
+  - key: readability-identifier-naming.EnumCase
+    value: CamelCase
+  - key: readability-identifier-naming.FunctionCase
+    value: lower_case
+  - key: readability-identifier-naming.FunctionIgnoredRegexp
+    value: "CR|RX|RY|RZ"
+  - key: readability-identifier-naming.VariableIgnoredRegexp
+    value: "EPSILON|MAX_BIT_NUMBER|MAX_QUBIT_NUMBER|OUTPUT_DECIMALS|PI|SQRT_2|ZERO_CYCLE_SIZE\
+      |CNOT|CZ|H|IDENTITY|MX90|MY90|MZ90|S|SDAG|SWAP|T|TDAG|TOFFOLI|X|X90|Y|Y90|Z|Z90"
+  - key: readability-identifier-naming.MemberCase
+    value: lower_case
+  - key: readability-identifier-naming.MemberIgnoredRegexp
+    value: ".*_"
+  - key: readability-identifier-naming.ParameterCase
+    value: lower_case
+  - key: readability-identifier-naming.UnionCase
+    value: CamelCase
+  - key: readability-identifier-naming.VariableCase
+    value: lower_case
+  - key: readability-identifier-naming.IgnoreMainLikeFunctions
+    value: 1
+  - key: readability-redundant-member-init.IgnoreBaseInCopyConstructors
+    value: 1
+  - key: modernize-use-default-member-init.UseAssignment
+    value: 1

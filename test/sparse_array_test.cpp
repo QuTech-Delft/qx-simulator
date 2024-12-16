@@ -1,10 +1,10 @@
 #include "qx/sparse_array.hpp"
 
-#include <complex>
 #include <gmock/gmock.h>  // ThrowsMessageHasSubstr
 #include <gtest/gtest.h>
-#include <vector>
 
+#include <complex>
+#include <vector>
 
 namespace qx::core {
 

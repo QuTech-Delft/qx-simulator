@@ -1,20 +1,19 @@
 #pragma once
 
-#include "qx/compile_time_configuration.hpp"
-#include "qx/core.hpp"
-#include "qx/quantum_state.hpp"
-#include "qx/register_manager.hpp"
+#include <fmt/ostream.h>
 
 #include <cstdint>  // uint64_t
-#include <fmt/ostream.h>
 #include <map>
 #include <ostream>
 #include <string>
 #include <vector>
 
+#include "qx/compile_time_configuration.hpp"
+#include "qx/core.hpp"
+#include "qx/quantum_state.hpp"
+#include "qx/register_manager.hpp"
 
 namespace qx {
-
 
 // A simulation consists of a number of iterations, each executing a circuit composed by a list of instructions.
 //
@@ -29,28 +28,24 @@ namespace qx {
 // - the quantum state is just the state of the last iteration.
 // - the measurement registers contain all the measurements for all the iterations.
 
-
 using state_string_t = std::string;
 using count_t = std::uint64_t;
 using amplitude_t = core::Complex;
-
 
 struct Measurement {
     state_string_t state;
     count_t count;
 
-    std::partial_ordering operator<=>(const Measurement &other) const = default;
+    std::partial_ordering operator<=>(const Measurement& other) const = default;
 };
-
 
 struct SuperposedState {
     state_string_t value;
     amplitude_t amplitude;
 
-    bool operator==(const SuperposedState &other) const = default;
-    std::partial_ordering operator<=>(const SuperposedState &other) const = default;
+    bool operator==(const SuperposedState& other) const = default;
+    std::partial_ordering operator<=>(const SuperposedState& other) const = default;
 };
-
 
 //------------------//
 // SimulationResult //
@@ -61,24 +56,21 @@ struct SimulationResult {
     using State = std::vector<SuperposedState>;
 
 public:
-    SimulationResult(
-        std::uint64_t shots_done,
-        std::uint64_t shots_requested,
-        std::shared_ptr<QubitRegister> qubit_register,
-        std::shared_ptr<BitRegister> bit_register);
+    SimulationResult(std::uint64_t shots_done, std::uint64_t shots_requested,
+        std::shared_ptr<QubitRegister> qubit_register, std::shared_ptr<BitRegister> bit_register);
 
     // Given a state string from the State vector, a qubit variable name, and an optional sub index,
     // return the value of that qubit in the state string
     // The sub index is used to access a given qubit when the qubit variable is of array type
     // Notice that the final index in the state string is determined by the qubit register
-    std::uint8_t get_qubit_state(state_string_t const& state_string, std::string const& qubit_variable_name,
-                                 std::optional<Index> sub_index);
+    std::uint8_t get_qubit_state(
+        state_string_t const& state_string, std::string const& qubit_variable_name, std::optional<Index> sub_index);
     // Given a state string from the State vector, a bit variable name, and an optional sub index,
     // return the value of that bit in the state string
     // The sub index is used to access a given bit when the bit variable is of array type
     // Notice that the final index in the state string is determined by the bit register
-    std::uint8_t get_bit_measurement(state_string_t const& state_string, std::string const& bit_variable_name,
-                                     std::optional<Index> sub_index);
+    std::uint8_t get_bit_measurement(
+        state_string_t const& state_string, std::string const& bit_variable_name, std::optional<Index> sub_index);
 
 public:
     std::uint64_t shots_requested;
@@ -92,8 +84,7 @@ public:
     Measurements bit_measurements;
 };
 
-std::ostream &operator<<(std::ostream &os, const SimulationResult &result);
-
+std::ostream& operator<<(std::ostream& os, const SimulationResult& result);
 
 //----------------------------//
 // SimulationIterationContext //
@@ -107,24 +98,21 @@ struct SimulationIterationContext {
     explicit SimulationIterationContext();
 };
 
-
 //--------------------------------//
 // SimulationIterationAccumulator //
 //--------------------------------//
 
 class SimulationIterationAccumulator {
 public:
-    void add(const SimulationIterationContext &context);
+    void add(const SimulationIterationContext& context);
     void append_measurement(core::MeasurementRegister const& measurement);
     void append_bit_measurement(core::BitMeasurementRegister const& bit_measurement);
     SimulationResult get_simulation_result();
 
 private:
     template <typename F>
-    void forAllNonZeroStates(F &&f) {
-        state.for_each([&f](auto const &kv) {
-            f(kv.first, kv.second);
-        });
+    void for_all_non_zero_states(F&& f) {
+        state.for_each([&f](auto const& kv) { f(kv.first, kv.second); });
     }
 
     core::QuantumState state;
@@ -135,7 +123,7 @@ private:
     std::uint64_t bit_measurements_count = 0;
 };
 
-
 }  // namespace qx
 
-template <> struct fmt::formatter<qx::SimulationResult> : fmt::ostream_formatter {};
+template <>
+struct fmt::formatter<qx::SimulationResult> : fmt::ostream_formatter {};

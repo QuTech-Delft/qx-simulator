@@ -1,23 +1,22 @@
-#include "qx/simulator.hpp"
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
 #include <cmath>  // abs
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
 #include <optional>  // nullopt
 
+#include "qx/simulator.hpp"
 
 namespace qx {
 
 class IntegrationTest : public ::testing::Test {
 public:
-    static SimulationResult run_from_string(const std::string &s, std::uint64_t iterations = 1,
-                                            std::string cqasm_version = "3.0") {
+    static SimulationResult run_from_string(
+        const std::string& s, std::uint64_t iterations = 1, std::string cqasm_version = "3.0") {
         auto result = execute_string(s, iterations, std::nullopt, std::move(cqasm_version));
         EXPECT_TRUE(std::holds_alternative<SimulationResult>(result));
         return *std::get_if<SimulationResult>(&result);
     }
 };
-
 
 TEST_F(IntegrationTest, bell_pair) {
     auto cqasm = R"(
@@ -56,7 +55,9 @@ CNOT q[0:2], q[3:5]
 
     // Expected q state should be |111111>
     EXPECT_EQ(actual.state,
-        (SimulationResult::State{ { "111111", core::Complex{ .real = 1, .imag = 0, .norm = 1 } } }));
+        (SimulationResult::State{
+            { "111111", core::Complex{ .real = 1, .imag = 0, .norm = 1 } }
+    }));
 }
 
 TEST_F(IntegrationTest, too_many_qubits) {
@@ -80,9 +81,8 @@ H q[0
     auto result = execute_string(cqasm);
     auto message = std::string{ std::get_if<SimulationError>(&result)->what() };
     EXPECT_TRUE(std::holds_alternative<SimulationError>(result));
-    EXPECT_THAT(message, ::testing::StartsWith("""\
-cQASM v3 analyzer returned errors:\n\
-Error at <unknown file name>:6:6..7: missing ']' at '\\n'"""));
+    EXPECT_THAT(message, ::testing::StartsWith(R"(cQASM v3 analyzer returned errors:
+Error at <unknown file name>:6:6..7: missing ']' at '\n')"));
 }
 
 TEST_F(IntegrationTest, identity) {
@@ -133,12 +133,12 @@ b = measure q
     EXPECT_EQ(actual.state[0].amplitude, (core::Complex{ .real = 1, .imag = 0, .norm = 1 }));
 
     // Expected b value should be "001" 50% of the cases and "111" 50% of the cases
-    auto error = static_cast<std::uint64_t>(static_cast<double>(iterations)/2 * 0.05);
+    auto error = static_cast<std::uint64_t>(static_cast<double>(iterations) / 2 * 0.05);
     EXPECT_EQ(actual.measurements.size(), 2);
     EXPECT_EQ(actual.measurements[0].state, "001");
-    EXPECT_LT(std::abs(static_cast<long long>(iterations/2 - actual.measurements[0].count)), error);
+    EXPECT_LT(std::abs(static_cast<long long>(iterations / 2 - actual.measurements[0].count)), error);
     EXPECT_EQ(actual.measurements[1].state, "111");
-    EXPECT_LT(std::abs(static_cast<long long>(iterations/2 - actual.measurements[1].count)), error);
+    EXPECT_LT(std::abs(static_cast<long long>(iterations / 2 - actual.measurements[1].count)), error);
 }
 
 TEST_F(IntegrationTest, multiple_measure_instructions) {
@@ -164,12 +164,12 @@ b[2] = measure q[2]
     EXPECT_EQ(actual.state[0].amplitude, (core::Complex{ .real = 1, .imag = 0, .norm = 1 }));
 
     // Expected b value should be "001" 50% of the cases and "111" 50% of the cases
-    auto error = static_cast<std::uint64_t>(static_cast<double>(iterations)/2 * 0.05);
+    auto error = static_cast<std::uint64_t>(static_cast<double>(iterations) / 2 * 0.05);
     EXPECT_EQ(actual.measurements.size(), 2);
     EXPECT_EQ(actual.measurements[0].state, "001");
-    EXPECT_LT(std::abs(static_cast<long long>(iterations/2 - actual.measurements[0].count)), error);
+    EXPECT_LT(std::abs(static_cast<long long>(iterations / 2 - actual.measurements[0].count)), error);
     EXPECT_EQ(actual.measurements[1].state, "111");
-    EXPECT_LT(std::abs(static_cast<long long>(iterations/2 - actual.measurements[1].count)), error);
+    EXPECT_LT(std::abs(static_cast<long long>(iterations / 2 - actual.measurements[1].count)), error);
 }
 
 TEST_F(IntegrationTest, mid_circuit_measure_instruction) {
@@ -190,12 +190,12 @@ b = measure q
     auto actual = run_from_string(cqasm, iterations);
 
     // Expected q state should be |00>+|11> or |01>+|10>
-    auto error = static_cast<std::uint64_t>(static_cast<double>(iterations)/2 * 0.05);
+    auto error = static_cast<std::uint64_t>(static_cast<double>(iterations) / 2 * 0.05);
     EXPECT_EQ(actual.measurements.size(), 2);
     EXPECT_TRUE(actual.measurements[0].state == "00" || actual.measurements[0].state == "01");
-    EXPECT_LT(std::abs(static_cast<long long>(iterations/2 - actual.measurements[0].count)), error);
+    EXPECT_LT(std::abs(static_cast<long long>(iterations / 2 - actual.measurements[0].count)), error);
     EXPECT_TRUE(actual.measurements[1].state == "11" || actual.measurements[1].state == "10");
-    EXPECT_LT(std::abs(static_cast<long long>(iterations/2 - actual.measurements[1].count)), error);
+    EXPECT_LT(std::abs(static_cast<long long>(iterations / 2 - actual.measurements[1].count)), error);
 }
 
 TEST_F(IntegrationTest, multiple_qubit_bit_definitions_and_mid_circuit_measure_instructions) {
@@ -218,12 +218,12 @@ b1 = measure q1
     auto actual = run_from_string(cqasm, iterations);
 
     // Expected q1-q0 state should be |00>+|11> or |01>+|10>
-    auto error = static_cast<std::uint64_t>(static_cast<double>(iterations)/2 * 0.05);
+    auto error = static_cast<std::uint64_t>(static_cast<double>(iterations) / 2 * 0.05);
     EXPECT_EQ(actual.measurements.size(), 2);
     EXPECT_TRUE(actual.measurements[0].state == "00" || actual.measurements[0].state == "01");
-    EXPECT_LT(std::abs(static_cast<long long>(iterations/2 - actual.measurements[0].count)), error);
+    EXPECT_LT(std::abs(static_cast<long long>(iterations / 2 - actual.measurements[0].count)), error);
     EXPECT_TRUE(actual.measurements[1].state == "11" || actual.measurements[1].state == "10");
-    EXPECT_LT(std::abs(static_cast<long long>(iterations/2 - actual.measurements[1].count)), error);
+    EXPECT_LT(std::abs(static_cast<long long>(iterations / 2 - actual.measurements[1].count)), error);
 }
 
 TEST_F(IntegrationTest, reset__x_measure_reset) {
@@ -269,7 +269,7 @@ reset q[0]
         (SimulationResult::State{
             { "00", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } },
             { "10", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } }
-        }));
+    }));
 }
 
 TEST_F(IntegrationTest, reset__bell_state_then_reset_and_measure) {
@@ -294,10 +294,10 @@ b = measure q
     EXPECT_EQ(actual.state[0].amplitude, (core::Complex{ .real = 1, .imag = 0, .norm = 1 }));
 
     // Expected b value should be "00" 50% of the cases and "10" 50% of the cases
-    auto error = static_cast<std::uint64_t>(static_cast<double>(iterations)/2 * 0.05);
+    auto error = static_cast<std::uint64_t>(static_cast<double>(iterations) / 2 * 0.05);
     EXPECT_EQ(actual.measurements.size(), 2);
     EXPECT_TRUE(actual.measurements[0].state == "00" || actual.measurements[0].state == "10");
-    EXPECT_LT(std::abs(static_cast<long long>(iterations/2 - actual.measurements[0].count)), error);
+    EXPECT_LT(std::abs(static_cast<long long>(iterations / 2 - actual.measurements[0].count)), error);
 }
 
 TEST_F(IntegrationTest, reset__bell_state_then_measure_and_reset) {
@@ -324,10 +324,10 @@ reset q[0]
     // Expected b value should be "00" 50% of the cases and "11" 50% of the cases
     // because the measure happens right after creating the Bell state,
     // and reset does not modify the measurement register
-    auto error = static_cast<std::uint64_t>(static_cast<double>(iterations)/2 * 0.05);
+    auto error = static_cast<std::uint64_t>(static_cast<double>(iterations) / 2 * 0.05);
     EXPECT_EQ(actual.measurements.size(), 2);
     EXPECT_TRUE(actual.measurements[0].state == "00" || actual.measurements[0].state == "11");
-    EXPECT_LT(std::abs(static_cast<long long>(iterations/2 - actual.measurements[0].count)), error);
+    EXPECT_LT(std::abs(static_cast<long long>(iterations / 2 - actual.measurements[0].count)), error);
 }
 
 TEST_F(IntegrationTest, bit_measurement_register) {
@@ -350,12 +350,12 @@ b = measure qq[0]
 
     // Expected bb[0] value should always be "1"
     // Expected b value should be "0" 50% of the cases and "1" 50% of the cases
-    auto error = static_cast<std::uint64_t>(static_cast<double>(iterations)/2 * 0.05);
+    auto error = static_cast<std::uint64_t>(static_cast<double>(iterations) / 2 * 0.05);
     EXPECT_EQ(actual.bit_measurements.size(), 2);
     for (auto const& bit_measurement : actual.bit_measurements) {
         EXPECT_EQ(actual.get_bit_measurement(bit_measurement.state, "bb", 0), 1);
-        EXPECT_LT(std::abs(static_cast<long long>(iterations/2 - bit_measurement.count)), error);
+        EXPECT_LT(std::abs(static_cast<long long>(iterations / 2 - bit_measurement.count)), error);
     }
 }
 
-} // namespace qx
+}  // namespace qx
