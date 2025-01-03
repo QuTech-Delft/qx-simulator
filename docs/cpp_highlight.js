@@ -1,4 +1,4 @@
 document$.subscribe(() => {
     hljs.highlightAll(),
-        { language: 'python' }
+        { language: 'c++' }
 })
