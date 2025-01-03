@@ -18,8 +18,8 @@ It produces one of the following results:
 
 It can be used:
 
-- As a standalone executable, from the command line. 
-- As a library, from Python projects (as a [Python package](https://pypi.org/project/libqasm/)).
+- As a standalone executable (built from C++), from the command line.
+- As a module (called `qxelarator`), from Python projects (as a [Python package](https://pypi.org/project/libqasm/)).
 
 ## Getting started
 
@@ -41,7 +41,7 @@ We can simulate this circuit using QX simulator:
 ### Command line
 
 ```shell
-./qx-simulator -c 1000 -j simulation_result.json ../tests/circuits/bell_pair.qc
+./qx-simulator -c 1000 -j simulation_result.json ../tests/circuits/bell_pair.cq
 ```
 
 ### Python
