@@ -7,8 +7,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [ 0.7.3 ] - [ xxxx-yy-zz ]
 
 ### Added
-- Linters: `.clang-format` and `.clang-tidy`.
 - Documentation: GitHub pages.
+- Linters: `.clang-format` and `.clang-tidy`.
 
 ### Changed
 - Implement instructions as a hierarchy.
