@@ -1,7 +1,7 @@
 QX simulator can be executed from the command line.
 
 ```shell
-./qx-simulator -c 1000 ../test/qxelarator/bell_pair.cq
+build/Release$ ./qx-simulator -c 1000 ../../test/qxelarator/bell_pair.cq
 ```
 
 In the example above:

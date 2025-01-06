@@ -56,7 +56,7 @@ int main(int argc, char** argv) {
         fmt::print(std::cerr, "Usage: {} [-c iterations] file.cq\n", argv[0]);
         return -1;
     }
-    fmt::print("Will execute {} time{} file '{}'...\n", iterations, (iterations > 1 ? "s" : ""), file_path);
+    fmt::print("Executing {} time{} the file '{}'...\n\n", iterations, (iterations > 1 ? "s" : ""), file_path);
 
     auto simulation_result = qx::execute_file(file_path, iterations);
     if (auto* error = std::get_if<qx::SimulationError>(&simulation_result)) {
@@ -64,6 +64,6 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    fmt::print("{}\n", std::get<qx::SimulationResult>(simulation_result));
+    fmt::print("{}\n\n", std::get<qx::SimulationResult>(simulation_result));
     return 0;
 }

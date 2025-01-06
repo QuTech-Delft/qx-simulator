@@ -10,7 +10,7 @@ QX simulator is a simulator of cQASM programs, developed by QuTech.
 At the moment, QX simulator only supports cQASM v3.0 programs
 (see [cQASM-spec](https://qutech-delft.github.io/cQASM-spec/latest/) for the language specification).
 
-It performs simulation of an input program received via a file or a string.
+It performs simulations of input programs received via file or string.
 It produces one of the following results:
 
 - A simulation result: a quantum state and, optionally, a list of measurements.
@@ -36,12 +36,12 @@ CNOT q[0], q[1]
 b = measure q
 ```
 
-We can simulate this circuit using QX simulator:
+We can simulate this circuit using QX simulator, either from the command line, or with a Python script.
 
 ### Command line
 
 ```shell
-./qx-simulator -c 1000 -j simulation_result.json ../tests/circuits/bell_pair.cq
+build/Release# ./qx-simulator -c 1000 example.cq
 ```
 
 ### Python
@@ -50,7 +50,8 @@ We can simulate this circuit using QX simulator:
 import qxelarator
 
 if __name__ == "__main__":
-    qxelarator.execute_file('example.cq', iterations=1000)
+    result = qxelarator.execute_file('example.cq', iterations=1000)
+    print(result)
 ```
 
 ## Documentation

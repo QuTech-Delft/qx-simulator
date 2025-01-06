@@ -1,7 +1,7 @@
 QX simulator can be used:
 
 - As a standalone executable (built from C++), from the command line.
-- As a module (called `QXelarator`), from Python projects (as a [Python package](https://pypi.org/project/libqasm/)).
+- As a module (called `qxelarator`), from Python projects (as a [Python package](https://pypi.org/project/libqasm/)).
 
 ## Output
 
@@ -29,11 +29,16 @@ State: {'00': (0.7071067811865475+0j), '11': (0.7071067811865475+0j)}
 
 - `Shots requested` and `Shots done` are always equal to the number of iterations.
 - `Measurements` contains the number of times a given measurement value is captured when running the iterations.
-  In this case, the circuit doesn't contain any measurement, so the measurement register is always 00 (100 times).
+  In this case, the circuit doesn't contain any measurement, so the measurement register is always `00` (100 times).
 - `State` contains the full quantum state at the end of the very last iteration.
-  It maps quantum kets to complex amplitudes.
+  It maps quantum _kets_ to complex amplitudes.
   Here you can recognize the usual Bell pair state: `1/sqrt(2) ( |00> + |11> )`.
 
+!!! note
+
+    The number of iterations does not affect the quantum state.
+    For  every iteration, the quantum state is reset.
+    Thus, the state returned as part of the simulation result is that of the last simulation iteration.
 
 If we now add measurements:
 
@@ -52,12 +57,12 @@ Measurements: {'00': 49, '11': 51}
 State: {'00': (0.9999999999999998+0j)}
 ```
 
-You can notice that the final quantum state is collapsed to `00`, because of the measurements.
+The final quantum state is now collapsed due to the measurements, in this case to the value `00`.
 The ket `|00>` doesn't have amplitude exactly 1 because of the approximation of real numbers
 done by floating point arithmetic inside the simulator,
 something to keep in mind when interpreting the results.
 Again, `State` is the quantum state at the end of the 100th iteration.
-Some other iterations ended up in the state `|11>`.
+Some other iterations may have ended up in the state `|11>`.
 
 `Measurements` can here be interpreted as: in 49 iterations out of 100,
 the final measurement register was `00` and in the remaining 51 iterations it was `11`.

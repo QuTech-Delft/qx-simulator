@@ -54,10 +54,10 @@ For the time being, we install Java manually for this platform.
 On a Linux machine, these linters can be installed with the following commands:
 
 ```shell
- wget https://apt.llvm.org/llvm.sh -O llvm_install.sh
- chmod +x llvm_install.sh
- ./llvm_install.sh
- apt-get install -y clang-format-18 clang-tidy-18
+wget https://apt.llvm.org/llvm.sh -O llvm_install.sh
+chmod +x llvm_install.sh
+./llvm_install.sh
+apt-get install -y clang-format-18 clang-tidy-18
 ```
 
 ## Build
@@ -151,7 +151,7 @@ python3 ./scripts/run_cpp_linters.py .
 ### Sparse state vector
 
 QX simulator internally represents a quantum state using a hash table
-mapping kets (e.g., `|0010110>`) to their associated complex amplitudes,
+mapping _kets_ (e.g., `|0010110>`) to their associated complex amplitudes,
 and omits zero (or near-zero) amplitudes.
 
 You can read about this approach in this `paper <https://dl.acm.org/doi/10.1145/3491248>`
