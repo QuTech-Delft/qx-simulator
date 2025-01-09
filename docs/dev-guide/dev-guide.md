@@ -154,9 +154,28 @@ QX simulator internally represents a quantum state using a hash table
 mapping _kets_ (e.g., `|0010110>`) to their associated complex amplitudes,
 and omits zero (or near-zero) amplitudes.
 
-You can read about this approach in this `paper <https://dl.acm.org/doi/10.1145/3491248>`
+You can read about this approach in this [paper](https://dl.acm.org/doi/10.1145/3491248)
 by Samuel Jaques and Thomas Häner.
 Note however that QX simulator was developed independently and the internal implementation differs.
 
 This way to represent a quantum state is, in many cases, very beneficial
 in terms of simulation runtime and memory usage.
+
+### Error models
+
+Error models allow the introduction of probabilistic errors during the execution of the quantum circuit.
+They are useful for simulating more realistically a real quantum computer.
+
+The only supported error model is currently the depolarizing channel.
+This model is implemented as described in *Quantum Computation and Quantum Information* by Nielsen & Chuang.
+Note that the book uses the density matrix/quantum computation formalism,
+while QX simulator only uses state vector simulation.
+
+The model is parametrized by a probability of error **p**.
+Between each gate of the circuit, an error on a uniformly randomly chosen qubit is applied with probability **p**.
+The error is uniformly an **X** (bit-flip), **Y**, or **Z** (phase-flip) gate.
+
+!!! note
+
+    The current cQASM 3.0 language specification does not allow specifying an error model.
+    Thus, while the QX simulator offers support for working with an error model, this feature cannot be exercised.
