@@ -3,6 +3,7 @@ include(tests-release)
 [settings]
 compiler=clang
 compiler.version=14
+compiler.libcxx=libc++
 
 [conf]
 tools.build:cxxflags=["-stdlib=libc++"]
