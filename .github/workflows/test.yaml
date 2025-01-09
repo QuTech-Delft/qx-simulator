@@ -25,7 +25,8 @@ jobs:
         uses: actions/checkout@v4
       - name: Install dependencies
         run: |
-          apt-get install -y libc++-18-dev libc++abi-18-dev
+          sudo apt-get update
+          sudo apt-get install -y libc++-18-dev libc++abi-18-dev
       - uses: ./.github/actions/cpp-tests
         with:
           build_type: ${{ matrix.build_type }}
