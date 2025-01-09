@@ -26,25 +26,26 @@ protected:
     }
 
 private:
-    core::QuantumState state{ 3, 3 };  // Using a mock or a TestQuantumState would be beneficial here.
+    core::QuantumState state{ 3, 3 };  // using a mock or a TestQuantumState would be beneficial here
 };
 
 TEST_F(ErrorModelsTest, depolarizing_channel__probability_1) {
     DepolarizingChannel const channel(1.);
+
     add_error(channel);
-    // X is applied to qubit 1.
+    // X is applied to qubit 1
     check_state({
         { core::BasisVector{ std::string{ "010" } }, 1. + 0.i }
     });
 
     add_error(channel);
-    // Z is applied to qubit 2.
+    // Z is applied to qubit 2
     check_state({
         { core::BasisVector{ std::string{ "010" } }, 1. + 0.i }
     });
 
     add_error(channel);
-    // X is applied to qubit 0.
+    // X is applied to qubit 0
     check_state({
         { core::BasisVector{ std::string{ "011" } }, 1. + 0.i }
     });
