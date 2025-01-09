@@ -1,6 +1,6 @@
 #include "qx/quantum_state.hpp"
 
-#include <fmt/format.h>
+#include <fmt/core.h>
 #include <fmt/ranges.h>
 
 #include <complex>

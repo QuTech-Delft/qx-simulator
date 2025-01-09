@@ -1,7 +1,7 @@
 include(base)
 
 [settings]
-compiler.cppstd=20
+compiler.cppstd=23
 build_type=Debug
 
 [options]

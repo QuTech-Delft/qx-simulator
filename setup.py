@@ -100,7 +100,7 @@ class build_ext(_build_ext):
 
             cmd = (local['conan']['create']['.']
                 ['--version'][get_version()]
-                ['-s:a']['compiler.cppstd=20']
+                ['-s:a']['compiler.cppstd=23']
                 ['-s:a']['build_type=' + build_type]
 
                 ['-o:a']['boost/*:header_only=True']

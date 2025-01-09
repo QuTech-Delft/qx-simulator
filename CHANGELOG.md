@@ -18,7 +18,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Change `QuantumState` by taking the measurement register out of it.
 - Change `Circuit::execute` to return a `SimulationIterationContext`.
 - Change file, functions, and variable names.
-- Change C++ standard back to C++20.
 
 ### Removed
 - Remove `abseil` library dependency.

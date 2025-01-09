@@ -6,6 +6,7 @@
 #include "qx/register_manager.hpp"
 #include "qx/simulation_result.hpp"
 
+// This include can not go in cqasm_v3x.hpp, due to conflicts between ANTLR and SWIG
 #include <fmt/format.h>
 #include <fmt/ranges.h>
 
