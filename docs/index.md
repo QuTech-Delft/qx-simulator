@@ -8,7 +8,7 @@ It produces one of the following results:
 - A simulation result: a quantum state and, optionally, a list of measurements.
 - An error. In case of an invalid input program or failed simulation.
 
-It can be used:
+It can be used as:
 
-- As a standalone executable (built from C++), from the command line.
-- As a module (called `qxelarator`), from Python projects (as a [Python package](https://pypi.org/project/libqasm/)).
+- A standalone executable (built from C++), from the command line.
+- A module (called `qxelarator`), from Python projects (as a [Python package](https://pypi.org/project/libqasm/)).
