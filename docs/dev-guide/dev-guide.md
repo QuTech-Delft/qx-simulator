@@ -158,7 +158,7 @@ You can read about this approach in this [paper](https://dl.acm.org/doi/10.1145/
 by Samuel Jaques and Thomas Häner.
 Note however that QX simulator was developed independently and the internal implementation differs.
 
-This way to represent a quantum state is, in many cases, very beneficial
+Representing a quantum state in this way is, in many cases, very beneficial
 in terms of simulation runtime and memory usage.
 
 ### Error models
