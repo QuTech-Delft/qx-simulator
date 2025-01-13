@@ -8,14 +8,14 @@ nav:
   - User Guide:
       - User Guide: user-guide/user-guide.md
       - Command Line: user-guide/command-line.md
-      - Python: user-guide/python.md
+      - Python: user-guide/python-user-guide.md
   - Developer Guide:
       - Dev Guide: dev-guide/dev-guide.md
-      - C++: dev-guide/cpp.md
-      - Python: dev-guide/python.md
+      - C++: dev-guide/cpp-dev-guide.md
+      - Python: dev-guide/python-dev-guide.md
   - API:
-      - C++: api/cpp.md
-      - Python: api/python.md
+      - C++: api/cpp-api.md
+      - Python: api/python-api.md
   - About:
       - Release Notes: about/release-notes.md
       - Contributing: about/contributing.md

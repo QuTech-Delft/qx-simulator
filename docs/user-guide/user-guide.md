@@ -57,12 +57,16 @@ Measurements: {'00': 49, '11': 51}
 State: {'00': (0.9999999999999998+0j)}
 ```
 
-The final quantum state is now collapsed due to the measurements, in this case to the value `00`.
-The ket `|00>` doesn't have amplitude exactly 1 because of the approximation of real numbers
+Due to the measurements, the state now collapses at the end of each iteration to either $|00\rangle$ or $|11\rangle$.
+
+`Measurements` show that the state collapsed to $|00\rangle$ in 49:100 cases and $|11\rangle$ in 51:100,
+so roughly a 50% chance for either outcome.
+
+`State` shows the quantum state at the end of the 100th iteration, in this case to $|00\rangle$.
+
+Note that its amplitude is not exactly 1 because of the approximation of real numbers
 done by floating point arithmetic inside the simulator,
 something to keep in mind when interpreting the results.
-Again, `State` is the quantum state at the end of the 100th iteration.
-Some other iterations may have ended up in the state `|11>`.
 
 `Measurements` can here be interpreted as: in 49 iterations out of 100,
 the final measurement register was `00` and in the remaining 51 iterations it was `11`.
