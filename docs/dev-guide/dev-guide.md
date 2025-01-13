@@ -76,7 +76,7 @@ conan build . -pr:a=conan/profiles/tests-debug -b missing
 
 !!! note
 
-    - the `conan profile` command only has to be run only once, and not before every build.
+    - the `conan profile` command has to be run only once, and not before every build.
     - the `conan build` command is building QX simulator in Debug mode with tests using the `tests-debug` profile.
     - the `-b missing` parameter asks `conan` to build packages from sources
       in case it cannot find the binary packages for the current configuration (platform, OS, compiler, build type...).
@@ -130,7 +130,7 @@ Continuous Integration will fail if the files do not adhere to a series of forma
 - Formatting checks are defined in `.clang-format`.
 - Code style checks are defined in `.clang-tidy`.
 
-It is recommended to run these linters before pushing any change:
+It is recommended to run these linters before pushing any changes:
 
 ```shell
 conan build . -pr:a=conan/profiles/tests-release-gcc-linux-x64 -b missing
@@ -139,7 +139,7 @@ python3 ./scripts/run_cpp_linters.py .
 
 !!! note
 
-    - The linters require`clang-format-18` and `clang-tidy-18`. 
+    - The linters require `clang-format-18` and `clang-tidy-18`. 
     - It is mandatory to have a build before running the linters.
         - `clang-tidy` expects to find a `compile_commands.json` in a build folder.
     - It is recommended to build with `gcc` in Release mode.
@@ -151,14 +151,14 @@ python3 ./scripts/run_cpp_linters.py .
 ### Sparse state vector
 
 QX simulator internally represents a quantum state using a hash table
-mapping _kets_ (e.g., `|0010110>`) to their associated complex amplitudes,
+mapping _kets_ (_e.g._, `|0010110>`) to their associated complex amplitudes,
 and omits zero (or near-zero) amplitudes.
 
 You can read about this approach in this [paper](https://dl.acm.org/doi/10.1145/3491248)
 by Samuel Jaques and Thomas Häner.
 Note however that QX simulator was developed independently and the internal implementation differs.
 
-This way to represent a quantum state is, in many cases, very beneficial
+Representing a quantum state in this way is, in many cases, very beneficial
 in terms of simulation runtime and memory usage.
 
 ### Error models
@@ -175,7 +175,7 @@ The model is parametrized by a probability of error **p**.
 Between each gate of the circuit, an error on a uniformly randomly chosen qubit is applied with probability **p**.
 The error is uniformly an **X** (bit-flip), **Y**, or **Z** (phase-flip) gate.
 
-!!! note
+!!! warning
 
-    The current cQASM 3.0 language specification does not allow specifying an error model.
+    The current cQASM 3.0 language specification does not allow for the specification of an error model.
     Thus, while the QX simulator offers support for working with an error model, this feature cannot be exercised.

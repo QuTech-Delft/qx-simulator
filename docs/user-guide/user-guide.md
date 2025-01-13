@@ -1,7 +1,7 @@
-QX simulator can be used:
+QX simulator can be used as:
 
-- As a standalone executable (built from C++), from the command line.
-- As a module (called `qxelarator`), from Python projects (as a [Python package](https://pypi.org/project/libqasm/)).
+- A standalone executable (built from C++), from the command line.
+- A module (called `qxelarator`), from Python projects (as a [Python package](https://pypi.org/project/libqasm/)).
 
 ## Output
 
@@ -29,7 +29,7 @@ State: {'00': (0.7071067811865475+0j), '11': (0.7071067811865475+0j)}
 
 - `Shots requested` and `Shots done` are always equal to the number of iterations.
 - `Measurements` contains the number of times a given measurement value is captured when running the iterations.
-  In this case, the circuit doesn't contain any measurement, so the measurement register is always `00` (100 times).
+  In this case, the circuit does **not** contain any measurements, so the measurement register remains `00` (100 times).
 - `State` contains the full quantum state at the end of the very last iteration.
   It maps quantum _kets_ to complex amplitudes.
   Here you can recognize the usual Bell pair state: `1/sqrt(2) ( |00> + |11> )`.
@@ -37,7 +37,7 @@ State: {'00': (0.7071067811865475+0j), '11': (0.7071067811865475+0j)}
 !!! note
 
     The number of iterations does not affect the quantum state.
-    For  every iteration, the quantum state is reset.
+    For every iteration, the quantum state is reset to the ground state in the standard basis.
     Thus, the state returned as part of the simulation result is that of the last simulation iteration.
 
 If we now add measurements:
