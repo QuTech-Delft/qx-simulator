@@ -151,7 +151,7 @@ python3 ./scripts/run_cpp_linters.py .
 ### Sparse state vector
 
 QX simulator internally represents a quantum state using a hash table
-mapping _kets_ (e.g., `|0010110>`) to their associated complex amplitudes,
+mapping _kets_ (_e.g._, `|0010110>`) to their associated complex amplitudes,
 and omits zero (or near-zero) amplitudes.
 
 You can read about this approach in this [paper](https://dl.acm.org/doi/10.1145/3491248)
