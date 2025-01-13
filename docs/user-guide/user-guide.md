@@ -1,7 +1,7 @@
-QX simulator can be used:
+QX simulator can be used as:
 
-- As a standalone executable (built from C++), from the command line.
-- As a module (called `qxelarator`), from Python projects (as a [Python package](https://pypi.org/project/libqasm/)).
+- A standalone executable (built from C++), from the command line.
+- A module (called `qxelarator`), from Python projects (as a [Python package](https://pypi.org/project/libqasm/)).
 
 ## Output
 
