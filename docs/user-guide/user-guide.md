@@ -37,7 +37,7 @@ State: {'00': (0.7071067811865475+0j), '11': (0.7071067811865475+0j)}
 !!! note
 
     The number of iterations does not affect the quantum state.
-    For  every iteration, the quantum state is reset.
+    For every iteration, the quantum state is reset to the ground state in the standard basis.
     Thus, the state returned as part of the simulation result is that of the last simulation iteration.
 
 If we now add measurements:
