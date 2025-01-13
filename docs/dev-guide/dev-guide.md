@@ -175,7 +175,7 @@ The model is parametrized by a probability of error **p**.
 Between each gate of the circuit, an error on a uniformly randomly chosen qubit is applied with probability **p**.
 The error is uniformly an **X** (bit-flip), **Y**, or **Z** (phase-flip) gate.
 
-!!! note
+!!! warning
 
-    The current cQASM 3.0 language specification does not allow specifying an error model.
+    The current cQASM 3.0 language specification does not allow for the specification of an error model.
     Thus, while the QX simulator offers support for working with an error model, this feature cannot be exercised.
