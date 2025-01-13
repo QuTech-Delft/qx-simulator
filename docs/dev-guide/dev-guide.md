@@ -130,7 +130,7 @@ Continuous Integration will fail if the files do not adhere to a series of forma
 - Formatting checks are defined in `.clang-format`.
 - Code style checks are defined in `.clang-tidy`.
 
-It is recommended to run these linters before pushing any change:
+It is recommended to run these linters before pushing any changes:
 
 ```shell
 conan build . -pr:a=conan/profiles/tests-release-gcc-linux-x64 -b missing
