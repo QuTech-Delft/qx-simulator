@@ -76,7 +76,7 @@ conan build . -pr:a=conan/profiles/tests-debug -b missing
 
 !!! note
 
-    - the `conan profile` command only has to be run only once, and not before every build.
+    - the `conan profile` command has to be run only once, and not before every build.
     - the `conan build` command is building QX simulator in Debug mode with tests using the `tests-debug` profile.
     - the `-b missing` parameter asks `conan` to build packages from sources
       in case it cannot find the binary packages for the current configuration (platform, OS, compiler, build type...).
