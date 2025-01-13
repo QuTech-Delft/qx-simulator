@@ -139,7 +139,7 @@ python3 ./scripts/run_cpp_linters.py .
 
 !!! note
 
-    - The linters require`clang-format-18` and `clang-tidy-18`. 
+    - The linters require `clang-format-18` and `clang-tidy-18`. 
     - It is mandatory to have a build before running the linters.
         - `clang-tidy` expects to find a `compile_commands.json` in a build folder.
     - It is recommended to build with _gcc_ in _Release_ mode.
