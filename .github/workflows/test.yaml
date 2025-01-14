@@ -10,7 +10,10 @@ on:
 jobs:
   cpp-linux-x64:
     name: "C++ tests (gcc-clang/Linux/x64)"
-    runs-on: ubuntu-latest
+    # Starting with Ubuntu 24.04.1, the compilation of libQASM fails
+    # So this job cannot be run on ubuntu-latest until we have the compilation of libQASM is fixed
+    # When moving to Ubuntu 24.04.1, please notice that it may be needed to install libc++-dev and libc++-abi-dev
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:

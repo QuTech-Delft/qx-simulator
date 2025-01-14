@@ -10,23 +10,45 @@ if version_info[0] < 3:
         "sys.version_info = {}".format(version_info))
 
 class SimulationResult:
+    """! A simulation result object."""
+
     def __init__(self):
+        """! Default constructs a SimulationResult."""
+
+        ## @var int shots_requested
+        # Always equal to the number of iterations.
         self.shots_requested = 0
+        ## @var int shots_done
+        # Always equal to the number of iterations.
         self.shots_done = 0
+        ## @var dict results
+        # Contains the number of times a given measurement value is captured when running the iterations.
         self.results = {}
+        ## @var dict state
+        # Contains the full quantum state at the end of the very last iteration.
         self.state = {}
 
     def __repr__(self):
+        """! Returns a string representation of a SimulationResult."""
+
         return f"""Shots requested: {self.shots_requested}
 Shots done: {self.shots_done}
 Measurements: {self.results}
 State: {self.state}"""
 
 class SimulationError:
+    """! A simulation error object, containing just an error message."""
+
     def __init__(self, message):
+        """! Constructs a SimulationError."""
+
+        ## @var str message
+        # Error message.
         self.message = message
 
     def __repr__(self):
+        """! Returns a string representation of an error message."""
+
         return f"Quantum simulation error: {self.message}"
 
 from .qxelarator import *

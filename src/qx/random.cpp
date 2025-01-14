@@ -30,9 +30,7 @@ void seed(std::uint_fast64_t seed_value) {
 }
 
 double random_zero_one_double() {
-    // std::uniform_real_distribution<double> does not give the same result
-    // across platforms, so use this instead.
-
+    // std::uniform_real_distribution<double> does not give the same result across platforms, so use this instead
     double result = uniform_min_max_integer_distribution(
         0, UINT_FAST64_MAX, static_cast<double>(RandomNumberGenerator::get_instance()()));
 
@@ -42,7 +40,7 @@ double random_zero_one_double() {
 }
 
 std::uint_fast64_t random_integer(std::uint_fast64_t min, std::uint_fast64_t max) {
-    // std::uniform_int_distribution<std::uint_fast64_t> is not consistent across platforms.
+    // std::uniform_int_distribution<std::uint_fast64_t> is not consistent across platforms
     assert(min <= max);
     assert(max - min < UINT_FAST64_MAX);
 

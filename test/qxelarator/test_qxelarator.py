@@ -5,7 +5,7 @@ import unittest
 
 class QxelaratorTest(unittest.TestCase):
     def test_execute_file(self):
-        cqasm_file_name = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'bell_pair.qasm')
+        cqasm_file_name = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'bell_pair.cq')
         simulation_result = qxelarator.execute_file(cqasm_file_name, iterations=23)
 
         self.assertIsInstance(simulation_result, qxelarator.SimulationResult)

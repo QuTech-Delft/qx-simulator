@@ -6,7 +6,7 @@
 namespace qx::error_models {
 
 DepolarizingChannel::DepolarizingChannel(double p)
-: probability(p) {
+: probability{ p } {
     assert(0. <= p && p <= 1.);
 }
 

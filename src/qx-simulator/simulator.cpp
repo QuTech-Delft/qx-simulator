@@ -7,11 +7,11 @@
 
 static constexpr char const* banner = R"(
 ===============================================================================================
-      _______
-     /  ___   \   _  __      ____   ____   __  ___  __  __   __    ___  ______  ____    ___
-    /  /   /  |  | |/ /     / __/  /  _/  /  |/  / / / / /  / /   / _ |/_  __/ / __ \  / _ \
-   /  /___/  /   >   <     _\ \   _/ /   / /|_/ / / /_/ /  / /__ / __ | / /   / /_/ / / , _/
-   \______/\__\ /_/|_|    /___/  /___/  /_/  /_/  \____/  /____//_/ |_|/_/    \____/ /_/|_|
+      _______     _    __
+     /  ___   \  | |  / /      ____   ____   __  ___  __  __   __    ___  ______  ____    ___
+    /  /   /  |  \ |_/ /      / __/  /  _/  /  |/  / / / / /  / /   / _ |/_  __/ / __ \  / _ \
+   /  /___/  /   / / | \     _\ \   _/ /   / /|_/ / / /_/ /  / /__ / __ | / /   / /_/ / / , _/
+   \______/\__\ /_/  |_|    /___/  /___/  /_/  /_/  \____/  /____//_/ |_|/_/    \____/ /_/|_|
 
                      <   QuTech - TU Delft   |   Version {} ({})   >
 ===============================================================================================)";
@@ -53,10 +53,10 @@ int main(int argc, char** argv) {
     }
 
     if (file_path.empty() || arg_parsing_failed) {
-        fmt::print(std::cerr, "Usage: {} [-c iterations] file.qc\n", argv[0]);
+        fmt::print(std::cerr, "Usage: {} [-c iterations] file.cq\n", argv[0]);
         return -1;
     }
-    fmt::print("Will execute {} time{} file '{}'...\n", iterations, (iterations > 1 ? "s" : ""), file_path);
+    fmt::print("Executing {} time{} the file '{}'...\n\n", iterations, (iterations > 1 ? "s" : ""), file_path);
 
     auto simulation_result = qx::execute_file(file_path, iterations);
     if (auto* error = std::get_if<qx::SimulationError>(&simulation_result)) {
@@ -64,6 +64,6 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    fmt::print("{}\n", std::get<qx::SimulationResult>(simulation_result));
+    fmt::print("{}\n\n", std::get<qx::SimulationResult>(simulation_result));
     return 0;
 }
