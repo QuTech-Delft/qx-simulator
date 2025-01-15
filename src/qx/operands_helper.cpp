@@ -8,12 +8,9 @@
 
 namespace qx {
 
-OperandsHelper::OperandsHelper(const CqasmV3xInstruction& instruction)
-: instruction_{ instruction } {}
-
-[[nodiscard]] CqasmV3xIndices OperandsHelper::get_register_operand(int id) const {
+[[nodiscard]] CqasmV3xIndices get_operand_indices(const CqasmV3xOperand& operand) {
     const auto& register_manager = RegisterManager::get_instance();
-    if (auto variable_ref = instruction_.operands[id]->as_variable_ref()) {
+    if (auto variable_ref = operand.as_variable_ref()) {
         auto ret = CqasmV3xIndices{};
         if (is_qubit_variable(*variable_ref->variable)) {
             auto qubit_range = register_manager.get_qubit_range(variable_ref->variable->name);
@@ -33,7 +30,7 @@ OperandsHelper::OperandsHelper(const CqasmV3xInstruction& instruction)
             return {};
         }
         return ret;
-    } else if (auto index_ref = instruction_.operands[id]->as_index_ref()) {
+    } else if (auto index_ref = operand.as_index_ref()) {
         auto ret = index_ref->indices;
         if (is_qubit_variable(*index_ref->variable)) {
             auto qubit_range = register_manager.get_qubit_range(index_ref->variable->name);
@@ -52,14 +49,6 @@ OperandsHelper::OperandsHelper(const CqasmV3xInstruction& instruction)
     }
     assert(false && "operand is neither a variable reference nor an index reference");
     return {};
-}
-
-[[nodiscard]] double OperandsHelper::get_float_operand(int id) const {
-    return instruction_.operands[id]->as_const_float()->value;
-}
-
-[[nodiscard]] std::int64_t OperandsHelper::get_int_operand(int id) const {
-    return instruction_.operands[id]->as_const_int()->value;
 }
 
 }  // namespace qx

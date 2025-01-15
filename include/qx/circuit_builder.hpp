@@ -1,7 +1,9 @@
 #pragma once
 
 #include <algorithm>  // for_each
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "qx/circuit.hpp"
 #include "qx/cqasm_v3x.hpp"
@@ -31,9 +33,11 @@ private:
 
 private:
     void visit_node(CqasmV3xNode&) override;
-    void visit_instruction(CqasmV3xInstruction& instruction) override;
+    void visit_gate_instruction(CqasmV3xGateInstruction& gate_instruction) override;
+    void visit_non_gate_instruction(CqasmV3xNonGateInstruction& non_gate_instruction) override;
+    std::vector<std::shared_ptr<Instruction>> get_gates(const CqasmV3xGate& gate, const CqasmV3xOperands& operands);
     template <std::size_t NumberOfQubitOperands>
-    void visit_gate_instruction(core::matrix_t<NumberOfQubitOperands> matrix,
+    std::vector<std::shared_ptr<Instruction>> get_gates(core::matrix_t<NumberOfQubitOperands> matrix,
         cqasm_v3x_operands_indices_t<NumberOfQubitOperands> operands_indices);
 
 private:

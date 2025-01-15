@@ -16,7 +16,7 @@
 #include <range/v3/view/iota.hpp>
 #include <variant>  // monostate
 
-#include "v3x/cqasm.hpp"  // default_analyzer
+#include "libqasm/v3x/cqasm.hpp"  // default_analyzer
 
 namespace qx {
 
