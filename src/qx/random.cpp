@@ -14,9 +14,9 @@ public:
         return instance.random_number_generator;
     }
 
-    RandomNumberGenerator(RandomNumberGenerator const&) = delete;
+    RandomNumberGenerator(const RandomNumberGenerator&) = delete;
 
-    void operator=(RandomNumberGenerator const&) = delete;
+    void operator=(const RandomNumberGenerator&) = delete;
 
 private:
     RandomNumberGenerator() { random_number_generator.seed(std::random_device{}()); }

@@ -13,8 +13,8 @@ protected:
     void SetUp() override { random::seed(123); }
 
     void check_state(const std::map<core::BasisVector, std::complex<double>>& expected) {
-        state.for_each([&expected](auto const& kv) {
-            auto const& [basis_vector, sparse_complex] = kv;
+        state.for_each([&expected](const auto& kv) {
+            const auto& [basis_vector, sparse_complex] = kv;
             ASSERT_EQ(expected.count(basis_vector), 1);
             EXPECT_EQ(expected.at(basis_vector), sparse_complex.value);
         });
@@ -30,7 +30,7 @@ private:
 };
 
 TEST_F(ErrorModelsTest, depolarizing_channel__probability_1) {
-    DepolarizingChannel const channel(1.);
+    const DepolarizingChannel channel(1.);
 
     add_error(channel);
     // X is applied to qubit 1
@@ -52,7 +52,7 @@ TEST_F(ErrorModelsTest, depolarizing_channel__probability_1) {
 }
 
 TEST_F(ErrorModelsTest, depolarizing_channel__probability_0) {
-    DepolarizingChannel const channel(0.);
+    const DepolarizingChannel channel(0.);
 
     add_error(channel);
     add_error(channel);

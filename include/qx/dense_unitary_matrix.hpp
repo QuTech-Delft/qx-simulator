@@ -25,7 +25,7 @@ public:
         return DenseUnitaryMatrix(m, false);
     }
 
-    explicit constexpr DenseUnitaryMatrix(Matrix const& m)
+    explicit constexpr DenseUnitaryMatrix(const Matrix& m)
     : DenseUnitaryMatrix(m, true) {}
 
     [[nodiscard]] inline constexpr const std::complex<double>& at(std::size_t i, std::size_t j) const {
@@ -43,7 +43,7 @@ public:
         return DenseUnitaryMatrix(m, false);
     }
 
-    constexpr bool operator==(DenseUnitaryMatrix<N> const& other) const {
+    constexpr bool operator==(const DenseUnitaryMatrix<N>& other) const {
         for (std::size_t i = 0; i < N; ++i) {
             for (std::size_t j = 0; j < N; ++j) {
                 if (not is_null(at(i, j) - other.at(i, j))) {
@@ -54,7 +54,7 @@ public:
         return true;
     }
 
-    constexpr DenseUnitaryMatrix<N> operator*(DenseUnitaryMatrix<N> const& other) const {
+    constexpr DenseUnitaryMatrix<N> operator*(const DenseUnitaryMatrix<N>& other) const {
         Matrix m;
         for (std::size_t i = 0; i < N; ++i) {
             for (std::size_t j = 0; j < N; ++j) {
@@ -69,7 +69,7 @@ public:
     }
 
 private:
-    constexpr DenseUnitaryMatrix(Matrix const& m, bool is_unitary_check)
+    constexpr DenseUnitaryMatrix(const Matrix& m, bool is_unitary_check)
     : matrix(m) {
         if (is_unitary_check) {
             check_is_unitary();
@@ -82,7 +82,7 @@ private:
         }
     }
 
-    std::array<std::array<std::complex<double>, N>, N> const matrix;
+    const std::array<std::array<std::complex<double>, N>, N> matrix;
 };
 
 template <std::size_t N>
