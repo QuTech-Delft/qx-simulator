@@ -60,56 +60,23 @@ TEST(dense_unitary_matrix_test, dagger) {
     EXPECT_EQ(m.dagger(), m_dag);
 }
 
-TEST(dense_unitary_matrix_test, cofactor) {
-    Matrix<4> m{{
-        {  5, -2,  2, 7 },
-        {  1,  0,  0, 3 },
-        { -3,  1,  5, 0 },
-        {  3, -1, -9, 4 },
-    }};
-    Matrix<3> expected{{
-        {  5,  2, 7 },
-        { -3,  5, 0 },
-        {  3, -9, 4 },
-    }};
-    EXPECT_EQ(cofactor(m, 1, 1), expected);
-}
-
-TEST(dense_unitary_matrix_test, determinant) {
-    Matrix<1> m1{{
-        { 5 }
-    }};
-    EXPECT_EQ(determinant(m1), std::complex<double>(5));
-
-    Matrix<3> m3{{
-        {  1,  0, 3 },
-        { -3,  5, 0 },
-        {  3, -9, 4 },
-    }};
-    EXPECT_EQ(determinant(m3), std::complex<double>(56));
-}
-
-TEST(dense_unitary_matrix_test, adjoint) {
-    Matrix<4> m{{
-        {  5, -2,  2, 7 },
-        {  1,  0,  0, 3 },
-        { -3,  1,  5, 0 },
-        {  3, -1, -9, 4 },
-    }};
-    Matrix<4> expected{{
-        { -12,  76, -60, -36 },
-        { -56, 208, -82, -58 },
-        {   4,   4,  -2, -10 },
-        {   4,   4,  20,  12 },
-    }};
-    EXPECT_EQ(adjoint(m), expected);
-}
-
 TEST(dense_unitary_matrix_test, inverse) {
+    EXPECT_EQ(gates::RX(gates::PI/4).inverse(), gates::RX(-gates::PI/4));
+    EXPECT_EQ(gates::S.inverse(), gates::SDAG);
+    EXPECT_EQ(gates::T.inverse(), gates::TDAG);
+    EXPECT_EQ(gates::X90.inverse(), gates::RX(-gates::PI/2));
 }
 
 TEST(dense_unitary_matrix_test, power) {
-
+    EXPECT_EQ(gates::H.power(2), gates::IDENTITY);
+    EXPECT_EQ(gates::X.power(2), gates::IDENTITY);
+    DenseUnitaryMatrix<2> minus_identity{{{
+        { -1,  0 },
+        {  0, -1 }
+    }}};
+    EXPECT_EQ(gates::RX(gates::PI).power(2), minus_identity);
+    EXPECT_EQ(gates::S.power(2), gates::Z);
+    EXPECT_EQ(gates::T.power(4), gates::Z);
 }
 
 TEST(dense_unitary_matrix_test, control) {

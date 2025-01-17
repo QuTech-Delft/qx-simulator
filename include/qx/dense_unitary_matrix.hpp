@@ -15,56 +15,6 @@ namespace qx::core {
 template <std::size_t N>
 using Matrix = std::array<std::array<std::complex<double>, N>, N>;
 
-template <size_t N>
-constexpr Matrix<N-1> cofactor(const Matrix<N>& m, size_t src_row_index_to_delete, size_t src_col_index_to_delete)
-requires (N > 1) {
-    Matrix<N-1> ret{};
-    size_t dst_row_index{ 0 };
-    for (std::size_t src_row_index = 0; src_row_index < N; ++src_row_index) {
-        if (src_row_index != src_row_index_to_delete) {
-            size_t dst_col_index{ 0 };
-            for (std::size_t src_col_index = 0; src_col_index < N; ++src_col_index) {
-                if (src_col_index != src_col_index_to_delete) {
-                    ret[dst_row_index][dst_col_index] = m[src_row_index][src_col_index];
-                    dst_col_index++;
-                }
-            }
-            dst_row_index++;
-        }
-    }
-    return ret;
-}
-
-template <size_t N = 1>
-constexpr std::complex<double> determinant(const Matrix<N>& m){
-    return m[0][0];
-}
-
-// This code is supposed to be used with unitary matrices, which cannot be singular
-// Thus, no check for singular matrix is done
-template <size_t N>
-constexpr std::complex<double> determinant(const Matrix<N>& m) requires (N > 1) {
-    std::complex<double> ret{};
-    std::complex<double> sign{ 1 };
-    for (size_t j = 0; j < N; ++j) {
-        ret += sign * m[0][j] * determinant(cofactor(m, 0, j));
-        sign *= -1;
-    }
-    return ret;
-}
-
-template <size_t N>
-constexpr Matrix<N> adjoint(const Matrix<N>& m) {
-    Matrix<N> ret;
-    for (std::size_t i = 0; i < N; ++i) {
-        for (std::size_t j = 0; j < N; ++j) {
-            auto sign = ((i + j) % 2 == 0) ? 1 : -1;
-            ret[j][i] = static_cast<std::complex<double>>(sign) * determinant(cofactor(m, i, j));
-        }
-    }
-    return ret;
-}
-
 template <std::size_t N>
 class DenseUnitaryMatrix {
 public:
@@ -136,15 +86,7 @@ public:
     }
 
     constexpr DenseUnitaryMatrix<N> inverse() const {
-        Matrix<N> m{};
-        auto det = determinant(*this);
-        auto adj = adjoint(m);
-        for (std::size_t i = 0; i < N; ++i) {
-            for (std::size_t j = 0; j < N; ++j) {
-                m[i][j] = adj[i][j] / det;
-            }
-        }
-        return DenseUnitaryMatrix{ m, false };
+        return dagger();
     }
 
     constexpr DenseUnitaryMatrix<N> power(int exponent) const {
@@ -154,12 +96,11 @@ public:
         }
         // A^ n = A    * A      ... * A    (n times)
         // A^-n = A^-1 * A^-1 * ... * A^-1 (n times)
-        const auto& init{ (exponent > 0) ? matrix : inverse().matrix };
-        const auto& m = ranges::accumulate(ranges::views::iota(1, std::abs(exponent)), init, [&init](auto& acc, auto) {
-            acc *= init;
+        const auto& init{ (exponent > 0) ? *this : inverse() };
+        return ranges::accumulate(ranges::views::iota(1, std::abs(exponent)), init, [&init](auto& acc, auto) {
+            acc = acc * init;
             return acc;
         });
-        return DenseUnitaryMatrix{ m, false };
     }
 
 private:
