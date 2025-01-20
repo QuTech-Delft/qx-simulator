@@ -10,7 +10,7 @@ on:
 jobs:
   cpp-linux-x64:
     name: "C++ tests (gcc-clang/Linux/x64)"
-    # Starting with Ubuntu 24.04.1, the compilation of libQASM fails for clang/Linux/x64
+    # Starting with Ubuntu 24.04.1, the compilation of libQASM fails for clang/Linux
     # So this job cannot be run on ubuntu-latest until the compilation of libQASM is fixed
     # When moving to Ubuntu 24.04.1, please notice that it may be needed to install libc++-dev and libc++-abi-dev
     runs-on: ubuntu-22.04
@@ -35,7 +35,10 @@ jobs:
 
   cpp-linux-arm64:
     name: "C++ tests (gcc/Linux/ARM64)"
-    runs-on: ubuntu-24.04-arm
+    # Starting with Ubuntu 24.04.1, the compilation of libQASM fails for clang/Linux
+    # So this job cannot be run on ubuntu-24.04-arm until the compilation of libQASM is fixed
+    # When moving to Ubuntu 24.04.1, please notice that it may be needed to install libc++-dev and libc++-abi-dev
+    runs-on: ubuntu-22.04-arm
     strategy:
       fail-fast: false
       matrix:
@@ -48,11 +51,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Install dependencies
-        if: ${{ matrix.compiler == 'clang' }}
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libc++-dev libc++abi-dev
       - uses: ./.github/actions/cpp-tests
         with:
           build_type: ${{ matrix.build_type }}
@@ -81,7 +79,7 @@ jobs:
 
   cpp-macos-arm64:
     name: "C++ tests (clang/macos/ARM64)"
-    runs-on: macos-14  # arm64
+    runs-on: macos-14  # ARM64
     strategy:
       fail-fast: false
       matrix:
