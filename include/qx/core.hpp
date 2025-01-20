@@ -51,7 +51,7 @@ using PairBasisVectorStringComplex = std::pair<std::string, std::complex<double>
 
 // Convert to string, then return the rightmost n bits
 // Notice the least significant bits go to the right
-[[nodiscard]] inline std::string to_substring(boost::dynamic_bitset<uint32_t> const& bs, size_t n) {
+[[nodiscard]] inline std::string to_substring(const boost::dynamic_bitset<uint32_t>& bs, size_t n) {
     auto ret = std::string{};
     boost::to_string(bs, ret);
     return ret.substr(ret.size() - n, ret.size());

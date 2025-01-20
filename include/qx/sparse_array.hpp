@@ -96,7 +96,7 @@ public:
         }
         ++zero_counter_;
         MapBasisVectorToSparseComplex result;
-        for (auto const& [basis_vector, complex_value] : data_) {
+        for (const auto& [basis_vector, complex_value] : data_) {
             f(basis_vector, complex_value, result);
         }
         data_.swap(result);

@@ -12,13 +12,13 @@ ControlledInstruction::ControlledInstruction(ControlBits control_bits, std::shar
 
 void ControlledInstruction::execute(SimulationIterationContext& context) {
     auto is_bit_set = [&context](
-                          auto const& control_bit) { return context.measurement_register.test(control_bit.value); };
+                          const auto& control_bit) { return context.measurement_register.test(control_bit.value); };
     if (std::all_of(control_bits.begin(), control_bits.end(), is_bit_set)) {
         instruction->execute(context);
     }
 }
 
-Measure::Measure(core::QubitIndex const& qubit_index, core::BitIndex const& bit_index)
+Measure::Measure(const core::QubitIndex& qubit_index, const core::BitIndex& bit_index)
 : qubit_index{ qubit_index }
 , bit_index{ bit_index } {}
 

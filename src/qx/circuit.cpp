@@ -8,7 +8,7 @@
 
 namespace qx {
 
-Circuit::Circuit(TreeOne<CqasmV3xProgram> const& program)
+Circuit::Circuit(const TreeOne<CqasmV3xProgram>& program)
 : program{ program } {
     CircuitBuilder{ *this }.build();
 }
@@ -17,7 +17,7 @@ void Circuit::add_instruction(std::shared_ptr<Instruction> instruction) {
     instructions_.emplace_back(std::move(instruction));
 }
 
-/* static */ void Circuit::add_error(SimulationIterationContext& context, error_models::ErrorModel const& error_model) {
+/* static */ void Circuit::add_error(SimulationIterationContext& context, const error_models::ErrorModel& error_model) {
     if (auto* depolarizing_channel = std::get_if<error_models::DepolarizingChannel>(&error_model)) {
         depolarizing_channel->add_error(context.state);
     } else if (!std::get_if<std::monostate>(&error_model)) {
@@ -25,9 +25,9 @@ void Circuit::add_instruction(std::shared_ptr<Instruction> instruction) {
     }
 }
 
-[[nodiscard]] SimulationIterationContext Circuit::execute(error_models::ErrorModel const& error_model) const {
+[[nodiscard]] SimulationIterationContext Circuit::execute(const error_models::ErrorModel& error_model) const {
     auto context = SimulationIterationContext{};
-    std::for_each(instructions_.begin(), instructions_.end(), [&context, &error_model](auto const& instruction) {
+    std::for_each(instructions_.begin(), instructions_.end(), [&context, &error_model](const auto& instruction) {
         add_error(context, error_model);
         instruction->execute(context);
     });

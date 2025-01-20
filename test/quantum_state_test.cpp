@@ -19,8 +19,8 @@ public:
 
         std::size_t non_zeros = std::count_if(expected.begin(), expected.end(), is_not_null);
 
-        victim.for_each([&non_zeros, &expected](auto const& sparse_element) {
-            auto const& [basis_vector, sparse_complex] = sparse_element;
+        victim.for_each([&non_zeros, &expected](const auto& sparse_element) {
+            const auto& [basis_vector, sparse_complex] = sparse_element;
             EXPECT_GT(non_zeros, 0);
             EXPECT_NEAR(expected[basis_vector.to_ulong()].real(), sparse_complex.value.real(), .000'000'000'000'01);
             EXPECT_NEAR(expected[basis_vector.to_ulong()].imag(), sparse_complex.value.imag(), .000'000'000'000'01);

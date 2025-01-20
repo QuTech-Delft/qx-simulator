@@ -23,20 +23,20 @@ SimulationResult::SimulationResult(std::uint64_t shots_done, std::uint64_t shots
 , bit_register{ *bit_register } {}
 
 std::uint8_t SimulationResult::get_qubit_state(
-    state_string_t const& state_string, std::string const& qubit_variable_name, std::optional<Index> sub_index) {
+    const state_string_t& state_string, const std::string& qubit_variable_name, std::optional<Index> sub_index) {
     auto index = qubit_register.at(qubit_variable_name, sub_index);
     return static_cast<std::uint8_t>(state_string[state_string.size() - index - 1] - '0');
 }
 
 std::uint8_t SimulationResult::get_bit_measurement(
-    state_string_t const& state_string, std::string const& bit_variable_name, std::optional<Index> sub_index) {
+    const state_string_t& state_string, const std::string& bit_variable_name, std::optional<Index> sub_index) {
     auto index = bit_register.at(bit_variable_name, sub_index);
     return static_cast<std::uint8_t>(state_string[state_string.size() - index - 1] - '0');
 }
 
 std::ostream& operator<<(std::ostream& os, const SimulationResult& simulation_result) {
     fmt::print(os, "State:\n");
-    for (auto const& superposed_state : simulation_result.state) {
+    for (const auto& superposed_state : simulation_result.state) {
         fmt::print(os,
             "\t{1}  {2:.{0}f} + {3:.{0}f}i  (norm = {4:.{0}f})\n",
             config::OUTPUT_DECIMALS,
@@ -46,7 +46,7 @@ std::ostream& operator<<(std::ostream& os, const SimulationResult& simulation_re
             superposed_state.amplitude.norm);
     }
     fmt::print(os, "Measurements:\n");
-    for (auto const& measurement : simulation_result.measurements) {
+    for (const auto& measurement : simulation_result.measurements) {
         fmt::print(os,
             "\t{1}  {2}/{3}  (count/shots % = {4:.{0}f})\n",
             config::OUTPUT_DECIMALS,
@@ -56,7 +56,7 @@ std::ostream& operator<<(std::ostream& os, const SimulationResult& simulation_re
             static_cast<double>(measurement.count) / static_cast<double>(simulation_result.shots_done));
     }
     fmt::print(os, "Bit measurements:\n");
-    for (auto const& bit_measurement : simulation_result.bit_measurements) {
+    for (const auto& bit_measurement : simulation_result.bit_measurements) {
         fmt::print(os,
             "\t{1}  {2}/{3}  (count/shots % = {4:.{0}f})\n",
             config::OUTPUT_DECIMALS,
@@ -84,20 +84,20 @@ SimulationIterationContext::SimulationIterationContext()
 // SimulationIterationAccumulator //
 //--------------------------------//
 
-void SimulationIterationAccumulator::add(SimulationIterationContext const& context) {
+void SimulationIterationAccumulator::add(const SimulationIterationContext& context) {
     state = context.state;
     append_measurement(context.measurement_register);
     append_bit_measurement(context.bit_measurement_register);
 }
 
-void SimulationIterationAccumulator::append_measurement(core::MeasurementRegister const& measurement) {
+void SimulationIterationAccumulator::append_measurement(const core::MeasurementRegister& measurement) {
     assert(measurements.size() < (static_cast<size_t>(1) << state.get_number_of_qubits()));
     auto measured_state_string{ core::to_substring(measurement, state.get_number_of_qubits()) };
     measurements[measured_state_string]++;
     measurements_count++;
 }
 
-void SimulationIterationAccumulator::append_bit_measurement(core::BitMeasurementRegister const& bit_measurement) {
+void SimulationIterationAccumulator::append_bit_measurement(const core::BitMeasurementRegister& bit_measurement) {
     assert(bit_measurements.size() < (static_cast<size_t>(1) << state.get_number_of_qubits()));
     auto bit_measured_state_string{ fmt::format("{}", bit_measurement) };
     bit_measurements[bit_measured_state_string]++;
@@ -113,17 +113,17 @@ SimulationResult SimulationIterationAccumulator::get_simulation_result() {
         RegisterManager::get_instance().get_bit_register() };
 
     for_all_non_zero_states([this, &simulation_result](
-                                core::BasisVector const& superposed_state, core::SparseComplex const& sparse_complex) {
+                                const core::BasisVector& superposed_state, const core::SparseComplex& sparse_complex) {
         auto state_string = core::to_substring(superposed_state, state.get_number_of_qubits());
         auto c = sparse_complex.value;
         auto amplitude = amplitude_t{ c.real(), c.imag(), std::norm(c) };
         simulation_result.state.push_back(SuperposedState{ state_string, amplitude });
     });
 
-    for (auto const& [state_string, count] : measurements) {
+    for (const auto& [state_string, count] : measurements) {
         simulation_result.measurements.push_back(Measurement{ state_string, count });
     }
-    for (auto const& [state_string, count] : bit_measurements) {
+    for (const auto& [state_string, count] : bit_measurements) {
         simulation_result.bit_measurements.push_back(Measurement{ state_string, count });
     }
 

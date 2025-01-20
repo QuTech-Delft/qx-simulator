@@ -16,8 +16,8 @@ CircuitBuilder::CircuitBuilder(Circuit& circuit)
 : circuit_{ circuit } {}
 
 Circuit CircuitBuilder::build() {
-    auto const& statements = circuit_.program->block->statements;
-    std::for_each(statements.begin(), statements.end(), [this](auto const& statement) { statement->visit(*this); });
+    const auto& statements = circuit_.program->block->statements;
+    std::for_each(statements.begin(), statements.end(), [this](const auto& statement) { statement->visit(*this); });
     return circuit_;
 }
 
@@ -120,7 +120,7 @@ void CircuitBuilder::visit_gate_instruction(core::matrix_t<NumberOfQubitOperands
     // SGMQ check: all the operands use the same number of indices
     std::for_each(operands_indices.begin(),
         operands_indices.end(),
-        [&operands_indices](CqasmV3xIndices const& indices) { assert(indices.size() == operands_indices[0].size()); });
+        [&operands_indices](const CqasmV3xIndices& indices) { assert(indices.size() == operands_indices[0].size()); });
 #endif
 
     // SGMQ unrolling: add one instruction for each operand's index

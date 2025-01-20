@@ -50,7 +50,7 @@ struct Measure : public NonUnitary {
     core::BitIndex bit_index{};
 
     ~Measure() override = default;
-    Measure(core::QubitIndex const& qubit_index, core::BitIndex const& bit_index);
+    Measure(const core::QubitIndex& qubit_index, const core::BitIndex& bit_index);
     void execute(SimulationIterationContext& context) override;
 };
 
