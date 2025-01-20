@@ -35,11 +35,7 @@ jobs:
 
   cpp-linux-arm64:
     name: "C++ tests (gcc/Linux/ARM64)"
-    runs-on: [self-hosted, ARM64, Linux]
-    container: python:3.11
-    # Run only when merging to develop
-    # (until we have a GitHub-hosted runner for Linux/ARM64)
-    if: github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-24.04-arm
     strategy:
       fail-fast: false
       matrix:
@@ -49,17 +45,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        # We are having problems when using zulu-opendjk Conan package on an armv8 architecture.
-        # zulu-openjdk provides the Java JRE required by the ANTLR generator.
-        # So, for the time being, we are installing Java manually for this platform
-      - name: Install dependencies
-        run: |
-          apt-get update
-          apt-get install -y default-jre pipx
-        # Add Conan to path (even before it is installed)
-      - name: Add Conan to path
-        run: |
-          echo "${HOME}/.local/bin" >> $GITHUB_PATH
       - uses: ./.github/actions/cpp-tests
         with:
           build_type: ${{ matrix.build_type }}
@@ -158,7 +143,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Install dependencies
+      - name: Install SWIG
         run: |
           brew install swig
         shell: bash
