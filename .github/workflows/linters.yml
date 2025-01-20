@@ -30,7 +30,6 @@ jobs:
         with:
           database: '${{ github.workspace }}/build/Release'
           extensions: 'cpp,hpp'
-          ignore: 'emscripten/emscripten_wrapper.hpp'
           style: 'file'  # use .clang-format config file
           tidy-checks: ''  # use .clang-tidy config file
           version: 18

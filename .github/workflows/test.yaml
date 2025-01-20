@@ -10,8 +10,8 @@ on:
 jobs:
   cpp-linux-x64:
     name: "C++ tests (gcc-clang/Linux/x64)"
-    # Starting with Ubuntu 24.04.1, the compilation of libQASM fails
-    # So this job cannot be run on ubuntu-latest until we have the compilation of libQASM is fixed
+    # Starting with Ubuntu 24.04.1, the compilation of libQASM fails for clang/Linux/x64
+    # So this job cannot be run on ubuntu-latest until the compilation of libQASM is fixed
     # When moving to Ubuntu 24.04.1, please notice that it may be needed to install libc++-dev and libc++-abi-dev
     runs-on: ubuntu-22.04
     strategy:
@@ -42,14 +42,17 @@ jobs:
         build_type:
           - Debug
           - Release
+        compiler:
+          - clang
+          - gcc
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - uses: ./.github/actions/cpp-tests
         with:
           build_type: ${{ matrix.build_type }}
-          conan_profile_host: conan/profiles/tests-${{ matrix.build_type }}-gcc-linux-arm64
-          conan_profile_build: conan/profiles/tests-${{ matrix.build_type }}-gcc-linux-arm64
+          conan_profile_host: conan/profiles/tests-${{ matrix.build_type }}-${{ matrix.compiler }}-linux-arm64
+          conan_profile_build: conan/profiles/tests-${{ matrix.build_type }}-${{ matrix.compiler }}-linux-arm64
           shell: bash
 
   cpp-macos-x64:
@@ -187,7 +190,6 @@ jobs:
             || (
                     github.ref != 'refs/heads/develop'
                  && contains(needs.*.result, 'skipped')
-                 && !contains(needs.cpp-linux-arm64.result, 'skipped')
                )
             ||
                (
