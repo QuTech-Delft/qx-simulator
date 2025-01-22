@@ -26,7 +26,7 @@ CheckOptions:
   - key: readability-identifier-naming.FunctionIgnoredRegexp
     value: "CR|RX|RY|RZ"
   - key: readability-identifier-naming.VariableIgnoredRegexp
-    value: "EPSILON|MAX_BIT_NUMBER|MAX_QUBIT_NUMBER|OUTPUT_DECIMALS|PI|SQRT_2|ZERO_CYCLE_SIZE\
+    value: "EPSILON|M|N|MAX_BIT_NUMBER|MAX_QUBIT_NUMBER|OUTPUT_DECIMALS|PI|SQRT_2|ZERO_CYCLE_SIZE\
       |CNOT|CZ|H|IDENTITY|MX90|MY90|MZ90|S|SDAG|SWAP|T|TDAG|TOFFOLI|X|X90|Y|Y90|Z|Z90"
   - key: readability-identifier-naming.MemberCase
     value: lower_case
