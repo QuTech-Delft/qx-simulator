@@ -34,8 +34,8 @@ void CircuitBuilder::visit_gate_instruction(CqasmV3xGateInstruction& gate_instru
     }
 }
 
-std::vector<std::shared_ptr<Unitary>> CircuitBuilder::get_gates(const CqasmV3xGate& gate,
-    const CqasmV3xOperands& operands) {
+std::vector<std::shared_ptr<Unitary>> CircuitBuilder::get_gates(
+    const CqasmV3xGate& gate, const CqasmV3xOperands& operands) {
     if (gate.name == "inv" || gate.name == "pow" || gate.name == "ctrl") {
         return get_modified_gates(gate, get_gates(*gate.gate, operands));
     } else {
@@ -43,10 +43,10 @@ std::vector<std::shared_ptr<Unitary>> CircuitBuilder::get_gates(const CqasmV3xGa
     }
 }
 
-std::vector<std::shared_ptr<Unitary>> CircuitBuilder::get_modified_gates(const CqasmV3xGate& gate,
-    const std::vector<std::shared_ptr<Unitary>>& modified_gates) {
+std::vector<std::shared_ptr<Unitary>> CircuitBuilder::get_modified_gates(
+    const CqasmV3xGate& gate, const std::vector<std::shared_ptr<Unitary>>& modified_gates) {
     auto ret = std::vector<std::shared_ptr<Unitary>>{};
-    for (auto modified_gate: modified_gates) {
+    for (auto modified_gate : modified_gates) {
         if (gate.name == "inv") {
             modified_gate->matrix = modified_gate->inverse();
         } else if (gate.name == "pow") {
@@ -59,18 +59,18 @@ std::vector<std::shared_ptr<Unitary>> CircuitBuilder::get_modified_gates(const C
     return ret;
 }
 
-std::vector<std::shared_ptr<Unitary>> CircuitBuilder::get_default_gates(const CqasmV3xGate& gate,
-    const CqasmV3xOperands& operands) {
+std::vector<std::shared_ptr<Unitary>> CircuitBuilder::get_default_gates(
+    const CqasmV3xGate& gate, const CqasmV3xOperands& operands) {
     const auto& name = gate.name;
     try {
         const auto& matrix_generator = gates::default_gates[gate.name];
         const auto& matrix = matrix_generator(gate.parameter);
         const auto& instructions_indices = get_instructions_indices(operands);
         auto ret = std::vector<std::shared_ptr<Unitary>>(instructions_indices.size());
-        std::transform(instructions_indices.begin(), instructions_indices.end(), ret.begin(),
-            [&matrix](auto& unrolled_operand) {
-                return std::make_shared<Unitary>(std::make_shared<core::matrix_t>(matrix),
-                    std::make_shared<core::operands_t>(unrolled_operand));
+        std::transform(
+            instructions_indices.begin(), instructions_indices.end(), ret.begin(), [&matrix](auto& unrolled_operand) {
+                return std::make_shared<Unitary>(
+                    std::make_shared<core::matrix_t>(matrix), std::make_shared<core::operands_t>(unrolled_operand));
             });
         return ret;
     } catch (const std::exception&) {

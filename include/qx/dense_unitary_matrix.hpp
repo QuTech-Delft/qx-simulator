@@ -29,11 +29,11 @@ public:
 
     static DenseUnitaryMatrix identity(size_t M);
 
-    DenseUnitaryMatrix control() const;
-    DenseUnitaryMatrix dagger() const;
-    DenseUnitaryMatrix inverse() const;
-    DenseUnitaryMatrix power(double exponent) const;
-    DenseUnitaryMatrix power(int exponent) const;
+    [[nodiscard]] DenseUnitaryMatrix dagger() const;
+    [[nodiscard]] DenseUnitaryMatrix inverse() const;
+    [[nodiscard]] DenseUnitaryMatrix power(double exponent) const;
+    [[nodiscard]] DenseUnitaryMatrix power(int exponent) const;
+    [[nodiscard]] DenseUnitaryMatrix control() const;
 
 private:
     DenseUnitaryMatrix(const Matrix& m, bool is_unitary_check);

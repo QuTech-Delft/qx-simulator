@@ -10,19 +10,14 @@
 namespace qx {
 
 [[nodiscard]] InstructionsIndices get_instructions_indices(const CqasmV3xOperands& operands) {
-    return to_instructions_indices(
-        to_cqasm_v3x_instructions_indices(
-            get_cqasm_v3x_sgmq_groups_indices(operands)
-        )
-    );
+    return to_instructions_indices(to_cqasm_v3x_instructions_indices(get_cqasm_v3x_sgmq_groups_indices(operands)));
 }
 
 [[nodiscard]] CqasmV3xSgmqGroupsIndices get_cqasm_v3x_sgmq_groups_indices(const CqasmV3xOperands& operands) {
     auto ret = CqasmV3xSgmqGroupsIndices(operands.size());
-    std::transform(operands.begin(), operands.end(), ret.begin(),
-        [](const auto& operand) {
-            return get_cqasm_v3x_sgmq_group_indices(*operand);
-        });
+    std::transform(operands.begin(), operands.end(), ret.begin(), [](const auto& operand) {
+        return get_cqasm_v3x_sgmq_group_indices(*operand);
+    });
     return ret;
 }
 
@@ -66,6 +61,7 @@ namespace qx {
         return ret;
     }
     assert(false && "operand is neither a variable reference nor an index reference");
+    return {};
 }
 
 // Due to SGMQ, each operand of a cQASM v3x instruction can refer to multiple indices
@@ -77,13 +73,14 @@ namespace qx {
 // The operands (or SGMQ groups) are : [[0, 1, 2], [3, 4, 5]]
 // After unrolling to: CNOT q[0], q[3]; CNOT q[1], q[4]; CNOT q[2], q[5]
 // The list of instruction indices will be: [[0, 3], [1, 4], [2, 5]]
-[[nodiscard]] CqasmV3xInstructionsIndices to_cqasm_v3x_instructions_indices(const CqasmV3xSgmqGroupsIndices& sgmq_groups_indices) {
+[[nodiscard]] CqasmV3xInstructionsIndices to_cqasm_v3x_instructions_indices(
+    const CqasmV3xSgmqGroupsIndices& sgmq_groups_indices) {
     if (sgmq_groups_indices.empty()) {
         return CqasmV3xInstructionsIndices{};
     }
     // The number of indices per SGMQ group determines the number of instructions
     auto ret = CqasmV3xInstructionsIndices{ sgmq_groups_indices[0].size() };
-    for (const auto& sgmq_group_indices: sgmq_groups_indices) {
+    for (const auto& sgmq_group_indices : sgmq_groups_indices) {
         for (size_t j{ 0 }; j < sgmq_group_indices.size(); ++j) {
             ret[j].add(sgmq_group_indices[j]);
         }
@@ -93,8 +90,8 @@ namespace qx {
 
 [[nodiscard]] InstructionsIndices to_instructions_indices(const CqasmV3xInstructionsIndices& instructions_indices) {
     auto ret = InstructionsIndices(instructions_indices.size());
-    std::transform(instructions_indices.begin(), instructions_indices.end(), ret.begin(),
-        [](const auto& instruction_indices) {
+    std::transform(
+        instructions_indices.begin(), instructions_indices.end(), ret.begin(), [](const auto& instruction_indices) {
             return to_instruction_indices(instruction_indices);
         });
     return ret;
@@ -102,8 +99,8 @@ namespace qx {
 
 [[nodiscard]] InstructionIndices to_instruction_indices(const CqasmV3xInstructionIndices& instruction_indices) {
     auto ret = InstructionIndices(instruction_indices.size());
-    std::transform(instruction_indices.begin(), instruction_indices.end(), ret.begin(),
-        [](const auto& instruction_index) {
+    std::transform(
+        instruction_indices.begin(), instruction_indices.end(), ret.begin(), [](const auto& instruction_index) {
             return core::QubitIndex{ static_cast<std::size_t>(instruction_index->value) };
         });
     return ret;

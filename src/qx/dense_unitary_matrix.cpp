@@ -53,18 +53,6 @@ DenseUnitaryMatrix DenseUnitaryMatrix::operator*(const DenseUnitaryMatrix& other
     return DenseUnitaryMatrix{ m, false };
 }
 
-DenseUnitaryMatrix DenseUnitaryMatrix::control() const {
-    auto ret{ DenseUnitaryMatrix::identity(N * 2) };
-    std::size_t first_index = N;
-    std::size_t last_index = N * 2;
-    for (std::size_t i = first_index; i < last_index; ++i) {
-        for (std::size_t j = first_index; j < last_index; ++j) {
-            ret.at(i, j) = matrix[i - first_index][j - first_index];
-        }
-    }
-    return ret;
-}
-
 DenseUnitaryMatrix DenseUnitaryMatrix::dagger() const {
     Matrix m(N, Row(N));
     for (std::size_t i = 0; i < N; ++i) {
@@ -101,6 +89,18 @@ DenseUnitaryMatrix DenseUnitaryMatrix::power(int exponent) const {
     });
 }
 
+DenseUnitaryMatrix DenseUnitaryMatrix::control() const {
+    auto ret{ DenseUnitaryMatrix::identity(N * 2) };
+    std::size_t first_index = N;
+    std::size_t last_index = N * 2;
+    for (std::size_t i = first_index; i < last_index; ++i) {
+        for (std::size_t j = first_index; j < last_index; ++j) {
+            ret.at(i, j) = matrix[i - first_index][j - first_index];
+        }
+    }
+    return ret;
+}
+
 DenseUnitaryMatrix::DenseUnitaryMatrix(const Matrix& m, bool is_unitary_check)
 : matrix{ m }
 , N{ m.size() } {
@@ -123,6 +123,6 @@ void DenseUnitaryMatrix::check_is_square() const {
     if (!std::all_of(matrix.begin(), matrix.end(), [this](const auto& row) { return row.size() == N; })) {
         throw std::runtime_error{ "matrix is not square" };
     }
-};
+}
 
 }  // namespace qx::core

@@ -23,8 +23,8 @@ struct QuantumStateError : public std::runtime_error {
     explicit QuantumStateError(const std::string& message);
 };
 
-void apply_impl(const matrix_t& matrix, const operands_t& operands,
-    BasisVector index, const SparseComplex& sparse_complex, SparseArray::MapBasisVectorToSparseComplex& storage);
+void apply_impl(const matrix_t& matrix, const operands_t& operands, BasisVector index,
+    const SparseComplex& sparse_complex, SparseArray::MapBasisVectorToSparseComplex& storage);
 
 class QuantumState {
     void check_quantum_state();
@@ -45,7 +45,8 @@ public:
     QuantumState& apply(const matrix_t& matrix, const operands_t& operands) {
         assert(operands.size() <= number_of_qubits_ &&
             "Quantum gate has more operands than the number of qubits in this quantum state");
-        assert(std::find_if(operands.begin(), operands.end(),
+        assert(std::find_if(operands.begin(),
+                   operands.end(),
                    [this](auto qubit_index) { return qubit_index.value >= number_of_qubits_; }) == operands.end() &&
             "Operand refers to a non-existing qubit");
 

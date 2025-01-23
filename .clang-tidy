@@ -25,19 +25,21 @@ CheckOptions:
     value: lower_case
   - key: readability-identifier-naming.FunctionIgnoredRegexp
     value: "CR|RX|RY|RZ"
-  - key: readability-identifier-naming.VariableIgnoredRegexp
-    value: "EPSILON|M|N|MAX_BIT_NUMBER|MAX_QUBIT_NUMBER|OUTPUT_DECIMALS|PI|SQRT_2|ZERO_CYCLE_SIZE\
-      |CNOT|CZ|H|IDENTITY|MX90|MY90|MZ90|S|SDAG|SWAP|T|TDAG|TOFFOLI|X|X90|Y|Y90|Z|Z90"
   - key: readability-identifier-naming.MemberCase
     value: lower_case
   - key: readability-identifier-naming.MemberIgnoredRegexp
-    value: ".*_"
+    value: ".*_|N"
   - key: readability-identifier-naming.ParameterCase
     value: lower_case
+  - key: readability-identifier-naming.ParameterIgnoredRegexp
+    value: "M"
   - key: readability-identifier-naming.UnionCase
     value: CamelCase
   - key: readability-identifier-naming.VariableCase
     value: lower_case
+  - key: readability-identifier-naming.VariableIgnoredRegexp
+    value: "EPSILON|M|N|MAX_BIT_NUMBER|MAX_QUBIT_NUMBER|OUTPUT_DECIMALS|PI|SQRT_2|ZERO_CYCLE_SIZE\
+      |CNOT|CZ|H|IDENTITY|MX90|MY90|MZ90|S|SDAG|SWAP|T|TDAG|TOFFOLI|X|X90|Y|Y90|Z|Z90"
   - key: readability-identifier-naming.IgnoreMainLikeFunctions
     value: 1
   - key: readability-redundant-member-init.IgnoreBaseInCopyConstructors

@@ -11,8 +11,8 @@ namespace qx::core {
 QuantumStateError::QuantumStateError(const std::string& message)
 : std::runtime_error{ message } {}
 
-void apply_impl(const matrix_t& matrix, const operands_t& operands,
-    BasisVector index, const SparseComplex& sparse_complex, SparseArray::MapBasisVectorToSparseComplex& storage) {
+void apply_impl(const matrix_t& matrix, const operands_t& operands, BasisVector index,
+    const SparseComplex& sparse_complex, SparseArray::MapBasisVectorToSparseComplex& storage) {
     BasisVector reduced_index{ operands.size() };
     for (std::size_t i = 0; i < operands.size(); ++i) {
         reduced_index.set(i, index.test(operands.at(operands.size() - i - 1).value));

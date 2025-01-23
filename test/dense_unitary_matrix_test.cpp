@@ -1,11 +1,12 @@
 #include "qx/dense_unitary_matrix.hpp"
-#include "qx/gates.hpp"
 
 #include <gmock/gmock.h>  // ThrowsMessage
 #include <gtest/gtest.h>
 
 #include <numbers>
 #include <stdexcept>  // runtime_error
+
+#include "qx/gates.hpp"
 
 namespace qx::core {
 
@@ -78,7 +79,7 @@ TEST(dense_unitary_matrix_test, inverse) {
 }
 
 TEST(dense_unitary_matrix_test, power) {
-    EXPECT_THAT([]() { gates::H.power(1.5); },
+    EXPECT_THAT([]() { (void) gates::H.power(1.5); },
         ::testing::ThrowsMessage<std::runtime_error>("unimplemented: matrix power with a non-integer exponent"));
     EXPECT_EQ(gates::H.power(2), gates::IDENTITY);
     EXPECT_EQ(gates::X.power(2), gates::IDENTITY);
