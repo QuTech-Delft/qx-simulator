@@ -16,28 +16,16 @@ struct Instruction {
     virtual void execute(SimulationIterationContext& context) = 0;
 };
 
-using ControlBits = std::vector<core::BitIndex>;
-
-struct ControlledInstruction : public Instruction {
-    ControlBits control_bits;
-    std::shared_ptr<Instruction> instruction;
-
-    ~ControlledInstruction() override = default;
-    ControlledInstruction(ControlBits control_bits, std::shared_ptr<Instruction> instruction);
-    void execute(SimulationIterationContext& context) override;
-};
-
-template <std::size_t NumberOfOperands>
 struct Unitary : public Instruction {
-    // Matrix is stored inline but could also be a pointer.
-    core::matrix_t<NumberOfOperands> matrix{};
-    core::operands_t<NumberOfOperands> operands{};
+    std::shared_ptr<core::matrix_t> matrix;
+    std::shared_ptr<core::operands_t> operands;
 
     ~Unitary() override = default;
-    Unitary(core::matrix_t<NumberOfOperands> matrix, core::operands_t<NumberOfOperands> operands)
-    : matrix{ std::move(matrix) }
-    , operands{ std::move(operands) } {}
-    void execute(SimulationIterationContext& context) override { context.state.apply(matrix, operands); }
+    Unitary(std::shared_ptr<core::matrix_t> matrix, std::shared_ptr<core::operands_t> operands);
+    void execute(SimulationIterationContext& context) override;
+    [[nodiscard]] std::shared_ptr<core::matrix_t> inverse() const;
+    [[nodiscard]] std::shared_ptr<core::matrix_t> power(double exponent) const;
+    [[nodiscard]] std::shared_ptr<core::matrix_t> control() const;
 };
 
 struct NonUnitary : public Instruction {

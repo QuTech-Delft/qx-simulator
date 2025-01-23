@@ -1,21 +1,27 @@
 #include "qx/instructions.hpp"
 
-#include <algorithm>  // all_of
-
 #include "qx/random.hpp"
 
 namespace qx {
 
-ControlledInstruction::ControlledInstruction(ControlBits control_bits, std::shared_ptr<Instruction> instruction)
-: control_bits{ std::move(control_bits) }
-, instruction{ std::move(instruction) } {}
+Unitary::Unitary(std::shared_ptr<core::matrix_t> matrix, std::shared_ptr<core::operands_t> operands)
+: matrix{ std::move(matrix) }
+, operands{ std::move(operands) } {}
 
-void ControlledInstruction::execute(SimulationIterationContext& context) {
-    auto is_bit_set = [&context](
-                          const auto& control_bit) { return context.measurement_register.test(control_bit.value); };
-    if (std::all_of(control_bits.begin(), control_bits.end(), is_bit_set)) {
-        instruction->execute(context);
-    }
+void Unitary::execute(SimulationIterationContext& context) {
+    context.state.apply(*matrix, *operands);
+}
+
+[[nodiscard]] std::shared_ptr<core::matrix_t> Unitary::inverse() const {
+    return std::make_shared<core::matrix_t>(matrix->inverse());
+}
+
+[[nodiscard]] std::shared_ptr<core::matrix_t> Unitary::power(double exponent) const {
+    return std::make_shared<core::matrix_t>(matrix->power(exponent));
+}
+
+[[nodiscard]] std::shared_ptr<core::matrix_t> Unitary::control() const {
+    return std::make_shared<core::matrix_t>(matrix->control());
 }
 
 Measure::Measure(const core::QubitIndex& qubit_index, const core::BitIndex& bit_index)

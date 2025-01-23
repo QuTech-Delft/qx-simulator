@@ -14,49 +14,59 @@ using namespace std::complex_literals;
 // clang-format off
 
 TEST(dense_unitary_matrix_test, reject_non_unitary_matrices) {
-    Matrix<2> non_unitary_1{{
-        { 1,   0 },
-        { 0, 1.1 }
-    }};
-    EXPECT_THAT([&non_unitary_1]() { DenseUnitaryMatrix<2> test{ non_unitary_1 }; },
+    Matrix empty_matrix{};
+    EXPECT_THAT([&empty_matrix]() { DenseUnitaryMatrix test{ empty_matrix }; },
+        ::testing::ThrowsMessage<std::runtime_error>("matrix is empty"));
+
+    Matrix non_square_matrix{
+        Row{ 1, 0 }
+    };
+    EXPECT_THAT([&non_square_matrix]() { DenseUnitaryMatrix test{ non_square_matrix }; },
+        ::testing::ThrowsMessage<std::runtime_error>("matrix is not square"));
+
+    Matrix non_unitary_1{
+        Row{ 1,   0 },
+        Row{ 0, 1.1 }
+    };
+    EXPECT_THAT([&non_unitary_1]() { DenseUnitaryMatrix test{ non_unitary_1 }; },
         ::testing::ThrowsMessage<std::runtime_error>("matrix is not unitary"));
 
-    Matrix<2> non_unitary_2{{
-        { 0, 0 },
-        { 0, 1 }
-    }};
-    EXPECT_THAT([&non_unitary_2]() { DenseUnitaryMatrix<2> test{ non_unitary_2 }; },
+    Matrix non_unitary_2{
+        Row{ 0, 0 },
+        Row{ 0, 1 }
+    };
+    EXPECT_THAT([&non_unitary_2]() { DenseUnitaryMatrix test{ non_unitary_2 }; },
         ::testing::ThrowsMessage<std::runtime_error>("matrix is not unitary"));
 
-    Matrix<3> non_unitary_3{{
-        { 1i,  0,  0 },
-        {  0, 1i, 1i },
-        {  0,  1,  0 }
-    }};
-    EXPECT_THAT([&non_unitary_3]() { DenseUnitaryMatrix<3> test{ non_unitary_3 }; },
+    Matrix non_unitary_3{
+        Row{ 1i,  0,  0 },
+        Row{  0, 1i, 1i },
+        Row{  0,  1,  0 }
+    };
+    EXPECT_THAT([&non_unitary_3]() { DenseUnitaryMatrix test{ non_unitary_3 }; },
         ::testing::ThrowsMessage<std::runtime_error>("matrix is not unitary"));
 }
 
 TEST(dense_unitary_matrix_test, identity) {
-    DenseUnitaryMatrix<5> expected_identity{{{
-        { 1, 0, 0, 0, 0 },
-        { 0, 1, 0, 0, 0 },
-        { 0, 0, 1, 0, 0 },
-        { 0, 0, 0, 1, 0 },
-        { 0, 0, 0, 0, 1 }
-    }}};
-    EXPECT_EQ(DenseUnitaryMatrix<5>::identity(), expected_identity);
+    DenseUnitaryMatrix expected_identity{ Matrix{
+        Row{ 1, 0, 0, 0, 0 },
+        Row{ 0, 1, 0, 0, 0 },
+        Row{ 0, 0, 1, 0, 0 },
+        Row{ 0, 0, 0, 1, 0 },
+        Row{ 0, 0, 0, 0, 1 }
+    }};
+    EXPECT_EQ(DenseUnitaryMatrix::identity(5), expected_identity);
 }
 
 TEST(dense_unitary_matrix_test, dagger) {
-    DenseUnitaryMatrix<2> m{{{
-        {  1 / std::numbers::sqrt2,   1 / std::numbers::sqrt2 },
-        { 1i / std::numbers::sqrt2, -1i / std::numbers::sqrt2 }
-    }}};
-    DenseUnitaryMatrix<2> m_dag{{{
-        { 1 / std::numbers::sqrt2, -1i / std::numbers::sqrt2 },
-        { 1 / std::numbers::sqrt2,  1i / std::numbers::sqrt2 }
-    }}};
+    DenseUnitaryMatrix m{ Matrix{
+        Row{  1 / std::numbers::sqrt2,   1 / std::numbers::sqrt2 },
+        Row{ 1i / std::numbers::sqrt2, -1i / std::numbers::sqrt2 }
+    }};
+    DenseUnitaryMatrix m_dag{ Matrix{
+        Row{ 1 / std::numbers::sqrt2, -1i / std::numbers::sqrt2 },
+        Row{ 1 / std::numbers::sqrt2,  1i / std::numbers::sqrt2 }
+    }};
     EXPECT_EQ(m.dagger(), m_dag);
 }
 
@@ -68,12 +78,14 @@ TEST(dense_unitary_matrix_test, inverse) {
 }
 
 TEST(dense_unitary_matrix_test, power) {
+    EXPECT_THAT([]() { gates::H.power(1.5); },
+        ::testing::ThrowsMessage<std::runtime_error>("unimplemented: matrix power with a non-integer exponent"));
     EXPECT_EQ(gates::H.power(2), gates::IDENTITY);
     EXPECT_EQ(gates::X.power(2), gates::IDENTITY);
-    DenseUnitaryMatrix<2> minus_identity{{{
-        { -1,  0 },
-        {  0, -1 }
-    }}};
+    DenseUnitaryMatrix minus_identity{ Matrix{
+        Row{ -1,  0 },
+        Row{  0, -1 }
+    }};
     EXPECT_EQ(gates::RX(gates::PI).power(2), minus_identity);
     EXPECT_EQ(gates::S.power(2), gates::Z);
     EXPECT_EQ(gates::T.power(4), gates::Z);

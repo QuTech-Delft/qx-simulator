@@ -128,6 +128,7 @@ add_library(qx
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/circuit.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/circuit_builder.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/cqasm_v3x.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/dense_unitary_matrix.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/error_models.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/instructions.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/operands_helper.cpp"

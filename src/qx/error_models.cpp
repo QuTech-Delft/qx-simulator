@@ -14,7 +14,7 @@ void DepolarizingChannel::add_error(qx::core::QuantumState& quantum_state) const
     if (auto random = random::random_zero_one_double(); random <= probability) {
         assert(quantum_state.get_number_of_qubits() > 0);
 
-        auto operand = std::array<core::QubitIndex, 1>{ core::QubitIndex{
+        auto operand = std::vector<core::QubitIndex>{ core::QubitIndex{
             random::random_integer(0, quantum_state.get_number_of_qubits() - 1) } };
 
         if (random < probability / 3) {

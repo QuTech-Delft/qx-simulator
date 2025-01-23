@@ -23,6 +23,8 @@ using CqasmV3xAny = cqasm_v3x_ast::Any<T>;
 template <typename T>
 using CqasmV3xMany = cqasm_v3x_ast::Many<T>;
 template <typename T>
+using CqasmV3xMaybe = cqasm_v3x_ast::Maybe<T>;
+template <typename T>
 using TreeOne = cqasm_tree::One<T>;
 
 using CqasmV3xAnalysisResult = cqasm_v3x_analyzer::AnalysisResult;
@@ -45,7 +47,9 @@ using CqasmV3xValueBase = cqasm_v3x_values::ValueBase;
 using CqasmV3xVariable = cqasm_v3x_semantic::Variable;
 using CqasmV3xVersion = cqasm_v3x_semantic::Version;
 
+using CqasmV3xParameter = CqasmV3xMaybe<CqasmV3xValueBase>;
 using CqasmV3xOperand = CqasmV3xValueBase;
+using CqasmV3xOperandIndices = CqasmV3xAny<CqasmV3xConstInt>;
 using CqasmV3xOperands = CqasmV3xAny<CqasmV3xValueBase>;
 using CqasmV3xVariables = CqasmV3xAny<CqasmV3xVariable>;
 

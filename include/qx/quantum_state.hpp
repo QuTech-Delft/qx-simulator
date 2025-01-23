@@ -20,29 +20,11 @@
 namespace qx::core {
 
 struct QuantumStateError : public std::runtime_error {
-    explicit QuantumStateError(const std::string& message)
-    : std::runtime_error{ message } {}
+    explicit QuantumStateError(const std::string& message);
 };
 
-template <std::size_t NumberOfOperands>
-void apply_impl(const matrix_t<NumberOfOperands>& matrix, const operands_t<NumberOfOperands>& operands,
-    BasisVector index, const SparseComplex& sparse_complex, SparseArray::MapBasisVectorToSparseComplex& storage) {
-    BasisVector reduced_index{ NumberOfOperands };
-    for (std::size_t i = 0; i < NumberOfOperands; ++i) {
-        reduced_index.set(i, index.test(operands[NumberOfOperands - i - 1].value));
-    }
-    for (std::size_t i = 0; i < (1 << NumberOfOperands); ++i) {
-        std::complex<double> added_value = sparse_complex.value * matrix.at(i, reduced_index.to_ulong());
-        if (not is_null(added_value)) {
-            auto new_index = index;
-            for (std::size_t k = 0; k < NumberOfOperands; ++k) {
-                new_index.set(operands[NumberOfOperands - k - 1].value, utils::get_bit(i, k));
-            }
-            auto it = storage.try_emplace(new_index, SparseComplex{ 0. });
-            it.first->second.value += added_value;
-        }
-    }
-}
+void apply_impl(const matrix_t& matrix, const operands_t& operands,
+    BasisVector index, const SparseComplex& sparse_complex, SparseArray::MapBasisVectorToSparseComplex& storage);
 
 class QuantumState {
     void check_quantum_state();
@@ -60,17 +42,15 @@ public:
     [[nodiscard]] std::vector<std::complex<double>> to_vector() const;
     void reset();
 
-    template <std::size_t NumberOfOperands>
-    QuantumState& apply(const matrix_t<NumberOfOperands>& m, const operands_t<NumberOfOperands>& operands) {
-        assert(NumberOfOperands <= number_of_qubits_ &&
+    QuantumState& apply(const matrix_t& matrix, const operands_t& operands) {
+        assert(operands.size() <= number_of_qubits_ &&
             "Quantum gate has more operands than the number of qubits in this quantum state");
-        assert(std::find_if(operands.begin(),
-                   operands.end(),
+        assert(std::find_if(operands.begin(), operands.end(),
                    [this](auto qubit_index) { return qubit_index.value >= number_of_qubits_; }) == operands.end() &&
             "Operand refers to a non-existing qubit");
 
-        data_.apply_linear([&m, &operands](auto index, auto value, auto& storage) {
-            apply_impl<NumberOfOperands>(m, operands, index, value, storage);
+        data_.apply_linear([&matrix, &operands](auto index, auto value, auto& storage) {
+            apply_impl(matrix, operands, index, value, storage);
         });
         return *this;
     }

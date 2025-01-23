@@ -34,8 +34,7 @@ TEST_F(QuantumStateTest, apply_identity) {
     QuantumState victim{ 3, 3 };
     EXPECT_EQ(victim.get_number_of_qubits(), 3);
     check_eq(victim, { 1, 0, 0, 0, 0, 0, 0, 0 });
-    victim.apply<3>(DenseUnitaryMatrix<8>::identity(),
-        std::array<QubitIndex, 3>{ QubitIndex{ 0 }, QubitIndex{ 1 }, QubitIndex{ 2 } });
+    victim.apply(DenseUnitaryMatrix::identity(8), { QubitIndex{ 0 }, QubitIndex{ 1 }, QubitIndex{ 2 } });
     check_eq(victim, { 1, 0, 0, 0, 0, 0, 0, 0 });
 }
 
@@ -43,7 +42,7 @@ TEST_F(QuantumStateTest, apply_hadamard) {
     QuantumState victim{ 3, 3 };
     EXPECT_EQ(victim.get_number_of_qubits(), 3);
     check_eq(victim, { 1, 0, 0, 0, 0, 0, 0, 0 });
-    victim.apply<1>(gates::H, std::array<QubitIndex, 1>{ QubitIndex{ 1 } });
+    victim.apply(gates::H, { QubitIndex{ 1 } });
     check_eq(victim, { 1 / std::numbers::sqrt2, 0, 1 / std::numbers::sqrt2, 0, 0, 0, 0, 0 });
 }
 
@@ -52,7 +51,7 @@ TEST_F(QuantumStateTest, apply_cnot) {
         2, 2, { { "10", 0.123 }, { "11", std::sqrt(1 - std::pow(0.123, 2)) } }
     };
     check_eq(victim, { 0, 0, 0.123, std::sqrt(1 - std::pow(0.123, 2)) });
-    victim.apply<2>(gates::CNOT, std::array<QubitIndex, 2>{ QubitIndex{ 1 }, QubitIndex{ 0 } });
+    victim.apply(gates::CNOT, { QubitIndex{ 1 }, QubitIndex{ 0 } });
     check_eq(victim, { 0, 0, std::sqrt(1 - std::pow(0.123, 2)), 0.123 });
 }
 
