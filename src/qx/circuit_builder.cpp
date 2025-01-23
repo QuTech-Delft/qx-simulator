@@ -104,7 +104,6 @@ void CircuitBuilder::visit_non_gate_instruction(CqasmV3xNonGateInstruction& non_
     } else {
         throw CircuitBuilderError{ fmt::format("unsupported non-gate instruction: '{}'", name) };
     }
-
-};
+}
 
 }  // namespace qx
