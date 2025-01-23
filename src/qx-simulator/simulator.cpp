@@ -5,7 +5,7 @@
 
 #include "qx/version.hpp"
 
-static constexpr char const* banner = R"(
+static constexpr const char* banner = R"(
 ===============================================================================================
       _______     _    __
      /  ___   \  | |  / /      ____   ____   __  ___  __  __   __    ___  ______  ____    ___

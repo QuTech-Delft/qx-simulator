@@ -352,7 +352,7 @@ b = measure qq[0]
     // Expected b value should be "0" 50% of the cases and "1" 50% of the cases
     auto error = static_cast<std::uint64_t>(static_cast<double>(iterations) / 2 * 0.05);
     EXPECT_EQ(actual.bit_measurements.size(), 2);
-    for (auto const& bit_measurement : actual.bit_measurements) {
+    for (const auto& bit_measurement : actual.bit_measurements) {
         EXPECT_EQ(actual.get_bit_measurement(bit_measurement.state, "bb", 0), 1);
         EXPECT_LT(std::abs(static_cast<long long>(iterations / 2 - bit_measurement.count)), error);
     }

@@ -120,9 +120,9 @@ public:
     [[nodiscard]] std::shared_ptr<BitRegister> get_bit_register() const;
 };
 
-std::ostream& operator<<(std::ostream& os, Range const& range);
-std::ostream& operator<<(std::ostream& os, QubitRegister const& qubit_register);
-std::ostream& operator<<(std::ostream& os, BitRegister const& bit_register);
+std::ostream& operator<<(std::ostream& os, const Range& range);
+std::ostream& operator<<(std::ostream& os, const QubitRegister& qubit_register);
+std::ostream& operator<<(std::ostream& os, const BitRegister& bit_register);
 
 }  // namespace qx
 

@@ -25,8 +25,8 @@ struct QuantumStateError : public std::runtime_error {
 };
 
 template <std::size_t NumberOfOperands>
-void apply_impl(matrix_t<NumberOfOperands> const& matrix, operands_t<NumberOfOperands> const& operands,
-    BasisVector index, SparseComplex const& sparse_complex, SparseArray::MapBasisVectorToSparseComplex& storage) {
+void apply_impl(const matrix_t<NumberOfOperands>& matrix, const operands_t<NumberOfOperands>& operands,
+    BasisVector index, const SparseComplex& sparse_complex, SparseArray::MapBasisVectorToSparseComplex& storage) {
     BasisVector reduced_index{ NumberOfOperands };
     for (std::size_t i = 0; i < NumberOfOperands; ++i) {
         reduced_index.set(i, index.test(operands[NumberOfOperands - i - 1].value));
@@ -61,7 +61,7 @@ public:
     void reset();
 
     template <std::size_t NumberOfOperands>
-    QuantumState& apply(matrix_t<NumberOfOperands> const& m, operands_t<NumberOfOperands> const& operands) {
+    QuantumState& apply(const matrix_t<NumberOfOperands>& m, const operands_t<NumberOfOperands>& operands) {
         assert(NumberOfOperands <= number_of_qubits_ &&
             "Quantum gate has more operands than the number of qubits in this quantum state");
         assert(std::find_if(operands.begin(),

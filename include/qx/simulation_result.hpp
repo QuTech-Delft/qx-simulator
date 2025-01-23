@@ -64,13 +64,13 @@ public:
     // The sub index is used to access a given qubit when the qubit variable is of array type
     // Notice that the final index in the state string is determined by the qubit register
     std::uint8_t get_qubit_state(
-        state_string_t const& state_string, std::string const& qubit_variable_name, std::optional<Index> sub_index);
+        const state_string_t& state_string, const std::string& qubit_variable_name, std::optional<Index> sub_index);
     // Given a state string from the State vector, a bit variable name, and an optional sub index,
     // return the value of that bit in the state string
     // The sub index is used to access a given bit when the bit variable is of array type
     // Notice that the final index in the state string is determined by the bit register
     std::uint8_t get_bit_measurement(
-        state_string_t const& state_string, std::string const& bit_variable_name, std::optional<Index> sub_index);
+        const state_string_t& state_string, const std::string& bit_variable_name, std::optional<Index> sub_index);
 
 public:
     std::uint64_t shots_requested;
@@ -105,14 +105,14 @@ struct SimulationIterationContext {
 class SimulationIterationAccumulator {
 public:
     void add(const SimulationIterationContext& context);
-    void append_measurement(core::MeasurementRegister const& measurement);
-    void append_bit_measurement(core::BitMeasurementRegister const& bit_measurement);
+    void append_measurement(const core::MeasurementRegister& measurement);
+    void append_bit_measurement(const core::BitMeasurementRegister& bit_measurement);
     SimulationResult get_simulation_result();
 
 private:
     template <typename F>
     void for_all_non_zero_states(F&& f) {
-        state.for_each([&f](auto const& kv) { f(kv.first, kv.second); });
+        state.for_each([&f](const auto& kv) { f(kv.first, kv.second); });
     }
 
     core::QuantumState state;

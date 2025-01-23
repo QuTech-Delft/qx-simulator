@@ -9,7 +9,7 @@ namespace qx::config {
 static constexpr double EPSILON = 0.000'000'000'001;
 
 // Number of decimals in output
-static constexpr std::uint8_t const OUTPUT_DECIMALS = 8;
+static constexpr const std::uint8_t OUTPUT_DECIMALS = 8;
 
 // How many gates between cleaning the zeros in the sparse array
 static constexpr std::uint64_t ZERO_CYCLE_SIZE = 100;

@@ -70,8 +70,8 @@ void QuantumState::reset() {
 }
 
 [[nodiscard]] double QuantumState::get_probability_of_measuring_one(QubitIndex qubit_index) {
-    return data_.accumulate(double{}, [qubit_index](auto total, auto const& kv) {
-        auto const& [basis_vector, sparse_complex] = kv;
+    return data_.accumulate(double{}, [qubit_index](auto total, const auto& kv) {
+        const auto& [basis_vector, sparse_complex] = kv;
         if (basis_vector.test(qubit_index.value)) {
             total += std::norm(sparse_complex.value);
         }
@@ -104,8 +104,8 @@ void QuantumState::reset() {
 //     2) Normalizes data_ (all the squares of all the amplitudes add up to 1).
 void QuantumState::update_data_after_measurement(
     QubitIndex qubit_index, bool measured_state, double probability_of_measuring_one) {
-    data_.erase_if([qubit_index, measured_state](auto const& kv) {
-        auto const& [basis_vector, _] = kv;
+    data_.erase_if([qubit_index, measured_state](const auto& kv) {
+        const auto& [basis_vector, _] = kv;
         auto current_state = basis_vector.test(qubit_index.value);
         return current_state != measured_state;
     });
@@ -135,8 +135,8 @@ void QuantumState::update_data_after_measurement(
 //             1  1: (   0,    0)  <-- 11 is reset to 10, old 11 amplitude added to 10, 11 amplitude set to 0
 void QuantumState::update_data_after_reset(QubitIndex qubit_index) {
     auto new_data = data_;
-    data_.for_each([qubit_index, &new_data](auto const& kv) {
-        auto const& [basis_vector, amplitude] = kv;
+    data_.for_each([qubit_index, &new_data](const auto& kv) {
+        const auto& [basis_vector, amplitude] = kv;
         if (basis_vector.test(qubit_index.value)) {
             auto basis_vector_after_reset = basis_vector;
             basis_vector_after_reset.set(qubit_index.value, false);

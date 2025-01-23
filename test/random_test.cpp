@@ -10,7 +10,7 @@ namespace qx::random {
 class RandomTest : public ::testing::Test {
 protected:
     template <typename F>
-    double test_statistic(std::vector<double> const& samples, F&& perfect_distribution) {
+    double test_statistic(const std::vector<double>& samples, F&& perfect_distribution) {
         // Given X random variable, perfect_distribution is the function x -> P(X <= x).
         // Assumption: perfect_distribution is non-decreasing, with lim -inf = 0 and lim +inf = 1.
 
@@ -22,9 +22,9 @@ protected:
         double test_statistic = 0.;
         std::uint64_t accumulated_multiplicity = 0;
         for (auto sm : multiplicities) {
-            auto const& [sample, multiplicity] = sm;
+            const auto& [sample, multiplicity] = sm;
 
-            static constexpr double const EPSILON = 0.000'000'001;
+            static constexpr const double EPSILON = 0.000'000'001;
 
             test_statistic = std::max(test_statistic,
                 std::abs(perfect_distribution(sample - EPSILON) -
@@ -41,7 +41,7 @@ protected:
     };
 
     template <typename F>
-    void check_kolmogorov_smirnov(std::vector<double> const& samples, F&& perfect_distribution) {
+    void check_kolmogorov_smirnov(const std::vector<double>& samples, F&& perfect_distribution) {
         assert(samples.size() > 50 && "Max test statistic is not correctly approximated for sample sets of small size");
         double max_test_statistic = 1.63 / std::sqrt(samples.size());  // alpha = 0.01
 

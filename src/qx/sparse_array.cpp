@@ -47,7 +47,7 @@ SparseArray::SparseArray(std::size_t s)
 
 SparseArray::SparseArray(std::size_t s, std::initializer_list<PairBasisVectorStringComplex> values)
 : size_{ s } {
-    for (auto const& [basis_vector_string, complex_value] : values) {
+    for (const auto& [basis_vector_string, complex_value] : values) {
         if ((static_cast<size_t>(1) << basis_vector_string.size()) > s) {
             throw SparseArrayError{ fmt::format(
                 "found value '{}' for a sparse array of size {}", basis_vector_string, s) };
@@ -102,23 +102,23 @@ void SparseArray::clear() {
 }
 
 [[nodiscard]] double SparseArray::norm() {
-    return accumulate<double>(0., [](double total, auto const& kv) {
-        auto const& [basis_vector, sparse_complex] = kv;
+    return accumulate<double>(0., [](double total, const auto& kv) {
+        const auto& [basis_vector, sparse_complex] = kv;
         return total + std::norm(sparse_complex.value);
     });
 }
 
 [[nodiscard]] std::vector<std::complex<double>> SparseArray::to_vector() const {
     auto result = std::vector<std::complex<double>>(size_, 0.);
-    for (auto const& [basis_vector, sparse_complex] : data_) {
+    for (const auto& [basis_vector, sparse_complex] : data_) {
         result[basis_vector.to_ulong()] = sparse_complex.value;
     }
     return result;
 }
 
 void SparseArray::clean_up_zeros() {
-    std::erase_if(data_, [](auto const& kv) {
-        auto const& [_, sparse_complex] = kv;
+    std::erase_if(data_, [](const auto& kv) {
+        const auto& [_, sparse_complex] = kv;
         return is_null(sparse_complex.value);
     });
     zero_counter_ = 0;

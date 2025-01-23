@@ -71,8 +71,8 @@ Register::~Register() = default;
 
 [[nodiscard]] std::string Register::to_string() const {
     auto entries =
-        ranges::accumulate(variable_name_to_range_, std::string{}, [first = true](auto total, auto const& kv) mutable {
-            auto const& [variableName, range] = kv;
+        ranges::accumulate(variable_name_to_range_, std::string{}, [first = true](auto total, const auto& kv) mutable {
+            const auto& [variableName, range] = kv;
             total += fmt::format("{}{}: {}", first ? "" : ", ", variableName, range);
             first = false;
             return total;
@@ -163,16 +163,16 @@ BitRegister::~BitRegister() = default;
     return bit_register_;
 }
 
-std::ostream& operator<<(std::ostream& os, Range const& range) {
+std::ostream& operator<<(std::ostream& os, const Range& range) {
     return os << fmt::format(
                "[{}{}]", range.first, range.size == 1 ? "" : fmt::format("..{}", range.first + range.size - 1));
 }
 
-std::ostream& operator<<(std::ostream& os, QubitRegister const& qubit_register) {
+std::ostream& operator<<(std::ostream& os, const QubitRegister& qubit_register) {
     return os << qubit_register.to_string();
 }
 
-std::ostream& operator<<(std::ostream& os, BitRegister const& bit_register) {
+std::ostream& operator<<(std::ostream& os, const BitRegister& bit_register) {
     return os << bit_register.to_string();
 }
 
