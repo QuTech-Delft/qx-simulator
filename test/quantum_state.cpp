@@ -13,7 +13,7 @@ namespace qx ::core {
 using namespace std::complex_literals;
 
 class QuantumStateTest : public ::testing::Test {
-public:
+protected:
     static void check_eq(QuantumState& victim, std::vector<std::complex<double>> expected) {
         ASSERT_EQ(expected.size(), 1 << victim.get_number_of_qubits());
 
