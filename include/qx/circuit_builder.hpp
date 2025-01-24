@@ -33,8 +33,7 @@ private:
     void visit_non_gate_instruction(CqasmV3xNonGateInstruction& non_gate_instruction) override;
 
     std::vector<std::shared_ptr<Unitary>> get_gates(const CqasmV3xGate& gate, const CqasmV3xOperands& operands);
-    std::vector<std::shared_ptr<Unitary>> get_modified_gates(
-        const CqasmV3xGate& gate, const std::vector<std::shared_ptr<Unitary>>& modified_gates);
+    std::vector<std::shared_ptr<Unitary>> get_modified_gates(const CqasmV3xGate& gate, const CqasmV3xOperands& operands);
     std::vector<std::shared_ptr<Unitary>> get_default_gates(const CqasmV3xGate& gate, const CqasmV3xOperands& operands);
 
 private:

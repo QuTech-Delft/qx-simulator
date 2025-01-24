@@ -358,4 +358,59 @@ b = measure qq[0]
     }
 }
 
+TEST_F(IntegrationTest, inverse_gate_modifier__inv_inv) {
+    auto cqasm = R"(
+version 3.0
+
+qubit q
+
+inv.inv.H q
+)";
+    std::size_t iterations = 10'000;
+    auto actual = run_from_string(cqasm, iterations);
+
+    // Expected q state should be |0>+|1> as inv.inv.H is equivalent to H
+    EXPECT_EQ(actual.state,
+        (SimulationResult::State{
+            { "0", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } },
+            { "1", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } }
+    }));
+}
+
+TEST_F(IntegrationTest, power_gate_modifier__pow_2_s) {
+    auto cqasm = R"(
+version 3.0
+
+qubit q
+
+pow(2).X q
+)";
+    std::size_t iterations = 10'000;
+    auto actual = run_from_string(cqasm, iterations);
+
+    // Expected q state should be |0> as X^2 is equivalent to I
+    EXPECT_EQ(actual.state, (SimulationResult::State{ { "0", core::Complex{ .real = 1, .imag = 0, .norm = 1 } } }));
+}
+
+TEST_F(IntegrationTest, control_gate_modifier__ctrl_x) {
+    auto cqasm = R"(
+version 3.0
+
+qubit[2] q
+
+H q[0]
+ctrl.X q[0], q[1]
+)";
+    std::size_t iterations = 1;
+    auto actual = run_from_string(cqasm, iterations, "3.0");
+
+    // Expected q state should be |00>+|11> as ctrl.X is equivalent to CNOT
+    // State is |00>+|11> after creating the Bell state
+    EXPECT_EQ(actual.state,
+        (SimulationResult::State{
+            { "00", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } },
+            { "11", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } }
+    }));
+}
+
 }  // namespace qx

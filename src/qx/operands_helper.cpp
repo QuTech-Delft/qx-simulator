@@ -39,8 +39,6 @@ namespace qx {
                 return cqasm_tree::make<CqasmV3xConstInt>(
                     static_cast<cqasm_v3x_primitives::Int>(bit_range.first + i++));
             });
-        } else {
-            return {};
         }
         return ret;
     } else if (auto index_ref = operand.as_index_ref()) {
@@ -55,24 +53,22 @@ namespace qx {
             std::for_each(ret.get_vec().begin(), ret.get_vec().end(), [bit_range](const auto& index) {
                 index->value += bit_range.first;
             });
-        } else {
-            return {};
         }
         return ret;
+    } else {
+        throw std::runtime_error{ "operand is neither a variable reference nor an index reference" };
     }
-    assert(false && "operand is neither a variable reference nor an index reference");
-    return {};
 }
 
 // Due to SGMQ, each operand of a cQASM v3x instruction can refer to multiple indices
 // So a list of cQASM v3x operands is called here SGMQ group
 // Now, after unrolling a SGMQ instruction, each unrolled instruction has a list of indices
-// This function parses the operands of an instruction and reorders them into a list of instruction indices
+// This function parses the operands of an instruction and reorders them into a list of instructions indices
 //
 // For example, for CNOT q[0:2], q[3:5]
 // The operands (or SGMQ groups) are : [[0, 1, 2], [3, 4, 5]]
 // After unrolling to: CNOT q[0], q[3]; CNOT q[1], q[4]; CNOT q[2], q[5]
-// The list of instruction indices will be: [[0, 3], [1, 4], [2, 5]]
+// The list of instructions indices will be: [[0, 3], [1, 4], [2, 5]]
 [[nodiscard]] CqasmV3xInstructionsIndices to_cqasm_v3x_instructions_indices(
     const CqasmV3xSgmqGroupsIndices& sgmq_groups_indices) {
     if (sgmq_groups_indices.empty()) {

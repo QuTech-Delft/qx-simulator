@@ -26,10 +26,7 @@ void CircuitBuilder::visit_node(CqasmV3xNode&) {
 }
 
 void CircuitBuilder::visit_gate_instruction(CqasmV3xGateInstruction& gate_instruction) {
-    const auto& name = gate_instruction.instruction_ref->name;
-    const auto& operands = gate_instruction.operands;
-
-    for (const auto& instruction : get_gates(name, operands)) {
+    for (const auto& instruction : get_gates(*gate_instruction.gate, gate_instruction.operands)) {
         circuit_.add_instruction(instruction);
     }
 }
@@ -37,16 +34,17 @@ void CircuitBuilder::visit_gate_instruction(CqasmV3xGateInstruction& gate_instru
 std::vector<std::shared_ptr<Unitary>> CircuitBuilder::get_gates(
     const CqasmV3xGate& gate, const CqasmV3xOperands& operands) {
     if (gate.name == "inv" || gate.name == "pow" || gate.name == "ctrl") {
-        return get_modified_gates(gate, get_gates(*gate.gate, operands));
+        return get_modified_gates(gate, operands);
     } else {
         return get_default_gates(gate, operands);
     }
 }
 
 std::vector<std::shared_ptr<Unitary>> CircuitBuilder::get_modified_gates(
-    const CqasmV3xGate& gate, const std::vector<std::shared_ptr<Unitary>>& modified_gates) {
-    auto ret = std::vector<std::shared_ptr<Unitary>>{};
-    for (auto modified_gate : modified_gates) {
+    const CqasmV3xGate& gate, const CqasmV3xOperands& operands) {
+    const auto& modified_gates = get_gates(*gate.gate, operands);
+    auto ret = std::vector<std::shared_ptr<Unitary>>(modified_gates.size());
+    std::transform(modified_gates.begin(), modified_gates.end(), ret.begin(), [&gate](const auto& modified_gate){
         if (gate.name == "inv") {
             modified_gate->matrix = modified_gate->inverse();
         } else if (gate.name == "pow") {
@@ -55,26 +53,30 @@ std::vector<std::shared_ptr<Unitary>> CircuitBuilder::get_modified_gates(
         } else if (gate.name == "ctrl") {
             modified_gate->matrix = modified_gate->control();
         }
-    }
+        return modified_gate;
+    });
     return ret;
 }
 
 std::vector<std::shared_ptr<Unitary>> CircuitBuilder::get_default_gates(
     const CqasmV3xGate& gate, const CqasmV3xOperands& operands) {
-    const auto& name = gate.name;
     try {
         const auto& matrix_generator = gates::default_gates[gate.name];
         const auto& matrix = matrix_generator(gate.parameter);
         const auto& instructions_indices = get_instructions_indices(operands);
         auto ret = std::vector<std::shared_ptr<Unitary>>(instructions_indices.size());
         std::transform(
-            instructions_indices.begin(), instructions_indices.end(), ret.begin(), [&matrix](auto& unrolled_operand) {
-                return std::make_shared<Unitary>(
-                    std::make_shared<core::matrix_t>(matrix), std::make_shared<core::operands_t>(unrolled_operand));
-            });
+            instructions_indices.begin(), instructions_indices.end(), ret.begin(),
+                [&matrix](const auto& instruction_indices) {
+                    return std::make_shared<Unitary>(
+                        std::make_shared<core::matrix_t>(matrix),
+                        std::make_shared<core::operands_t>(instruction_indices)
+                    );
+                }
+            );
         return ret;
     } catch (const std::exception&) {
-        throw CircuitBuilderError{ fmt::format("unknown default gate: '{}'", name) };
+        throw CircuitBuilderError{ fmt::format("unknown default gate: '{}'", gate.name) };
     }
 }
 
