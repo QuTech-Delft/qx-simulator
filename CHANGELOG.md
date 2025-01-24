@@ -16,7 +16,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Documentation: GitHub pages.
 - Linters: `.clang-format` and `.clang-tidy`.
 - Integrate with libqasm 0.6.8 release:
-  - Add gate modifiers. 
+  - Add gate modifiers. Notice though that `pow` only works with integer exponents.
 
 ### Changed
 - Implement instructions as a hierarchy.
@@ -25,6 +25,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Implement `RegisterManager` as a singleton.
 - Change `QuantumState` by taking the measurement register out of it.
 - Change `Circuit::execute` to return a `SimulationIterationContext`.
+- Change `Matrix` and `DenseUnitaryMatrix` to use `std::vector` instead of `std::array`.
 - Change file, functions, and variable names.
 
 ### Removed
