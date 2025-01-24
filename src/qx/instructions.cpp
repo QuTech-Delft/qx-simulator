@@ -4,6 +4,18 @@
 
 namespace qx {
 
+BitControlledInstruction::BitControlledInstruction(ControlBits control_bits, std::shared_ptr<Instruction> instruction)
+: control_bits{ std::move(control_bits) }
+, instruction{ std::move(instruction) } {}
+
+void BitControlledInstruction::execute(SimulationIterationContext& context) {
+    auto is_bit_set = [&context](
+                          const auto& control_bit) { return context.measurement_register.test(control_bit.value); };
+    if (std::all_of(control_bits.begin(), control_bits.end(), is_bit_set)) {
+        instruction->execute(context);
+    }
+}
+
 Unitary::Unitary(std::shared_ptr<core::matrix_t> matrix, std::shared_ptr<core::operands_t> operands)
 : matrix{ std::move(matrix) }
 , operands{ std::move(operands) } {}

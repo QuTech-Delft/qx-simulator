@@ -11,9 +11,20 @@
 
 namespace qx {
 
+using ControlBits = std::vector<core::BitIndex>;
+
 struct Instruction {
     virtual ~Instruction() = default;
     virtual void execute(SimulationIterationContext& context) = 0;
+};
+
+struct BitControlledInstruction : public Instruction {
+    ControlBits control_bits;
+    std::shared_ptr<Instruction> instruction;
+
+    ~BitControlledInstruction() override = default;
+    BitControlledInstruction(ControlBits control_bits, std::shared_ptr<Instruction> instruction);
+    void execute(SimulationIterationContext& context) override;
 };
 
 struct Unitary : public Instruction {
