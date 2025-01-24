@@ -123,10 +123,10 @@ static UnitaryMatrix SWAP{
 
 static UnitaryMatrix CZ{
     Matrix{
-        Row{ 1, 0, 0, 0 },
-        Row{ 0, 1, 0, 0 },
-        Row{ 0, 0, 1, 0 },
-        Row{ 0, 0, 0, - 1}
+        Row{ 1, 0, 0,  0 },
+        Row{ 0, 1, 0,  0 },
+        Row{ 0, 0, 1,  0 },
+        Row{ 0, 0, 0, -1 }
     }
 };
 
