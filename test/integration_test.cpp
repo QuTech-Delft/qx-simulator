@@ -388,7 +388,7 @@ pow(2).X q
     std::size_t iterations = 10'000;
     auto actual = run_from_string(cqasm, iterations);
 
-    // Expected q state should be |0> as X^2 is equivalent to I
+    // Expected q state should be |0> as pow(2).X is equivalent to I
     EXPECT_EQ(actual.state,
         (SimulationResult::State{
             { "0", core::Complex{ .real = 1, .imag = 0, .norm = 1 } }
@@ -413,6 +413,27 @@ ctrl.X q[0], q[1]
         (SimulationResult::State{
             { "00", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } },
             { "11", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } }
+    }));
+}
+
+TEST_F(IntegrationTest, gate_modifier__ctrl_pow_2_s) {
+    auto cqasm = R"(
+version 3.0
+
+qubit[2] q
+
+H q[0]
+ctrl.pow(2).S q[0], q[1]
+)";
+    std::size_t iterations = 1;
+    auto actual = run_from_string(cqasm, iterations, "3.0");
+
+    // Expected q state should be |00>-|01> as ctrl.pow(2).S is equivalent to CZ
+    // State is |00>+|01> after H, then CZ just flips the phase of the |01> term
+    EXPECT_EQ(actual.state,
+        (SimulationResult::State{
+            { "00", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } },
+            { "01", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } }
     }));
 }
 
