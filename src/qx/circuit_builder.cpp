@@ -44,7 +44,7 @@ std::vector<std::shared_ptr<Unitary>> CircuitBuilder::get_modified_gates(
     const CqasmV3xGate& gate, const CqasmV3xOperands& operands) {
     const auto& modified_gates = get_gates(*gate.gate, operands);
     auto ret = std::vector<std::shared_ptr<Unitary>>(modified_gates.size());
-    std::transform(modified_gates.begin(), modified_gates.end(), ret.begin(), [&gate](const auto& modified_gate){
+    std::transform(modified_gates.begin(), modified_gates.end(), ret.begin(), [&gate](const auto& modified_gate) {
         if (gate.name == "inv") {
             modified_gate->matrix = modified_gate->inverse();
         } else if (gate.name == "pow") {
@@ -65,15 +65,13 @@ std::vector<std::shared_ptr<Unitary>> CircuitBuilder::get_default_gates(
         const auto& matrix = matrix_generator(gate.parameter);
         const auto& instructions_indices = get_instructions_indices(operands);
         auto ret = std::vector<std::shared_ptr<Unitary>>(instructions_indices.size());
-        std::transform(
-            instructions_indices.begin(), instructions_indices.end(), ret.begin(),
-                [&matrix](const auto& instruction_indices) {
-                    return std::make_shared<Unitary>(
-                        std::make_shared<core::matrix_t>(matrix),
-                        std::make_shared<core::operands_t>(instruction_indices)
-                    );
-                }
-            );
+        std::transform(instructions_indices.begin(),
+            instructions_indices.end(),
+            ret.begin(),
+            [&matrix](const auto& instruction_indices) {
+                return std::make_shared<Unitary>(
+                    std::make_shared<core::matrix_t>(matrix), std::make_shared<core::operands_t>(instruction_indices));
+            });
         return ret;
     } catch (const std::exception&) {
         throw CircuitBuilderError{ fmt::format("unknown default gate: '{}'", gate.name) };

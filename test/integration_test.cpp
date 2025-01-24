@@ -389,7 +389,10 @@ pow(2).X q
     auto actual = run_from_string(cqasm, iterations);
 
     // Expected q state should be |0> as X^2 is equivalent to I
-    EXPECT_EQ(actual.state, (SimulationResult::State{ { "0", core::Complex{ .real = 1, .imag = 0, .norm = 1 } } }));
+    EXPECT_EQ(actual.state,
+        (SimulationResult::State{
+            { "0", core::Complex{ .real = 1, .imag = 0, .norm = 1 } }
+    }));
 }
 
 TEST_F(IntegrationTest, control_gate_modifier__ctrl_x) {
