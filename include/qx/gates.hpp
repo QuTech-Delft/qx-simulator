@@ -11,7 +11,6 @@
 namespace qx::gates {
 
 using Matrix = core::Matrix;
-using Row = core::Row;
 using UnitaryMatrix = core::DenseUnitaryMatrix;
 
 using namespace std::complex_literals;  // i
@@ -25,29 +24,29 @@ static UnitaryMatrix IDENTITY = UnitaryMatrix::identity(2);
 
 static UnitaryMatrix X{
     Matrix{
-        Row{ 0, 1 },
-        Row{ 1, 0 }
+        { 0, 1 },
+        { 1, 0 }
     }
 };
 
 static UnitaryMatrix Y{
     Matrix{
-        Row{  0, -1i },
-        Row{ 1i,   0 }
+        {  0, -1i },
+        { 1i,   0 }
     }
 };
 
 static UnitaryMatrix Z{
     Matrix{
-        Row{ 1,  0 },
-        Row{ 0, -1 }
+        { 1,  0 },
+        { 0, -1 }
     }
 };
 
 static UnitaryMatrix S{
     Matrix{
-        Row{ 1,  0 },
-        Row{ 0, 1i }
+        { 1,  0 },
+        { 0, 1i }
     }
 };
 
@@ -55,8 +54,8 @@ static UnitaryMatrix SDAG = S.dagger();
 
 static UnitaryMatrix T{
     Matrix{
-        Row{ 1,                        0 },
-        Row{ 0, 1 / SQRT_2 + 1i / SQRT_2 }
+        { 1,                        0 },
+        { 0, 1 / SQRT_2 + 1i / SQRT_2 }
     }
 };
 
@@ -65,8 +64,8 @@ static UnitaryMatrix TDAG = T.dagger();
 static UnitaryMatrix RX(double theta) {
     return UnitaryMatrix{
         Matrix{
-            Row{       std::cos(theta / 2), -1i * std::sin(theta / 2) },
-            Row{ -1i * std::sin(theta / 2),       std::cos(theta / 2) }
+            {       std::cos(theta / 2), -1i * std::sin(theta / 2) },
+            { -1i * std::sin(theta / 2),       std::cos(theta / 2) }
         }
     };
 }
@@ -74,8 +73,8 @@ static UnitaryMatrix RX(double theta) {
 static UnitaryMatrix RY(double theta) {
     return UnitaryMatrix{
         Matrix{
-            Row{ std::cos(theta / 2), -std::sin(theta / 2) },
-            Row{ std::sin(theta / 2),  std::cos(theta / 2) }
+            { std::cos(theta / 2), -std::sin(theta / 2) },
+            { std::sin(theta / 2),  std::cos(theta / 2) }
         }
     };
 }
@@ -83,8 +82,8 @@ static UnitaryMatrix RY(double theta) {
 static UnitaryMatrix RZ(double theta) {
     return UnitaryMatrix{
         Matrix{
-            Row{ std::cos(theta / 2) - 1i * std::sin(theta / 2),                                              0 },
-            Row{                                              0, std::cos(theta / 2) + 1i * std::sin(theta / 2) }
+            { std::cos(theta / 2) - 1i * std::sin(theta / 2),                                              0 },
+            {                                              0, std::cos(theta / 2) + 1i * std::sin(theta / 2) }
         }
     };
 }
@@ -98,59 +97,59 @@ static auto MZ90 = RZ(-PI / 2);
 
 static UnitaryMatrix H{
     Matrix{
-        Row{ 1 / SQRT_2,  1 / SQRT_2 },
-        Row{ 1 / SQRT_2, -1 / SQRT_2 }
+        { 1 / SQRT_2,  1 / SQRT_2 },
+        { 1 / SQRT_2, -1 / SQRT_2 }
     }
 };
 
 static UnitaryMatrix CNOT{
     Matrix{
-        Row{ 1, 0, 0, 0 },
-        Row{ 0, 1, 0, 0 },
-        Row{ 0, 0, 0, 1 },
-        Row{ 0, 0, 1, 0 }
+        { 1, 0, 0, 0 },
+        { 0, 1, 0, 0 },
+        { 0, 0, 0, 1 },
+        { 0, 0, 1, 0 }
     }
 };
 
 static UnitaryMatrix SWAP{
     Matrix{
-        Row{ 1, 0, 0, 0 },
-        Row{ 0, 0, 1, 0 },
-        Row{ 0, 1, 0, 0 },
-        Row{ 0, 0, 0, 1 }
+        { 1, 0, 0, 0 },
+        { 0, 0, 1, 0 },
+        { 0, 1, 0, 0 },
+        { 0, 0, 0, 1 }
     }
 };
 
 static UnitaryMatrix CZ{
     Matrix{
-        Row{ 1, 0, 0,  0 },
-        Row{ 0, 1, 0,  0 },
-        Row{ 0, 0, 1,  0 },
-        Row{ 0, 0, 0, -1 }
+        { 1, 0, 0,  0 },
+        { 0, 1, 0,  0 },
+        { 0, 0, 1,  0 },
+        { 0, 0, 0, -1 }
     }
 };
 
 [[maybe_unused]] static UnitaryMatrix CR(double theta) {
     return UnitaryMatrix{
         Matrix{
-            Row{ 1, 0, 0,                                      0 },
-            Row{ 0, 1, 0,                                      0 },
-            Row{ 0, 0, 1,                                      0 },
-            Row{ 0, 0, 0, std::cos(theta) + 1i * std::sin(theta) }
+            { 1, 0, 0,                                      0 },
+            { 0, 1, 0,                                      0 },
+            { 0, 0, 1,                                      0 },
+            { 0, 0, 0, std::cos(theta) + 1i * std::sin(theta) }
         }
     };
 }
 
 static UnitaryMatrix TOFFOLI{
     Matrix{
-        Row{ 1, 0, 0, 0, 0, 0, 0, 0 },
-        Row{ 0, 1, 0, 0, 0, 0, 0, 0 },
-        Row{ 0, 0, 1, 0, 0, 0, 0, 0 },
-        Row{ 0, 0, 0, 1, 0, 0, 0, 0 },
-        Row{ 0, 0, 0, 0, 1, 0, 0, 0 },
-        Row{ 0, 0, 0, 0, 0, 1, 0, 0 },
-        Row{ 0, 0, 0, 0, 0, 0, 0, 1 },
-        Row{ 0, 0, 0, 0, 0, 0, 1, 0 }
+        { 1, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 1, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 1, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 1, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 1, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 1, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 1 },
+        { 0, 0, 0, 0, 0, 0, 1, 0 }
     }
 };
 
