@@ -47,18 +47,22 @@ namespace qx {
         ret.get_vec().resize(indices.size());
         if (is_qubit_variable(*index_ref->variable)) {
             auto qubit_range = register_manager.get_qubit_range(index_ref->variable->name);
-            std::transform(indices.get_vec().begin(), indices.get_vec().end(), ret.get_vec().begin(),
+            std::transform(indices.get_vec().begin(),
+                indices.get_vec().end(),
+                ret.get_vec().begin(),
                 [qubit_range](const auto& index) {
                     return cqasm_tree::make<CqasmV3xConstInt>(
                         static_cast<cqasm_v3x_primitives::Int>(qubit_range.first + index->value));
-            });
+                });
         } else if (is_bit_variable(*index_ref->variable)) {
             auto bit_range = register_manager.get_bit_range(index_ref->variable->name);
-            std::transform(indices.get_vec().begin(), indices.get_vec().end(), ret.get_vec().begin(),
+            std::transform(indices.get_vec().begin(),
+                indices.get_vec().end(),
+                ret.get_vec().begin(),
                 [bit_range](const auto& index) {
                     return cqasm_tree::make<CqasmV3xConstInt>(
                         static_cast<cqasm_v3x_primitives::Int>(bit_range.first + index->value));
-            });
+                });
         }
         return ret;
     } else {
