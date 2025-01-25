@@ -25,6 +25,7 @@ struct Complex {
 
 struct Index {
     std::size_t value;
+    auto operator<=>(const Index& other) const = default;
 };
 using BitIndex = Index;
 using QubitIndex = Index;
