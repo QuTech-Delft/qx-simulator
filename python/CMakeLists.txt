@@ -74,27 +74,7 @@ message(STATUS "Found python3 libraries at ${PYTHON_LIBRARIES}")
 # Look for SWIG.
 find_package(SWIG REQUIRED)
 
-# Include the support module, providing swig_add_module/library and
-# swig_link_libraries.
-# Unfortunately, prior to CMake 3.12, there appears to be *no way whatsoever*
-# to get the result of an include dir generator expression in the form of SWIG
-# include dirs, due to the omission of COMMAND_EXPAND_LISTS in UseSWIG (and the
-# non-existence of that directive prior to 3.8). While it's possible to use
-# $<JOIN...> to insert -I into the list to turn them into flags, it's not
-# possible to make those actually separate arguments as SWIG (sanely)
-# expects them to be, because spaces are escaped, because generator
-# expressions cannot return multiple arguments as they are in double
-# quotes. Basically, the only way to use SWIG before 3.12 is to use
-# globally scoped include_directories directives everywhere, scoping and
-# transitive dependencies be damned. It's complicated and above all insane.
-# So, for versions before 3.12, a patched module is provided in the compat
-# directory. This wraps the actual SWIG command in a Python script that does
-# the list expansion CMake 3.12- is so woefully incapable of.
-if("${CMAKE_VERSION}" VERSION_LESS "3.12.0")
-    include("${CMAKE_CURRENT_SOURCE_DIR}/compat/UseSWIG.cmake")
-else()
-    include(${SWIG_USE_FILE})
-endif()
+include(${SWIG_USE_FILE})
 
 
 #=============================================================================#
@@ -102,7 +82,7 @@ endif()
 #=============================================================================#
 
 # Configure SWIG.
-set(SWIG_FILE "${CMAKE_CURRENT_SOURCE_DIR}/Qxelarator.i")
+set(SWIG_FILE "${CMAKE_CURRENT_SOURCE_DIR}/qxelarator.i")
 
 set_source_files_properties("${SWIG_FILE}" PROPERTIES
     CPLUSPLUS ON
@@ -113,16 +93,12 @@ set_source_files_properties("${SWIG_FILE}" PROPERTIES
 set(CMAKE_SWIG_OUTDIR "${CMAKE_CURRENT_BINARY_DIR}")
 
 # Run SWIG to generated the C++ source file and Python wrapper module.
-if(${CMAKE_VERSION} VERSION_LESS "3.12.0")
-    swig_add_module(qxelarator python "${SWIG_FILE}")
-else()
-    swig_add_library(
-        qxelarator
-        TYPE MODULE
-        LANGUAGE python
-        SOURCES "${SWIG_FILE}"
-    )
-endif()
+swig_add_library(
+    qxelarator
+    TYPE MODULE
+    LANGUAGE python
+    SOURCES "${SWIG_FILE}"
+)
 
 # Compile the C++ source file and link it against the QX library.
 if(WIN32)

@@ -65,6 +65,7 @@ set(
 )
 mark_as_advanced(QX_PYTHON_EXT)
 
+
 #=============================================================================#
 # CMake weirdness and compatibility                                           #
 #=============================================================================#
@@ -105,12 +106,14 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 # This sort of fixes that (https://stackoverflow.com/questions/1941443)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
+# Generate compile_commands.json build file for clang-tidy
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 
 #=============================================================================#
 # Dependencies                                                                #
 #=============================================================================#
 
-find_package(absl  REQUIRED)
 find_package(Boost REQUIRED)
 find_package(fmt REQUIRED)
 find_package(libqasm REQUIRED)
@@ -122,19 +125,20 @@ find_package(range-v3 REQUIRED)
 #=============================================================================#
 
 add_library(qx
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Circuit.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/ErrorModels.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/GateConvertor.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/InstructionExecutor.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/OperandsHelper.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/QuantumState.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Qxelarator.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Random.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/RegisterManager.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/SimulationResult.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/Simulator.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/SparseArray.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/V3xLibqasmInterface.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/circuit.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/circuit_builder.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/cqasm_v3x.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/dense_unitary_matrix.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/error_models.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/instructions.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/operands_helper.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/quantum_state.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/qxelarator.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/random.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/register_manager.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/simulation_result.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/simulator.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx/sparse_array.cpp"
 )
 
 target_compile_features(qx PRIVATE
@@ -149,7 +153,6 @@ target_include_directories(qx PUBLIC
 if(CMAKE_COMPILER_IS_GNUCXX)
     target_compile_options(qx PRIVATE
         -Wall -Wextra -Werror -Wfatal-errors
-        -Wno-error=restrict
     )
 elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     target_compile_options(qx PRIVATE
@@ -203,7 +206,6 @@ endif()
 #=============================================================================#
 
 target_link_libraries(qx PUBLIC
-    absl::flat_hash_map
     fmt::fmt
     libqasm::libqasm
     range-v3::range-v3
@@ -214,7 +216,7 @@ target_link_libraries(qx PUBLIC
 #=============================================================================#
 
 add_executable(qx-simulator
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx-simulator/Simulator.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/qx-simulator/simulator.cpp"
 )
 target_link_libraries(qx-simulator PRIVATE
     qx
@@ -249,7 +251,6 @@ endif()
 message(STATUS
     "[${PROJECT_NAME}] Target include directories:\n"
     "      CMAKE_CURRENT_SOURCE_DIR/include/: ${CMAKE_CURRENT_SOURCE_DIR}/include/\n"
-    "      absl_INCLUDE_DIRS: ${absl_INCLUDE_DIRS}\n"
     "      Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}\n"
     "      fmt_INCLUDE_DIRS: ${fmt_INCLUDE_DIRS}\n"
     "      libqasm_INCLUDE_DIRS: ${libqasm_INCLUDE_DIRS}\n"
