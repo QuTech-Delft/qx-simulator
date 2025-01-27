@@ -38,7 +38,6 @@ jobs:
     name: Publish Python packages
     needs:
       - cibw-wheels
-      - cibw-wheels-linux-arm64
     runs-on: ubuntu-latest
     steps:
       - name: Download artifacts
