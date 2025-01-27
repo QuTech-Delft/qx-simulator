@@ -101,6 +101,9 @@ void CircuitBuilder::visit_non_gate_instruction(CqasmV3xNonGateInstruction& non_
                 circuit_.add_instruction(std::make_shared<Reset>(qubit_index));
             }
         }
+    } else if (name == "init") {
+    } else if (name == "barrier") {
+    } else if (name == "wait") {
     } else {
         throw CircuitBuilderError{ fmt::format("unsupported non-gate instruction: '{}'", name) };
     }
