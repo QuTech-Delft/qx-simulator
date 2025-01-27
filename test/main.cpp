@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+
 #include <iostream>
 
 int main_impl(int argc, char** argv, std::ostream&) {
