@@ -112,6 +112,29 @@ I q[1]
     }));
 }
 
+TEST_F(IntegrationTest, swap) {
+    auto cqasm = R"(
+version 3.0
+
+qubit[2] q
+
+H q[0]
+CZ q[0], q[1]
+SWAP q[0], q[1]
+)";
+    std::size_t iterations = 1;
+    auto actual = run_from_string(cqasm, iterations, "3.0");
+
+    // Expected q state should be |00>-|10> after SWAP
+    // State is |00>+|01> after H, then CZ just flips the phase of the |01> term,
+    // and SWAP exchanges states for qubits 0 and 1
+    EXPECT_EQ(actual.state,
+        (SimulationResult::State{
+            { "00", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } },
+            { "10", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } }
+    }));
+}
+
 TEST_F(IntegrationTest, measure) {
     auto cqasm = R"(
 version 3.0
@@ -356,6 +379,37 @@ b = measure qq[0]
         EXPECT_EQ(actual.get_bit_measurement(bit_measurement.state, "bb", 0), 1);
         EXPECT_LT(std::abs(static_cast<long long>(iterations / 2 - bit_measurement.count)), error);
     }
+}
+
+TEST_F(IntegrationTest, barrier_and_wait_are_just_discarded_by_the_simulator) {
+    auto cqasm = R"(
+version 3.0
+
+qubit[2] q
+
+barrier q
+wait(0) q[0]
+H q[0]
+barrier q[0]
+wait(-1) q[1]
+CNOT q[0], q[1]
+barrier q[1]
+wait(2) q
+)";
+    std::size_t iterations = 1;
+    auto actual = run_from_string(cqasm, iterations, "3.0");
+
+    EXPECT_EQ(actual.shots_requested, iterations);
+    EXPECT_EQ(actual.shots_done, iterations);
+
+    // Expected q state should be |00>+|11>
+    // State is |00>+|11> after creating the Bell state
+    // barrier and wait instructions are just discarded by the simulator
+    EXPECT_EQ(actual.state,
+        (SimulationResult::State{
+            { "00", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } },
+            { "11", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } }
+    }));
 }
 
 TEST_F(IntegrationTest, inverse_gate_modifier__inv_inv) {
