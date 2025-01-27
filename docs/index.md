@@ -12,3 +12,9 @@ It can be used as:
 
 - A standalone executable (built from C++), from the command line.
 - A module (called `qxelarator`), from Python projects (as a [Python package](https://pypi.org/project/libqasm/)).
+
+## cQASM v3.0 specification coverage
+
+QX simulator has the following shortcomings regarding to the current cQASM v3.0 specification:
+
+- Power gate modifier can only be used with integer exponents, not with fractional (rational or irrational) ones.

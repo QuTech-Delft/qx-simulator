@@ -1,93 +1,50 @@
 #pragma once
 
+#include <algorithm>  // all_of
 #include <array>
 #include <complex>  // conj
 #include <cstdint>  // size_t
+#include <cstdlib>  // abs
+#include <range/v3/numeric/accumulate.hpp>
+#include <range/v3/view/iota.hpp>
 #include <stdexcept>  // runtime_error
 
+#include "qx/compile_time_configuration.hpp"  // EPSILON
 #include "qx/core.hpp"  // QubitIndex, is_null
 
 namespace qx::core {
 
-template <std::size_t N>
+using Row = std::vector<std::complex<double>>;
+using Matrix = std::vector<Row>;
+
 class DenseUnitaryMatrix {
 public:
-    using Matrix = std::array<std::array<std::complex<double>, N>, N>;
+    explicit DenseUnitaryMatrix(const Matrix& m);
 
-    static constexpr DenseUnitaryMatrix<N> identity() {
-        Matrix m;
-        for (std::size_t i = 0; i < N; ++i) {
-            for (std::size_t j = 0; j < N; ++j) {
-                m[i][j] = (i == j) ? 1 : 0;
-            }
-        }
+    [[nodiscard]] std::complex<double>& at(std::size_t i, std::size_t j);
+    [[nodiscard]] const std::complex<double>& at(std::size_t i, std::size_t j) const;
 
-        return DenseUnitaryMatrix(m, false);
-    }
+    bool operator==(const DenseUnitaryMatrix& other) const;
+    DenseUnitaryMatrix operator*(const DenseUnitaryMatrix& other) const;
 
-    explicit constexpr DenseUnitaryMatrix(const Matrix& m)
-    : DenseUnitaryMatrix(m, true) {}
+    static DenseUnitaryMatrix identity(size_t M);
 
-    [[nodiscard]] inline constexpr const std::complex<double>& at(std::size_t i, std::size_t j) const {
-        return matrix[i][j];
-    }
-
-    constexpr DenseUnitaryMatrix<N> dagger() const {
-        Matrix m;
-        for (std::size_t i = 0; i < N; ++i) {
-            for (std::size_t j = 0; j < N; ++j) {
-                m[i][j] = std::conj(at(j, i));
-            }
-        }
-
-        return DenseUnitaryMatrix(m, false);
-    }
-
-    constexpr bool operator==(const DenseUnitaryMatrix<N>& other) const {
-        for (std::size_t i = 0; i < N; ++i) {
-            for (std::size_t j = 0; j < N; ++j) {
-                if (not is_null(at(i, j) - other.at(i, j))) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    constexpr DenseUnitaryMatrix<N> operator*(const DenseUnitaryMatrix<N>& other) const {
-        Matrix m;
-        for (std::size_t i = 0; i < N; ++i) {
-            for (std::size_t j = 0; j < N; ++j) {
-                m[i][j] = 0;
-                for (std::size_t k = 0; k < N; ++k) {
-                    m[i][j] += at(i, k) * other.at(k, j);
-                }
-            }
-        }
-
-        return DenseUnitaryMatrix(m, false);
-    }
+    [[nodiscard]] DenseUnitaryMatrix dagger() const;
+    [[nodiscard]] DenseUnitaryMatrix inverse() const;
+    [[nodiscard]] DenseUnitaryMatrix power(double exponent) const;
+    [[nodiscard]] DenseUnitaryMatrix power(int exponent) const;
+    [[nodiscard]] DenseUnitaryMatrix control() const;
 
 private:
-    constexpr DenseUnitaryMatrix(const Matrix& m, bool is_unitary_check)
-    : matrix(m) {
-        if (is_unitary_check) {
-            check_is_unitary();
-        }
-    }
+    DenseUnitaryMatrix(const Matrix& m, bool is_unitary_check);
+    void check_is_unitary() const;
+    void check_is_square() const;
 
-    constexpr void check_is_unitary() const {
-        if (*this * dagger() != identity()) {
-            throw std::runtime_error{ "matrix is not unitary" };
-        }
-    }
-
-    const std::array<std::array<std::complex<double>, N>, N> matrix;
+    Matrix matrix;
+    size_t N;  // matrix size
 };
 
-template <std::size_t N>
-using matrix_t = core::DenseUnitaryMatrix<1 << N>;
-template <std::size_t N>
-using operands_t = std::array<core::QubitIndex, N>;
+using matrix_t = core::DenseUnitaryMatrix;
+using operands_t = std::vector<core::QubitIndex>;
 
 }  // namespace qx::core

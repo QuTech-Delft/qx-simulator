@@ -1,140 +1,188 @@
 #pragma once
 
-#include <numbers>
+#include <cmath>  // pow
+#include <functional>  // function
+#include <numbers>  // pi_v, sqrt2_v
+#include <unordered_map>
 
+#include "qx/cqasm_v3x.hpp"
 #include "qx/dense_unitary_matrix.hpp"
 
 namespace qx::gates {
 
-template <std::size_t N>
-using UnitaryMatrix = core::DenseUnitaryMatrix<N>;
+using Matrix = core::Matrix;
+using UnitaryMatrix = core::DenseUnitaryMatrix;
 
-using namespace std::complex_literals;
-
-// All those matrices can currently be constexpr with GCC, but not Clang.
-
-#if !defined(_MSC_VER) && !defined(__clang__)
-#define __CONSTEXPR__ constexpr
-#else
-#define __CONSTEXPR__
-#endif
+using namespace std::complex_literals;  // i
 
 // clang-format off
 
-static __CONSTEXPR__ long double PI = std::numbers::pi_v<long double>;
-static __CONSTEXPR__ double SQRT_2 = std::numbers::sqrt2_v<long double>;
+inline constexpr long double PI = std::numbers::pi_v<long double>;
+inline constexpr double SQRT_2 = std::numbers::sqrt2_v<long double>;
 
-static __CONSTEXPR__ UnitaryMatrix<2> IDENTITY = UnitaryMatrix<2>::identity();
+static UnitaryMatrix IDENTITY = UnitaryMatrix::identity(2);
 
-static __CONSTEXPR__ UnitaryMatrix<2> X{{{
-    {0, 1},
-    {1, 0}
-}}};
+static UnitaryMatrix X{
+    Matrix{
+        { 0, 1 },
+        { 1, 0 }
+    }
+};
 
-static __CONSTEXPR__ UnitaryMatrix<2> Y{{{
-    {0, -1i},
-    {1i, 0}
-}}};
+static UnitaryMatrix Y{
+    Matrix{
+        {  0, -1i },
+        { 1i,   0 }
+    }
+};
 
-static __CONSTEXPR__ UnitaryMatrix<2> Z{{{
-    {1, 0},
-    {0, -1}
-}}};
+static UnitaryMatrix Z{
+    Matrix{
+        { 1,  0 },
+        { 0, -1 }
+    }
+};
 
-static __CONSTEXPR__ UnitaryMatrix<2> S{{{
-    {1, 0},
-    {0, 1i}
-}}};
+static UnitaryMatrix S{
+    Matrix{
+        { 1,  0 },
+        { 0, 1i }
+    }
+};
 
-static __CONSTEXPR__ UnitaryMatrix<2> SDAG = S.dagger();
+static UnitaryMatrix SDAG = S.dagger();
 
-static __CONSTEXPR__ UnitaryMatrix<2> T{{{
-    {1, 0},
-    {0, 1 / SQRT_2 + 1i / SQRT_2}
-}}};
+static UnitaryMatrix T{
+    Matrix{
+        { 1,                        0 },
+        { 0, 1 / SQRT_2 + 1i / SQRT_2 }
+    }
+};
 
-static __CONSTEXPR__ UnitaryMatrix<2> TDAG = T.dagger();
+static UnitaryMatrix TDAG = T.dagger();
 
-static __CONSTEXPR__ UnitaryMatrix<2> RX(double theta) {
-    return UnitaryMatrix<2>{{{
-        {std::cos(theta / 2), -1i * std::sin(theta / 2)},
-        {-1i * std::sin(theta / 2), std::cos(theta / 2)}
-    }}};
+static UnitaryMatrix RX(double theta) {
+    return UnitaryMatrix{
+        Matrix{
+            {       std::cos(theta / 2), -1i * std::sin(theta / 2) },
+            { -1i * std::sin(theta / 2),       std::cos(theta / 2) }
+        }
+    };
 }
 
-static __CONSTEXPR__ UnitaryMatrix<2> RY(double theta) {
-    return UnitaryMatrix<2>{{{
-        {std::cos(theta / 2), -std::sin(theta / 2)},
-        {std::sin(theta / 2), std::cos(theta / 2)}
-    }}};
+static UnitaryMatrix RY(double theta) {
+    return UnitaryMatrix{
+        Matrix{
+            { std::cos(theta / 2), -std::sin(theta / 2) },
+            { std::sin(theta / 2),  std::cos(theta / 2) }
+        }
+    };
 }
 
-static __CONSTEXPR__ UnitaryMatrix<2> RZ(double theta) {
-    return UnitaryMatrix<2>{{{
-        {std::cos(theta / 2) - 1i * std::sin(theta / 2), 0},
-        {0, std::cos(theta / 2) + 1i * std::sin(theta / 2)}
-    }}};
+static UnitaryMatrix RZ(double theta) {
+    return UnitaryMatrix{
+        Matrix{
+            { std::cos(theta / 2) - 1i * std::sin(theta / 2),                                              0 },
+            {                                              0, std::cos(theta / 2) + 1i * std::sin(theta / 2) }
+        }
+    };
 }
 
-static __CONSTEXPR__ auto X90 = RX(PI / 2);
-static __CONSTEXPR__ auto Y90 = RY(PI / 2);
-static __CONSTEXPR__ auto Z90 = RZ(PI / 2);
-static __CONSTEXPR__ auto MX90 = RX(-PI / 2);
-static __CONSTEXPR__ auto MY90 = RY(-PI / 2);
-static __CONSTEXPR__ auto MZ90 = RZ(-PI / 2);
+static auto X90 = RX(PI / 2);
+static auto Y90 = RY(PI / 2);
+static auto Z90 = RZ(PI / 2);
+static auto MX90 = RX(-PI / 2);
+static auto MY90 = RY(-PI / 2);
+static auto MZ90 = RZ(-PI / 2);
 
-static __CONSTEXPR__ UnitaryMatrix<2> H{{{
-    {1 / SQRT_2, 1 / SQRT_2},
-    {1 / SQRT_2, -1 / SQRT_2}
-}}};
+static UnitaryMatrix H{
+    Matrix{
+        { 1 / SQRT_2,  1 / SQRT_2 },
+        { 1 / SQRT_2, -1 / SQRT_2 }
+    }
+};
 
-static __CONSTEXPR__ UnitaryMatrix<4> CNOT{{{
-    {1, 0, 0, 0},
-    {0, 1, 0, 0},
-    {0, 0, 0, 1},
-    {0, 0, 1, 0}
-}}};
+static UnitaryMatrix CNOT{
+    Matrix{
+        { 1, 0, 0, 0 },
+        { 0, 1, 0, 0 },
+        { 0, 0, 0, 1 },
+        { 0, 0, 1, 0 }
+    }
+};
 
-static __CONSTEXPR__ UnitaryMatrix<4> SWAP{{{
-    {1, 0, 0, 0},
-    {0, 0, 1, 0},
-    {0, 1, 0, 0},
-    {0, 0, 0, 1}
-}}};
+static UnitaryMatrix SWAP{
+    Matrix{
+        { 1, 0, 0, 0 },
+        { 0, 0, 1, 0 },
+        { 0, 1, 0, 0 },
+        { 0, 0, 0, 1 }
+    }
+};
 
-static __CONSTEXPR__ UnitaryMatrix<4> CZ{{{
-    {1, 0, 0, 0},
-    {0, 1, 0, 0},
-    {0, 0, 1, 0},
-    {0, 0, 0, -1}
-}}};
+static UnitaryMatrix CZ{
+    Matrix{
+        { 1, 0, 0,  0 },
+        { 0, 1, 0,  0 },
+        { 0, 0, 1,  0 },
+        { 0, 0, 0, -1 }
+    }
+};
 
-[[maybe_unused]] static __CONSTEXPR__ UnitaryMatrix<4> CR(double theta) {
-    return UnitaryMatrix<4>{{{
-        {1, 0, 0, 0},
-        {0, 1, 0, 0},
-        {0, 0, 1, 0},
-        {0, 0, 0, std::cos(theta) + 1i * std::sin(theta)}
-    }}};
+[[maybe_unused]] static UnitaryMatrix CR(double theta) {
+    return UnitaryMatrix{
+        Matrix{
+            { 1, 0, 0,                                      0 },
+            { 0, 1, 0,                                      0 },
+            { 0, 0, 1,                                      0 },
+            { 0, 0, 0, std::cos(theta) + 1i * std::sin(theta) }
+        }
+    };
 }
 
-static __CONSTEXPR__ UnitaryMatrix<8> TOFFOLI{{{
-    {1, 0, 0, 0, 0, 0, 0, 0},
-    {0, 1, 0, 0, 0, 0, 0, 0},
-    {0, 0, 1, 0, 0, 0, 0, 0},
-    {0, 0, 0, 1, 0, 0, 0, 0},
-    {0, 0, 0, 0, 1, 0, 0, 0},
-    {0, 0, 0, 0, 0, 1, 0, 0},
-    {0, 0, 0, 0, 0, 0, 0, 1},
-    {0, 0, 0, 0, 0, 0, 1, 0}
-}}};
+static UnitaryMatrix TOFFOLI{
+    Matrix{
+        { 1, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 1, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 1, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 1, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 1, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 1, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 1 },
+        { 0, 0, 0, 0, 0, 0, 1, 0 }
+    }
+};
+
+using GateName = std::string;
+using UnitaryMatrixGenerator = std::function<gates::UnitaryMatrix(CqasmV3xParameter)>;
+
+static std::unordered_map<GateName, UnitaryMatrixGenerator> default_gates = {
+    { "CNOT", [](const auto&) { return gates::CNOT; } },
+    { "CR", [](const auto& parameter) { return gates::CR(parameter->as_const_float()->value); } },
+    { "CRk", [](const auto& parameter) {
+        return gates::CR(static_cast<double>(gates::PI) / std::pow(2, parameter->as_const_int()->value - 1));
+    } },
+    { "CZ", [](const auto&) { return gates::CZ; } },
+    { "H", [](const auto&) { return gates::H; } },
+    { "I", [](const auto&) { return gates::IDENTITY; } },
+    { "mX90", [](const auto&) { return gates::MX90; } },
+    { "mY90", [](const auto&) { return gates::MY90; } },
+    { "Rx", [](const auto& parameter) { return gates::RX(parameter->as_const_float()->value); } },
+    { "Ry", [](const auto& parameter) { return gates::RY(parameter->as_const_float()->value); } },
+    { "Rz", [](const auto& parameter) { return gates::RZ(parameter->as_const_float()->value); } },
+    { "S", [](const auto&) { return gates::S; } },
+    { "Sdag", [](const auto&) { return gates::SDAG; } },
+    { "SWAP", [](const auto&) { return gates::SWAP; } },
+    { "T", [](const auto&) { return gates::T; } },
+    { "Tdag", [](const auto&) { return gates::TDAG; } },
+    { "TOFFOLI", [](const auto&) { return gates::TOFFOLI; } },
+    { "X", [](const auto&) { return gates::X; } },
+    { "X90", [](const auto&) { return gates::X90; } },
+    { "Y", [](const auto&) { return gates::Y; } },
+    { "Y90", [](const auto&) { return gates::Y90; } },
+    { "Z", [](const auto&) { return gates::Z; } }
+};
 
 // clang-format on
-
-#if !defined(_MSC_VER) && !defined(__clang__)
-static_assert(T * T == S);
-static_assert(H * H == UnitaryMatrix<2>::identity());
-static_assert(S * S == Z);
-#endif
 
 }  // namespace qx::gates

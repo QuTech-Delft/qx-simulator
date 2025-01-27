@@ -9,9 +9,9 @@
 #include <unordered_map>
 #include <vector>
 
+#include "libqasm/v3x/semantic_generated.hpp"
 #include "qx/cqasm_v3x.hpp"
 #include "qx/simulation_error.hpp"
-#include "v3x/cqasm-semantic-gen.hpp"
 
 namespace qx {
 

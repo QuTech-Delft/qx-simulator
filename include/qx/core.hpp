@@ -23,13 +23,12 @@ struct Complex {
     auto operator<=>(const Complex& other) const = default;
 };
 
-struct QubitIndex {
+struct Index {
     std::size_t value;
+    auto operator<=>(const Index& other) const = default;
 };
-
-struct BitIndex {
-    std::size_t value;
-};
+using BitIndex = Index;
+using QubitIndex = Index;
 
 using BasisVector = boost::dynamic_bitset<uint32_t>;
 using MeasurementRegister = boost::dynamic_bitset<uint32_t>;
@@ -38,10 +37,10 @@ using PairBasisVectorStringComplex = std::pair<std::string, std::complex<double>
 
 [[nodiscard]] inline constexpr bool is_not_null(std::complex<double> c) {
 #if defined(_MSC_VER)
-    return c.real() > config::EPSILON || -c.real() > config::EPSILON || c.imag() > config::EPSILON ||
-        -c.imag() > config::EPSILON;
+    return c.real() >= config::EPSILON || -c.real() >= config::EPSILON || c.imag() >= config::EPSILON ||
+        -c.imag() >= config::EPSILON;
 #else
-    return std::abs(c.real()) > config::EPSILON || std::abs(c.imag()) > config::EPSILON;
+    return std::abs(c.real()) >= config::EPSILON || std::abs(c.imag()) >= config::EPSILON;
 #endif
 }
 

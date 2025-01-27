@@ -1,10 +1,12 @@
 #pragma once
 
 #include <algorithm>  // for_each
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "qx/circuit.hpp"
-#include "qx/cqasm_v3x.hpp"
+#include "qx/operands_helper.hpp"
 #include "qx/simulation_error.hpp"
 
 namespace qx {
@@ -26,15 +28,14 @@ public:
     Circuit build();
 
 private:
-    template <std::size_t N>
-    using cqasm_v3x_operands_indices_t = std::array<CqasmV3xIndices, N>;
-
-private:
     void visit_node(CqasmV3xNode&) override;
-    void visit_instruction(CqasmV3xInstruction& instruction) override;
-    template <std::size_t NumberOfQubitOperands>
-    void visit_gate_instruction(core::matrix_t<NumberOfQubitOperands> matrix,
-        cqasm_v3x_operands_indices_t<NumberOfQubitOperands> operands_indices);
+    void visit_gate_instruction(CqasmV3xGateInstruction& gate_instruction) override;
+    void visit_non_gate_instruction(CqasmV3xNonGateInstruction& non_gate_instruction) override;
+
+    std::vector<std::shared_ptr<Unitary>> get_gates(const CqasmV3xGate& gate, const CqasmV3xOperands& operands);
+    std::vector<std::shared_ptr<Unitary>> get_modified_gates(
+        const CqasmV3xGate& gate, const CqasmV3xOperands& operands);
+    std::vector<std::shared_ptr<Unitary>> get_default_gates(const CqasmV3xGate& gate, const CqasmV3xOperands& operands);
 
 private:
     Circuit& circuit_;

@@ -8,6 +8,28 @@
 
 namespace qx::core {
 
+QuantumStateError::QuantumStateError(const std::string& message)
+: std::runtime_error{ message } {}
+
+void apply_impl(const matrix_t& matrix, const operands_t& operands, BasisVector index,
+    const SparseComplex& sparse_complex, SparseArray::MapBasisVectorToSparseComplex& storage) {
+    BasisVector reduced_index{ operands.size() };
+    for (std::size_t i = 0; i < operands.size(); ++i) {
+        reduced_index.set(i, index.test(operands.at(operands.size() - i - 1).value));
+    }
+    for (std::size_t i = 0; i < (static_cast<size_t>(1) << operands.size()); ++i) {
+        std::complex<double> added_value = sparse_complex.value * matrix.at(i, reduced_index.to_ulong());
+        if (not is_null(added_value)) {
+            auto new_index = index;
+            for (std::size_t k = 0; k < operands.size(); ++k) {
+                new_index.set(operands.at(operands.size() - k - 1).value, utils::get_bit(i, k));
+            }
+            auto it = storage.try_emplace(new_index, SparseComplex{ 0. });
+            it.first->second.value += added_value;
+        }
+    }
+}
+
 void QuantumState::check_quantum_state() {
     if (number_of_qubits_ == 0) {
         throw QuantumStateError{ "number of qubits needs to be at least 1" };

@@ -1,7 +1,13 @@
-# Change Log
+# Changelog
 
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
+
+### Types of changes:
+- **Added** for new features.
+- **Changed** for changes in existing functionality.
+- **Fixed** for any bug fixes.
+- **Removed** for now removed features.
 
 
 ## [ 0.7.3 ] - [ xxxx-yy-zz ]
@@ -9,6 +15,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Documentation: GitHub pages.
 - Linters: `.clang-format` and `.clang-tidy`.
+- Integrate with libqasm 0.6.8 release:
+  - Add gate modifiers. Notice though that `pow` only works with integer exponents.
 
 ### Changed
 - Implement instructions as a hierarchy.
@@ -17,34 +25,29 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Implement `RegisterManager` as a singleton.
 - Change `QuantumState` by taking the measurement register out of it.
 - Change `Circuit::execute` to return a `SimulationIterationContext`.
+- Change `Matrix` and `DenseUnitaryMatrix` to use `std::vector` instead of `std::array`.
 - Change file, functions, and variable names.
 
 ### Removed
-- Remove `abseil` library dependency.
+- `abseil` library dependency.
 
 
 ## [ 0.7.2 ] - [ 2024-11-20 ]
 
 ### Added
-- Integrate with libqasm 0.6.7 release.
-- Add `reset` instruction.
-- Make QX simulator aware of bit (register) variables.
-- Update `test` and `assets` workflows.
+- Integrate with libqasm 0.6.7 release:
+  - Add `reset` instruction.
+  - Make QX simulator aware of bit (register) variables. 
 
 ### Changed
-
-### Removed
+- Update `test` and `assets` workflows.
 
 
 ## [ 0.7.1 ] - [ 2024-05-22 ]
 
 ### Added
-- Integrate with libqasm 0.6.6 release.
-- Allow multiple qubit/bit (register) definitions and mid-circuit measurements.
-
-### Changed
-
-### Removed
+- Integrate with libqasm 0.6.6 release:
+  - Allow multiple qubit/bit (register) definitions and mid-circuit measurements.
 
 
 ## [ 0.7.0 ] - [ 2024-04-17 ]
@@ -69,9 +72,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 - New GitHub workflows.
-- Working ARM runners in the CI.
 
-### Removed
+### Fixed
+- ARM runners in the CI.
 
 
 ## [ 0.6.4 ] - [ 2023-09-21 ]
@@ -79,10 +82,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Meaningful error message when parsing or simulation fails.
 
-### Changed
+### Fixed
 - Does not crash when too many qubits asked.
-
-### Removed
 
 
 ## [ 0.6.3 ] - [ 2023-09-19 ]
@@ -94,10 +95,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - C++23.
 - Manage dependencies via CMake FetchContent.
 - `gtest` instead of `doctest`.
-- Various fixes to GitHub Actions.
-- Fix bug in bitset due to bool automatic casting to 32 bits.
-- Documentation formatting fixes.
 - Doc chapter about internals.
+
+### Fixed
+- GitHub Actions.
+- Bug in bitset due to bool automatic casting to 32 bits.
+- Documentation formatting.
 
 ### Removed
 - Git submodules and `deps` folder.
@@ -111,11 +114,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - `RandomTest` doing Kolmogorov-Smirnov statistical test to match random numbers with their ideal probability distribution.
 
 ### Changed
-- Fix docs.
 - Source files use `.hpp`/`.cpp` extensions.
 - Random number distributions (integer min/max and real 0-1) are done in-house for portability and consistency of results.
 
-### Removed
+### Fixed
+- Docs.
 
 
 ## [ 0.6.1 ] - [ 2023-02-01 ]
@@ -130,12 +133,14 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   and returning user-friendly Python type.
 
 ### Changed
-- Fix README.
 - `results` section in JSON contains integers instead of floats (those integers being the number of occurrences).
 - In relation to previous point, `results` only relates to measurement register averaging,
   and no longer to quantum state when doing a single shot.
   For that, use the "state" section in the JSON.
 - Output float precision is 8 decimals instead of 6.
+
+### Fixed
+- README.
 
 ### Removed
 - Most Python tests. Already covered in C++ integration test, and they didn't check much anyway.
@@ -168,10 +173,8 @@ Almost a complete rewrite. No functional change except it's faster.
 ### Added
 - `set_string` method to parse a cQASM string directly instead of a cQASM file.
 
-### Changed
-- Fix issue #118: quantum state is always displayed, as well as measurement register averaging.
-
-### Removed
+### Fixed
+- Issue #118: quantum state is always displayed, as well as measurement register averaging.
 
  
 ## [ 0.5.4 ] - [ 2023-01-06 ]
@@ -180,8 +183,10 @@ Almost a complete rewrite. No functional change except it's faster.
 - Tests for `measure` gate.
 
 ### Changed
-- Fix issues #91 and #114.
-- As part of #114, switch to sequential/simple `measure` gate.
+- Switch to sequential/simple `measure` gate (as part of the fix for issue #114).
+
+### Fixed
+- Issues #91 and #114.
 
 ### Removed
 - QFT implementation (never instantiated, so no functional change).
@@ -196,19 +201,11 @@ Almost a complete rewrite. No functional change except it's faster.
 ### Added
 - Python 3.11 support.
 
-### Changed
-
-### Removed
-
 
 ## [ 0.5.2 ] - [ 2022-12-7 ]
 
-### Added
-
-### Changed
-- Fix version number incorrectly set in previous release.
-
-### Removed
+### Fixed
+- Version number incorrectly set in previous release.
 
 
 ## [ 0.5.1 ] - [ 2022-12-6 ]
@@ -217,9 +214,11 @@ Almost a complete rewrite. No functional change except it's faster.
 - ReadTheDocs documentation.
 
 ### Changed
-- Fix Python versions on Linux.
 - Update README with new API functions.
 - Tidy tests and circuits folder.
+
+### Fixed
+- Python versions on Linux.
 
 ### Removed
 - Python 3.6 support.
@@ -240,24 +239,18 @@ Almost a complete rewrite. No functional change except it's faster.
 - Output complex amplitudes when not averaging measurement register.
 - Do not add automatically a `measure_all` when doing measurement averaging. Average the measurement register only.
 
-### Removed
-- Most preprocessor macros, e.g., for gate creation.
-- A lot of old and useless code, and a lot of dead code.
-
 ### Fixed
 - Close input file when done.
 - Code style has been completely fixed automatically with clang-format.
 - Headers no longer include `.cc` file.
 - Move implementations to `.cc` files instead of headers.
 
+### Removed
+- Most preprocessor macros, e.g., for gate creation.
+- A lot of old and useless code, and a lot of dead code.
+
 
 ## [ 0.4.2 ] - [ 2021-06-01 ]
-
-### Added
-
-### Changed
-
-### Removed
 
 ### Fixed
 - Wheels no longer require exotic CPU extensions to work.
@@ -271,10 +264,6 @@ Almost a complete rewrite. No functional change except it's faster.
 - Installation logic in build system.
 - `qxelarator` wheels include QX simulator binary (and friends).
 
-### Changed
-
-### Removed
-
 ### Fixed
 - Build on MacOS.
 - Build on Windows using MSVC.
@@ -283,12 +272,8 @@ Almost a complete rewrite. No functional change except it's faster.
 
 ## [ 0.4.0 ] - [ 2021-05-20 ]
 
-### Added
-
 ### Changed
 - Replace XPU-based threading with OpenMP.
-
-### Removed
 
 ### Fixed
 - Various bugs and inefficiencies related to multithreading.
@@ -300,20 +285,8 @@ Almost a complete rewrite. No functional change except it's faster.
 - `qxelerator` to support cqasm v1.0.
 - Setup instructions in README.md.
 
-### Changed
-
-### Removed
-
-### Fixed
-
 
 ## [ 0.2.5 ] - [ 2018-12-21 ]
-
-### Added
-
-### Changed
-
-### Removed
 
 ### Fixed
 - Issue with libqasm submodule. This release is now with the correct version.
@@ -321,37 +294,23 @@ Almost a complete rewrite. No functional change except it's faster.
 
 ## [ 0.2.4 ] - [ 2018-12-14 ]
 
-### Added
-
-### Changed
+### Fixed
+- Single qubit operations now accept integers as arguments, previously it required floats.
 
 ### Removed
 - `-u 0` in Jenkins file again.
 
-### Fixed
-- Single qubit operations now accept integers as arguments, previously it required floats.
-
 
 ## [ 0.2.3 ] - [ 2018-11-05 ]
 
-### Added
-
 ### Changed
 - Update libqasm to get the hotfix.
-
-### Removed
 
 ### Fixed
 - pthread mutex locking bug in XPU worker.
 
 
 ## [ 0.2.2 ] - [ 2018-09-25 ]
-
-### Added
-
-### Changed
-
-### Removed
 
 ### Fixed
 - Bug in measurement and preparation implementation for large number of qubits.
@@ -364,12 +323,6 @@ Almost a complete rewrite. No functional change except it's faster.
 - Multi-shot simulation mode to save simulation time on the Quantum Inspire web platform.
 - Enable quantum noise simulation using the Depolarizing Error Model.
 - Enable Identity gate support.
-
-### Changed
-
-### Removed
-
-### Fixed
 
 
 ## [ 0.2.0 ] - [ 2018-08-23 ]
@@ -385,8 +338,6 @@ Almost a complete rewrite. No functional change except it's faster.
 
 ### Changed
 - Re-implement classical NOT gate for full binary-controlled gate support.
-
-### Removed
 
 ### Fixed
 - Overflow bug when simulating more than 31 qubits.
