@@ -33,7 +33,7 @@ CNOT q[0], q[1]
     EXPECT_EQ(actual.shots_requested, iterations);
     EXPECT_EQ(actual.shots_done, iterations);
 
-    // Expected q state should be |00>+|11>
+    // Expected 'q' state should be |00>+|11>
     // State is |00>+|11> after creating the Bell state
     EXPECT_EQ(actual.state,
         (SimulationResult::State{
@@ -53,7 +53,7 @@ CNOT q[0:2], q[3:5]
     std::size_t iterations = 2;
     auto actual = run_from_string(cqasm, iterations);
 
-    // Expected q state should be |111111>
+    // Expected 'q' state should be |111111>
     EXPECT_EQ(actual.state,
         (SimulationResult::State{
             { "111111", core::Complex{ .real = 1, .imag = 0, .norm = 1 } }
@@ -102,7 +102,7 @@ I q[1]
     EXPECT_EQ(actual.shots_requested, iterations);
     EXPECT_EQ(actual.shots_done, iterations);
 
-    // Expected q state should be |00>+|11>
+    // Expected 'q' state should be |00>+|11>
     // State is |00>+|11> after creating the Bell state
     // Identity gates do not modify the state of the qubits
     EXPECT_EQ(actual.state,
@@ -125,7 +125,7 @@ SWAP q[0], q[1]
     std::size_t iterations = 1;
     auto actual = run_from_string(cqasm, iterations, "3.0");
 
-    // Expected q state should be |00>-|10> after SWAP
+    // Expected 'q' state should be |00>-|10> after SWAP
     // State is |00>+|01> after H, then CZ just flips the phase of the |01> term,
     // and SWAP exchanges states for qubits 0 and 1
     EXPECT_EQ(actual.state,
@@ -151,11 +151,11 @@ b = measure q
     std::size_t iterations = 10'000;
     auto actual = run_from_string(cqasm, iterations);
 
-    // Expected q state should be |001> or |111>
+    // Expected 'q' state should be |001> or |111>
     EXPECT_TRUE(actual.state[0].value.ends_with('1'));
     EXPECT_EQ(actual.state[0].amplitude, (core::Complex{ .real = 1, .imag = 0, .norm = 1 }));
 
-    // Expected b value should be "001" 50% of the cases and "111" 50% of the cases
+    // Expected 'b' value should be "001" 50% of the cases and "111" 50% of the cases
     auto error = static_cast<std::uint64_t>(static_cast<double>(iterations) / 2 * 0.05);
     EXPECT_EQ(actual.measurements.size(), 2);
     EXPECT_EQ(actual.measurements[0].state, "001");
@@ -182,11 +182,11 @@ b[2] = measure q[2]
     std::size_t iterations = 10'000;
     auto actual = run_from_string(cqasm, iterations);
 
-    // Expected q state should be |001> or |111>
+    // Expected 'q' state should be |001> or |111>
     EXPECT_TRUE(actual.state[0].value.ends_with('1'));
     EXPECT_EQ(actual.state[0].amplitude, (core::Complex{ .real = 1, .imag = 0, .norm = 1 }));
 
-    // Expected b value should be "001" 50% of the cases and "111" 50% of the cases
+    // Expected 'b' value should be "001" 50% of the cases and "111" 50% of the cases
     auto error = static_cast<std::uint64_t>(static_cast<double>(iterations) / 2 * 0.05);
     EXPECT_EQ(actual.measurements.size(), 2);
     EXPECT_EQ(actual.measurements[0].state, "001");
@@ -212,7 +212,7 @@ b = measure q
     std::size_t iterations = 10'000;
     auto actual = run_from_string(cqasm, iterations);
 
-    // Expected q state should be |00>+|11> or |01>+|10>
+    // Expected 'q' state should be |00>+|11> or |01>+|10>
     auto error = static_cast<std::uint64_t>(static_cast<double>(iterations) / 2 * 0.05);
     EXPECT_EQ(actual.measurements.size(), 2);
     EXPECT_TRUE(actual.measurements[0].state == "00" || actual.measurements[0].state == "01");
@@ -262,11 +262,11 @@ reset q
     std::size_t iterations = 10'000;
     auto actual = run_from_string(cqasm, iterations);
 
-    // Expected q state should always be |0> because reset modifies the qubit state
+    // Expected 'q' state should always be |0> because 'reset' modifies the qubit state
     EXPECT_EQ(actual.state[0].value, "0");
     EXPECT_EQ(actual.state[0].amplitude, (core::Complex{ .real = 1, .imag = 0, .norm = 1 }));
 
-    // Expected b value should always be "1" because reset does not modify the measurement register
+    // Expected 'b' value should always be '1' because 'reset' does not modify the measurement register
     EXPECT_EQ(actual.measurements.size(), 1);
     EXPECT_TRUE(actual.measurements[0].state == "1");
     EXPECT_EQ(actual.measurements[0].count, iterations);
@@ -285,9 +285,9 @@ reset q[0]
 )";
     auto actual = run_from_string(cqasm, iterations);
 
-    // Expected q state should be |00>+|10>
+    // Expected 'q' state should be |00>+|10>
     // State is |00>+|11> after creating the Bell state
-    // Then reset sets q to |0>, leaving the state as |00>+|10>
+    // Then 'reset' sets q to |0>, leaving the state as |00>+|10>
     EXPECT_EQ(actual.state,
         (SimulationResult::State{
             { "00", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } },
@@ -309,10 +309,10 @@ b = measure q
 )";
     auto actual = run_from_string(cqasm, iterations);
 
-    // Expected q state should be |00>+|10>
+    // Expected 'q' state should be |00>+|10>
     // State is |00>+|11> after creating the Bell state
-    // Then reset sets q to |0>, leaving the state as |00>+|10>
-    // The measure provokes a collapse of the state to either |00> or |10>
+    // Then 'reset' sets q to |0>, leaving the state as |00>+|10>
+    // 'measure' provokes a collapse of the state to either |00> or |10>
     EXPECT_TRUE(actual.state[0].value.ends_with('0'));
     EXPECT_EQ(actual.state[0].amplitude, (core::Complex{ .real = 1, .imag = 0, .norm = 1 }));
 
@@ -337,16 +337,16 @@ reset q[0]
 )";
     auto actual = run_from_string(cqasm, iterations);
 
-    // Expected q state should be |00> or |10>
+    // Expected 'q' state should be |00> or |10>
     // State is |00>+|11> after creating the Bell state
-    // The measure provokes a collapse of the state to either |00> or |11>
-    // Then reset sets q0 to |0>, leaving the state as |00> or |10>
+    // 'measure' provokes a collapse of the state to either |00> or |11>
+    // Then 'reset' sets q0 to |0>, leaving the state as |00> or |10>
     EXPECT_TRUE(actual.state[0].value.ends_with('0'));
     EXPECT_EQ(actual.state[0].amplitude, (core::Complex{ .real = 1, .imag = 0, .norm = 1 }));
 
-    // Expected b value should be "00" 50% of the cases and "11" 50% of the cases
-    // because the measure happens right after creating the Bell state,
-    // and reset does not modify the measurement register
+    // Expected 'b' value should be '00' 50% of the cases and '11' 50% of the cases
+    // because 'measure' happens right after creating the Bell state,
+    // and 'reset' does not modify the measurement register
     auto error = static_cast<std::uint64_t>(static_cast<double>(iterations) / 2 * 0.05);
     EXPECT_EQ(actual.measurements.size(), 2);
     EXPECT_TRUE(actual.measurements[0].state == "00" || actual.measurements[0].state == "11");
@@ -371,8 +371,8 @@ b = measure qq[0]
     std::size_t iterations = 10'000;
     auto actual = run_from_string(cqasm, iterations);
 
-    // Expected bb[0] value should always be "1"
-    // Expected b value should be "0" 50% of the cases and "1" 50% of the cases
+    // Expected bb[0] value should always be '1'
+    // Expected 'b' value should be '0' 50% of the cases and '1' 50% of the cases
     auto error = static_cast<std::uint64_t>(static_cast<double>(iterations) / 2 * 0.05);
     EXPECT_EQ(actual.bit_measurements.size(), 2);
     for (const auto& bit_measurement : actual.bit_measurements) {
@@ -402,9 +402,9 @@ wait(2) q
     EXPECT_EQ(actual.shots_requested, iterations);
     EXPECT_EQ(actual.shots_done, iterations);
 
-    // Expected q state should be |00>+|11>
+    // Expected 'q' state should be |00>+|11>
     // State is |00>+|11> after creating the Bell state
-    // barrier and wait instructions are just discarded by the simulator
+    // 'barrier' and 'wait' instructions are just discarded by the simulator
     EXPECT_EQ(actual.state,
         (SimulationResult::State{
             { "00", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } },
@@ -423,7 +423,7 @@ inv.inv.H q
     std::size_t iterations = 10'000;
     auto actual = run_from_string(cqasm, iterations);
 
-    // Expected q state should be |0>+|1> as inv.inv.H is equivalent to H
+    // Expected 'q' state should be |0>+|1> as inv.inv.H is equivalent to H
     EXPECT_EQ(actual.state,
         (SimulationResult::State{
             { "0", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } },
@@ -442,7 +442,7 @@ pow(2).X q
     std::size_t iterations = 10'000;
     auto actual = run_from_string(cqasm, iterations);
 
-    // Expected q state should be |0> as pow(2).X is equivalent to I
+    // Expected 'q' state should be |0> as pow(2).X is equivalent to I
     EXPECT_EQ(actual.state,
         (SimulationResult::State{
             { "0", core::Complex{ .real = 1, .imag = 0, .norm = 1 } }
@@ -461,7 +461,7 @@ ctrl.X q[0], q[1]
     std::size_t iterations = 1;
     auto actual = run_from_string(cqasm, iterations, "3.0");
 
-    // Expected q state should be |00>+|11> as ctrl.X is equivalent to CNOT
+    // Expected 'q' state should be |00>+|11> as ctrl.X is equivalent to CNOT
     // State is |00>+|11> after creating the Bell state
     EXPECT_EQ(actual.state,
         (SimulationResult::State{
@@ -482,7 +482,7 @@ ctrl.pow(2).S q[0], q[1]
     std::size_t iterations = 1;
     auto actual = run_from_string(cqasm, iterations, "3.0");
 
-    // Expected q state should be |00>-|01> as ctrl.pow(2).S is equivalent to CZ
+    // Expected 'q' state should be |00>-|01> as ctrl.pow(2).S is equivalent to CZ
     // State is |00>+|01> after H, then CZ just flips the phase of the |01> term
     EXPECT_EQ(actual.state,
         (SimulationResult::State{
