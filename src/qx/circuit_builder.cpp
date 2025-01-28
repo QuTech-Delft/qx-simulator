@@ -102,6 +102,17 @@ void CircuitBuilder::visit_non_gate_instruction(CqasmV3xNonGateInstruction& non_
             }
         }
     } else if (name == "init") {
+        for (const auto& instruction_indices : instructions_indices) {
+            const auto& qubit_index = instruction_indices[0];
+            const auto& register_manager = RegisterManager::get_instance();
+            if (register_manager.is_dirty_qubit(qubit_index.value)) {
+                const auto& variable_name = register_manager.get_qubit_variable_name(qubit_index.value);
+                const auto& variable_index = register_manager.get_qubit_variable_index(qubit_index.value);
+                throw CircuitBuilderError{ fmt::format("trying to 'init {}[{}]' but qubit is not in ground state",
+                    variable_name,
+                    variable_index) };
+            }
+        }
     } else if (name == "barrier") {
     } else if (name == "wait") {
     } else {
