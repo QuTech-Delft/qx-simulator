@@ -421,7 +421,6 @@ init qq[0]
     auto message = std::string{ std::get_if<SimulationError>(&result)->what() };
     EXPECT_TRUE(std::holds_alternative<SimulationError>(result));
     EXPECT_EQ(message, "trying to 'init qq[0]' but qubit is not in ground state");
-
 }
 
 TEST_F(IntegrationTest, barrier_and_wait_are_just_discarded_by_the_simulator) {

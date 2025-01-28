@@ -87,9 +87,8 @@ Register::~Register() = default;
 
 void Register::set_dirty(const Index& index) {
     assert(index < register_size_);
-    dirty_bitset_[index] = 1;
+    dirty_bitset_[index] = true;
 }
-
 
 //---------------//
 // QubitRegister //
@@ -179,7 +178,6 @@ BitRegister::~BitRegister() = default;
     assert(index >= first_index);
     return index - first_index;
 }
-
 
 [[nodiscard]] std::shared_ptr<QubitRegister> RegisterManager::get_qubit_register() const {
     return qubit_register_;

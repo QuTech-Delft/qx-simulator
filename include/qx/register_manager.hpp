@@ -71,7 +71,6 @@ public:
     [[nodiscard]] virtual std::string to_string() const;
     [[nodiscard]] virtual bool is_dirty(const Index& index) const;
     virtual void set_dirty(const Index& index);
-
 };
 
 //---------------//
