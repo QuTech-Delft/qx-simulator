@@ -420,10 +420,10 @@ init qq[0]
     auto result = execute_string(program);
     auto message = std::string{ std::get_if<SimulationError>(&result)->what() };
     EXPECT_TRUE(std::holds_alternative<SimulationError>(result));
-    EXPECT_EQ(message, "trying to 'init qq[0]' but qubit is not in ground state");
+    EXPECT_EQ(message, "incorrect 'init qq[0]': the qubit has already been used in a non-control instruction");
 }
 
-TEST_F(IntegrationTest, barrier_and_wait_are_just_discarded_by_the_simulator) {
+TEST_F(IntegrationTest, barrier_and_correct_wait_are_just_discarded_by_the_simulator) {
     auto program = R"(
 version 3.0
 
@@ -433,7 +433,7 @@ barrier q
 wait(0) q[0]
 H q[0]
 barrier q[0]
-wait(-1) q[1]
+wait(1) q[1]
 CNOT q[0], q[1]
 barrier q[1]
 wait(2) q
@@ -449,6 +449,22 @@ wait(2) q
             { "00", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } },
             { "11", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } }
     }));
+}
+
+TEST_F(IntegrationTest, incorrect_wait_throws_error) {
+    auto program = R"(
+version 3.0
+
+qubit[2] q
+
+barrier q
+wait(-1) q[0]
+H q[0]
+)";
+    auto result = execute_string(program);
+    auto message = std::string{ std::get_if<SimulationError>(&result)->what() };
+    EXPECT_TRUE(std::holds_alternative<SimulationError>(result));
+    EXPECT_EQ(message, "incorrect 'wait(-1) q[0]': time cannot be negative");
 }
 
 TEST_F(IntegrationTest, inverse_gate_modifier__inv_inv) {
