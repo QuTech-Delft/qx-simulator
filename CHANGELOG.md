@@ -10,13 +10,22 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - **Removed** for now removed features.
 
 
+## [ 0.7.4 ] - [ 2025-01-29 ]
+
+### Added
+- Integrate with libqasm 0.6.9 release:
+  - Add `SWAP` gate instruction.
+  - Add `barrier`, `wait`, and `ìnit` non-gate instructions.
+- The register manager now holds a 'dirty bitset' for virtual qubit and bit indices.
+
+
 ## [ 0.7.3 ] - [ 2025-01-27 ]
 
 ### Added
-- Documentation: GitHub pages.
-- Linters: `.clang-format` and `.clang-tidy`.
 - Integrate with libqasm 0.6.8 release:
   - Add gate modifiers. Notice though that `pow` only works with integer exponents.
+- Documentation: GitHub pages.
+- Linters: `.clang-format` and `.clang-tidy`.
 
 ### Changed
 - Implement instructions as a hierarchy.
