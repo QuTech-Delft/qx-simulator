@@ -16,6 +16,14 @@ void BitControlledInstruction::execute(SimulationIterationContext& context) {
     }
 }
 
+[[nodiscard]] qubit_indices_t BitControlledInstruction::get_qubit_indices() {
+    return instruction->get_qubit_indices();
+}
+
+[[nodiscard]] bit_indices_t BitControlledInstruction::get_bit_indices() {
+    return instruction->get_bit_indices();
+}
+
 Unitary::Unitary(std::shared_ptr<core::matrix_t> matrix, std::shared_ptr<core::operands_t> operands)
 : matrix{ std::move(matrix) }
 , operands{ std::move(operands) } {}
@@ -36,6 +44,18 @@ void Unitary::execute(SimulationIterationContext& context) {
     return std::make_shared<core::matrix_t>(matrix->control());
 }
 
+[[nodiscard]] qubit_indices_t Unitary::get_qubit_indices() {
+    return *operands;
+}
+
+[[nodiscard]] bit_indices_t Unitary::get_bit_indices() {
+    return bit_indices_t{};
+}
+
+[[nodiscard]] qubit_indices_t Measure::get_qubit_indices() {
+    return qubit_indices_t{ qubit_index };
+}
+
 Measure::Measure(const core::QubitIndex& qubit_index, const core::BitIndex& bit_index)
 : qubit_index{ qubit_index }
 , bit_index{ bit_index } {}
@@ -48,6 +68,10 @@ void Measure::execute(SimulationIterationContext& context) {
         context.bit_measurement_register);
 }
 
+[[nodiscard]] bit_indices_t Measure::get_bit_indices() {
+    return bit_indices_t{ bit_index };
+}
+
 Reset::Reset(std::optional<core::QubitIndex> qubit_index)
 : qubit_index{ qubit_index } {}
 
@@ -57,6 +81,14 @@ void Reset::execute(SimulationIterationContext& context) {
     } else {
         context.state.apply_reset_all();
     }
+}
+
+[[nodiscard]] qubit_indices_t Reset::get_qubit_indices() {
+    return qubit_index.has_value() ? qubit_indices_t{ *qubit_index } : qubit_indices_t{};
+}
+
+[[nodiscard]] bit_indices_t Reset::get_bit_indices() {
+    return bit_indices_t{};
 }
 
 }  // namespace qx

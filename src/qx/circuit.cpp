@@ -14,6 +14,9 @@ Circuit::Circuit(const TreeOne<CqasmV3xProgram>& program)
 }
 
 void Circuit::add_instruction(std::shared_ptr<Instruction> instruction) {
+    for (const auto& qubit_index : instruction->get_qubit_indices()) {
+        RegisterManager::get_instance().set_dirty_qubit(qubit_index.value);
+    }
     instructions_.emplace_back(std::move(instruction));
 }
 

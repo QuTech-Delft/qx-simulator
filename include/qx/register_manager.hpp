@@ -2,6 +2,7 @@
 
 #include <fmt/ostream.h>
 
+#include <boost/dynamic_bitset/dynamic_bitset.hpp>
 #include <cstdint>  // size_t
 #include <memory>  // shared_ptr
 #include <optional>
@@ -48,6 +49,7 @@ struct RegisterManagerError : public SimulationError {
 
 using VariableNameToRangeMapT = std::unordered_map<VariableName, Range>;
 using IndexToVariableNameMapT = std::vector<VariableName>;
+using DirtyBitsetT = boost::dynamic_bitset<uint32_t>;
 
 //----------//
 // Register //
@@ -57,6 +59,7 @@ class Register {
     std::size_t register_size_;
     VariableNameToRangeMapT variable_name_to_range_;
     IndexToVariableNameMapT index_to_variable_name_;
+    DirtyBitsetT dirty_bitset_;
 
 public:
     Register(const TreeOne<CqasmV3xProgram>& program, auto&& is_of_type, std::size_t max_register_size);
@@ -64,8 +67,10 @@ public:
     [[nodiscard]] std::size_t size() const;
     [[nodiscard]] virtual Range at(const VariableName& name) const;
     [[nodiscard]] virtual Index at(const VariableName& name, const std::optional<Index>& sub_index) const;
-    [[nodiscard]] virtual VariableName at(const std::size_t& index) const;
+    [[nodiscard]] virtual VariableName at(const Index& index) const;
     [[nodiscard]] virtual std::string to_string() const;
+    [[nodiscard]] virtual bool is_dirty(const Index& index) const;
+    virtual void set_dirty(const Index& index);
 };
 
 //---------------//
@@ -116,8 +121,14 @@ public:
     [[nodiscard]] Index get_bit_index(const VariableName& name, const std::optional<Index>& sub_index) const;
     [[nodiscard]] VariableName get_qubit_variable_name(const Index& index) const;
     [[nodiscard]] VariableName get_bit_variable_name(const Index& index) const;
+    [[nodiscard]] Index get_qubit_variable_index(const Index& index) const;
+    [[nodiscard]] Index get_bit_variable_index(const Index& index) const;
     [[nodiscard]] std::shared_ptr<QubitRegister> get_qubit_register() const;
     [[nodiscard]] std::shared_ptr<BitRegister> get_bit_register() const;
+    [[nodiscard]] bool is_dirty_qubit(const Index& index) const;
+    [[nodiscard]] bool is_dirty_bit(const Index& index) const;
+    void set_dirty_qubit(const Index& index);
+    void set_dirty_bit(const Index& index);
 };
 
 std::ostream& operator<<(std::ostream& os, const Range& range);
