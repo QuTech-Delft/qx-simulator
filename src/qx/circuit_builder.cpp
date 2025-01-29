@@ -101,6 +101,31 @@ void CircuitBuilder::visit_non_gate_instruction(CqasmV3xNonGateInstruction& non_
                 circuit_.add_instruction(std::make_shared<Reset>(qubit_index));
             }
         }
+    } else if (name == "init") {
+        for (const auto& instruction_indices : instructions_indices) {
+            const auto& qubit_index = instruction_indices[0];
+            const auto& register_manager = RegisterManager::get_instance();
+            if (register_manager.is_dirty_qubit(qubit_index.value)) {
+                const auto& variable_name = register_manager.get_qubit_variable_name(qubit_index.value);
+                const auto& variable_index = register_manager.get_qubit_variable_index(qubit_index.value);
+                throw CircuitBuilderError{ fmt::format(
+                    "incorrect 'init {}[{}]': the qubit has already been used in a non-control instruction",
+                    variable_name,
+                    variable_index) };
+            }
+        }
+    } else if (name == "barrier") {
+    } else if (name == "wait") {
+        auto time = non_gate_instruction.parameter->as_const_int()->value;
+        if (time < 0) {
+            const auto& instruction_indices = instructions_indices[0];
+            const auto& qubit_index = instruction_indices[0];
+            const auto& register_manager = RegisterManager::get_instance();
+            const auto& variable_name = register_manager.get_qubit_variable_name(qubit_index.value);
+            const auto& variable_index = register_manager.get_qubit_variable_index(qubit_index.value);
+            throw CircuitBuilderError{ fmt::format(
+                "incorrect 'wait({}) {}[{}]': time cannot be negative", time, variable_name, variable_index) };
+        }
     } else {
         throw CircuitBuilderError{ fmt::format("unsupported non-gate instruction: '{}'", name) };
     }

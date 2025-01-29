@@ -38,6 +38,7 @@ Register::Register(const TreeOne<CqasmV3xProgram>& program, auto&& is_of_type, s
 
     variable_name_to_range_.reserve(register_size_);
     index_to_variable_name_.resize(register_size_);
+    dirty_bitset_ = DirtyBitsetT{ register_size_ };
 
     auto current_index = size_t{};
     for (auto&& variable : variables) {
@@ -65,7 +66,7 @@ Register::~Register() = default;
     return range.first + sub_index.value_or(0);
 }
 
-[[nodiscard]] VariableName Register::at(const std::size_t& index) const {
+[[nodiscard]] VariableName Register::at(const Index& index) const {
     return index_to_variable_name_.at(index);
 }
 
@@ -78,6 +79,15 @@ Register::~Register() = default;
             return total;
         });
     return fmt::format("{{ {0} }}", entries);
+}
+
+[[nodiscard]] bool Register::is_dirty(const Index& index) const {
+    return dirty_bitset_[index];
+}
+
+void Register::set_dirty(const Index& index) {
+    assert(index < register_size_);
+    dirty_bitset_[index] = true;
 }
 
 //---------------//
@@ -155,12 +165,42 @@ BitRegister::~BitRegister() = default;
     return bit_register_->at(index);
 }
 
+[[nodiscard]] Index RegisterManager::get_qubit_variable_index(const Index& index) const {
+    const auto& variable_name = qubit_register_->at(index);
+    const auto& first_index = qubit_register_->at(variable_name).first;
+    assert(index >= first_index);
+    return index - first_index;
+}
+
+[[nodiscard]] Index RegisterManager::get_bit_variable_index(const Index& index) const {
+    const auto& variable_name = bit_register_->at(index);
+    const auto& first_index = bit_register_->at(variable_name).first;
+    assert(index >= first_index);
+    return index - first_index;
+}
+
 [[nodiscard]] std::shared_ptr<QubitRegister> RegisterManager::get_qubit_register() const {
     return qubit_register_;
 }
 
 [[nodiscard]] std::shared_ptr<BitRegister> RegisterManager::get_bit_register() const {
     return bit_register_;
+}
+
+[[nodiscard]] bool RegisterManager::is_dirty_qubit(const Index& index) const {
+    return qubit_register_->is_dirty(index);
+}
+
+[[nodiscard]] bool RegisterManager::is_dirty_bit(const Index& index) const {
+    return bit_register_->is_dirty(index);
+}
+
+void RegisterManager::set_dirty_qubit(const Index& index) {
+    qubit_register_->set_dirty(index);
+}
+
+void RegisterManager::set_dirty_bit(const Index& index) {
+    qubit_register_->set_dirty(index);
 }
 
 std::ostream& operator<<(std::ostream& os, const Range& range) {
