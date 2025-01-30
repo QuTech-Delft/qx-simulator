@@ -10,6 +10,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - **Removed** for now removed features.
 
 
+## [ 0.7.5 ] - [ xxxx-yy-zz ]
+
+### Added
+- Documentation: GitHub Actions `doc` workflow.
+
+
 ## [ 0.7.4 ] - [ 2025-01-29 ]
 
 ### Added
