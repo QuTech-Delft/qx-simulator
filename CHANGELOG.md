@@ -14,6 +14,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 - Documentation: GitHub Actions `doc` workflow.
+- `pow` gate modifier now works with fractional exponents.  
 
 
 ## [ 0.7.4 ] - [ 2025-01-29 ]
