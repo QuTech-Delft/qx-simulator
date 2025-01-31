@@ -41,8 +41,8 @@ private:
     void check_is_unitary() const;
     void check_is_square() const;
 
-    Matrix from_eigen_matrix(const Eigen::MatrixXcd& eigen_matrix) const;
-    Eigen::MatrixXcd to_eigen_matrix() const;
+    [[nodiscard]] Matrix from_eigen_matrix(const Eigen::MatrixXcd& eigen_matrix) const;
+    [[nodiscard]] Eigen::MatrixXcd to_eigen_matrix() const;
 
     Matrix matrix;
     size_t N;  // matrix size

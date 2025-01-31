@@ -113,7 +113,7 @@ void DenseUnitaryMatrix::check_is_square() const {
     }
 }
 
-Matrix DenseUnitaryMatrix::from_eigen_matrix(const Eigen::MatrixXcd& eigen_matrix) const {
+[[nodiscard]] Matrix DenseUnitaryMatrix::from_eigen_matrix(const Eigen::MatrixXcd& eigen_matrix) const {
     Matrix ret(N, Row(N));
     for (std::size_t i = 0; i < N; ++i) {
         std::copy(eigen_matrix.col(i).begin(), eigen_matrix.col(i).end(), ret[i].begin());
@@ -121,7 +121,7 @@ Matrix DenseUnitaryMatrix::from_eigen_matrix(const Eigen::MatrixXcd& eigen_matri
     return ret;
 }
 
-Eigen::MatrixXcd DenseUnitaryMatrix::to_eigen_matrix() const {
+[[nodiscard]] Eigen::MatrixXcd DenseUnitaryMatrix::to_eigen_matrix() const {
     Eigen::MatrixXcd ret(N, N);
     for (std::size_t i = 0; i < N; ++i) {
         ret.col(i) = Eigen::Map<const Eigen::VectorXcd>(matrix[i].data(), N);
