@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Eigen/Dense>
 #include <algorithm>  // all_of
 #include <array>
 #include <complex>  // conj
@@ -32,13 +33,16 @@ public:
     [[nodiscard]] DenseUnitaryMatrix dagger() const;
     [[nodiscard]] DenseUnitaryMatrix inverse() const;
     [[nodiscard]] DenseUnitaryMatrix power(double exponent) const;
-    [[nodiscard]] DenseUnitaryMatrix power(int exponent) const;
     [[nodiscard]] DenseUnitaryMatrix control() const;
 
 private:
     DenseUnitaryMatrix(const Matrix& m, bool is_unitary_check);
+
     void check_is_unitary() const;
     void check_is_square() const;
+
+    Matrix from_eigen_matrix(const Eigen::MatrixXcd& eigen_matrix) const;
+    Eigen::MatrixXcd to_eigen_matrix() const;
 
     Matrix matrix;
     size_t N;  // matrix size

@@ -1,5 +1,8 @@
 #include "qx/dense_unitary_matrix.hpp"
 
+#include <algorithm>  // copy
+#include <unsupported/Eigen/MatrixFunctions>
+
 namespace qx::core {
 
 DenseUnitaryMatrix::DenseUnitaryMatrix(const Matrix& m)
@@ -68,25 +71,10 @@ DenseUnitaryMatrix DenseUnitaryMatrix::inverse() const {
 }
 
 DenseUnitaryMatrix DenseUnitaryMatrix::power(double exponent) const {
-    int rounded_exponent = static_cast<int>(std::round(exponent));
-    if (std::abs(exponent - rounded_exponent) >= config::EPSILON) {
-        throw std::runtime_error{ "unimplemented: matrix power with a non-integer exponent" };
-    }
-    return power(rounded_exponent);
-}
-
-DenseUnitaryMatrix DenseUnitaryMatrix::power(int exponent) const {
-    // A^ 0 = I
-    if (exponent == 0) {
-        return identity(N);
-    }
-    // A^ n = A    * A      ... * A    (n times)
-    // A^-n = A^-1 * A^-1 * ... * A^-1 (n times)
-    const auto& init{ (exponent > 0) ? *this : inverse() };
-    return ranges::accumulate(ranges::views::iota(1, std::abs(exponent)), init, [&init](auto& acc, auto) {
-        acc = acc * init;
-        return acc;
-    });
+    const auto& eigen_matrix = to_eigen_matrix();
+    Eigen::MatrixPower<Eigen::MatrixXcd> eigen_power_matrix(eigen_matrix);
+    auto ret = from_eigen_matrix(eigen_power_matrix(exponent));
+    return DenseUnitaryMatrix{ ret, false };
 }
 
 DenseUnitaryMatrix DenseUnitaryMatrix::control() const {
@@ -123,6 +111,22 @@ void DenseUnitaryMatrix::check_is_square() const {
     if (!std::all_of(matrix.begin(), matrix.end(), [this](const auto& row) { return row.size() == N; })) {
         throw std::runtime_error{ "matrix is not square" };
     }
+}
+
+Matrix DenseUnitaryMatrix::from_eigen_matrix(const Eigen::MatrixXcd& eigen_matrix) const {
+    Matrix ret(N, Row(N));
+    for (std::size_t i = 0; i < N; ++i) {
+        std::copy(eigen_matrix.col(i).begin(), eigen_matrix.col(i).end(), ret[i].begin());
+    }
+    return ret;
+}
+
+Eigen::MatrixXcd DenseUnitaryMatrix::to_eigen_matrix() const {
+    Eigen::MatrixXcd ret(N, N);
+    for (std::size_t i = 0; i < N; ++i) {
+        ret.col(i) = Eigen::Map<const Eigen::VectorXcd>(matrix[i].data(), N);
+    }
+    return ret;
 }
 
 }  // namespace qx::core

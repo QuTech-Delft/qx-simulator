@@ -78,9 +78,7 @@ TEST(dense_unitary_matrix_test, inverse) {
     EXPECT_EQ(gates::X90.inverse(), gates::RX(-gates::PI/2));
 }
 
-TEST(dense_unitary_matrix_test, power) {
-    EXPECT_THAT([]() { (void) gates::H.power(1.5); },
-        ::testing::ThrowsMessage<std::runtime_error>("unimplemented: matrix power with a non-integer exponent"));
+TEST(dense_unitary_matrix_test, power_integer) {
     EXPECT_EQ(gates::H.power(2), gates::IDENTITY);
     EXPECT_EQ(gates::X.power(2), gates::IDENTITY);
     DenseUnitaryMatrix minus_identity{ Matrix{
@@ -90,6 +88,26 @@ TEST(dense_unitary_matrix_test, power) {
     EXPECT_EQ(gates::RX(gates::PI).power(2), minus_identity);
     EXPECT_EQ(gates::S.power(2), gates::Z);
     EXPECT_EQ(gates::T.power(4), gates::Z);
+}
+
+TEST(dense_unitary_matrix_test, power_fractional) {
+    EXPECT_EQ(gates::Z.power(1./2), gates::S);
+
+    const auto& s_power_1_2 = DenseUnitaryMatrix{
+        Matrix{
+            { 1,                        0 },
+            { 0, 0.70710678 + 0.70710678i }
+        }
+    };
+    EXPECT_EQ(gates::S.power(1./2), s_power_1_2);
+
+    const auto& z_power_1_3 = DenseUnitaryMatrix{
+        Matrix{
+            { 1,                0 },
+            { 0, 0.5 + 0.8660254i }
+        }
+    };
+    EXPECT_EQ(gates::Z.power(1./3), z_power_1_3);
 }
 
 TEST(dense_unitary_matrix_test, control) {
