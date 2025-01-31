@@ -5,15 +5,15 @@
 
 namespace qx::core {
 
-DenseUnitaryMatrix::DenseUnitaryMatrix(const Matrix& m)
-: DenseUnitaryMatrix{ m, true } {}
+DenseUnitaryMatrix::DenseUnitaryMatrix(const Matrix& matrix)
+: DenseUnitaryMatrix{ matrix, true } {}
 
 [[nodiscard]] std::complex<double>& DenseUnitaryMatrix::at(std::size_t i, std::size_t j) {
-    return matrix.at(i).at(j);
+    return matrix_.at(i).at(j);
 }
 
 [[nodiscard]] const std::complex<double>& DenseUnitaryMatrix::at(std::size_t i, std::size_t j) const {
-    return matrix.at(i).at(j);
+    return matrix_.at(i).at(j);
 }
 
 bool DenseUnitaryMatrix::operator==(const DenseUnitaryMatrix& other) const {
@@ -22,7 +22,7 @@ bool DenseUnitaryMatrix::operator==(const DenseUnitaryMatrix& other) const {
     }
     for (std::size_t i = 0; i < N; ++i) {
         for (std::size_t j = 0; j < N; ++j) {
-            if (not is_null(matrix[i][j] - other.matrix[i][j])) {
+            if (not is_null(matrix_[i][j] - other.matrix_[i][j])) {
                 return false;
             }
         }
@@ -34,36 +34,36 @@ DenseUnitaryMatrix DenseUnitaryMatrix::operator*(const DenseUnitaryMatrix& other
     if (N != other.N) {
         throw std::runtime_error{ "cannot multiply matrices" };
     }
-    Matrix m(N, Row(N));
+    Matrix matrix(N, Row(N));
     for (std::size_t i = 0; i < N; ++i) {
         for (std::size_t j = 0; j < N; ++j) {
-            m[i][j] = 0;
+            matrix[i][j] = 0;
             for (std::size_t k = 0; k < N; ++k) {
-                m[i][j] += matrix[i][k] * other.matrix[k][j];
+                matrix[i][j] += matrix_[i][k] * other.matrix_[k][j];
             }
         }
     }
-    return DenseUnitaryMatrix{ m, false };
+    return DenseUnitaryMatrix{ matrix, false };
 }
 
 /* static */ DenseUnitaryMatrix DenseUnitaryMatrix::identity(size_t M) {
-    Matrix m(M, Row(M));
+    Matrix matrix(M, Row(M));
     for (std::size_t i = 0; i < M; ++i) {
         for (std::size_t j = 0; j < M; ++j) {
-            m[i][j] = (i == j) ? 1 : 0;
+            matrix[i][j] = (i == j) ? 1 : 0;
         }
     }
-    return DenseUnitaryMatrix{ m, false };
+    return DenseUnitaryMatrix{ matrix, false };
 }
 
 DenseUnitaryMatrix DenseUnitaryMatrix::dagger() const {
-    Matrix m(N, Row(N));
+    Matrix matrix(N, Row(N));
     for (std::size_t i = 0; i < N; ++i) {
         for (std::size_t j = 0; j < N; ++j) {
-            m[i][j] = std::conj(matrix[j][i]);
+            matrix[i][j] = std::conj(matrix_[j][i]);
         }
     }
-    return DenseUnitaryMatrix{ m, false };
+    return DenseUnitaryMatrix{ matrix, false };
 }
 
 DenseUnitaryMatrix DenseUnitaryMatrix::inverse() const {
@@ -71,7 +71,7 @@ DenseUnitaryMatrix DenseUnitaryMatrix::inverse() const {
 }
 
 DenseUnitaryMatrix DenseUnitaryMatrix::power(double exponent) const {
-    const auto& eigen_matrix = to_eigen_matrix();
+    const auto& eigen_matrix = to_eigen_matrix(matrix_);
     Eigen::MatrixPower<Eigen::MatrixXcd> eigen_power_matrix(eigen_matrix);
     auto ret = from_eigen_matrix(eigen_power_matrix(exponent));
     return DenseUnitaryMatrix{ ret, false };
@@ -83,15 +83,15 @@ DenseUnitaryMatrix DenseUnitaryMatrix::control() const {
     std::size_t last_index = N * 2;
     for (std::size_t i = first_index; i < last_index; ++i) {
         for (std::size_t j = first_index; j < last_index; ++j) {
-            ret.at(i, j) = matrix[i - first_index][j - first_index];
+            ret.at(i, j) = matrix_[i - first_index][j - first_index];
         }
     }
     return ret;
 }
 
-DenseUnitaryMatrix::DenseUnitaryMatrix(const Matrix& m, bool is_unitary_check)
-: matrix{ m }
-, N{ m.size() } {
+DenseUnitaryMatrix::DenseUnitaryMatrix(const Matrix& matrix, bool is_unitary_check)
+: matrix_{ matrix }
+, N{ matrix.size() } {
     if (is_unitary_check) {
         check_is_unitary();
     }
@@ -108,11 +108,16 @@ void DenseUnitaryMatrix::check_is_square() const {
     if (N == 0) {
         throw std::runtime_error{ "matrix is empty" };
     }
-    if (!std::all_of(matrix.begin(), matrix.end(), [this](const auto& row) { return row.size() == N; })) {
+    if (!std::all_of(matrix_.begin(), matrix_.end(), [this](const auto& row) { return row.size() == N; })) {
         throw std::runtime_error{ "matrix is not square" };
     }
 }
 
+// Matrix is in row-major format, i.e., it stores a matrix as a vector of rows
+// Eigen uses by default a column-major format, i.e., it stores a matrix as a vector of columns
+// Notice, however, that this only means that:
+// - When going from Matrix to Eigen, we set Eigen column vectors with Matrix row values
+// - When going from Eigen to Matrix, we set Matrix row vectors with Eigen column values
 [[nodiscard]] Matrix DenseUnitaryMatrix::from_eigen_matrix(const Eigen::MatrixXcd& eigen_matrix) const {
     Matrix ret(N, Row(N));
     for (std::size_t i = 0; i < N; ++i) {
@@ -121,7 +126,7 @@ void DenseUnitaryMatrix::check_is_square() const {
     return ret;
 }
 
-[[nodiscard]] Eigen::MatrixXcd DenseUnitaryMatrix::to_eigen_matrix() const {
+[[nodiscard]] Eigen::MatrixXcd DenseUnitaryMatrix::to_eigen_matrix(const Matrix& matrix) const {
     Eigen::MatrixXcd ret(N, N);
     for (std::size_t i = 0; i < N; ++i) {
         ret.col(i) = Eigen::Map<const Eigen::VectorXcd>(matrix[i].data(), N);

@@ -42,9 +42,9 @@ private:
     void check_is_square() const;
 
     [[nodiscard]] Matrix from_eigen_matrix(const Eigen::MatrixXcd& eigen_matrix) const;
-    [[nodiscard]] Eigen::MatrixXcd to_eigen_matrix() const;
+    [[nodiscard]] Eigen::MatrixXcd to_eigen_matrix(const Matrix& matrix) const;
 
-    Matrix matrix;
+    Matrix matrix_;
     size_t N;  // matrix size
 };
 
