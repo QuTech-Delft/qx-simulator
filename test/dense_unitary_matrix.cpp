@@ -3,7 +3,7 @@
 #include <gmock/gmock.h>  // ThrowsMessage
 #include <gtest/gtest.h>
 
-#include <numbers>
+#include <complex>  // exp
 #include <stdexcept>  // runtime_error
 
 #include "qx/gates.hpp"
@@ -61,12 +61,12 @@ TEST(dense_unitary_matrix_test, identity) {
 
 TEST(dense_unitary_matrix_test, dagger) {
     DenseUnitaryMatrix m{ Matrix{
-        {  1 / std::numbers::sqrt2,   1 / std::numbers::sqrt2 },
-        { 1i / std::numbers::sqrt2, -1i / std::numbers::sqrt2 }
+        {  1 / gates::SQRT_2,   1 / gates::SQRT_2 },
+        { 1i / gates::SQRT_2, -1i / gates::SQRT_2 }
     }};
     DenseUnitaryMatrix m_dag{ Matrix{
-        { 1 / std::numbers::sqrt2, -1i / std::numbers::sqrt2 },
-        { 1 / std::numbers::sqrt2,  1i / std::numbers::sqrt2 }
+        { 1 / gates::SQRT_2, -1i / gates::SQRT_2 },
+        { 1 / gates::SQRT_2,  1i / gates::SQRT_2 }
     }};
     EXPECT_EQ(m.dagger(), m_dag);
 }
@@ -95,16 +95,16 @@ TEST(dense_unitary_matrix_test, power_fractional) {
 
     const auto& s_power_1_2 = DenseUnitaryMatrix{
         Matrix{
-            { 1,                        0 },
-            { 0, 0.70710678 + 0.70710678i }
+            { 1,                                                0 },
+            { 0, std::exp(std::complex<double>(0, gates::PI / 4)) }
         }
     };
     EXPECT_EQ(gates::S.power(1./2), s_power_1_2);
 
     const auto& z_power_1_3 = DenseUnitaryMatrix{
         Matrix{
-            { 1,                0 },
-            { 0, 0.5 + 0.8660254i }
+            { 1,                                                0 },
+            { 0, std::exp(std::complex<double>(0, gates::PI / 3)) }
         }
     };
     EXPECT_EQ(gates::Z.power(1./3), z_power_1_3);
