@@ -115,6 +115,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 #=============================================================================#
 
 find_package(Boost REQUIRED)
+find_package(Eigen3 REQUIRED)
 find_package(fmt REQUIRED)
 find_package(libqasm REQUIRED)
 find_package(range-v3 REQUIRED)
@@ -206,6 +207,7 @@ endif()
 #=============================================================================#
 
 target_link_libraries(qx PUBLIC
+    Eigen3::Eigen
     fmt::fmt
     libqasm::libqasm
     range-v3::range-v3
