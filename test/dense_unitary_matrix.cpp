@@ -108,6 +108,8 @@ TEST(dense_unitary_matrix_test, power_fractional) {
         }
     };
     EXPECT_EQ(gates::Z.power(1./3), z_power_1_3);
+
+    EXPECT_EQ(gates::Z.power(1./4).power(4).power(1./3).power(3).power(1./2).power(2), gates::Z);
 }
 
 TEST(dense_unitary_matrix_test, control) {

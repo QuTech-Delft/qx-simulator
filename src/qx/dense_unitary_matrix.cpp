@@ -73,7 +73,7 @@ DenseUnitaryMatrix DenseUnitaryMatrix::inverse() const {
 DenseUnitaryMatrix DenseUnitaryMatrix::power(double exponent) const {
     const auto& eigen_matrix = to_eigen_matrix(matrix_);
     Eigen::MatrixPower<Eigen::MatrixXcd> eigen_power_matrix(eigen_matrix);
-    auto ret = from_eigen_matrix(eigen_power_matrix(exponent));
+    auto ret = from_eigen_matrix(normalize(eigen_power_matrix(exponent)));
     return DenseUnitaryMatrix{ ret, false };
 }
 
@@ -111,6 +111,25 @@ void DenseUnitaryMatrix::check_is_square() const {
     if (!std::all_of(matrix_.begin(), matrix_.end(), [this](const auto& row) { return row.size() == N; })) {
         throw std::runtime_error{ "matrix is not square" };
     }
+}
+
+// Default gates are already normalized, and they don't have numerical noise
+// The same applies to inverse and controlled gates
+// However, power computations can produce matrices that are not normalized and have numerical noise
+[[nodiscard]] Eigen::MatrixXcd DenseUnitaryMatrix::normalize(const Eigen::MatrixXcd& matrix) const {
+    Eigen::ComplexEigenSolver<Eigen::MatrixXcd> solver(matrix);
+    Eigen::VectorXcd eigen_values = solver.eigenvalues();
+    Eigen::MatrixXcd eigen_vectors = solver.eigenvectors();
+
+    for (auto& eigen_value: eigen_values) {
+        if (std::abs(eigen_value) >= config::EPSILON) {
+            eigen_value /= std::abs(eigen_value);  // normalize phase
+        }
+        eigen_value.real(core::round(eigen_value.real()));  // remove numerical noise
+        eigen_value.imag(core::round(eigen_value.imag()));
+    }
+
+    return eigen_vectors * eigen_values.asDiagonal() * eigen_vectors.inverse();
 }
 
 // Matrix is in row-major format, i.e., it stores a matrix as a vector of rows
