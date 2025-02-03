@@ -121,7 +121,7 @@ void DenseUnitaryMatrix::check_is_square() const {
     Eigen::VectorXcd eigen_values = solver.eigenvalues();
     Eigen::MatrixXcd eigen_vectors = solver.eigenvectors();
 
-    for (auto& eigen_value: eigen_values) {
+    for (auto& eigen_value : eigen_values) {
         if (std::abs(eigen_value) >= config::EPSILON) {
             eigen_value /= std::abs(eigen_value);  // normalize phase
         }
