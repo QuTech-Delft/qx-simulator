@@ -56,12 +56,6 @@ using PairBasisVectorStringComplex = std::pair<std::string, std::complex<double>
     return ret.substr(ret.size() - n, ret.size());
 }
 
-// Round a double value to the nearest integer up to a marginal error
-[[nodiscard]] inline double round(double value) {
-    auto rounded_value = std::round(value);
-    return (std::abs(rounded_value - value) < config::EPSILON) ? rounded_value : value;
-}
-
 }  // namespace qx::core
 
 template <>

@@ -41,7 +41,6 @@ private:
     void check_is_unitary() const;
     void check_is_square() const;
 
-    [[nodiscard]] Eigen::MatrixXcd normalize(const Eigen::MatrixXcd& matrix) const;
     [[nodiscard]] Matrix from_eigen_matrix(const Eigen::MatrixXcd& eigen_matrix) const;
     [[nodiscard]] Eigen::MatrixXcd to_eigen_matrix(const Matrix& matrix) const;
 
