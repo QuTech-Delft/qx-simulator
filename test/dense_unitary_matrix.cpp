@@ -16,27 +16,27 @@ using namespace std::complex_literals;
 
 TEST(dense_unitary_matrix_test, reject_non_unitary_matrices) {
     Matrix empty_matrix{};
-    EXPECT_THAT([&empty_matrix]() { DenseUnitaryMatrix test{ empty_matrix }; },
+    EXPECT_THAT([&empty_matrix]() { DenseUnitaryMatrix test{ std::move(empty_matrix) }; },
         ::testing::ThrowsMessage<std::runtime_error>("matrix is empty"));
 
     Matrix non_square_matrix{
         { 1, 0 }
     };
-    EXPECT_THAT([&non_square_matrix]() { DenseUnitaryMatrix test{ non_square_matrix }; },
+    EXPECT_THAT([&non_square_matrix]() { DenseUnitaryMatrix test{ std::move(non_square_matrix) }; },
         ::testing::ThrowsMessage<std::runtime_error>("matrix is not square"));
 
     Matrix non_unitary_1{
         { 1,   0 },
         { 0, 1.1 }
     };
-    EXPECT_THAT([&non_unitary_1]() { DenseUnitaryMatrix test{ non_unitary_1 }; },
+    EXPECT_THAT([&non_unitary_1]() { DenseUnitaryMatrix test{ std::move(non_unitary_1) }; },
         ::testing::ThrowsMessage<std::runtime_error>("matrix is not unitary"));
 
     Matrix non_unitary_2{
         { 0, 0 },
         { 0, 1 }
     };
-    EXPECT_THAT([&non_unitary_2]() { DenseUnitaryMatrix test{ non_unitary_2 }; },
+    EXPECT_THAT([&non_unitary_2]() { DenseUnitaryMatrix test{ std::move(non_unitary_2) }; },
         ::testing::ThrowsMessage<std::runtime_error>("matrix is not unitary"));
 
     Matrix non_unitary_3{
@@ -44,7 +44,7 @@ TEST(dense_unitary_matrix_test, reject_non_unitary_matrices) {
         {  0, 1i, 1i },
         {  0,  1,  0 }
     };
-    EXPECT_THAT([&non_unitary_3]() { DenseUnitaryMatrix test{ non_unitary_3 }; },
+    EXPECT_THAT([&non_unitary_3]() { DenseUnitaryMatrix test{ std::move(non_unitary_3) }; },
         ::testing::ThrowsMessage<std::runtime_error>("matrix is not unitary"));
 }
 
@@ -60,15 +60,19 @@ TEST(dense_unitary_matrix_test, identity) {
 }
 
 TEST(dense_unitary_matrix_test, dagger) {
-    DenseUnitaryMatrix m{ Matrix{
-        {  1 / std::numbers::sqrt2,   1 / std::numbers::sqrt2 },
-        { 1i / std::numbers::sqrt2, -1i / std::numbers::sqrt2 }
-    }};
-    DenseUnitaryMatrix m_dag{ Matrix{
-        { 1 / std::numbers::sqrt2, -1i / std::numbers::sqrt2 },
-        { 1 / std::numbers::sqrt2,  1i / std::numbers::sqrt2 }
-    }};
-    EXPECT_EQ(m.dagger(), m_dag);
+    DenseUnitaryMatrix matrix{
+        Matrix{
+            {  1 / gates::SQRT_2,   1 / gates::SQRT_2 },
+            { 1i / gates::SQRT_2, -1i / gates::SQRT_2 }
+        }
+    };
+    DenseUnitaryMatrix matrix_dagger{
+        Matrix{
+            { 1 / gates::SQRT_2, -1i / gates::SQRT_2 },
+            { 1 / gates::SQRT_2,  1i / gates::SQRT_2 }
+        }
+    };
+    EXPECT_EQ(matrix.dagger(), matrix_dagger);
 }
 
 TEST(dense_unitary_matrix_test, inverse) {
