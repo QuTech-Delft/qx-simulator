@@ -93,13 +93,9 @@ void CircuitBuilder::visit_non_gate_instruction(CqasmV3xNonGateInstruction& non_
             circuit_.add_instruction(std::make_shared<Measure>(qubit_index, bit_index));
         }
     } else if (name == "reset") {
-        if (operands.empty()) {
-            circuit_.add_instruction(std::make_shared<Reset>(std::nullopt));
-        } else {
-            for (const auto& instruction_indices : instructions_indices) {
-                const auto& qubit_index = instruction_indices[0];
-                circuit_.add_instruction(std::make_shared<Reset>(qubit_index));
-            }
+        for (const auto& instruction_indices : instructions_indices) {
+            const auto& qubit_index = instruction_indices[0];
+            circuit_.add_instruction(std::make_shared<Reset>(qubit_index));
         }
     } else if (name == "init") {
         for (const auto& instruction_indices : instructions_indices) {

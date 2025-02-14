@@ -67,10 +67,10 @@ struct Measure : public NonUnitary {
 };
 
 struct Reset : public NonUnitary {
-    std::optional<core::QubitIndex> qubit_index{};
+    core::QubitIndex qubit_index{};
 
     ~Reset() override = default;
-    explicit Reset(std::optional<core::QubitIndex> qubit_index);
+    explicit Reset(const core::QubitIndex& qubit_index);
     void execute(SimulationIterationContext& context) override;
     [[nodiscard]] qubit_indices_t get_qubit_indices() override;
     [[nodiscard]] bit_indices_t get_bit_indices() override;

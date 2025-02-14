@@ -18,6 +18,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Change SimulationIterationAccumulator to keep `shots_done` and receive `shots_requested` in `get_simulation_result()`.
 
+### Removed
+- Support for 'reset all'.
+
 
 ## [ 0.7.4 ] - [ 2025-01-29 ]
 

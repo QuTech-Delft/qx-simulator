@@ -52,10 +52,6 @@ void Unitary::execute(SimulationIterationContext& context) {
     return bit_indices_t{};
 }
 
-[[nodiscard]] qubit_indices_t Measure::get_qubit_indices() {
-    return qubit_indices_t{ qubit_index };
-}
-
 Measure::Measure(const core::QubitIndex& qubit_index, const core::BitIndex& bit_index)
 : qubit_index{ qubit_index }
 , bit_index{ bit_index } {}
@@ -68,23 +64,23 @@ void Measure::execute(SimulationIterationContext& context) {
         context.bit_measurement_register);
 }
 
+[[nodiscard]] qubit_indices_t Measure::get_qubit_indices() {
+    return qubit_indices_t{ qubit_index };
+}
+
 [[nodiscard]] bit_indices_t Measure::get_bit_indices() {
     return bit_indices_t{ bit_index };
 }
 
-Reset::Reset(std::optional<core::QubitIndex> qubit_index)
+Reset::Reset(const core::QubitIndex& qubit_index)
 : qubit_index{ qubit_index } {}
 
 void Reset::execute(SimulationIterationContext& context) {
-    if (qubit_index.has_value()) {
-        context.state.apply_reset(qubit_index.value());
-    } else {
-        context.state.apply_reset_all();
-    }
+    context.state.apply_reset(qubit_index);
 }
 
 [[nodiscard]] qubit_indices_t Reset::get_qubit_indices() {
-    return qubit_index.has_value() ? qubit_indices_t{ *qubit_index } : qubit_indices_t{};
+    return qubit_indices_t{ qubit_index };
 }
 
 [[nodiscard]] bit_indices_t Reset::get_bit_indices() {
