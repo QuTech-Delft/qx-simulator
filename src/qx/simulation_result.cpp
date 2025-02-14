@@ -107,7 +107,7 @@ void SimulationIterationAccumulator::append_bit_measurement(const core::BitMeasu
 }
 
 // Notice that, with the current implementation:
-// - Either the number of requested shots is equal the number of done shots,
+// - Either the number of requested shots is equal the number of done shots.
 // - Or a simulation error has occurred.
 SimulationResult SimulationIterationAccumulator::get_simulation_result(std::size_t shots_requested) {
     assert(shots_done > 0);
