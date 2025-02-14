@@ -71,7 +71,7 @@ std::variant<std::monostate, SimulationResult, SimulationError> execute(
                     acc.add(circuit.execute(std::monostate{}));
                     return acc;
                 });
-        return simulation_iteration_accumulator.get_simulation_result();
+        return simulation_iteration_accumulator.get_simulation_result(iterations);
     } catch (const SimulationError& err) {
         return err;
     }

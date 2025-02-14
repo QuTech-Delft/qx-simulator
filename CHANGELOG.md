@@ -15,6 +15,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Documentation: GitHub Actions `doc` workflow.
 
+### Changed
+- Change SimulationIterationAccumulator to keep `shots_done` and receive `shots_requested` in `get_simulation_result()`.
+
 ### Removed
 - Support for 'reset all'.
 
