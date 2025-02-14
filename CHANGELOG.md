@@ -15,6 +15,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Documentation: GitHub Actions `doc` workflow.
 
+### Changed
+- Allow move constructing a `DenseUnitaryMatrix`.
+
 ### Removed
 - Support for 'reset all'.
 
