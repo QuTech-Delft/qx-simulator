@@ -88,7 +88,7 @@ void SimulationIterationAccumulator::add(const SimulationIterationContext& conte
     state = context.state;
     // Notice that the simulator always stores the values of the measurement registers
     // even when no measure instruction has been executed
-    // When a measure instruction is executed, the effect of collapsing the quantum state is simulated
+    // When a measure instruction is executed, the outcome of the quantum state collapse is simulated
     append_measurement(context.measurement_register);
     append_bit_measurement(context.bit_measurement_register);
     shots_done++;
