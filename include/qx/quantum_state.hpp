@@ -79,7 +79,6 @@ public:
     }
 
     void apply_reset(QubitIndex qubit_index);
-    void apply_reset_all();
 
 private:
     std::size_t number_of_qubits_;
