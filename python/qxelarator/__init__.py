@@ -16,10 +16,10 @@ class SimulationResult:
         """! Default constructs a SimulationResult."""
 
         ## @var int shots_requested
-        # Always equal to the number of iterations.
+        # Number of iterations the simulation was requested to be performed.
         self.shots_requested = 0
         ## @var int shots_done
-        # Always equal to the number of iterations.
+        # Number of iterations the simulation was actually performed.
         self.shots_done = 0
         ## @var dict results
         # Contains the number of times a given measurement value is captured when running the iterations.

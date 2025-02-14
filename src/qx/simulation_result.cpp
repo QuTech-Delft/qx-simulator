@@ -86,29 +86,31 @@ SimulationIterationContext::SimulationIterationContext()
 
 void SimulationIterationAccumulator::add(const SimulationIterationContext& context) {
     state = context.state;
+    // Notice that the simulator always stores the values of the measurement registers
+    // even when no measure instruction has been executed
+    // When a measure instruction is executed, the effect of collapsing the quantum state is simulated
     append_measurement(context.measurement_register);
     append_bit_measurement(context.bit_measurement_register);
+    shots_done++;
 }
 
 void SimulationIterationAccumulator::append_measurement(const core::MeasurementRegister& measurement) {
     assert(measurements.size() < (static_cast<size_t>(1) << state.get_number_of_qubits()));
     auto measured_state_string{ core::to_substring(measurement, state.get_number_of_qubits()) };
     measurements[measured_state_string]++;
-    measurements_count++;
 }
 
 void SimulationIterationAccumulator::append_bit_measurement(const core::BitMeasurementRegister& bit_measurement) {
     assert(bit_measurements.size() < (static_cast<size_t>(1) << state.get_number_of_qubits()));
     auto bit_measured_state_string{ fmt::format("{}", bit_measurement) };
     bit_measurements[bit_measured_state_string]++;
-    bit_measurements_count++;
 }
 
-SimulationResult SimulationIterationAccumulator::get_simulation_result() {
-    assert(measurements_count > 0);
+SimulationResult SimulationIterationAccumulator::get_simulation_result(std::size_t shots_requested) {
+    assert(shots_done > 0);
 
-    SimulationResult simulation_result{ measurements_count,
-        measurements_count,
+    SimulationResult simulation_result{ shots_done,
+        shots_requested,
         RegisterManager::get_instance().get_qubit_register(),
         RegisterManager::get_instance().get_bit_register() };
 
