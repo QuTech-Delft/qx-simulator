@@ -15,6 +15,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Documentation: GitHub Actions `doc` workflow.
 
+### Removed
+- Support for 'reset all'.
+
 
 ## [ 0.7.4 ] - [ 2025-01-29 ]
 

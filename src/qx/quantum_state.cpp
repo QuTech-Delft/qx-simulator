@@ -175,10 +175,6 @@ void QuantumState::apply_reset(QubitIndex qubit_index) {
     update_data_after_reset(qubit_index);
 }
 
-void QuantumState::apply_reset_all() {
-    reset_data();
-}
-
 std::ostream& operator<<(std::ostream& os, const QuantumState& state) {
     return os << fmt::format("[{}]", fmt::join(state.to_vector(), ", "));
 }
