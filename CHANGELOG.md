@@ -14,6 +14,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 - Documentation: GitHub Actions `doc` workflow.
+- `pow` gate modifier now works with fractional exponents.  
 
 ### Changed
 - Change SimulationIterationAccumulator to keep `shots_done` and receive `shots_requested` in `get_simulation_result()`.
@@ -48,6 +49,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Change `Circuit::execute` to return a `SimulationIterationContext`.
 - Change `Matrix` and `DenseUnitaryMatrix` to use `std::vector` instead of `std::array`.
 - Change file, functions, and variable names.
+- Change Linux/ARM64 jobs to use GitHub-hosted runners.
 
 ### Removed
 - `abseil` library dependency.

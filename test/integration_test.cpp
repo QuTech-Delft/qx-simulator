@@ -546,4 +546,50 @@ ctrl.pow(2).S q[0], q[1]
     }));
 }
 
+TEST_F(IntegrationTest, gate_modifier__ctrl_pow_2_sqrt_s) {
+    auto program = R"(
+version 3.0
+
+qubit[2] q
+
+H q[0]
+ctrl.pow(2).pow(1./2).Z q[0], q[1]
+)";
+    std::size_t iterations = 1;
+    auto actual = run_from_string(program, iterations, "3.0");
+
+    // Expected 'q' state should be |00>-|01> as ctrl.pow(2).pow(1./2).Z is equivalent to CZ
+    // State is |00>+|01> after H, then CZ just flips the phase of the |01> term
+    EXPECT_EQ(actual.state,
+        (SimulationResult::State{
+            { "00", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } },
+            { "01", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } }
+    }));
+}
+
+TEST_F(IntegrationTest, gate_modifier__ctrl_pow_1_3_z) {
+    auto program = R"(
+version 3.0
+
+qubit[2] q
+
+X q[1]
+H q[0]
+ctrl.pow(1./3).Z q[0], q[1]
+)";
+    std::size_t iterations = 1;
+    auto actual = run_from_string(program, iterations, "3.0");
+
+    // Expected 'q' state should be |10>+|11>
+    // State is |10>+|11> after H, then ctrl.pow(1./3).Z adds a phase shift
+    EXPECT_EQ(actual.state,
+        (SimulationResult::State{
+            { "10",core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } },
+            { "11",
+             core::Complex{ .real = std::cos(gates::PI / 3) / gates::SQRT_2,
+             .imag = std::sin(gates::PI / 3) / gates::SQRT_2,
+             .norm = 0.5 }                                        }
+    }));
+}
+
 }  // namespace qx

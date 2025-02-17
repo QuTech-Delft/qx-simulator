@@ -48,6 +48,7 @@ class QxConan(ConanFile):
 
     def requirements(self):
         self.requires("boost/1.85.0")
+        self.requires("eigen/3.4.0")
         self.requires("fmt/11.0.2", transitive_headers=True)
         self.requires("libqasm/0.6.9", transitive_headers=True)
         self.requires("range-v3/0.12.0", transitive_headers=True)
