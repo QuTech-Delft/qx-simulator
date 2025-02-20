@@ -20,9 +20,9 @@ using namespace std::complex_literals;  // i
 inline constexpr long double PI = std::numbers::pi_v<long double>;
 inline constexpr double SQRT_2 = std::numbers::sqrt2_v<long double>;
 
-inline static UnitaryMatrix IDENTITY = UnitaryMatrix::identity(2);
+static UnitaryMatrix IDENTITY = UnitaryMatrix::identity(2);
 
-inline static UnitaryMatrix X{
+static UnitaryMatrix X{
     Matrix{
         { 0, 1 },
         { 1, 0 }
@@ -30,7 +30,7 @@ inline static UnitaryMatrix X{
     false
 };
 
-inline static UnitaryMatrix Y{
+static UnitaryMatrix Y{
     Matrix{
         {  0, -1i },
         { 1i,   0 }
@@ -38,7 +38,7 @@ inline static UnitaryMatrix Y{
     false
 };
 
-inline static UnitaryMatrix Z{
+static UnitaryMatrix Z{
     Matrix{
         { 1,  0 },
         { 0, -1 }
@@ -46,7 +46,7 @@ inline static UnitaryMatrix Z{
     false
 };
 
-inline static UnitaryMatrix S{
+static UnitaryMatrix S{
     Matrix{
         { 1,  0 },
         { 0, 1i }
@@ -54,9 +54,9 @@ inline static UnitaryMatrix S{
     false
 };
 
-inline static UnitaryMatrix SDAG = S.dagger();
+static UnitaryMatrix SDAG = S.dagger();
 
-inline static UnitaryMatrix T{
+static UnitaryMatrix T{
     Matrix{
         { 1,                        0 },
         { 0, 1 / SQRT_2 + 1i / SQRT_2 }
@@ -64,9 +64,9 @@ inline static UnitaryMatrix T{
     false
 };
 
-inline static UnitaryMatrix TDAG = T.dagger();
+static UnitaryMatrix TDAG = T.dagger();
 
-inline static UnitaryMatrix RX(double theta) {
+inline UnitaryMatrix RX(double theta) {
     return UnitaryMatrix{
         Matrix{
             {       std::cos(theta / 2), -1i * std::sin(theta / 2) },
@@ -76,7 +76,7 @@ inline static UnitaryMatrix RX(double theta) {
     };
 }
 
-inline static UnitaryMatrix RY(double theta) {
+inline UnitaryMatrix RY(double theta) {
     return UnitaryMatrix{
         Matrix{
             { std::cos(theta / 2), -std::sin(theta / 2) },
@@ -86,7 +86,7 @@ inline static UnitaryMatrix RY(double theta) {
     };
 }
 
-inline static UnitaryMatrix RZ(double theta) {
+inline UnitaryMatrix RZ(double theta) {
     return UnitaryMatrix{
         Matrix{
             { std::cos(theta / 2) - 1i * std::sin(theta / 2),                                              0 },
@@ -96,14 +96,14 @@ inline static UnitaryMatrix RZ(double theta) {
     };
 }
 
-inline static auto X90 = RX(PI / 2);
-inline static auto Y90 = RY(PI / 2);
-inline static auto Z90 = RZ(PI / 2);
-inline static auto MX90 = RX(-PI / 2);
-inline static auto MY90 = RY(-PI / 2);
-inline static auto MZ90 = RZ(-PI / 2);
+static auto X90 = RX(PI / 2);
+static auto Y90 = RY(PI / 2);
+static auto Z90 = RZ(PI / 2);
+static auto MX90 = RX(-PI / 2);
+static auto MY90 = RY(-PI / 2);
+static auto MZ90 = RZ(-PI / 2);
 
-inline static UnitaryMatrix H{
+static UnitaryMatrix H{
     Matrix{
         { 1 / SQRT_2,  1 / SQRT_2 },
         { 1 / SQRT_2, -1 / SQRT_2 }
@@ -111,7 +111,7 @@ inline static UnitaryMatrix H{
     false
 };
 
-inline static UnitaryMatrix CNOT{
+static UnitaryMatrix CNOT{
     Matrix{
         { 1, 0, 0, 0 },
         { 0, 1, 0, 0 },
@@ -121,7 +121,7 @@ inline static UnitaryMatrix CNOT{
     false
 };
 
-inline static UnitaryMatrix SWAP{
+static UnitaryMatrix SWAP{
     Matrix{
         { 1, 0, 0, 0 },
         { 0, 0, 1, 0 },
@@ -131,7 +131,7 @@ inline static UnitaryMatrix SWAP{
     false
 };
 
-inline static UnitaryMatrix CZ{
+static UnitaryMatrix CZ{
     Matrix{
         { 1, 0, 0,  0 },
         { 0, 1, 0,  0 },
@@ -141,7 +141,7 @@ inline static UnitaryMatrix CZ{
     false
 };
 
-inline static UnitaryMatrix CR(double theta) {
+inline UnitaryMatrix CR(double theta) {
     return UnitaryMatrix{
         Matrix{
             { 1, 0, 0,                                      0 },
@@ -153,7 +153,7 @@ inline static UnitaryMatrix CR(double theta) {
     };
 }
 
-inline static UnitaryMatrix TOFFOLI{
+static UnitaryMatrix TOFFOLI{
     Matrix{
         { 1, 0, 0, 0, 0, 0, 0, 0 },
         { 0, 1, 0, 0, 0, 0, 0, 0 },
@@ -170,7 +170,7 @@ inline static UnitaryMatrix TOFFOLI{
 using GateName = std::string;
 using UnitaryMatrixGenerator = std::function<gates::UnitaryMatrix(CqasmV3xParameter)>;
 
-inline static std::unordered_map<GateName, UnitaryMatrixGenerator> default_gates = {
+static std::unordered_map<GateName, UnitaryMatrixGenerator> default_gates = {
     { "CNOT", [](const auto&) { return gates::CNOT; } },
     { "CR", [](const auto& parameter) { return gates::CR(parameter->as_const_float()->value); } },
     { "CRk", [](const auto& parameter) {
