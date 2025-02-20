@@ -19,6 +19,7 @@ using Matrix = std::vector<Row>;
 
 class DenseUnitaryMatrix {
 public:
+    ~DenseUnitaryMatrix() = default;
     DenseUnitaryMatrix(const DenseUnitaryMatrix& other) = default;
     DenseUnitaryMatrix(DenseUnitaryMatrix&& other) noexcept = default;
     DenseUnitaryMatrix& operator=(const DenseUnitaryMatrix& other) = default;
