@@ -13,6 +13,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [ 0.7.5 ] - [ xxxx-yy-zz ]
 
 ### Added
+- Integrate with libqasm 1.0.0 release.
 - Documentation: GitHub Actions `doc` workflow.
 
 ### Changed
