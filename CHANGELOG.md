@@ -17,8 +17,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Documentation: GitHub Actions `doc` workflow.
 
 ### Changed
-- Change SimulationIterationAccumulator to keep `shots_done` and receive `shots_requested` in `get_simulation_result()`.
 - Allow move constructing a `DenseUnitaryMatrix`.
+- Change SimulationIterationAccumulator to keep `shots_done` and receive `shots_requested` in `get_simulation_result()`.
+- Update `cpp-linux-x64` and `cpp-linux-arm64` jobs to use `ubuntu-latest` and `ubuntu-24.04-arm` respectively.
 - Update to `mkdocs-material/9.6.5` and `mkdocstrings/0.28.2` versions in `requirements.txt`.
 
 ### Removed
