@@ -26,28 +26,32 @@ static UnitaryMatrix X{
     Matrix{
         { 0, 1 },
         { 1, 0 }
-    }
+    },
+    false
 };
 
 static UnitaryMatrix Y{
     Matrix{
         {  0, -1i },
         { 1i,   0 }
-    }
+    },
+    false
 };
 
 static UnitaryMatrix Z{
     Matrix{
         { 1,  0 },
         { 0, -1 }
-    }
+    },
+    false
 };
 
 static UnitaryMatrix S{
     Matrix{
         { 1,  0 },
         { 0, 1i }
-    }
+    },
+    false
 };
 
 static UnitaryMatrix SDAG = S.dagger();
@@ -56,35 +60,39 @@ static UnitaryMatrix T{
     Matrix{
         { 1,                        0 },
         { 0, 1 / SQRT_2 + 1i / SQRT_2 }
-    }
+    },
+    false
 };
 
 static UnitaryMatrix TDAG = T.dagger();
 
-static UnitaryMatrix RX(double theta) {
+inline UnitaryMatrix RX(double theta) {
     return UnitaryMatrix{
         Matrix{
             {       std::cos(theta / 2), -1i * std::sin(theta / 2) },
             { -1i * std::sin(theta / 2),       std::cos(theta / 2) }
-        }
+        },
+        false
     };
 }
 
-static UnitaryMatrix RY(double theta) {
+inline UnitaryMatrix RY(double theta) {
     return UnitaryMatrix{
         Matrix{
             { std::cos(theta / 2), -std::sin(theta / 2) },
             { std::sin(theta / 2),  std::cos(theta / 2) }
-        }
+        },
+        false
     };
 }
 
-static UnitaryMatrix RZ(double theta) {
+inline UnitaryMatrix RZ(double theta) {
     return UnitaryMatrix{
         Matrix{
             { std::cos(theta / 2) - 1i * std::sin(theta / 2),                                              0 },
             {                                              0, std::cos(theta / 2) + 1i * std::sin(theta / 2) }
-        }
+        },
+        false
     };
 }
 
@@ -99,7 +107,8 @@ static UnitaryMatrix H{
     Matrix{
         { 1 / SQRT_2,  1 / SQRT_2 },
         { 1 / SQRT_2, -1 / SQRT_2 }
-    }
+    },
+    false
 };
 
 static UnitaryMatrix CNOT{
@@ -108,7 +117,8 @@ static UnitaryMatrix CNOT{
         { 0, 1, 0, 0 },
         { 0, 0, 0, 1 },
         { 0, 0, 1, 0 }
-    }
+    },
+    false
 };
 
 static UnitaryMatrix SWAP{
@@ -117,7 +127,8 @@ static UnitaryMatrix SWAP{
         { 0, 0, 1, 0 },
         { 0, 1, 0, 0 },
         { 0, 0, 0, 1 }
-    }
+    },
+    false
 };
 
 static UnitaryMatrix CZ{
@@ -126,17 +137,19 @@ static UnitaryMatrix CZ{
         { 0, 1, 0,  0 },
         { 0, 0, 1,  0 },
         { 0, 0, 0, -1 }
-    }
+    },
+    false
 };
 
-[[maybe_unused]] static UnitaryMatrix CR(double theta) {
+inline UnitaryMatrix CR(double theta) {
     return UnitaryMatrix{
         Matrix{
             { 1, 0, 0,                                      0 },
             { 0, 1, 0,                                      0 },
             { 0, 0, 1,                                      0 },
             { 0, 0, 0, std::cos(theta) + 1i * std::sin(theta) }
-        }
+        },
+        false
     };
 }
 
@@ -150,7 +163,8 @@ static UnitaryMatrix TOFFOLI{
         { 0, 0, 0, 0, 0, 1, 0, 0 },
         { 0, 0, 0, 0, 0, 0, 0, 1 },
         { 0, 0, 0, 0, 0, 0, 1, 0 }
-    }
+    },
+    false
 };
 
 using GateName = std::string;
