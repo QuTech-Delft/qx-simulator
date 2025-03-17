@@ -4,6 +4,9 @@ include(tests-debug)
 compiler=clang
 compiler.version=14
 
+[options]
+qx/*:asan_enabled=False
+
 [conf]
 tools.build:cxxflags=["-stdlib=libc++"]
 tools.build:compiler_executables={ 'c' : 'clang', 'cpp' : 'clang++' }
