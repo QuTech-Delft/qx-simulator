@@ -5,7 +5,7 @@ compiler.cppstd=23
 build_type=Debug
 
 [options]
-qx/*:asan_enabled=False
+qx/*:asan_enabled=True
 qx/*:build_python=False
 qx/*:cpu_compatibility_mode=False
 
