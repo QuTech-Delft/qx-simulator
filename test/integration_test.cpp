@@ -592,4 +592,61 @@ ctrl.pow(1./3).Z q[0], q[1]
     }));
 }
 
+TEST_F(IntegrationTest, power_gate_modifier__fractional_exponent) {
+    using program_t = std::string;
+    using expected_t = SimulationResult::State;
+    auto test_cases = std::vector<std::pair<program_t, expected_t>>{
+        {
+         { "version 3.0; qubit q; pow(1./2).X q",
+                { { "0", core::Complex{ .real = 0.5, .imag = 0.5, .norm = 0.5 } },
+                    { "1", core::Complex{ .real = 0.5, .imag = -0.5, .norm = 0.5 } } } },
+         { "version 3.0; qubit q; pow(1./4).X q",
+                { { "0",
+                      core::Complex{
+                          .real = 0.853553390593274, .imag = 0.353553390593274, .norm = 0.853553390593274 } },
+                    { "1",
+                        core::Complex{
+                            .real = 0.146446609406726, .imag = -0.353553390593274, .norm = 0.146446609406726 } } } },
+         { "version 3.0; qubit q; pow(1./2).H q",
+                { { "0", core::Complex{ .real = 0.853553390593274, .imag = 0.146446609406726, .norm = 0.75 } },
+                    { "1", core::Complex{ .real = 0.353553390593274, .imag = -0.353553390593274, .norm = 0.25 } } } },
+         { "version 3.0; qubit q; pow(1./4).H q",
+                { { "0",
+                      core::Complex{
+                          .real = 0.957106781186548, .imag = 0.103553390593274, .norm = 0.926776695296637 } },
+                    { "1", core::Complex{ .real = 0.103553390593274, .imag = -0.25, .norm = 0.0732233047033631 } } } },
+         { "version 3.0; qubit q; pow(pi/10).H q",
+                { { "0",
+                      core::Complex{
+                          .real = 0.934278931480042, .imag = 0.122188364647641, .norm = 0.887807118262753 } },
+                    { "1",
+                        core::Complex{
+                            .real = 0.158664694954535, .imag = -0.294988807096525, .norm = 0.112192881737247 } } } },
+         { "version 3.0; qubit q; pow(1./2).H q; pow(pi/4).X q",
+                { { "0",
+                      core::Complex{
+                          .real = 0.252183929405727, .imag = -0.142789875460971, .norm = 0.0839856827846723 } },
+                    { "1",
+                        core::Complex{
+                            .real = 0.954922851780821, .imag = -0.0643169057255765, .norm = 0.916014317215328 } } } },
+         { "version 3.0; qubit q; X q; pow(1./2).Z q",
+                { { "1", core::Complex{ .real = 0, .imag = 1, .norm = 1 } } } },
+         //        {
+            //            "version 3.0; qubit[2] q; X q; ctrl.pow(1./3).H q[0], q[1]",
+            //            {
+            //                { "10", core::Complex{ .real = 0.176776695296637, .imag = -0.306186217847897, .norm =
+            //                0.125 } }, { "11", core::Complex{ .real = 0.573223304703363, .imag = 0.739198919740117,
+            //                .norm = 0.875 } }
+            //            }
+            //        }
+        }
+    };
+
+    std::size_t iterations = 1;
+    for (const auto& [program, expected] : test_cases) {
+        auto actual = run_from_string(program, iterations, "3.0");
+        EXPECT_EQ(actual.state, expected);
+    }
+}
+
 }  // namespace qx
