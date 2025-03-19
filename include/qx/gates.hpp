@@ -19,6 +19,7 @@ using namespace std::complex_literals;  // i
 
 inline constexpr double PI = std::numbers::pi_v<double>;
 inline constexpr double SQRT_2 = std::numbers::sqrt2_v<double>;
+inline constexpr double SQRT_3 = std::numbers::sqrt3_v<double>;
 
 static UnitaryMatrix IDENTITY = UnitaryMatrix::identity(2);
 
