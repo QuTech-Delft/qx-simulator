@@ -168,22 +168,22 @@ static UnitaryMatrix TOFFOLI{
 };
 
 using GateName = std::string;
-using UnitaryMatrixGenerator = std::function<gates::UnitaryMatrix(CqasmV3xParameter)>;
+using UnitaryMatrixGenerator = std::function<gates::UnitaryMatrix(CqasmV3xParameters)>;
 
 static std::unordered_map<GateName, UnitaryMatrixGenerator> default_gates = {
     { "CNOT", [](const auto&) { return gates::CNOT; } },
-    { "CR", [](const auto& parameter) { return gates::CR(parameter->as_const_float()->value); } },
-    { "CRk", [](const auto& parameter) {
-        return gates::CR(static_cast<double>(gates::PI) / std::pow(2, parameter->as_const_int()->value - 1));
+    { "CR", [](const auto& parameters) { return gates::CR(parameters[0]->as_const_float()->value); } },
+    { "CRk", [](const auto& parameters) {
+        return gates::CR(static_cast<double>(gates::PI) / std::pow(2, parameters[0]->as_const_int()->value - 1));
     } },
     { "CZ", [](const auto&) { return gates::CZ; } },
     { "H", [](const auto&) { return gates::H; } },
     { "I", [](const auto&) { return gates::IDENTITY; } },
     { "mX90", [](const auto&) { return gates::MX90; } },
     { "mY90", [](const auto&) { return gates::MY90; } },
-    { "Rx", [](const auto& parameter) { return gates::RX(parameter->as_const_float()->value); } },
-    { "Ry", [](const auto& parameter) { return gates::RY(parameter->as_const_float()->value); } },
-    { "Rz", [](const auto& parameter) { return gates::RZ(parameter->as_const_float()->value); } },
+    { "Rx", [](const auto& parameters) { return gates::RX(parameters[0]->as_const_float()->value); } },
+    { "Ry", [](const auto& parameters) { return gates::RY(parameters[0]->as_const_float()->value); } },
+    { "Rz", [](const auto& parameters) { return gates::RZ(parameters[0]->as_const_float()->value); } },
     { "S", [](const auto&) { return gates::S; } },
     { "Sdag", [](const auto&) { return gates::SDAG; } },
     { "SWAP", [](const auto&) { return gates::SWAP; } },

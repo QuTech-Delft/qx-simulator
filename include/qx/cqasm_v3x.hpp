@@ -53,7 +53,7 @@ using CqasmV3xVariableLink = TreeLink<CqasmV3xVariable>;
 using CqasmV3xVariableRef = cqasm_v3x_values::VariableRef;
 using CqasmV3xVersion = cqasm_v3x_semantic::Version;
 
-using CqasmV3xParameter = CqasmV3xMaybe<CqasmV3xValueBase>;
+using CqasmV3xParameters = CqasmV3xAny<CqasmV3xValueBase>;
 using CqasmV3xOperand = CqasmV3xValueBase;
 using CqasmV3xOperandIndices = CqasmV3xAny<CqasmV3xConstInt>;
 using CqasmV3xOperands = CqasmV3xAny<CqasmV3xValueBase>;
