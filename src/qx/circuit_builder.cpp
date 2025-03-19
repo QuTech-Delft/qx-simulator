@@ -48,7 +48,7 @@ std::vector<std::shared_ptr<Unitary>> CircuitBuilder::get_modified_gates(
         if (gate.name == "inv") {
             modified_gate->matrix = modified_gate->inverse();
         } else if (gate.name == "pow") {
-            auto exponent = gate.parameter->as_const_float()->value;
+            auto exponent = gate.parameters[0]->as_const_float()->value;
             modified_gate->matrix = modified_gate->power(exponent);
         } else if (gate.name == "ctrl") {
             modified_gate->matrix = modified_gate->control();
@@ -62,7 +62,7 @@ std::vector<std::shared_ptr<Unitary>> CircuitBuilder::get_default_gates(
     const CqasmV3xGate& gate, const CqasmV3xOperands& operands) {
     try {
         const auto& matrix_generator = gates::default_gates[gate.name];
-        const auto& matrix = matrix_generator(gate.parameter);
+        const auto& matrix = matrix_generator(gate.parameters);
         const auto& instructions_indices = get_instructions_indices(operands);
         auto ret = std::vector<std::shared_ptr<Unitary>>(instructions_indices.size());
         std::transform(instructions_indices.begin(),
@@ -112,7 +112,7 @@ void CircuitBuilder::visit_non_gate_instruction(CqasmV3xNonGateInstruction& non_
         }
     } else if (name == "barrier") {
     } else if (name == "wait") {
-        auto time = non_gate_instruction.parameter->as_const_int()->value;
+        auto time = non_gate_instruction.parameters[0]->as_const_int()->value;
         if (time < 0) {
             const auto& instruction_indices = instructions_indices[0];
             const auto& qubit_index = instruction_indices[0];

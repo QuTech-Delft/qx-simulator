@@ -12,18 +12,18 @@ namespace qx {
 
 namespace cqasm_tree = ::cqasm::tree;
 namespace cqasm_v3x_analyzer = cqasm::v3x::analyzer;
-namespace cqasm_v3x_ast = cqasm::v3x::ast;
 namespace cqasm_v3x_primitives = cqasm::v3x::primitives;
 namespace cqasm_v3x_semantic = cqasm::v3x::semantic;
+namespace cqasm_v3x_syntactic = cqasm::v3x::syntactic;
 namespace cqasm_v3x_types = cqasm::v3x::types;
 namespace cqasm_v3x_values = cqasm::v3x::values;
 
 template <typename T>
-using CqasmV3xAny = cqasm_v3x_ast::Any<T>;
+using CqasmV3xAny = cqasm_v3x_syntactic::Any<T>;
 template <typename T>
-using CqasmV3xMany = cqasm_v3x_ast::Many<T>;
+using CqasmV3xMany = cqasm_v3x_syntactic::Many<T>;
 template <typename T>
-using CqasmV3xMaybe = cqasm_v3x_ast::Maybe<T>;
+using CqasmV3xMaybe = cqasm_v3x_syntactic::Maybe<T>;
 template <typename T>
 using TreeLink = cqasm::tree::Link<T>;
 template <typename T>
@@ -53,7 +53,7 @@ using CqasmV3xVariableLink = TreeLink<CqasmV3xVariable>;
 using CqasmV3xVariableRef = cqasm_v3x_values::VariableRef;
 using CqasmV3xVersion = cqasm_v3x_semantic::Version;
 
-using CqasmV3xParameter = CqasmV3xMaybe<CqasmV3xValueBase>;
+using CqasmV3xParameters = CqasmV3xAny<CqasmV3xValueBase>;
 using CqasmV3xOperand = CqasmV3xValueBase;
 using CqasmV3xOperandIndices = CqasmV3xAny<CqasmV3xConstInt>;
 using CqasmV3xOperands = CqasmV3xAny<CqasmV3xValueBase>;
