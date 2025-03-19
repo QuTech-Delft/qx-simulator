@@ -98,7 +98,7 @@ TEST(dense_unitary_matrix_test, power_integer) {
 }
 
 // The matrices defined here as powers of a default gate are valid roots computed by Eigen
-// For example, for sqrt(X), we get a unitary matrix equal to X90 up to a global phase
+// For example, for sqrt(X), we get a unitary matrix equal to X90
 TEST(dense_unitary_matrix_test, power_fractional) {
     const auto& x_power_1_2 = DenseUnitaryMatrix{
         Matrix{
