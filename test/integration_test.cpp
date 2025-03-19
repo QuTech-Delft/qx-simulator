@@ -588,48 +588,40 @@ ctrl.pow(1./3).Z q[0], q[1]
             { "11",
              core::Complex{ .real = std::cos(gates::PI / 3) / gates::SQRT_2,
              .imag = std::sin(gates::PI / 3) / gates::SQRT_2,
-             .norm = 0.5 }                                        }
+             .norm = 0.5 }                                         }
     }));
 }
 
 TEST_F(IntegrationTest, power_gate_modifier__fractional_exponent) {
     using program_t = std::string;
     using expected_t = SimulationResult::State;
-    // NOLINTBEGIN
-    auto test_cases = std::vector<std::pair<program_t, expected_t>>{{
-        { "version 3.0; qubit q; pow(1./2).X q",
-            SimulationResult::State{
-                { "0", { 0.5, 0.5, 0.5 } },
-                { "1", { 0.5, -0.5, 0.5 } } } },
-        { "version 3.0; qubit q; pow(1./4).X q",
-            SimulationResult::State{
-                { "0", { (2.0 + gates::SQRT_2) / 4, gates::SQRT_2 / 4, (2.0 + gates::SQRT_2) / 4 } },
-                { "1", { (2.0 - gates::SQRT_2) / 4, -gates::SQRT_2 / 4, (2.0 - gates::SQRT_2) / 4 } } } },
-        { "version 3.0; qubit q; pow(1./2).H q",
-            SimulationResult::State{
-                { "0", { (2.0 + gates::SQRT_2) / 4, (2.0 - gates::SQRT_2) / 4, 0.75 } },
-                { "1", { gates::SQRT_2 / 4, -gates::SQRT_2 / 4, 0.25 } } } },
-        { "version 3.0; qubit q; pow(1./4).H q",
-            SimulationResult::State{
-                { "0", { (1.0 + 2 * gates::SQRT_2) / 4, (-1.0 + gates::SQRT_2) / 4, (6.0 + gates::SQRT_2) / 8 } },
-                { "1", { (-1.0 + gates::SQRT_2) / 4, -0.25, (2.0 - gates::SQRT_2) / 8 } } } },
-        { "version 3.0; qubit q; pow(pi/10).H q",
-            SimulationResult::State{
-                { "0", { 0.934278931480042, 0.122188364647641, 0.887807118262753 } },
-                { "1", { 0.158664694954535, -0.294988807096525, 0.112192881737247 } } } },
-        { "version 3.0; qubit q; pow(1./2).H q; pow(pi/4).X q",
-            SimulationResult::State{
-                { "0", { 0.252183929405727, -0.142789875460971, 0.0839856827846723 } },
-                { "1", { 0.954922851780821, -0.0643169057255765, 0.916014317215328 } } } },
-        { "version 3.0; qubit q; X q; pow(1./2).Z q",
-            SimulationResult::State{
-                { "1", { 0, 1, 1 } } } },
-        { "version 3.0; qubit[2] q; X q[0]; ctrl.pow(1./3).H q[0], q[1]",
-            SimulationResult::State{
-                { "01", { (6.0 + gates::SQRT_2) / 8, (2 * gates::SQRT_3 - gates::SQRT_2 * gates::SQRT_3) / 8, 0.875 } },
-                { "11", { 1.0 / (4 * gates::SQRT_2), -(gates::SQRT_3 / gates::SQRT_2) / 4, 0.125 } } } }
-    }};
-    // NOLINTEND
+    auto test_cases = std::vector<std::pair<program_t, expected_t>>{
+        { { "version 3.0; qubit q; pow(1./2).X q",
+              SimulationResult::State{ { "0", { 0.5, 0.5, 0.5 } }, { "1", { 0.5, -0.5, 0.5 } } } },
+         { "version 3.0; qubit q; pow(1./4).X q",
+                SimulationResult::State{
+                    { "0", { (2.0 + gates::SQRT_2) / 4, gates::SQRT_2 / 4, (2.0 + gates::SQRT_2) / 4 } },
+                    { "1", { (2.0 - gates::SQRT_2) / 4, -gates::SQRT_2 / 4, (2.0 - gates::SQRT_2) / 4 } } } },
+         { "version 3.0; qubit q; pow(1./2).H q",
+                SimulationResult::State{ { "0", { (2.0 + gates::SQRT_2) / 4, (2.0 - gates::SQRT_2) / 4, 0.75 } },
+                    { "1", { gates::SQRT_2 / 4, -gates::SQRT_2 / 4, 0.25 } } } },
+         { "version 3.0; qubit q; pow(1./4).H q",
+                SimulationResult::State{
+                    { "0", { (1.0 + 2 * gates::SQRT_2) / 4, (-1.0 + gates::SQRT_2) / 4, (6.0 + gates::SQRT_2) / 8 } },
+                    { "1", { (-1.0 + gates::SQRT_2) / 4, -0.25, (2.0 - gates::SQRT_2) / 8 } } } },
+         { "version 3.0; qubit q; pow(pi/10).H q",
+                SimulationResult::State{ { "0", { 0.934278931480042, 0.122188364647641, 0.887807118262753 } },
+                    { "1", { 0.158664694954535, -0.294988807096525, 0.112192881737247 } } } },
+         { "version 3.0; qubit q; pow(1./2).H q; pow(pi/4).X q",
+                SimulationResult::State{ { "0", { 0.252183929405727, -0.142789875460971, 0.0839856827846723 } },
+                    { "1", { 0.954922851780821, -0.0643169057255765, 0.916014317215328 } } } },
+         { "version 3.0; qubit q; X q; pow(1./2).Z q", SimulationResult::State{ { "1", { 0, 1, 1 } } } },
+         { "version 3.0; qubit[2] q; X q[0]; ctrl.pow(1./3).H q[0], q[1]",
+                SimulationResult::State{
+                    { "01",
+                        { (6.0 + gates::SQRT_2) / 8, (2 * gates::SQRT_3 - gates::SQRT_2 * gates::SQRT_3) / 8, 0.875 } },
+                    { "11", { 1.0 / (4 * gates::SQRT_2), -(gates::SQRT_3 / gates::SQRT_2) / 4, 0.125 } } } } }
+    };
 
     std::size_t iterations = 1;
     for (const auto& [program, expected] : test_cases) {
