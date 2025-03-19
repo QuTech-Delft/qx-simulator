@@ -106,12 +106,4 @@ TEST_F(QuantumStateTest, reset) {
     check_eq(victim, { 0.123, 0, std::sqrt(1 - std::pow(0.123, 2)), 0 });  // 00 and 10
 }
 
-TEST_F(QuantumStateTest, reset_all) {
-    QuantumState victim{
-        2, 2, { { "00", 0.123 }, { "11", std::sqrt(1 - std::pow(0.123, 2)) } }
-    };
-    victim.apply_reset_all();
-    check_eq(victim, QuantumState{ 2, 2 }.to_vector());
-}
-
 }  // namespace qx::core

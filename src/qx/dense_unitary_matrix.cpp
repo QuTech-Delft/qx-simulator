@@ -5,8 +5,21 @@
 
 namespace qx::core {
 
-DenseUnitaryMatrix::DenseUnitaryMatrix(const Matrix& matrix)
-: DenseUnitaryMatrix{ matrix, true } {}
+DenseUnitaryMatrix::DenseUnitaryMatrix(const Matrix& matrix, bool is_unitary_check)
+: matrix_{ matrix }
+, N{ matrix.size() } {
+    if (is_unitary_check) {
+        check_is_unitary();
+    }
+}
+
+DenseUnitaryMatrix::DenseUnitaryMatrix(Matrix&& matrix, bool is_unitary_check)
+: matrix_{ matrix }
+, N{ matrix.size() } {
+    if (is_unitary_check) {
+        check_is_unitary();
+    }
+}
 
 [[nodiscard]] std::complex<double>& DenseUnitaryMatrix::at(std::size_t i, std::size_t j) {
     return matrix_.at(i).at(j);
@@ -43,7 +56,7 @@ DenseUnitaryMatrix DenseUnitaryMatrix::operator*(const DenseUnitaryMatrix& other
             }
         }
     }
-    return DenseUnitaryMatrix{ matrix, false };
+    return DenseUnitaryMatrix{ std::move(matrix), false };
 }
 
 /* static */ DenseUnitaryMatrix DenseUnitaryMatrix::identity(size_t M) {
@@ -53,7 +66,7 @@ DenseUnitaryMatrix DenseUnitaryMatrix::operator*(const DenseUnitaryMatrix& other
             matrix[i][j] = (i == j) ? 1 : 0;
         }
     }
-    return DenseUnitaryMatrix{ matrix, false };
+    return DenseUnitaryMatrix{ std::move(matrix), false };
 }
 
 DenseUnitaryMatrix DenseUnitaryMatrix::dagger() const {
@@ -63,7 +76,7 @@ DenseUnitaryMatrix DenseUnitaryMatrix::dagger() const {
             matrix[i][j] = std::conj(matrix_[j][i]);
         }
     }
-    return DenseUnitaryMatrix{ matrix, false };
+    return DenseUnitaryMatrix{ std::move(matrix), false };
 }
 
 DenseUnitaryMatrix DenseUnitaryMatrix::inverse() const {
@@ -87,14 +100,6 @@ DenseUnitaryMatrix DenseUnitaryMatrix::control() const {
         }
     }
     return ret;
-}
-
-DenseUnitaryMatrix::DenseUnitaryMatrix(const Matrix& matrix, bool is_unitary_check)
-: matrix_{ matrix }
-, N{ matrix.size() } {
-    if (is_unitary_check) {
-        check_is_unitary();
-    }
 }
 
 void DenseUnitaryMatrix::check_is_unitary() const {

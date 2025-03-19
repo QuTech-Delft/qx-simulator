@@ -107,7 +107,7 @@ public:
     void add(const SimulationIterationContext& context);
     void append_measurement(const core::MeasurementRegister& measurement);
     void append_bit_measurement(const core::BitMeasurementRegister& bit_measurement);
-    SimulationResult get_simulation_result();
+    SimulationResult get_simulation_result(std::size_t shots_requested);
 
 private:
     template <typename F>
@@ -119,8 +119,7 @@ private:
     std::map<state_string_t, count_t> measurements;
     std::map<state_string_t, count_t> bit_measurements;
 
-    std::uint64_t measurements_count = 0;
-    std::uint64_t bit_measurements_count = 0;
+    std::uint64_t shots_done = 0;
 };
 
 }  // namespace qx

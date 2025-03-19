@@ -20,7 +20,15 @@ using Matrix = std::vector<Row>;
 
 class DenseUnitaryMatrix {
 public:
-    explicit DenseUnitaryMatrix(const Matrix& m);
+    ~DenseUnitaryMatrix() = default;
+    DenseUnitaryMatrix(const DenseUnitaryMatrix& other) = default;
+    DenseUnitaryMatrix(DenseUnitaryMatrix&& other) noexcept = default;
+    DenseUnitaryMatrix& operator=(const DenseUnitaryMatrix& other) = default;
+    DenseUnitaryMatrix& operator=(DenseUnitaryMatrix&& other) noexcept = default;
+
+public:
+    explicit DenseUnitaryMatrix(const Matrix& matrix, bool is_unitary_check = true);
+    explicit DenseUnitaryMatrix(Matrix&& matrix, bool is_unitary_check = true);
 
     [[nodiscard]] std::complex<double>& at(std::size_t i, std::size_t j);
     [[nodiscard]] const std::complex<double>& at(std::size_t i, std::size_t j) const;
@@ -36,8 +44,9 @@ public:
     [[nodiscard]] DenseUnitaryMatrix control() const;
 
 private:
-    DenseUnitaryMatrix(const Matrix& m, bool is_unitary_check);
+    DenseUnitaryMatrix() = default;
 
+private:
     void check_is_unitary() const;
     void check_is_square() const;
 

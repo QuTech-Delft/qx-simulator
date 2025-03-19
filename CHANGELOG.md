@@ -10,11 +10,21 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - **Removed** for now removed features.
 
 
-## [ 0.7.5 ] - [ xxxx-yy-zz ]
+## [ 0.7.5 ] - [ 2025-03-17 ]
 
 ### Added
+- Integrate with libqasm 1.0.0 release.
 - Documentation: GitHub Actions `doc` workflow.
 - `pow` gate modifier now works with fractional exponents.  
+
+### Changed
+- Allow move constructing a `DenseUnitaryMatrix`.
+- Change SimulationIterationAccumulator to keep `shots_done` and receive `shots_requested` in `get_simulation_result()`.
+- Update `cpp-linux-x64` and `cpp-linux-arm64` jobs to use `ubuntu-latest` and `ubuntu-24.04-arm` respectively.
+- Update to `mkdocs-material/9.6.5` and `mkdocstrings/0.28.2` versions in `requirements.txt`.
+
+### Removed
+- Support for 'reset all'.
 
 
 ## [ 0.7.4 ] - [ 2025-01-29 ]
