@@ -14,6 +14,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 - Integrate with libqasm 1.1.0 release.
+- `pow` gate modifier now works with fractional exponents.
 
 
 ## [ 0.7.5 ] - [ 2025-03-17 ]
@@ -21,7 +22,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Integrate with libqasm 1.0.0 release.
 - Documentation: GitHub Actions `doc` workflow.
-- `pow` gate modifier now works with fractional exponents.  
 
 ### Changed
 - Allow move constructing a `DenseUnitaryMatrix`.
