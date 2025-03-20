@@ -8,5 +8,5 @@ You can test the C++ binaries:
 
 ```shell
 cd build/Debug
-ctest -C Debug --output-on-failure
+ctest -C Debug --output-on-failure --parallel 10
 ```
