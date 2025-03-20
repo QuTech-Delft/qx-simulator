@@ -126,8 +126,8 @@ SWAP q[0], q[1]
     std::size_t iterations = 1;
     auto actual = run_from_string(program, iterations, "3.0");
 
-    // Expected 'q' state should be |00>-|10> after SWAP
-    // State is |00>+|01> after H, then CZ just flips the phase of the |01> term,
+    // Expected 'q' state should be |00>+|10> after SWAP
+    // State is |00>+|01> after H, then CZ does not change the state of qubit 1 because Z|0>=|0>,
     // and SWAP exchanges states for qubits 0 and 1
     EXPECT_EQ(actual.state,
         (SimulationResult::State{
@@ -213,12 +213,12 @@ b = measure q
     std::size_t iterations = 10'000;
     auto actual = run_from_string(program, iterations);
 
-    // Expected 'q' state should be |00>+|11> or |01>+|10>
+    // Expected 'q' state should be |01>+|10>
     auto error = static_cast<std::uint64_t>(static_cast<double>(iterations) / 2 * 0.05);
     EXPECT_EQ(actual.measurements.size(), 2);
-    EXPECT_TRUE(actual.measurements[0].state == "00" || actual.measurements[0].state == "01");
+    EXPECT_TRUE(actual.measurements[0].state == "01");
     EXPECT_LT(std::abs(static_cast<long long>(iterations / 2 - actual.measurements[0].count)), error);
-    EXPECT_TRUE(actual.measurements[1].state == "11" || actual.measurements[1].state == "10");
+    EXPECT_TRUE(actual.measurements[1].state == "10");
     EXPECT_LT(std::abs(static_cast<long long>(iterations / 2 - actual.measurements[1].count)), error);
 }
 
@@ -241,12 +241,12 @@ b1 = measure q1
     std::size_t iterations = 10'000;
     auto actual = run_from_string(program, iterations);
 
-    // Expected q1-q0 state should be |00>+|11> or |01>+|10>
+    // Expected 'q' state should be |01>+|10>
     auto error = static_cast<std::uint64_t>(static_cast<double>(iterations) / 2 * 0.05);
     EXPECT_EQ(actual.measurements.size(), 2);
-    EXPECT_TRUE(actual.measurements[0].state == "00" || actual.measurements[0].state == "01");
+    EXPECT_TRUE(actual.measurements[0].state == "01");
     EXPECT_LT(std::abs(static_cast<long long>(iterations / 2 - actual.measurements[0].count)), error);
-    EXPECT_TRUE(actual.measurements[1].state == "11" || actual.measurements[1].state == "10");
+    EXPECT_TRUE(actual.measurements[1].state == "10");
     EXPECT_LT(std::abs(static_cast<long long>(iterations / 2 - actual.measurements[1].count)), error);
 }
 
@@ -537,8 +537,8 @@ ctrl.pow(2).S q[0], q[1]
     std::size_t iterations = 1;
     auto actual = run_from_string(program, iterations, "3.0");
 
-    // Expected 'q' state should be |00>-|01> as ctrl.pow(2).S is equivalent to CZ
-    // State is |00>+|01> after H, then CZ just flips the phase of the |01> term
+    // Expected 'q' state should be |00>+|01> as ctrl.pow(2).S is equivalent to CZ
+    // State is |00>+|01> after H, then CZ does not change the state of qubit 1 because Z|0>=|0>
     EXPECT_EQ(actual.state,
         (SimulationResult::State{
             { "00", core::Complex{ .real = 1 / gates::SQRT_2, .imag = 0, .norm = 0.5 } },
@@ -558,8 +558,8 @@ ctrl.pow(2).pow(1./2).Z q[0], q[1]
     std::size_t iterations = 1;
     auto actual = run_from_string(program, iterations, "3.0");
 
-    // Expected 'q' state should be |00>-|01> as ctrl.pow(2).pow(1./2).Z is equivalent to CZ
-    // State is |00>+|01> after H, then CZ just flips the phase of the |01> term
+    // Expected 'q' state should be |00>+|01> as ctrl.pow(2).pow(1./2).Z is equivalent to CZ
+    // State is |00>+|01> after H, then CZ does not change the state of qubit 1 because Z|0>=|0>
     EXPECT_EQ(actual.state,
         (SimulationResult::State{
             { "00", core::Complex{ .real = 1 / gates::SQRT_2, .imag = 0, .norm = 0.5 } },
