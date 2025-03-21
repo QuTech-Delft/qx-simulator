@@ -17,8 +17,9 @@ using namespace std::complex_literals;  // i
 
 // clang-format off
 
-inline constexpr long double PI = std::numbers::pi_v<long double>;
-inline constexpr double SQRT_2 = std::numbers::sqrt2_v<long double>;
+inline constexpr double PI = std::numbers::pi_v<double>;
+inline constexpr double SQRT_2 = std::numbers::sqrt2_v<double>;
+inline constexpr double SQRT_3 = std::numbers::sqrt3_v<double>;
 
 static UnitaryMatrix IDENTITY = UnitaryMatrix::identity(2);
 

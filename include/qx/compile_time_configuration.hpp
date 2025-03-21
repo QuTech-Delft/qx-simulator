@@ -5,7 +5,7 @@
 
 namespace qx::config {
 
-// Epsilon for double comparison
+// Epsilon for double comparison: 1e-12
 static constexpr double EPSILON = 0.000'000'000'001;
 
 // Number of decimals in output
