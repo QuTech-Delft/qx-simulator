@@ -38,8 +38,8 @@ CNOT q[0], q[1]
     // State is |00>+|11> after creating the Bell state
     EXPECT_EQ(actual.state,
         (SimulationResult::State{
-            { "00", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } },
-            { "11", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } }
+            { "00", core::Complex{ .real = 1 / gates::SQRT_2, .imag = 0, .norm = 0.5 } },
+            { "11", core::Complex{ .real = 1 / gates::SQRT_2, .imag = 0, .norm = 0.5 } }
     }));
 }
 
@@ -108,8 +108,8 @@ I q[1]
     // Identity gates do not modify the state of the qubits
     EXPECT_EQ(actual.state,
         (SimulationResult::State{
-            { "00", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } },
-            { "11", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } }
+            { "00", core::Complex{ .real = 1 / gates::SQRT_2, .imag = 0, .norm = 0.5 } },
+            { "11", core::Complex{ .real = 1 / gates::SQRT_2, .imag = 0, .norm = 0.5 } }
     }));
 }
 
@@ -126,13 +126,13 @@ SWAP q[0], q[1]
     std::size_t iterations = 1;
     auto actual = run_from_string(program, iterations, "3.0");
 
-    // Expected 'q' state should be |00>-|10> after SWAP
-    // State is |00>+|01> after H, then CZ just flips the phase of the |01> term,
+    // Expected 'q' state should be |00>+|10> after SWAP
+    // State is |00>+|01> after H, then CZ does not change the state of qubit 1 because Z|0>=|0>,
     // and SWAP exchanges states for qubits 0 and 1
     EXPECT_EQ(actual.state,
         (SimulationResult::State{
-            { "00", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } },
-            { "10", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } }
+            { "00", core::Complex{ .real = 1 / gates::SQRT_2, .imag = 0, .norm = 0.5 } },
+            { "10", core::Complex{ .real = 1 / gates::SQRT_2, .imag = 0, .norm = 0.5 } }
     }));
 }
 
@@ -213,12 +213,12 @@ b = measure q
     std::size_t iterations = 10'000;
     auto actual = run_from_string(program, iterations);
 
-    // Expected 'q' state should be |00>+|11> or |01>+|10>
+    // Expected 'q' state should be |01>+|10>
     auto error = static_cast<std::uint64_t>(static_cast<double>(iterations) / 2 * 0.05);
     EXPECT_EQ(actual.measurements.size(), 2);
-    EXPECT_TRUE(actual.measurements[0].state == "00" || actual.measurements[0].state == "01");
+    EXPECT_TRUE(actual.measurements[0].state == "01");
     EXPECT_LT(std::abs(static_cast<long long>(iterations / 2 - actual.measurements[0].count)), error);
-    EXPECT_TRUE(actual.measurements[1].state == "11" || actual.measurements[1].state == "10");
+    EXPECT_TRUE(actual.measurements[1].state == "10");
     EXPECT_LT(std::abs(static_cast<long long>(iterations / 2 - actual.measurements[1].count)), error);
 }
 
@@ -241,12 +241,12 @@ b1 = measure q1
     std::size_t iterations = 10'000;
     auto actual = run_from_string(program, iterations);
 
-    // Expected q1-q0 state should be |00>+|11> or |01>+|10>
+    // Expected 'q' state should be |01>+|10>
     auto error = static_cast<std::uint64_t>(static_cast<double>(iterations) / 2 * 0.05);
     EXPECT_EQ(actual.measurements.size(), 2);
-    EXPECT_TRUE(actual.measurements[0].state == "00" || actual.measurements[0].state == "01");
+    EXPECT_TRUE(actual.measurements[0].state == "01");
     EXPECT_LT(std::abs(static_cast<long long>(iterations / 2 - actual.measurements[0].count)), error);
-    EXPECT_TRUE(actual.measurements[1].state == "11" || actual.measurements[1].state == "10");
+    EXPECT_TRUE(actual.measurements[1].state == "10");
     EXPECT_LT(std::abs(static_cast<long long>(iterations / 2 - actual.measurements[1].count)), error);
 }
 
@@ -291,8 +291,8 @@ reset q[0]
     // Then 'reset' sets q to |0>, leaving the state as |00>+|10>
     EXPECT_EQ(actual.state,
         (SimulationResult::State{
-            { "00", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } },
-            { "10", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } }
+            { "00", core::Complex{ .real = 1 / gates::SQRT_2, .imag = 0, .norm = 0.5 } },
+            { "10", core::Complex{ .real = 1 / gates::SQRT_2, .imag = 0, .norm = 0.5 } }
     }));
 }
 
@@ -402,8 +402,8 @@ CNOT q[0], q[1]
     // A correct 'init' instruction is discarded by the simulator
     EXPECT_EQ(actual.state,
         (SimulationResult::State{
-            { "00", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } },
-            { "11", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } }
+            { "00", core::Complex{ .real = 1 / gates::SQRT_2, .imag = 0, .norm = 0.5 } },
+            { "11", core::Complex{ .real = 1 / gates::SQRT_2, .imag = 0, .norm = 0.5 } }
     }));
 }
 
@@ -446,8 +446,8 @@ wait(2) q
     // 'barrier' and 'wait' instructions are just discarded by the simulator
     EXPECT_EQ(actual.state,
         (SimulationResult::State{
-            { "00", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } },
-            { "11", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } }
+            { "00", core::Complex{ .real = 1 / gates::SQRT_2, .imag = 0, .norm = 0.5 } },
+            { "11", core::Complex{ .real = 1 / gates::SQRT_2, .imag = 0, .norm = 0.5 } }
     }));
 }
 
@@ -481,8 +481,8 @@ inv.inv.H q
     // Expected 'q' state should be |0>+|1> as inv.inv.H is equivalent to H
     EXPECT_EQ(actual.state,
         (SimulationResult::State{
-            { "0", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } },
-            { "1", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } }
+            { "0", core::Complex{ .real = 1 / gates::SQRT_2, .imag = 0, .norm = 0.5 } },
+            { "1", core::Complex{ .real = 1 / gates::SQRT_2, .imag = 0, .norm = 0.5 } }
     }));
 }
 
@@ -520,8 +520,8 @@ ctrl.X q[0], q[1]
     // State is |00>+|11> after creating the Bell state
     EXPECT_EQ(actual.state,
         (SimulationResult::State{
-            { "00", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } },
-            { "11", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } }
+            { "00", core::Complex{ .real = 1 / gates::SQRT_2, .imag = 0, .norm = 0.5 } },
+            { "11", core::Complex{ .real = 1 / gates::SQRT_2, .imag = 0, .norm = 0.5 } }
     }));
 }
 
@@ -537,13 +537,97 @@ ctrl.pow(2).S q[0], q[1]
     std::size_t iterations = 1;
     auto actual = run_from_string(program, iterations, "3.0");
 
-    // Expected 'q' state should be |00>-|01> as ctrl.pow(2).S is equivalent to CZ
-    // State is |00>+|01> after H, then CZ just flips the phase of the |01> term
+    // Expected 'q' state should be |00>+|01> as ctrl.pow(2).S is equivalent to CZ
+    // State is |00>+|01> after H, then CZ does not change the state of qubit 1 because Z|0>=|0>
     EXPECT_EQ(actual.state,
         (SimulationResult::State{
-            { "00", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } },
-            { "01", core::Complex{ .real = 1 / std::sqrt(2), .imag = 0, .norm = 0.5 } }
+            { "00", core::Complex{ .real = 1 / gates::SQRT_2, .imag = 0, .norm = 0.5 } },
+            { "01", core::Complex{ .real = 1 / gates::SQRT_2, .imag = 0, .norm = 0.5 } }
     }));
+}
+
+TEST_F(IntegrationTest, gate_modifier__ctrl_pow_2_sqrt_s) {
+    auto program = R"(
+version 3.0
+
+qubit[2] q
+
+H q[0]
+ctrl.pow(2).pow(1./2).Z q[0], q[1]
+)";
+    std::size_t iterations = 1;
+    auto actual = run_from_string(program, iterations, "3.0");
+
+    // Expected 'q' state should be |00>+|01> as ctrl.pow(2).pow(1./2).Z is equivalent to CZ
+    // State is |00>+|01> after H, then CZ does not change the state of qubit 1 because Z|0>=|0>
+    EXPECT_EQ(actual.state,
+        (SimulationResult::State{
+            { "00", core::Complex{ .real = 1 / gates::SQRT_2, .imag = 0, .norm = 0.5 } },
+            { "01", core::Complex{ .real = 1 / gates::SQRT_2, .imag = 0, .norm = 0.5 } }
+    }));
+}
+
+TEST_F(IntegrationTest, gate_modifier__ctrl_pow_1_3_z) {
+    auto program = R"(
+version 3.0
+
+qubit[2] q
+
+X q[1]
+H q[0]
+ctrl.pow(1./3).Z q[0], q[1]
+)";
+    std::size_t iterations = 1;
+    auto actual = run_from_string(program, iterations, "3.0");
+
+    // Expected 'q' state should be |10>+|11>
+    // State is |10>+|11> after H, then ctrl.pow(1./3).Z adds a phase shift
+    EXPECT_EQ(actual.state,
+        (SimulationResult::State{
+            { "10",core::Complex{ .real = 1 / gates::SQRT_2, .imag = 0, .norm = 0.5 } },
+            { "11",
+             core::Complex{ .real = std::cos(gates::PI / 3) / gates::SQRT_2,
+             .imag = std::sin(gates::PI / 3) / gates::SQRT_2,
+             .norm = 0.5 }                                         }
+    }));
+}
+
+TEST_F(IntegrationTest, power_gate_modifier__fractional_exponent) {
+    using program_t = std::string;
+    using expected_t = SimulationResult::State;
+    auto test_cases = std::vector<std::pair<program_t, expected_t>>{
+        { { "version 3.0; qubit q; pow(1./2).X q",
+              SimulationResult::State{ { "0", { 0.5, 0.5, 0.5 } }, { "1", { 0.5, -0.5, 0.5 } } } },
+         { "version 3.0; qubit q; pow(1./4).X q",
+                SimulationResult::State{
+                    { "0", { (2.0 + gates::SQRT_2) / 4, gates::SQRT_2 / 4, (2.0 + gates::SQRT_2) / 4 } },
+                    { "1", { (2.0 - gates::SQRT_2) / 4, -gates::SQRT_2 / 4, (2.0 - gates::SQRT_2) / 4 } } } },
+         { "version 3.0; qubit q; pow(1./2).H q",
+                SimulationResult::State{ { "0", { (2.0 + gates::SQRT_2) / 4, (2.0 - gates::SQRT_2) / 4, 0.75 } },
+                    { "1", { gates::SQRT_2 / 4, -gates::SQRT_2 / 4, 0.25 } } } },
+         { "version 3.0; qubit q; pow(1./4).H q",
+                SimulationResult::State{
+                    { "0", { (1.0 + 2 * gates::SQRT_2) / 4, (-1.0 + gates::SQRT_2) / 4, (6.0 + gates::SQRT_2) / 8 } },
+                    { "1", { (-1.0 + gates::SQRT_2) / 4, -0.25, (2.0 - gates::SQRT_2) / 8 } } } },
+         { "version 3.0; qubit q; pow(pi/10).H q",
+                SimulationResult::State{ { "0", { 0.934278931480042, 0.122188364647641, 0.887807118262753 } },
+                    { "1", { 0.158664694954535, -0.294988807096525, 0.112192881737247 } } } },
+         { "version 3.0; qubit q; pow(1./2).H q; pow(pi/4).X q",
+                SimulationResult::State{ { "0", { 0.252183929405727, -0.142789875460971, 0.0839856827846723 } },
+                    { "1", { 0.954922851780821, -0.0643169057255765, 0.916014317215328 } } } },
+         { "version 3.0; qubit q; X q; pow(1./2).Z q", SimulationResult::State{ { "1", { 0, 1, 1 } } } },
+         { "version 3.0; qubit[2] q; X q[0]; ctrl.pow(1./3).H q[0], q[1]",
+                SimulationResult::State{
+                    { "01",
+                        { (6.0 + gates::SQRT_2) / 8, (2 * gates::SQRT_3 - gates::SQRT_2 * gates::SQRT_3) / 8, 0.875 } },
+                    { "11", { 1.0 / (4 * gates::SQRT_2), -(gates::SQRT_3 / gates::SQRT_2) / 4, 0.125 } } } } }
+    };
+
+    std::size_t iterations = 1;
+    for (const auto& [program, expected] : test_cases) {
+        auto actual = run_from_string(program, iterations, "3.0");
+        EXPECT_EQ(actual.state, expected);
+    }
 }
 
 }  // namespace qx
