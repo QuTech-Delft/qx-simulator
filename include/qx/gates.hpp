@@ -97,12 +97,37 @@ inline UnitaryMatrix RZ(double theta) {
     };
 }
 
-static auto X90 = RX(PI / 2);
-static auto Y90 = RY(PI / 2);
-static auto Z90 = RZ(PI / 2);
-static auto MX90 = RX(-PI / 2);
-static auto MY90 = RY(-PI / 2);
-static auto MZ90 = RZ(-PI / 2);
+static UnitaryMatrix X90{
+    Matrix{
+        { 1/2. + 1i/2., 1/2. - 1i/2. },
+        { 1/2. - 1i/2., 1/2. + 1i/2. }
+    },
+    false
+};
+static UnitaryMatrix MX90{
+    Matrix{
+        { 1/2. - 1i/2., 1/2. + 1i/2. },
+        { 1/2. + 1i/2., 1/2. - 1i/2. }
+    },
+    false
+};
+static UnitaryMatrix Y90{
+    Matrix{
+        { 1/2. + 1i/2., -1/2. - 1i/2. },
+        { 1/2. + 1i/2.,  1/2. + 1i/2. }
+    },
+    false
+};
+static UnitaryMatrix MY90{
+    Matrix{
+        {  1/2. - 1i/2., 1/2. - 1i/2. },
+        { -1/2. + 1i/2., 1/2. - 1i/2. }
+    },
+    false
+};
+static UnitaryMatrix Z90 = S;
+static UnitaryMatrix MZ90 = SDAG;
+
 
 static UnitaryMatrix H{
     Matrix{
