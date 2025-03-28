@@ -84,6 +84,8 @@ public:
     Measurements bit_measurements;
 };
 
+std::ostream& operator<<(std::ostream& os, const Measurement& measurement);
+std::ostream& operator<<(std::ostream& os, const SuperposedState& superposed_state);
 std::ostream& operator<<(std::ostream& os, const SimulationResult& result);
 
 //----------------------------//
@@ -124,5 +126,9 @@ private:
 
 }  // namespace qx
 
+template <>
+struct fmt::formatter<qx::Measurement> : fmt::ostream_formatter {};
+template <>
+struct fmt::formatter<qx::SuperposedState> : fmt::ostream_formatter {};
 template <>
 struct fmt::formatter<qx::SimulationResult> : fmt::ostream_formatter {};

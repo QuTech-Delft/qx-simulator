@@ -47,13 +47,17 @@ public:
     SparseArray() = delete;
     explicit SparseArray(std::size_t s);
     SparseArray(std::size_t s, std::initializer_list<PairBasisVectorStringComplex> values);
+    SparseArray(const SparseArray& other) = default;
+    SparseArray(SparseArray&& other) noexcept = default;
+    SparseArray& operator=(const SparseArray& other);
+    SparseArray& operator=(SparseArray&& other) noexcept = default;
+    ~SparseArray() = default;
 
     [[nodiscard]] ConstIterator begin() const;
     [[nodiscard]] ConstIterator end() const;
     [[nodiscard]] Iterator begin();
     [[nodiscard]] Iterator end();
 
-    SparseArray& operator=(MapBasisVectorToSparseComplex map);
     SparseArray& operator*=(double d);
     SparseComplex& operator[](const BasisVector& index);
 

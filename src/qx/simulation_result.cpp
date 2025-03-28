@@ -1,6 +1,7 @@
 #include "qx/simulation_result.hpp"
 
 #include <fmt/core.h>
+#include <fmt/ranges.h>
 
 #include <cstdint>  // uint8_t
 #include <ostream>
@@ -34,37 +35,27 @@ std::uint8_t SimulationResult::get_bit_measurement(
     return static_cast<std::uint8_t>(state_string[state_string.size() - index - 1] - '0');
 }
 
+std::ostream& operator<<(std::ostream& os, const Measurement& measurement) {
+    return os << (measurement.state.empty()
+                   ? std::string{}
+                   : fmt::format("state='{}', count='{}'", measurement.state, measurement.count));
+}
+
+std::ostream& operator<<(std::ostream& os, const SuperposedState& superposed_state) {
+    return os << fmt::format("value='{1}', amplitude='{2:.{0}f} + {3:.{0}f}i', norm='{4:.{0}f}'",
+               config::OUTPUT_DECIMALS,
+               superposed_state.value,
+               superposed_state.amplitude.real,
+               superposed_state.amplitude.imag,
+               superposed_state.amplitude.norm);
+}
+
 std::ostream& operator<<(std::ostream& os, const SimulationResult& simulation_result) {
-    fmt::print(os, "State:\n");
-    for (const auto& superposed_state : simulation_result.state) {
-        fmt::print(os,
-            "\t{1}  {2:.{0}f} + {3:.{0}f}i  (norm = {4:.{0}f})\n",
-            config::OUTPUT_DECIMALS,
-            superposed_state.value,
-            superposed_state.amplitude.real,
-            superposed_state.amplitude.imag,
-            superposed_state.amplitude.norm);
-    }
-    fmt::print(os, "Measurements:\n");
-    for (const auto& measurement : simulation_result.measurements) {
-        fmt::print(os,
-            "\t{1}  {2}/{3}  (count/shots % = {4:.{0}f})\n",
-            config::OUTPUT_DECIMALS,
-            measurement.state,
-            measurement.count,
-            simulation_result.shots_done,
-            static_cast<double>(measurement.count) / static_cast<double>(simulation_result.shots_done));
-    }
-    fmt::print(os, "Bit measurements:\n");
-    for (const auto& bit_measurement : simulation_result.bit_measurements) {
-        fmt::print(os,
-            "\t{1}  {2}/{3}  (count/shots % = {4:.{0}f})\n",
-            config::OUTPUT_DECIMALS,
-            bit_measurement.state,
-            bit_measurement.count,
-            simulation_result.shots_done,
-            static_cast<double>(bit_measurement.count) / static_cast<double>(simulation_result.shots_done));
-    }
+    fmt::print(os, "Shots requested: {}\n", simulation_result.shots_requested);
+    fmt::print(os, "Shots done: {}\n", simulation_result.shots_done);
+    fmt::print(os, "State:\n\t{}\n", fmt::join(simulation_result.state, "\n\t"));
+    fmt::print(os, "Measurements:\n\t{}\n", fmt::join(simulation_result.measurements, "\n\t"));
+    fmt::print(os, "Bit measurements:\n\t{}\n", fmt::join(simulation_result.bit_measurements, "\n\t"));
     fmt::print(os, "Qubit register:\n\t{}\n", simulation_result.qubit_register);
     fmt::print(os, "Bit register:\n\t{}", simulation_result.bit_register);
     return os;

@@ -21,7 +21,7 @@ SparseComplex::SparseComplex(const SparseComplex& other) {
 }
 
 SparseComplex::SparseComplex(SparseComplex&& other) noexcept {
-    value = other.value;
+    value = std::move(other.value);
 }
 
 SparseComplex& SparseComplex::operator=(const SparseComplex& other) {
@@ -56,8 +56,12 @@ SparseArray::SparseArray(std::size_t s, std::initializer_list<PairBasisVectorStr
     }
 }
 
-SparseArray& SparseArray::operator=(MapBasisVectorToSparseComplex map) {
-    data_ = std::move(map);
+SparseArray& SparseArray::operator=(const SparseArray& other) {
+    size_ = other.size_;
+    zero_counter_ = other.zero_counter_;
+    // data_ = other.data_ seems not to erase previous elements of data_, thus we force data_.clear()
+    data_.clear();
+    data_ = other.data_;
     return *this;
 }
 
