@@ -584,7 +584,7 @@ H q[1]
             { "00",
              core::Complex{ .real = (1. + gates::SQRT_2) / 4, .imag = -0.25, .norm = (2. + gates::SQRT_2) / 8 }      },
             { "01",
-             core::Complex{ .real = (-1. + gates::SQRT_2) / 4, .imag = -0.25, .norm = (2. - gates::SQRT_2) / 8 }     },
+             core::Complex{ .real = (-1. + gates::SQRT_2) / 4, .imag = 0.25, .norm = (2. - gates::SQRT_2) / 8 }      },
             { "10", core::Complex{ .real = (1. + gates::SQRT_2) / 4, .imag = 0.25, .norm = (2. + gates::SQRT_2) / 8 } },
             { "11",
              core::Complex{
