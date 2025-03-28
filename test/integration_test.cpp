@@ -538,16 +538,8 @@ H q[1]
 )";
     std::size_t iterations = 1;
     auto actual = run_from_string(program, iterations, "3.0");
-    for (const auto& superposed_state : actual.state) {
-        fmt::print("\t{1}  {2:.{0}f} + {3:.{0}f}i  (norm = {4:.{0}f})\n",
-            config::OUTPUT_DECIMALS,
-            superposed_state.value,
-            superposed_state.amplitude.real,
-            superposed_state.amplitude.imag,
-            superposed_state.amplitude.norm);
-    }
 
-    // Expected 'q' state should be |00>+|01>+|11>
+    // Expected 'q' state should be |00>+|10>+|11>
     EXPECT_EQ(actual.state,
         (SimulationResult::State{
             { "00",                  core::Complex{ .real = 1. / gates::SQRT_2, .imag = 0, .norm = 0.5 } },
@@ -569,14 +561,6 @@ H q[1]
 )";
     std::size_t iterations = 1;
     auto actual = run_from_string(program, iterations, "3.0");
-    for (const auto& superposed_state : actual.state) {
-        fmt::print("\t{1}  {2:.{0}f} + {3:.{0}f}i  (norm = {4:.{0}f})\n",
-            config::OUTPUT_DECIMALS,
-            superposed_state.value,
-            superposed_state.amplitude.real,
-            superposed_state.amplitude.imag,
-            superposed_state.amplitude.norm);
-    }
 
     // Expected 'q' state should be |00>+|01>+|10>+|11>
     EXPECT_EQ(actual.state,
