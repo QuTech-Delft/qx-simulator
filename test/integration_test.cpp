@@ -550,8 +550,8 @@ H q[1]
     // Expected 'q' state should be |00>+|01>+|11>
     EXPECT_EQ(actual.state,
         (SimulationResult::State{
-            { "00", core::Complex{ .real = 1. / gates::SQRT_2, .imag = 0, .norm = 0.5 } },
-            { "10", core::Complex{ .real = gates::SQRT_2 / 4, .imag = gates::SQRT_2 / 4, .norm = 0.25 } },
+            { "00",                  core::Complex{ .real = 1. / gates::SQRT_2, .imag = 0, .norm = 0.5 } },
+            { "10",  core::Complex{ .real = gates::SQRT_2 / 4, .imag = gates::SQRT_2 / 4, .norm = 0.25 } },
             { "11", core::Complex{ .real = gates::SQRT_2 / 4, .imag = -gates::SQRT_2 / 4, .norm = 0.25 } }
     }));
 }
@@ -581,10 +581,14 @@ H q[1]
     // Expected 'q' state should be |00>+|01>+|10>+|11>
     EXPECT_EQ(actual.state,
         (SimulationResult::State{
-            { "00", core::Complex{ .real = (1. + gates::SQRT_2) / 4, .imag = -0.25, .norm = (2. + gates::SQRT_2) / 8 } },
-            { "01", core::Complex{ .real = (-1. + gates::SQRT_2) / 4, .imag = -0.25, .norm = (2. - gates::SQRT_2) / 8 } },
+            { "00",
+             core::Complex{ .real = (1. + gates::SQRT_2) / 4, .imag = -0.25, .norm = (2. + gates::SQRT_2) / 8 }      },
+            { "01",
+             core::Complex{ .real = (-1. + gates::SQRT_2) / 4, .imag = -0.25, .norm = (2. - gates::SQRT_2) / 8 }     },
             { "10", core::Complex{ .real = (1. + gates::SQRT_2) / 4, .imag = 0.25, .norm = (2. + gates::SQRT_2) / 8 } },
-            { "11", core::Complex{ .real = (-1. + gates::SQRT_2) / 4, .imag = -0.25, .norm = (2. - gates::SQRT_2) / 8 } }
+            { "11",
+             core::Complex{
+             .real = (-1. + gates::SQRT_2) / 4, .imag = -0.25, .norm = (2. - gates::SQRT_2) / 8 }                    }
     }));
 }
 
