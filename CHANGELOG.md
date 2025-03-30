@@ -14,6 +14,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - Pi-half rotation gates defined incorrectly.
+- Bug in SparseComplex::operator=, which was not always performing the assignment.
 
 
 ## [ 0.8.0 ] - [ 2025-03-21 ]
@@ -122,7 +123,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Meaningful error message when parsing or simulation fails.
 
 ### Fixed
-- Does not crash when too many qubits asked.
+- QX does not crash when too many qubits asked.
 
 
 ## [ 0.6.3 ] - [ 2023-09-19 ]
