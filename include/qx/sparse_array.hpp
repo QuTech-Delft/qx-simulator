@@ -28,10 +28,6 @@ struct SparseComplex {
 
     SparseComplex() = default;
     explicit SparseComplex(std::complex<double> c);
-    SparseComplex(const SparseComplex& other);
-    SparseComplex(SparseComplex&& other) noexcept;
-    SparseComplex& operator=(const SparseComplex& other);
-    SparseComplex& operator=(SparseComplex&& other) noexcept;
 };
 using SparseElement = std::pair<BasisVector, SparseComplex>;
 bool compare_sparse_elements(const SparseElement& lhs, const SparseElement& rhs);
@@ -47,11 +43,6 @@ public:
     SparseArray() = delete;
     explicit SparseArray(std::size_t s);
     SparseArray(std::size_t s, std::initializer_list<PairBasisVectorStringComplex> values);
-    SparseArray(const SparseArray& other) = default;
-    SparseArray(SparseArray&& other) noexcept = default;
-    SparseArray& operator=(const SparseArray& other);
-    SparseArray& operator=(SparseArray&& other) noexcept = default;
-    ~SparseArray() = default;
 
     [[nodiscard]] ConstIterator begin() const;
     [[nodiscard]] ConstIterator end() const;

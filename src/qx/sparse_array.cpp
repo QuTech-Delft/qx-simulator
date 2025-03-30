@@ -16,28 +16,6 @@ SparseComplex::SparseComplex(std::complex<double> c) {
     value = c;
 }
 
-SparseComplex::SparseComplex(const SparseComplex& other) {
-    value = other.value;
-}
-
-SparseComplex::SparseComplex(SparseComplex&& other) noexcept {
-    value = std::move(other.value);
-}
-
-SparseComplex& SparseComplex::operator=(const SparseComplex& other) {
-    if (std::abs(other.value) >= config::EPSILON) {
-        value = other.value;
-    }
-    return *this;
-}
-
-SparseComplex& SparseComplex::operator=(SparseComplex&& other) noexcept {
-    if (std::abs(other.value) >= config::EPSILON) {
-        value = other.value;
-    }
-    return *this;
-}
-
 bool compare_sparse_elements(const SparseElement& lhs, const SparseElement& rhs) {
     return lhs.first < rhs.first;
 }
@@ -54,15 +32,6 @@ SparseArray::SparseArray(std::size_t s, std::initializer_list<PairBasisVectorStr
         }
         data_[BasisVector{ basis_vector_string }] = SparseComplex{ complex_value };
     }
-}
-
-SparseArray& SparseArray::operator=(const SparseArray& other) {
-    size_ = other.size_;
-    zero_counter_ = other.zero_counter_;
-    // data_ = other.data_ seems not to erase previous elements of data_, thus we force data_.clear()
-    data_.clear();
-    data_ = other.data_;
-    return *this;
 }
 
 SparseArray& SparseArray::operator*=(double d) {
