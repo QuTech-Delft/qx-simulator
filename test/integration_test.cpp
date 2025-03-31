@@ -548,6 +548,28 @@ H q[1]
     }));
 }
 
+TEST_F(IntegrationTest, control_gate_modifier__ctrl_x90_after_h_q1) {
+    auto program = R"(
+version 3.0
+
+qubit[2] q
+
+H q[1]
+ctrl.X90 q[0], q[1]
+H q[0]
+H q[1]
+)";
+    std::size_t iterations = 1;
+    auto actual = run_from_string(program, iterations, "3.0");
+
+    // Expected 'q' state should be |00>+|01>
+    EXPECT_EQ(actual.state,
+        (SimulationResult::State{
+            { "00", core::Complex{ .real = 1. / gates::SQRT_2, .imag = 0, .norm = 0.5 } },
+            { "01", core::Complex{ .real = 1. / gates::SQRT_2, .imag = 0, .norm = 0.5 } }
+    }));
+}
+
 TEST_F(IntegrationTest, control_gate_modifier__ctrl_rx_half_pi) {
     auto program = R"(
 version 3.0
