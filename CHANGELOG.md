@@ -15,6 +15,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Integrate with libqasm 1.2.0 release.
 
+### Fixed
+- Pi-half rotation gates defined incorrectly.
+- Bug in SparseComplex::operator=, which was not always performing the assignment.
+
 
 ## [ 0.8.0 ] - [ 2025-03-21 ]
 

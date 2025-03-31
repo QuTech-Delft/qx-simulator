@@ -82,7 +82,7 @@ TEST(dense_unitary_matrix_test, inverse) {
     EXPECT_EQ(gates::RX(PI/4).inverse(), gates::RX(-PI/4));
     EXPECT_EQ(gates::S.inverse(), gates::SDAG);
     EXPECT_EQ(gates::T.inverse(), gates::TDAG);
-    EXPECT_EQ(gates::X90.inverse(), gates::RX(-PI/2));
+    EXPECT_EQ(gates::X90.inverse(), gates::MX90);
 }
 
 TEST(dense_unitary_matrix_test, power_integer) {
