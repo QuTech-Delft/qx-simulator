@@ -28,10 +28,6 @@ struct SparseComplex {
 
     SparseComplex() = default;
     explicit SparseComplex(std::complex<double> c);
-    SparseComplex(const SparseComplex& other);
-    SparseComplex(SparseComplex&& other) noexcept;
-    SparseComplex& operator=(const SparseComplex& other);
-    SparseComplex& operator=(SparseComplex&& other) noexcept;
 };
 using SparseElement = std::pair<BasisVector, SparseComplex>;
 bool compare_sparse_elements(const SparseElement& lhs, const SparseElement& rhs);
@@ -53,7 +49,6 @@ public:
     [[nodiscard]] Iterator begin();
     [[nodiscard]] Iterator end();
 
-    SparseArray& operator=(MapBasisVectorToSparseComplex map);
     SparseArray& operator*=(double d);
     SparseComplex& operator[](const BasisVector& index);
 

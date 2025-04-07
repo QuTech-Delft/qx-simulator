@@ -42,7 +42,7 @@ class QxConan(ConanFile):
         return not self.conf.get("tools.build:skip_test", default=True, check_type=bool)
 
     def build_requirements(self):
-        self.tool_requires("libqasm/1.1.0")
+        self.tool_requires("libqasm/1.2.0")
         if self._should_build_test:
             self.test_requires("gtest/1.15.0")
 
@@ -50,7 +50,7 @@ class QxConan(ConanFile):
         self.requires("boost/1.85.0")
         self.requires("eigen/3.4.0")
         self.requires("fmt/11.0.2", transitive_headers=True)
-        self.requires("libqasm/1.1.0", transitive_headers=True)
+        self.requires("libqasm/1.2.0", transitive_headers=True)
         self.requires("range-v3/0.12.0", transitive_headers=True)
 
     def config_options(self):
