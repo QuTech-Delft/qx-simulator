@@ -10,7 +10,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - **Removed** for now removed features.
 
 
-## [ 0.9.0 ] - [ xxxx-yy-zz ]
+## [ 0.9.0 ] - [ 2025-04-07 ]
 
 ### Added
 - Integrate with libqasm 1.2.0 release.
