@@ -36,6 +36,7 @@ public:
     QuantumState(std::size_t qubit_register_size, std::size_t bit_register_size);
     QuantumState(std::size_t qubit_register_size, std::size_t bit_register_size,
         std::initializer_list<PairBasisVectorStringComplex> values);
+
     [[nodiscard]] std::size_t get_number_of_qubits() const;
     [[nodiscard]] std::size_t get_number_of_bits() const;
     [[nodiscard]] bool is_normalized();
