@@ -24,7 +24,7 @@ CheckOptions:
   - key: readability-identifier-naming.FunctionCase
     value: lower_case
   - key: readability-identifier-naming.FunctionIgnoredRegexp
-    value: "CR|RX|RY|RZ"
+    value: "CR|RX|RY|RZ|RN"
   - key: readability-identifier-naming.MemberCase
     value: lower_case
   - key: readability-identifier-naming.MemberIgnoredRegexp

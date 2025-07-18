@@ -64,6 +64,23 @@ b = measure q
         simulation_result = qxelarator.execute_string(cqasm_string, iterations=20, seed=123)
         self.assertEqual(simulation_result.results, {"0": 12, "1": 8})
 
+    def test_rn_gate(self):
+        cqasm_string = """\
+version 3.0
+
+qubit q
+bit b
+
+Rn(1,0,0,pi,pi/2) q
+b = measure q
+"""
+        simulation_result = qxelarator.execute_string(cqasm_string, iterations=2)
+
+        self.assertIsInstance(simulation_result, qxelarator.SimulationResult)
+        self.assertEqual(simulation_result.shots_requested, 2)
+        self.assertEqual(simulation_result.shots_done, 2)
+        self.assertEqual(simulation_result.results, {"1": 2})
+        self.assertAlmostEqual(simulation_result.state["1"], complex(1., 0.), places=15)
 
 if __name__ == '__main__':
     unittest.main()

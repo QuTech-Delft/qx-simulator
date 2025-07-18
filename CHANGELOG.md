@@ -9,6 +9,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - **Fixed** for any bug fixes.
 - **Removed** for now removed features.
 
+## [M.m.P] - [ xxxx-yy-zz ]
+
+### Added
+- Rn gate to instruction library
+
 
 ## [ 0.9.0 ] - [ 2025-04-07 ]
 
