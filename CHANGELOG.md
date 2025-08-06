@@ -14,6 +14,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Rn gate to instruction library
 - Support for Python 3.13.
+- Integrate with libqasm 1.2.1 release.
 
 ## [ 0.9.0 ] - [ 2025-04-07 ]
 
