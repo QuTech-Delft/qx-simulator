@@ -9,10 +9,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - **Fixed** for any bug fixes.
 - **Removed** for now removed features.
 
-## [M.m.P] - [ xxxx-yy-zz ]
+## [0.10.0] - [ 2025-08-28 ]
 
 ### Added
-- Rn gate to instruction library
+- Rn gate to instruction library.
 - Support for Python 3.13.
 - Integrate with libqasm 1.2.1 release.
 
