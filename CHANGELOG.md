@@ -9,6 +9,45 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - **Fixed** for any bug fixes.
 - **Removed** for now removed features.
 
+## [0.10.0] - [ 2025-08-28 ]
+
+### Added
+- Rn gate to instruction library.
+- Support for Python 3.13.
+- Integrate with libqasm 1.2.1 release.
+
+## [ 0.9.0 ] - [ 2025-04-07 ]
+
+### Added
+- Integrate with libqasm 1.2.0 release.
+
+### Fixed
+- Pi-half rotation gates defined incorrectly.
+- Bug in SparseComplex::operator=, which was not always performing the assignment.
+
+
+## [ 0.8.0 ] - [ 2025-03-21 ]
+
+### Added
+- Integrate with libqasm 1.1.0 release.
+- `pow` gate modifier now works with fractional exponents.
+
+
+## [ 0.7.5 ] - [ 2025-03-17 ]
+
+### Added
+- Integrate with libqasm 1.0.0 release.
+- Documentation: GitHub Actions `doc` workflow.
+
+### Changed
+- Allow move constructing a `DenseUnitaryMatrix`.
+- Change SimulationIterationAccumulator to keep `shots_done` and receive `shots_requested` in `get_simulation_result()`.
+- Update `cpp-linux-x64` and `cpp-linux-arm64` jobs to use `ubuntu-latest` and `ubuntu-24.04-arm` respectively.
+- Update to `mkdocs-material/9.6.5` and `mkdocstrings/0.28.2` versions in `requirements.txt`.
+
+### Removed
+- Support for 'reset all'.
+
 
 ## [ 0.9.0 ] - [ 2025-04-07 ]
 
