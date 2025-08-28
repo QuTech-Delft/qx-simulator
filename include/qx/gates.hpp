@@ -97,6 +97,22 @@ inline UnitaryMatrix RZ(double theta) {
     };
 }
 
+inline UnitaryMatrix RN(double nx, double ny, double nz, double theta, double phi) {
+    return UnitaryMatrix{
+        Matrix{
+            { 
+                std::exp(1i * phi) * (std::cos(theta / 2) - 1i * nz * std::sin(theta / 2)),
+                std::exp(1i * phi) * (-ny * std::sin(theta / 2) - 1i * nx * std::sin(theta / 2)) 
+            },
+            { 
+                std::exp(1i * phi) * (ny * std::sin(theta / 2) - 1i * nx * std::sin(theta / 2)),
+                std::exp(1i * phi) * (std::cos(theta / 2) + 1i * nz * std::sin(theta / 2))
+            }
+        },
+        false
+    };
+}
+
 static UnitaryMatrix X90{
     Matrix{
         { 1/2. + 1i/2., 1/2. - 1i/2. },
@@ -210,6 +226,12 @@ static std::unordered_map<GateName, UnitaryMatrixGenerator> default_gates = {
     { "Rx", [](const auto& parameters) { return gates::RX(parameters[0]->as_const_float()->value); } },
     { "Ry", [](const auto& parameters) { return gates::RY(parameters[0]->as_const_float()->value); } },
     { "Rz", [](const auto& parameters) { return gates::RZ(parameters[0]->as_const_float()->value); } },
+    { "Rn", [](const auto& parameters) { return gates::RN(
+        parameters[0]->as_const_float()->value,
+        parameters[1]->as_const_float()->value,
+        parameters[2]->as_const_float()->value,
+        parameters[3]->as_const_float()->value,
+        parameters[4]->as_const_float()->value); } },
     { "S", [](const auto&) { return gates::S; } },
     { "Sdag", [](const auto&) { return gates::SDAG; } },
     { "SWAP", [](const auto&) { return gates::SWAP; } },
