@@ -86,6 +86,10 @@ std::vector<std::shared_ptr<Unitary>> CircuitBuilder::get_default_gates(
 
 void CircuitBuilder::visit_non_gate_instruction(CqasmV3xNonGateInstruction& non_gate_instruction) {
     const auto& name = non_gate_instruction.instruction_ref->name;
+    if (name == "measure" && !non_gate_instruction.parameters.empty()) {
+        throw CircuitBuilderError{ "parameterized measure instructions are not supported" };
+    }
+
     const auto& operands = non_gate_instruction.operands;
     const auto& instructions_indices = get_instructions_indices(operands);
 

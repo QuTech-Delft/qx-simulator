@@ -82,6 +82,21 @@ b = measure q
         self.assertEqual(simulation_result.results, {"1": 2})
         self.assertAlmostEqual(simulation_result.state["1"], complex(1., 0.), places=15)
 
+    def test_parameterized_measure_is_not_supported(self):
+        cqasm_string = """\
+version 3.0
+
+qubit q
+bit b
+
+b = measure(0, 1, 0) q
+"""
+        simulation_error = qxelarator.execute_string(cqasm_string, iterations=1)
+
+        self.assertIsInstance(simulation_error, qxelarator.SimulationError)
+        self.assertEqual(simulation_error.message,
+            "parameterized measure instructions are not supported")
+
     def test_instructions(self):
         cqasm_string = """\
 version 3.0
