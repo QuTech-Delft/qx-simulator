@@ -536,10 +536,16 @@ U(pi/2,pi/3,pi/4) q
 
     EXPECT_EQ(actual.state,
         (SimulationResult::State{
-            { "0", core::Complex{ .real = -inverse_sqrt_two * std::cos(gates::PI / 4),
-                          .imag = -inverse_sqrt_two * std::sin(gates::PI / 4), .norm = 0.5 } },
-            { "1", core::Complex{ .real = inverse_sqrt_two * std::cos(7 * gates::PI / 12),
-                          .imag = inverse_sqrt_two * std::sin(7 * gates::PI / 12), .norm = 0.5 } }
+            { "0", core::Complex{
+                .real = -inverse_sqrt_two * std::cos(gates::PI / 4),
+                .imag = -inverse_sqrt_two * std::sin(gates::PI / 4),
+                .norm = 0.5
+            } },
+            { "1", core::Complex{
+                .real = inverse_sqrt_two * std::cos(7 * gates::PI / 12),
+                .imag = inverse_sqrt_two * std::sin(7 * gates::PI / 12),
+                .norm = 0.5
+            } }
     }));
 }
 
