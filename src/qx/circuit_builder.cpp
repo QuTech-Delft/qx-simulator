@@ -86,6 +86,9 @@ std::vector<std::shared_ptr<Unitary>> CircuitBuilder::get_default_gates(
 
 void CircuitBuilder::visit_non_gate_instruction(CqasmV3xNonGateInstruction& non_gate_instruction) {
     const auto& name = non_gate_instruction.instruction_ref->name;
+    if (name == "measureX" || name == "measureY") {
+        throw CircuitBuilderError{ fmt::format("measurement instruction '{}' is not supported", name) };
+    }
     if (name == "measure" && !non_gate_instruction.parameters.empty()) {
         throw CircuitBuilderError{ "parameterized measure instructions are not supported" };
     }
@@ -93,7 +96,7 @@ void CircuitBuilder::visit_non_gate_instruction(CqasmV3xNonGateInstruction& non_
     const auto& operands = non_gate_instruction.operands;
     const auto& instructions_indices = get_instructions_indices(operands);
 
-    if (name == "measure") {
+    if (name == "measure" || name == "measureZ") {
         // A measure statement has the following syntax: b = measure q
         // The left-hand side operand, b, is the operand 0
         // The right-hand side operand, q, is the operand 1

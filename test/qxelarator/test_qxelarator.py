@@ -97,6 +97,38 @@ b = measure(0, 1, 0) q
         self.assertEqual(simulation_error.message,
             "parameterized measure instructions are not supported")
 
+    def test_measure_z_is_alias_of_measure(self):
+        cqasm_string = """\
+version 3.0
+
+qubit q
+bit b
+
+X q
+b = measureZ q
+"""
+        simulation_result = qxelarator.execute_string(cqasm_string, iterations=1)
+
+        self.assertIsInstance(simulation_result, qxelarator.SimulationResult)
+        self.assertEqual(simulation_result.results, {"1": 1})
+
+    def test_measure_x_and_y_are_not_supported(self):
+        for instruction_name in ("measureX", "measureY"):
+            with self.subTest(instruction_name=instruction_name):
+                cqasm_string = f"""\
+version 3.0
+
+qubit q
+bit b
+
+b = {instruction_name} q
+"""
+                simulation_error = qxelarator.execute_string(cqasm_string, iterations=1)
+
+                self.assertIsInstance(simulation_error, qxelarator.SimulationError)
+                self.assertEqual(simulation_error.message,
+                    f"measurement instruction '{instruction_name}' is not supported")
+
     def test_instructions(self):
         cqasm_string = """\
 version 3.0
