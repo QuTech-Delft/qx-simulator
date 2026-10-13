@@ -25,6 +25,12 @@ void CircuitBuilder::visit_node(CqasmV3xNode&) {
     throw CircuitBuilderError{ "unsupported node" };
 }
 
+void CircuitBuilder::visit_asm_declaration(CqasmV3xAsmDeclaration& asm_declaration) {
+    if (asm_declaration.backend_name == "qx_simulator") {
+        throw CircuitBuilderError{ "asm declarations for backend 'qx_simulator' are not supported at the moment" };
+    }
+}
+
 void CircuitBuilder::visit_gate_instruction(CqasmV3xGateInstruction& gate_instruction) {
     for (const auto& instruction : get_gates(*gate_instruction.gate, gate_instruction.operands)) {
         circuit_.add_instruction(instruction);
