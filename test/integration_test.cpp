@@ -533,19 +533,15 @@ U(pi/2,pi/3,pi/4) q
 )";
     auto actual = run_from_string(program);
     const auto inverse_sqrt_two = 1. / gates::SQRT_2;
+    const auto real_0 = -inverse_sqrt_two * std::cos(gates::PI / 4);
+    const auto imag_0 = -inverse_sqrt_two * std::sin(gates::PI / 4);
+    const auto real_1 = inverse_sqrt_two * std::cos(7 * gates::PI / 12);
+    const auto imag_1 = inverse_sqrt_two * std::sin(7 * gates::PI / 12);
 
     EXPECT_EQ(actual.state,
         (SimulationResult::State{
-            { "0", core::Complex{
-                .real = -inverse_sqrt_two * std::cos(gates::PI / 4),
-                .imag = -inverse_sqrt_two * std::sin(gates::PI / 4),
-                .norm = 0.5
-            } },
-            { "1", core::Complex{
-                .real = inverse_sqrt_two * std::cos(7 * gates::PI / 12),
-                .imag = inverse_sqrt_two * std::sin(7 * gates::PI / 12),
-                .norm = 0.5
-            } }
+            { "0", core::Complex{ .real = real_0, .imag = imag_0, .norm = 0.5 } },
+            { "1", core::Complex{ .real = real_1, .imag = imag_1, .norm = 0.5 } }
     }));
 }
 
