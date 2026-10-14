@@ -29,6 +29,7 @@ public:
 
 private:
     void visit_node(CqasmV3xNode&) override;
+    void visit_asm_declaration(CqasmV3xAsmDeclaration& asm_declaration) override;
     void visit_gate_instruction(CqasmV3xGateInstruction& gate_instruction) override;
     void visit_non_gate_instruction(CqasmV3xNonGateInstruction& non_gate_instruction) override;
 
