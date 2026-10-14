@@ -570,6 +570,12 @@ CSWAP q[0], q[1], q[2]
 
     const auto actual = run_from_string(program);
     EXPECT_FALSE(actual.state.empty());
+
+    auto state_norm = 0.0;
+    for (const auto& state : actual.state) {
+        state_norm += state.amplitude.norm;
+    }
+    EXPECT_NEAR(state_norm, 1.0, 1e-9);
 }
 
 TEST_F(IntegrationTest, control_gate_modifier__ctrl_x) {
