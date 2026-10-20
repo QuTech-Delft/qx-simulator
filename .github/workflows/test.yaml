@@ -141,6 +141,7 @@ jobs:
     name: "Python tests (macOS/x64)"
     runs-on: macos-15-intel
     strategy:
+      fail-fast: false
       matrix:
         python-version: ["3.10", "3.14"]
     steps:
@@ -154,7 +155,7 @@ jobs:
         with:
           shell: bash
           python-version: ${{ matrix.python-version }}
-          conan-compiler-version: ${{ matrix.python-version == '3.14' && '14' || '' }}
+          conan-compiler-version: "14"
 
   python-macos-arm64:
     name: "Python tests (macOS/arm64)"
