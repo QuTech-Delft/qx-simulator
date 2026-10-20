@@ -43,6 +43,19 @@ CNOT q[0], q[1]
     }));
 }
 
+TEST_F(IntegrationTest, execute_file) {
+    auto result = execute_file("test/qxelarator/bell_pair.cq");
+    ASSERT_TRUE(std::holds_alternative<SimulationResult>(result));
+
+    const auto& actual = std::get<SimulationResult>(result);
+    EXPECT_EQ(actual.shots_requested, 1);
+    EXPECT_EQ(actual.shots_done, 1);
+    EXPECT_EQ(actual.state,
+        (SimulationResult::State{
+            { "11", core::Complex{ .real = 1, .imag = 0, .norm = 1 } }
+    }));
+}
+
 TEST_F(IntegrationTest, range_operands) {
     auto program = R"(
 version 3.0
