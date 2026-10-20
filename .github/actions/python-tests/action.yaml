@@ -26,6 +26,11 @@ runs:
         QX_CPU_COMPATIBILITY_MODE: "True"
       run: python -m pip install --verbose .
       shell: ${{ inputs.shell }}
+    - name: Diagnose string-based simulator tests
+      if: runner.os == 'macOS' && runner.arch == 'X64' && inputs.python-version == '3.14'
+      working-directory: test/qxelarator
+      run: python -m pytest -k "not execute_file"
+      shell: ${{ inputs.shell }}
     - name: Test
       working-directory: test/qxelarator
       run: python -m pytest
