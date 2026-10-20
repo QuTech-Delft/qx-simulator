@@ -5,9 +5,7 @@ inputs:
     required: true
     description: Which shell to use for the `run` command
   python-version:
-    required: false
-    default: "3.13"
-    description: Python version to test
+    required: true
   conan-compiler-version:
     required: false
     default: ""
