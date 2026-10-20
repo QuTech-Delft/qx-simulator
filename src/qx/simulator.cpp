@@ -10,7 +10,9 @@
 #include <fmt/format.h>
 #include <fmt/ranges.h>
 
+#include <fstream>
 #include <iostream>
+#include <iterator>
 #include <optional>
 #include <range/v3/numeric/accumulate.hpp>
 #include <range/v3/view/iota.hpp>
@@ -24,7 +26,12 @@ namespace {
 
 CqasmV3xAnalysisResult parse_cqasm_v3x_file(const std::string& file_path) {
     auto analyzer = cqasm::v3x::default_analyzer("3.0");
-    return analyzer.analyze_file(file_path);
+    std::ifstream file{ file_path };
+    if (!file) {
+        return analyzer.analyze_file(file_path);
+    }
+    auto program = std::string{ std::istreambuf_iterator<char>{ file }, std::istreambuf_iterator<char>{} };
+    return analyzer.analyze_string(program, file_path);
 }
 
 CqasmV3xAnalysisResult parse_cqasm_v3x_string(const std::string& program) {
