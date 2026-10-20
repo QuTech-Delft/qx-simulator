@@ -8,6 +8,10 @@ inputs:
     required: false
     default: "3.13"
     description: Python version to test
+  conan-compiler-version:
+    required: false
+    default: ""
+    description: Optional Conan compiler version override
 
 runs:
   using: composite
@@ -24,7 +28,14 @@ runs:
     - name: Build
       env:
         QX_CPU_COMPATIBILITY_MODE: "True"
+        QX_CONAN_COMPILER_VERSION: ${{ inputs.conan-compiler-version }}
       run: python -m pip install --verbose .
+      shell: ${{ inputs.shell }}
+    - name: Report extension architecture
+      if: runner.os == 'macOS' && runner.arch == 'X64' && inputs.python-version == '3.14'
+      run: |
+        python -c 'import platform, sysconfig; print("Python machine:", platform.machine()); print("Python platform:", sysconfig.get_platform())'
+        find pybuild/build -type f -name '_qxelarator*.so' -exec file {} \; -exec lipo -info {} \;
       shell: ${{ inputs.shell }}
     - name: Diagnose string-based simulator tests
       if: runner.os == 'macOS' && runner.arch == 'X64' && inputs.python-version == '3.14'

@@ -94,6 +94,7 @@ class build_ext(_build_ext):
             build_type = os.environ.get('CMAKE_BUILD_TYPE', 'Release')
             build_tests = os.environ.get('QX_BUILD_TESTS', 'False')
             cpu_compatibility_mode = os.environ.get('QX_CPU_COMPATIBILITY_MODE', 'False')
+            conan_compiler_version = os.environ.get('QX_CONAN_COMPILER_VERSION')
 
             cmd = local['conan']['profile']['detect']['--force']
             cmd & FG
@@ -116,6 +117,8 @@ class build_ext(_build_ext):
                 ['-b']['missing']
                 ['-tf']['']
             )
+            if conan_compiler_version:
+                cmd = cmd['-s:a']['compiler.version=' + conan_compiler_version]
             if build_tests == 'True':
                 cmd = cmd['-c']['tools.build:skip_test=False']
             if platform.system() == 'Darwin':

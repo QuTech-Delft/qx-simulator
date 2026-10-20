@@ -154,6 +154,7 @@ jobs:
         with:
           shell: bash
           python-version: ${{ matrix.python-version }}
+          conan-compiler-version: ${{ matrix.python-version == '3.14' && '14' || '' }}
 
   python-macos-arm64:
     name: "Python tests (macOS/arm64)"
