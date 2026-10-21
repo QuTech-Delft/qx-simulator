@@ -21,6 +21,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Warns on use of parameterized `measure` instructions; not supported.
 - Supports `measureZ`, does not support `measureX` and `measureY`.
 
+### Fixed
+- `reset` instruction on qubits in state `|1>` discards the relative phase of the quantum state.
+
 ### Removed
 - Support for Python 3.9
 
