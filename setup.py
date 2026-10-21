@@ -117,6 +117,8 @@ class build_ext(_build_ext):
                 ['-b']['missing']
                 ['-tf']['']
             )
+            if platform.system() == 'Linux':
+                cmd = cmd['-b']['m4/*']
             if conan_compiler_version:
                 cmd = cmd['-s:a']['compiler.version=' + conan_compiler_version]
             if build_tests == 'True':
