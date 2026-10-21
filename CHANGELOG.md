@@ -9,12 +9,29 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - **Fixed** for any bug fixes.
 - **Removed** for now removed features.
 
-## [0.10.0] - [ 2025-08-28 ]
+
+## [ 0.11.0 ] - [ 2026-10-21 ]
+
+### Added
+- Support for Python 3.14.
+- Integrate with libQASM 1.6.0 release.
+- Single-qubit gates: `U`, `Z90`, and `mZ90`.
+- Two-qubit gates: `CV`, `CY`, `DCNOT`, `ECR`, `ISWAP`, `InvSqrtSWAP`, `M`, `MS`, `SqrtISWAP`, and `SqrtSWAP`.
+- Three-qubit gates: `CCX`, `CCNOT`, and `CSWAP`.
+- Warns on use of parameterized `measure` instructions; not supported.
+- Supports `measureZ`, does not support `measureX` and `measureY`.
+
+### Removed
+- Support for Python 3.9
+
+
+## [ 0.10.0 ] - [ 2025-08-28 ]
 
 ### Added
 - Rn gate to instruction library.
 - Support for Python 3.13.
 - Integrate with libqasm 1.2.1 release.
+
 
 ## [ 0.9.0 ] - [ 2025-04-07 ]
 
