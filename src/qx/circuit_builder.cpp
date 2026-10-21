@@ -25,6 +25,12 @@ void CircuitBuilder::visit_node(CqasmV3xNode&) {
     throw CircuitBuilderError{ "unsupported node" };
 }
 
+void CircuitBuilder::visit_asm_declaration(CqasmV3xAsmDeclaration& asm_declaration) {
+    if (asm_declaration.backend_name == "qx_simulator") {
+        throw CircuitBuilderError{ "asm declarations for backend 'qx_simulator' are not supported at the moment" };
+    }
+}
+
 void CircuitBuilder::visit_gate_instruction(CqasmV3xGateInstruction& gate_instruction) {
     for (const auto& instruction : get_gates(*gate_instruction.gate, gate_instruction.operands)) {
         circuit_.add_instruction(instruction);
@@ -80,10 +86,17 @@ std::vector<std::shared_ptr<Unitary>> CircuitBuilder::get_default_gates(
 
 void CircuitBuilder::visit_non_gate_instruction(CqasmV3xNonGateInstruction& non_gate_instruction) {
     const auto& name = non_gate_instruction.instruction_ref->name;
+    if (name == "measureX" || name == "measureY") {
+        throw CircuitBuilderError{ fmt::format("measurement instruction '{}' is not supported", name) };
+    }
+    if (name == "measure" && !non_gate_instruction.parameters.empty()) {
+        throw CircuitBuilderError{ "parameterized measure instructions are not supported" };
+    }
+
     const auto& operands = non_gate_instruction.operands;
     const auto& instructions_indices = get_instructions_indices(operands);
 
-    if (name == "measure") {
+    if (name == "measure" || name == "measureZ") {
         // A measure statement has the following syntax: b = measure q
         // The left-hand side operand, b, is the operand 0
         // The right-hand side operand, q, is the operand 1

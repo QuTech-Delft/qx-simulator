@@ -67,7 +67,7 @@ The [QX simulator documentation](https://QuTech-Delft.github.io/qx-simulator/) i
 ## License
 
 QX simulator is licensed under the Apache License, Version 2.0.
-See [LICENSE](https://github.com/QuTech-Delft/libqasm/blob/master/LICENSE.md) for the full license text.
+See [LICENSE](https://https://github.com/QuTech-Delft/qx-simulator/blob/develop/LICENSE.md) for the full license text.
 
 ## Authors
 
