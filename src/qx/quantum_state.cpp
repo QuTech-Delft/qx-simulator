@@ -162,8 +162,10 @@ void QuantumState::update_data_after_reset(QubitIndex qubit_index) {
         if (basis_vector.test(qubit_index.value)) {
             auto basis_vector_after_reset = basis_vector;
             basis_vector_after_reset.set(qubit_index.value, false);
-            new_data[basis_vector_after_reset].value =
-                std::sqrt(std::norm(new_data[basis_vector_after_reset].value) + std::norm(amplitude.value));
+            auto& target = new_data[basis_vector_after_reset].value;
+            auto magnitude = std::sqrt(std::norm(target) + std::norm(amplitude.value));
+            auto phase = std::arg(is_null(target) ? amplitude.value : target);
+            target = std::polar(magnitude, phase);
             new_data[basis_vector].value = 0;
         }
     });

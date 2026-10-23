@@ -94,6 +94,7 @@ class build_ext(_build_ext):
             build_type = os.environ.get('CMAKE_BUILD_TYPE', 'Release')
             build_tests = os.environ.get('QX_BUILD_TESTS', 'False')
             cpu_compatibility_mode = os.environ.get('QX_CPU_COMPATIBILITY_MODE', 'False')
+            conan_compiler_version = os.environ.get('QX_CONAN_COMPILER_VERSION')
 
             cmd = local['conan']['profile']['detect']['--force']
             cmd & FG
@@ -116,6 +117,10 @@ class build_ext(_build_ext):
                 ['-b']['missing']
                 ['-tf']['']
             )
+            if platform.system() == 'Linux':
+                cmd = cmd['-b']['m4/*']
+            if conan_compiler_version:
+                cmd = cmd['-s:a']['compiler.version=' + conan_compiler_version]
             if build_tests == 'True':
                 cmd = cmd['-c']['tools.build:skip_test=False']
             if platform.system() == 'Darwin':
@@ -153,17 +158,18 @@ setup(
     long_description_content_type='text/markdown',
     author='QuTech, TU Delft',
     url='https://github.com/QuTech-Delft/qx-simulator',
+    python_requires='>=3.10',
     classifiers=[
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: POSIX :: Linux',
         'Operating System :: MacOS',
         'Operating System :: Microsoft :: Windows',
         'Programming Language :: Python :: 3 :: Only',
-        'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
         'Programming Language :: Python :: 3.12',
         'Programming Language :: Python :: 3.13',
+        'Programming Language :: Python :: 3.14',
         'Topic :: Scientific/Engineering'
     ],
     packages=['qxelarator'],

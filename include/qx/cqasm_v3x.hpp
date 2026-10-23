@@ -30,6 +30,7 @@ template <typename T>
 using TreeOne = cqasm_tree::One<T>;
 
 using CqasmV3xAnalysisResult = cqasm_v3x_analyzer::AnalysisResult;
+using CqasmV3xAsmDeclaration = cqasm_v3x_semantic::AsmDeclaration;
 using CqasmV3xApiVersion = cqasm_v3x_primitives::Version;
 using CqasmV3xBitType = cqasm_v3x_types::Bit;
 using CqasmV3xBlock = cqasm_v3x_semantic::Block;

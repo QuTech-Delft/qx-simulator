@@ -6,12 +6,10 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [tool.cibuildwheel]
-before-all = "uname -a"
 build-verbosity = 3
 skip = [
-    "cp36-*", "cp37-*", "cp38-*",
-    "*i686*", "*ppc64le*", "*pypy*", "*s390x*", "*musllinux*",
-    "pp*",
+    "cp314t-*",
+    "*i686*", "*ppc64le*", "*s390x*", "*musllinux*",
     "*-win32",
 ]
 test-requires = "pytest"

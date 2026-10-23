@@ -62,7 +62,7 @@ jobs:
 
   cpp-macos-x64:
     name: "C++ tests (clang/MacOS/x64)"
-    runs-on: macos-13  # x64
+    runs-on: macos-15-intel  # x64
     strategy:
       fail-fast: false
       matrix:
@@ -120,8 +120,11 @@ jobs:
           shell: bash
 
   python-linux-x64:
-    name: "Python tests (Linux/x64)"
+    name: "Python ${{ matrix.python-version }} tests (Linux/x64)"
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.14"]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -132,10 +135,14 @@ jobs:
       - uses: ./.github/actions/python-tests
         with:
           shell: bash
+          python-version: ${{ matrix.python-version }}
 
   python-macos-x64:
     name: "Python tests (macOS/x64)"
-    runs-on: macos-13
+    runs-on: macos-15-intel
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.14"]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -146,10 +153,15 @@ jobs:
       - uses: ./.github/actions/python-tests
         with:
           shell: bash
+          python-version: ${{ matrix.python-version }}
+          conan-compiler-version: "14"
 
   python-macos-arm64:
     name: "Python tests (macOS/arm64)"
     runs-on: macos-14
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.14"]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -160,16 +172,21 @@ jobs:
       - uses: ./.github/actions/python-tests
         with:
           shell: bash
+          python-version: ${{ matrix.python-version }}
 
   python-windows-x64:
     name: "Python tests (Windows/x64)"
     runs-on: windows-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.14"]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - uses: ./.github/actions/python-tests
         with:
           shell: bash
+          python-version: ${{ matrix.python-version }}
 
   complete:
     # see https://github.community/t/status-check-for-a-matrix-jobs/127354/7

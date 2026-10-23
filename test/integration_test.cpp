@@ -43,6 +43,19 @@ CNOT q[0], q[1]
     }));
 }
 
+TEST_F(IntegrationTest, execute_file) {
+    auto result = execute_file("test/qxelarator/bell_pair.cq");
+    ASSERT_TRUE(std::holds_alternative<SimulationResult>(result));
+
+    const auto& actual = std::get<SimulationResult>(result);
+    EXPECT_EQ(actual.shots_requested, 1);
+    EXPECT_EQ(actual.shots_done, 1);
+    EXPECT_EQ(actual.state,
+        (SimulationResult::State{
+            { "11", core::Complex{ .real = 1, .imag = 0, .norm = 1 } }
+    }));
+}
+
 TEST_F(IntegrationTest, range_operands) {
     auto program = R"(
 version 3.0
@@ -520,6 +533,62 @@ pow(2).Rn(0,1,0,pi/2,pi/4) q
         (SimulationResult::State{
             { "1", core::Complex{ .real = 0, .imag = 1, .norm = 1 } }
     }));
+}
+
+TEST_F(IntegrationTest, u_gate_three_parameters) {
+    auto program = R"(
+version 3.0
+
+qubit q
+
+X q
+U(pi/2,pi/3,pi/4) q
+)";
+    auto actual = run_from_string(program);
+    const auto inverse_sqrt_two = 1. / gates::SQRT_2;
+    const auto real_0 = -inverse_sqrt_two * std::cos(gates::PI / 4);
+    const auto imag_0 = -inverse_sqrt_two * std::sin(gates::PI / 4);
+    const auto real_1 = inverse_sqrt_two * std::cos(7 * gates::PI / 12);
+    const auto imag_1 = inverse_sqrt_two * std::sin(7 * gates::PI / 12);
+
+    EXPECT_EQ(actual.state,
+        (SimulationResult::State{
+            { "0", core::Complex{ .real = real_0, .imag = imag_0, .norm = 0.5 } },
+            { "1", core::Complex{ .real = real_1, .imag = imag_1, .norm = 0.5 } }
+    }));
+}
+
+TEST_F(IntegrationTest, fixed_gates) {
+    auto program = R"(
+version 3.0
+
+qubit[3] q
+
+Z90 q[0]
+mZ90 q[0]
+CV q[0], q[1]
+CY q[0], q[1]
+DCNOT q[0], q[1]
+ECR q[0], q[1]
+ISWAP q[0], q[1]
+InvSqrtSWAP q[0], q[1]
+M q[0], q[1]
+MS q[0], q[1]
+SqrtISWAP q[0], q[1]
+SqrtSWAP q[0], q[1]
+CCX q[0], q[1], q[2]
+CCNOT q[0], q[1], q[2]
+CSWAP q[0], q[1], q[2]
+)";
+
+    const auto actual = run_from_string(program);
+    EXPECT_FALSE(actual.state.empty());
+
+    auto state_norm = 0.0;
+    for (const auto& state : actual.state) {
+        state_norm += state.amplitude.norm;
+    }
+    EXPECT_NEAR(state_norm, 1.0, 1e-9);
 }
 
 TEST_F(IntegrationTest, control_gate_modifier__ctrl_x) {

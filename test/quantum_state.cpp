@@ -106,4 +106,20 @@ TEST_F(QuantumStateTest, reset) {
     check_eq(victim, { 0.123, 0, std::sqrt(1 - std::pow(0.123, 2)), 0 });  // 00 and 10
 }
 
+TEST_F(QuantumStateTest, reset_preserves_phase) {
+    QuantumState victim{
+        2, 2, { { "00", 0.6 }, { "11", 0.8i } }
+    };
+    victim.apply_reset(QubitIndex{ 0 });
+    check_eq(victim, { 0.6, 0, 0.8i, 0 });
+}
+
+TEST_F(QuantumStateTest, reset_leaves_other_qubits_unchanged) {
+    QuantumState victim{
+        3, 3, { { "000", 1 / std::numbers::sqrt2 }, { "011", 1 / std::numbers::sqrt2 * 1i } }
+    };
+    victim.apply_reset(QubitIndex{ 0 });
+    check_eq(victim, { 1 / std::numbers::sqrt2, 0, 1 / std::numbers::sqrt2 * 1i, 0, 0, 0, 0, 0 });
+}
+
 }  // namespace qx::core
